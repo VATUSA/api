@@ -14,5 +14,9 @@
         "cross-env": "^5.0.1",
         "laravel-mix": "^1.0",
         "lodash": "^4.17.4"
+    },
+    "dependencies": {
+        "jquery": "^3.2.1",
+        "semantic-ui": "^2.2.13"
     }
 }
