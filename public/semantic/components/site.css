@@ -201,3 +201,9 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
          Site Overrides
 *******************************/
 
+.blueHeader {
+  background-color: #0a2b4a;
+}
+.blueHeader .ui.grid > .column:not(.row) {
+  padding-bottom: 0;
+}

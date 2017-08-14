@@ -1,3 +1,12 @@
 /*******************************
          Site Overrides
 *******************************/
+
+.blueHeader {
+  background-color: @ogBlue;
+  .ui.grid {
+    &>.column:not(.row) {
+      padding-bottom: 0;
+    }
+  }
+}

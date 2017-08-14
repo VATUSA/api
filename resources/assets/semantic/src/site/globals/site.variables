@@ -1,3 +1,8 @@
 /*******************************
      User Global Variables
 *******************************/
+
+@ogBlue: #0a2b4a;
+@blue: @ogBlue;
+@ogRed: #ad2036;
+@red: @ogRed;
