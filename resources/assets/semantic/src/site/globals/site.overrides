@@ -2,8 +2,17 @@
          Site Overrides
 *******************************/
 
-.blueHeader {
-  background-color: @ogBlue;
+section.header {
+  background-color: @white;
+  .ui.grid {
+    &>.column:not(.row) {
+      padding-bottom: 0;
+    }
+  }
+}
+
+section.blueHeader {
+  background-color: @blue;
   .ui.grid {
     &>.column:not(.row) {
       padding-bottom: 0;
