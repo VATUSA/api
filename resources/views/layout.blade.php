@@ -29,7 +29,14 @@
       <div class="ui large inverted stackable menu" style="margin-bottom: 1.5em">
         <div class="ui container">
           <a class="item" href="/">Home</a>
-          <a class="item" href="/">Test</a>
+          <div class="ui dropdown item">
+            Facilities <i class="dropdown icon"></i>
+            <div class="menu">
+              @foreach(\FacilityHelper::getFacilities("name", false) as $facility)
+                <a class="{{$facility->url}}" target="_blank">{{$facility->id}} - {{$facility->name}}</a>
+              @endforeach
+            </div>
+          </div>
         </div>
       </div>
     </section>
