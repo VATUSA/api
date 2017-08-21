@@ -3,9 +3,11 @@
   <head>
     <title>VATUSA - @yield('title')</title>
     <link href='/semantic/semantic.min.css' rel='stylesheet' type='text/css'>
+    <link href='/css/app.css' rel='stylesheet' type='text/css'>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
   </head>
   <body>
     <!-- Header -->
@@ -33,7 +35,7 @@
             Facilities <i class="dropdown icon"></i>
             <div class="menu">
               @foreach(\FacilityHelper::getFacilities("name", false) as $facility)
-                <a class="{{$facility->url}}" target="_blank">{{$facility->id}} - {{$facility->name}}</a>
+                <a href="{{$facility->url}}" class="item" target="_blank">{{$facility->id}} - {{$facility->name}}</a>
               @endforeach
             </div>
           </div>

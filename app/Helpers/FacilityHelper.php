@@ -18,11 +18,11 @@ class FacilityHelper {
     }
 
     if (!$all) {
-      $facilities = Facility::where('active', 'true')->orderBy($orderby)->get();
+      $facilities = Facility::where('active', true)->orderBy($orderby)->get();
       \Cache::put('facility.active', $facilities, 60 * 24);   // Cache for 24 hours
     } else {
       $facilities = Facility::where('active','true')->orWhere('id', 'ZAE')->orWhere('id','ZHQ')->orderBy($orderby)->get();
-      \Cache::put('facility.active', $facilities, 60 * 24);   // Cache for 24 hours
+      \Cache::put('facility.all', $facilities, 60 * 24);   // Cache for 24 hours
     }
 
     return $facilities;
