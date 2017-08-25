@@ -1,5 +1,5 @@
 <?php
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\API\v2;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -7,7 +7,7 @@ use App\Facility;
 
 /**
  * Class FacilityController
- * @package App\Http\Controllers\API
+ * @package App\Http\Controllers\API\v2
  */
 class FacilityController extends Controller
 {
