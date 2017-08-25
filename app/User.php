@@ -1,29 +1,34 @@
-<?php
+<?php namespace App;
 
-namespace App;
+use Illuminate\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Auth\Passwords\CanResetPassword;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-
-class User extends Authenticatable
+class User extends Model implements AuthenticatableContract, CanResetPasswordContract
 {
-    use Notifiable;
+    use Authenticatable, CanResetPassword;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
-    protected $fillable = [
-        'name', 'email', 'password',
-    ];
+    protected $table = 'controllers';
+    public $primaryKey = "cid";
+    public $incrementing = false;
+    public $timestamps = ['created_at'];
+    protected $hidden = ['password', 'remember_token'];
 
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
-    protected $hidden = [
-        'password', 'remember_token',
-    ];
+    public function getDates()
+    {
+        return ['created_at','updated_at','lastactivity'];
+    }
+
+    public function fullname()
+    {
+        return $this->fname . " " . $this->lname;
+    }
+
+    public function facility()
+    {
+        return $this->belongsTo('App\Facility', 'facility')->first();
+    }
 }
+

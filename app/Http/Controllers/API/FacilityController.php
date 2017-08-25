@@ -5,8 +5,16 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Facility;
 
+/**
+ * Class FacilityController
+ * @package App\Http\Controllers\API
+ */
 class FacilityController extends Controller
 {
+    /**
+     * @param null $all
+     * @return array|string
+     */
     public function getIndex($all = null) {
         if ($all == "all") {
             $all = true;
