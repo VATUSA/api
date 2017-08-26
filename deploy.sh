@@ -1,4 +1,3 @@
 export GIT_WORKING_DIR=/home/vatusane/api
-git checkout -f master
+git pull origin master
 composer install
-
