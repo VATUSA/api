@@ -65,7 +65,7 @@ class FacilityHelper
         $data["fe"] = static::staffArrayBuild(RoleHelper::find($facility, "FE"));
         $data["wm"] = static::staffArrayBuild(RoleHelper::find($facility, "WM"));
 
-        Cache::put("facility.$facility.staff", 24 * 60);
+        Cache::put("facility.$facility.staff", $data, 24 * 60);
         return $data;
     }
 
@@ -84,5 +84,26 @@ class FacilityHelper
             ];
         }
         return $data;
+    }
+
+    /**
+     * @param $facility
+     * @param null $limit
+     * @return mixed
+     * @throws FacilityNotFoundException
+     */
+    public static function getRoster($facility, $limit = null) {
+        if (Cache::has("facility.$facility.roster")) {
+            return Cache::get("faciliy.$facility.roster");
+        }
+
+        $facility = Facility::find($facility);
+        if (!$facility || $facility->active != 1) {
+            throw new FacilityNotFoundException();
+        }
+
+        $roster = $facility->members()->orderby('rating', 'desc')->orderBy('lname', 'asc')->orderBy('fname', 'asc')->get();
+        Cache::put("facility.$facility.roster", $roster, 24 * 60);
+        return $roster;
     }
 }

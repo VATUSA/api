@@ -38,7 +38,11 @@ class Kernel extends HttpKernel
         ],
 
         'public-api' => [
-            \Barryvdh\Cors\HandleCors::class,
+            \Barryvdh\Cors\HandleCors::class
+        ],
+
+        'apikey' => [
+            \App\Http\Middleware\APIKey::class
         ],
 
         'api' => [
