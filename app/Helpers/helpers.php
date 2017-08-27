@@ -1,5 +1,7 @@
 <?php
 
+use App\Action;
+
 /**
  * Generate standardized JSON output
  *
@@ -20,9 +22,25 @@ function decode_json($data) {
     return json_decode($data);
 }
 
+/**
+ * @param $msg
+ * @return array
+ */
 function generate_error($msg) {
     return [
         'status' => 'error',
         'msg' => $msg
     ];
+}
+
+/**
+ * @param $cid
+ * @param $msg
+ */
+function log_action($cid, $msg) {
+    $log = new Action();
+    $log->from = 0;
+    $log->to = $cid;
+    $log->log = $msg;
+    $log->save();
 }

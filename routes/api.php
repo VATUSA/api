@@ -31,11 +31,11 @@ Route::prefix('v1')->namespace("v1")->group(function() {
         Route::post('promotion/{cid}', 'APIController@postPromotion')->where('cid', '[0-9]+');
 
         // Roster
-        Route::get('roster', 'APIController@getRoster');
-        Route::get('roster/{fac}', 'APIController@getRoster')->where('fac', '[A-Z]{3}');
+        Route::get('roster', 'FacilityController@getRoster');
+        Route::get('roster/{fac}', 'FacilityController@getRoster')->where('fac', '[A-Z]{3}');
 
-        Route::delete('roster/{cid}', 'APIController@deleteRoster')->where('cid', '[0-9]+');
-        Route::delete('roster/{fac}/{cid}', 'APIController@deleteRoster')->where('fac', '[A-Z]{3}')->where('cid', '[0-9]+');
+        Route::delete('roster/{cid}', 'FacilityController@deleteRoster')->where('cid', '[0-9]+');
+        Route::delete('roster/{fac}/{cid}', 'FacilityController@deleteRoster')->where('fac', '[A-Z]{3}')->where('cid', '[0-9]+');
 
         // Solo Certs
         Route::get('solo/{cid}','APIController@getSolo')->where('cid', '[0-9]+');
