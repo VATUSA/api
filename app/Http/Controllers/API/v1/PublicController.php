@@ -11,6 +11,24 @@ use App\Helpers\FacilityHelper;
 class PublicController
 {
     /**
+     * @param Request $request
+     * @param $apikey
+     * @return string
+     */
+    public function getConnectionTest(Request $request, $apikey) {
+        $data =[];
+        $data['status'] = 'OK';
+        $data['ip'] = $request->ip();
+        if ($request->has('test')) {
+            $data['debug'] = 1;
+        } else {
+            $data['debug'] = 0;
+        }
+
+        return json_encode($data);
+    }
+
+    /**
      * @param string $ext
      * @param int $limit
      *

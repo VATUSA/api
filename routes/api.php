@@ -48,7 +48,7 @@ Route::prefix('v1')->namespace("v1")->group(function() {
         Route::post('transfer/{id}', 'APIController@postTransfer')->where('id', '[0-9]+');
         Route::post('register', 'APIController@postRegister');
 
-        Route::get('conntest', 'APIController@getConnTest');
+        Route::get('conntest', 'PublicController@getConnectionTest');
     });
     Route::get('news.{ext},{limit}', 'PublicController@getNews')->where(['ext' => '[A-Za-z]+', 'limit' => '\d+']);
     Route::get('news,{limit}', 'PublicController@getNews')->where(['ext' => '[A-Za-z]+', 'limit' => '\d+']);
