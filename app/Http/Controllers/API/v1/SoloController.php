@@ -66,6 +66,13 @@ class SoloController extends Controller
         return encode_json($return);
     }
 
+    /**
+     * @param Request $request
+     * @param $apikey
+     * @param $cid
+     * @param $position
+     * @return string
+     */
     public function deleteSolo(Request $request, $apikey, $cid, $position) {
         if (!$cid || !$position) {
             return generate_error("Malformed or missing field");
