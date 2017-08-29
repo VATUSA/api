@@ -118,6 +118,17 @@ class PublicController
     }
 
     /**
+     * @return string
+     *
+     */
+    public function getPublicPlanes() {
+        if (\Cache::has('vatsim.data'))
+            return \Cache::get('vatsim.data');
+        else
+            return '[]';
+    }
+
+    /**
      * @param $facility
      * @param string $ext
      * @param null $limit (ignored)
@@ -161,6 +172,25 @@ class PublicController
             echo $xmldata->asXML();
         } elseif ($ext == "json") {
             echo encode_json($return);
+        }
+    }
+
+    /**
+     * @param $data
+     * @param $xmldata
+     *
+     * @deprecated v2 beyond will only return JSON
+     */
+    private static function array_to_xml($data, &$xmldata) {
+        foreach ($data as $key => $value) {
+            if (is_numeric($key))
+                $key = "item$key";
+            if (is_array($value)) {
+                $subnode = $xmldata->addChild($key);
+                static::array_to_xml($value, $subnode);
+            } else {
+                $xmldata->addChild($key, htmlspecialchars($value));
+            }
         }
     }
 }

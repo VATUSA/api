@@ -21,10 +21,6 @@ Route::prefix('v1')->namespace("v1")->group(function() {
         Route::get('exam/results/{cid}', 'ExamController@getUserResults')->where('cid', '[0-9]+');
         Route::get('exam/result/{rid}', 'ExamController@getExamResults')->where('rid', '[0-9]+');
 
-        // Promotion
-        Route::get('promotion', 'APIController@getPromotion');
-        Route::post('promotion/{cid}', 'APIController@postPromotion')->where('cid', '[0-9]+');
-
         // Roster
         Route::get('roster', 'FacilityController@getRoster');
         Route::get('roster/{fac}', 'FacilityController@getRoster')->where('fac', '[A-Z]{3}');
