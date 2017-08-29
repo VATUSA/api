@@ -18,13 +18,8 @@ Route::prefix('v1')->namespace("v1")->group(function() {
         Route::get('controller/{cid}', 'APIController@getController')->where('cid', '[0-9]+');
 
         // Exam
-        Route::get('exam', 'APIController@getExam');
-        Route::get('exam/assignment/{id}', 'APIController@getExamAssignment');
-        Route::put('exam/assignment/{id}', 'APIController@putExamAssignment');
-        Route::delete('exam/assignment/{id}/{cid}', 'APIController@deleteExamAssignment');
-        Route::get('exam/score/{cid}', 'APIController@getExamScores');
-        Route::get('exam/results/{cid}', 'APIController@getExamUserResults')->where('cid', '[0-9]+');
-        Route::get('exam/result/{rid}', 'APIController@getExamResult')->where('rid', '[0-9]+');
+        Route::get('exam/results/{cid}', 'ExamController@getUserResults')->where('cid', '[0-9]+');
+        Route::get('exam/result/{rid}', 'ExamController@getExamResults')->where('rid', '[0-9]+');
 
         // Promotion
         Route::get('promotion', 'APIController@getPromotion');
@@ -33,7 +28,6 @@ Route::prefix('v1')->namespace("v1")->group(function() {
         // Roster
         Route::get('roster', 'FacilityController@getRoster');
         Route::get('roster/{fac}', 'FacilityController@getRoster')->where('fac', '[A-Z]{3}');
-
         Route::delete('roster/{cid}', 'FacilityController@deleteRoster')->where('cid', '[0-9]+');
         Route::delete('roster/{fac}/{cid}', 'FacilityController@deleteRoster')->where('fac', '[A-Z]{3}')->where('cid', '[0-9]+');
 
