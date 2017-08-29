@@ -28,8 +28,7 @@ class FacilityController
         }
         $error = 0;
         if (!$f || !$f->active) {
-            $return = generate_error("Invalid Facility");
-            $error = 1;
+            return generate_error("Invalid Facility");
         }
         if (is_numeric($ext) && $limit == null) {
             $limit = $ext;
@@ -37,9 +36,7 @@ class FacilityController
         }
         $ext = strtolower($ext);
         if (!in_array($ext, ["xml", "json"])) {
-            $return = generate_error("Invalid format");
-            $ext = "json";
-            $error = 1;
+            return generate_error("Invalid format");
         }
         if (!$error) {
             $return['status'] = "ok";

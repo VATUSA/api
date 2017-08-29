@@ -18,8 +18,7 @@ class FacilityHelper
      * @return \Illuminate\Database\Eloquent\Collection|static[]
      * @throws \Exception
      */
-    public static function getFacilities($orderby = 'name', $all = false)
-    {
+    public static function getFacilities($orderby = 'name', $all = false) {
         // Is data cached?
         if ($all && Cache::has("facility.all")) {
             return Cache::get("facility.all");
@@ -45,9 +44,14 @@ class FacilityHelper
     /**
      * @param $facility
      * @return array
+     * @throws FacilityNotFoundException
      */
-    public static function getFacilityStaff($facility)
-    {
+    public static function getFacilityStaff($facility) {
+        if ($facility instanceof Facility) {
+            $facility = $facility->id;
+        } elseif (!is_int($facility)) {
+            throw new FacilityNotFoundException("Invalid facility");
+        }
         if (Cache::has("facility.$facility.staff")) {
             return Cache::get("facility.$facility.staff");
         }
@@ -93,6 +97,11 @@ class FacilityHelper
      * @throws FacilityNotFoundException
      */
     public static function getRoster($facility, $limit = null) {
+        if ($facility instanceof Facility) {
+            $facility = $facility->id;
+        } elseif (!is_int($facility)) {
+            throw new FacilityNotFoundException("Invalid facility");
+        }
         if (Cache::has("facility.$facility.roster")) {
             return Cache::get("faciliy.$facility.roster");
         }

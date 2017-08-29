@@ -43,10 +43,9 @@ Route::prefix('v1')->namespace("v1")->group(function() {
         Route::delete('solo/{cid}/{position}','APIController@deleteSolo')->where('cid', '[0-9]+')->where("position", "[0-9A-Z_]+");
 
         // Transfer
-        Route::get('transfer', 'APIController@getTransfer');
-        Route::get('transfer/{fac}', 'APIController@getTransfer')->where('fac', '[A-Z]{3}');
-        Route::post('transfer/{id}', 'APIController@postTransfer')->where('id', '[0-9]+');
-        Route::post('register', 'APIController@postRegister');
+        Route::get('transfer', 'TransferController@getTransfers');
+        Route::get('transfer/{fac}', 'TransferController@getTransfers')->where('fac', '[A-Z]{3}');
+        Route::post('transfer/{id}', 'TransferController@postTransfer')->where('id', '[0-9]+');
 
         Route::get('conntest', 'PublicController@getConnectionTest');
     });

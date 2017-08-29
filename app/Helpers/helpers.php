@@ -24,13 +24,13 @@ function decode_json($data) {
 
 /**
  * @param $msg
- * @return array
+ * @return string
  */
 function generate_error($msg) {
-    return [
+    return encode_json([
         'status' => 'error',
         'msg' => $msg
-    ];
+    ]);
 }
 
 /**
@@ -43,4 +43,16 @@ function log_action($cid, $msg) {
     $log->to = $cid;
     $log->log = $msg;
     $log->save();
+}
+
+/**
+ * @param Request $request
+ * @return bool
+ */
+function isTest(Request $request) {
+    if ($request->has('test')) {
+        return true;
+    }
+
+    return false;
 }

@@ -23,7 +23,7 @@ class CBTController
                     'visible' => $block->visible
                 ];
         }
-        echo json_encode($data);
+        return encode_json($data);
     }
 
     public function getCBTChapters($apikey, $blockid)
@@ -34,13 +34,13 @@ class CBTController
         if ($block == null || empty($block)) {
             $data['status'] = "error";
             $data['msg'] = "Training block not found.";
-            echo json_encode($data);
+            echo encode_json($data);
             exit;
         }
         if ($block->facility != $facility->id) {
             $data['status'] = "error";
             $data['msg'] = "Access denied.";
-            echo json_encode($data);
+            echo encode_json($data);
             exit;
         }
 
@@ -60,7 +60,7 @@ class CBTController
                 ];
         }
 
-        echo json_encode($data);
+        echo encode_json($data);
     }
 
     public function getCBTChapter($apikey, $chapterid)
@@ -71,14 +71,14 @@ class CBTController
         if ($chapter == null || empty($chapter)) {
             $data['status'] = "error";
             $data['msg'] = "Chapter not found.";
-            echo json_encode($data);
+            echo encode_json($data);
             exit;
         }
         $block = $chapter->block()->first();
         if ($block->facility != $facility->id) {
             $data['status'] = "error";
             $data['msg'] = "Access denied.";
-            echo json_encode($data);
+            echo encode_json($data);
             exit;
         }
 
@@ -94,7 +94,7 @@ class CBTController
                     ((strlen($chapter->url) > 0) ? "https://docs.google.com/presentation/d/" . $chapter->url . "/embed?start=false&loop=false&delayms=60000" : "")),
             ];
 
-        echo json_encode($data);
+        echo encode_json($data);
     }
 
     public function putCBTProgress(Request $request, $apikey, $cid)
@@ -107,14 +107,14 @@ class CBTController
         if ($chapter == null || empty($chapter)) {
             $data['status'] = "error";
             $data['msg'] = "Chapter not found.";
-            echo json_encode($data);
+            echo encode_json($data);
             exit;
         }
         $block = $chapter->block()->first();
         if ($block->facility != $facility->id) {
             $data['status'] = "error";
             $data['msg'] = "Access denied.";
-            echo json_encode($data);
+            echo encode_json($data);
             exit;
         }
 
@@ -122,14 +122,14 @@ class CBTController
         if ($user == null || empty($user)) {
             $data['status'] = "error";
             $data['msg'] = "User not found or not specified";
-            echo json_encode($data);
+            echo encode_json($data);
             exit;
         }
 
         if (TrainingProgress::where('cid', $cid)->where('chapterid', $chapterid)->count()) {
             $data['status'] = "error";
             $data['msg'] = "Already completed";
-            echo json_encode($data);
+            echo encode_json($data);
             exit;
         }
 
@@ -141,7 +141,7 @@ class CBTController
             $progress->save();
         }
         $data['status'] = "success";
-        echo json_encode($data);
+        echo encode_json($data);
         exit;
     }
 }
