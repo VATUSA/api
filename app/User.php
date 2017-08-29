@@ -176,7 +176,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 
         if ($by > 800000) { $byuser = User::find($by); $by = $byuser->fullname(); }
 
-        log_action($this->id, "Removed from $facility by $by: $msg")
+        log_action($this->id, "Removed from $facility by $by: $msg");
 
         $this->facility_join = \DB::raw("NOW()");
         $this->facility = $newfac;

@@ -32,9 +32,9 @@ Route::prefix('v1')->namespace("v1")->group(function() {
         Route::delete('roster/{fac}/{cid}', 'FacilityController@deleteRoster')->where('fac', '[A-Z]{3}')->where('cid', '[0-9]+');
 
         // Solo Certs
-        Route::get('solo/{cid}','APIController@getSolo')->where('cid', '[0-9]+');
-        Route::post('solo/{cid}/{position}','APIController@postSolo')->where('cid', '[0-9]+')->where("position", "[0-9A-Z_]+");
-        Route::delete('solo/{cid}/{position}','APIController@deleteSolo')->where('cid', '[0-9]+')->where("position", "[0-9A-Z_]+");
+        Route::get('solo/{cid}','SoloController@getSolo')->where('cid', '[0-9]+');
+        Route::post('solo/{cid}/{position}','SoloController@postSolo')->where('cid', '[0-9]+')->where("position", "[0-9A-Z_]+");
+        Route::delete('solo/{cid}/{position}','SoloController@deleteSolo')->where('cid', '[0-9]+')->where("position", "[0-9A-Z_]+");
 
         // Transfer
         Route::get('transfer', 'TransferController@getTransfers');
