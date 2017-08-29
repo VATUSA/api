@@ -1,12 +1,17 @@
 <?php
-
-
 namespace App\Http\Controllers\API\v1;
 
 
+/**
+ * Class CBTController
+ * @package App\Http\Controllers\API\v1
+ */
 class CBTController
 {
-    // <editor-fold desc="CBT">
+    /**
+     * @param $apikey
+     * @return string
+     */
     public function getCBTBlocks($apikey)
     {
         $facility = Facility::where('apikey', $apikey)->first();
@@ -26,6 +31,11 @@ class CBTController
         return encode_json($data);
     }
 
+    /**
+     * @param $apikey
+     * @param $blockid
+     * @return string
+     */
     public function getCBTChapters($apikey, $blockid)
     {
         $facility = Facility::where('apikey', $apikey)->first();
@@ -60,9 +70,14 @@ class CBTController
                 ];
         }
 
-        echo encode_json($data);
+        return encode_json($data);
     }
 
+    /**
+     * @param $apikey
+     * @param $chapterid
+     * @return string
+     */
     public function getCBTChapter($apikey, $chapterid)
     {
         $facility = Facility::where('apikey', $apikey)->first();
@@ -94,9 +109,15 @@ class CBTController
                     ((strlen($chapter->url) > 0) ? "https://docs.google.com/presentation/d/" . $chapter->url . "/embed?start=false&loop=false&delayms=60000" : "")),
             ];
 
-        echo encode_json($data);
+        return encode_json($data);
     }
 
+    /**
+     * @param Request $request
+     * @param $apikey
+     * @param $cid
+     * @return string
+     */
     public function putCBTProgress(Request $request, $apikey, $cid)
     {
         parse_str(file_get_contents("php://input"), $vars);
@@ -141,7 +162,6 @@ class CBTController
             $progress->save();
         }
         $data['status'] = "success";
-        echo encode_json($data);
-        exit;
+        return encode_json($data);
     }
 }

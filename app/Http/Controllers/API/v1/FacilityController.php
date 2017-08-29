@@ -17,9 +17,9 @@ class FacilityController
      * @param $facility
      * @param string $ext
      * @param null $limit (ignored)
+     * @return string
      */
-    public function getRoster($apikey, $facility, $ext = "json", $limit = null)
-    {
+    public function getRoster($apikey, $facility, $ext = "json", $limit = null) {
         if (!$facility) {
             $fac = Facility::where('apikey', $apikey)->first();
             $facility = $fac->id;
@@ -58,9 +58,9 @@ class FacilityController
         if ($ext == "xml") {
             $xmldata = new \SimpleXMLElement('<?xml version="1.0"?><api></api>');
             static::array_to_xml($return, $xmldata);
-            echo $xmldata->asXML();
+            return $xmldata->asXML();
         } elseif ($ext == "json") {
-            echo encode_json($return);
+            return encode_json($return);
         }
     }
 
@@ -104,6 +104,6 @@ class FacilityController
             }
         }
 
-        echo encode_json($return);
+        return encode_json($return);
     }
 }
