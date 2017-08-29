@@ -106,4 +106,28 @@ class FacilityController
 
         return encode_json($return);
     }
+
+
+    /**
+     * @param $apikey
+     * @param $cid
+     * @return string
+     *
+     * @todo move in v2, this belongs somewhere more proper and with proper the EMR (Electronic Member Record) methods
+     */
+    public function getController($apikey, $cid) {
+        $user = User::find($cid);
+        if (!$user) {
+            return generate_error("User not found");
+        }
+
+        $userArray['status'] = "success";
+        $userArray['fname'] = $user->fname;
+        $userArray['lname'] = $user->lname;
+        $userArray['facility'] = $user->facility;
+        $userArray['rating'] = $user->rating;
+        $userArray['join_date'] = $user->facility_join;
+        $userArray['last_activity'] = $user->lastactivity->format('Y-m-d H:i:s');
+        return encode_json($userArray, JSON_HEX_APOS);
+    }
 }
