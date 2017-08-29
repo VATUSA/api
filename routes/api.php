@@ -15,7 +15,7 @@ Route::prefix('v1')->namespace("v1")->group(function() {
         Route::get('cbt/chapter/{id}', 'CBTController@getCBTChapter')->where('id', '[0-9]+');
         Route::put('cbt/progress/{cid}', 'CBTController@putCBTProgress')->where('cid', '[0-9]+');
 
-        Route::get('controller/{cid}', 'APIController@getController')->where('cid', '[0-9]+');
+        Route::get('controller/{cid}', 'FacilityController@getController')->where('cid', '[0-9]+');
 
         // Exam
         Route::get('exam/results/{cid}', 'ExamController@getUserResults')->where('cid', '[0-9]+');
