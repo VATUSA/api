@@ -10,10 +10,10 @@ Route::namespace("v2")->group(function() {
 Route::prefix('v1')->namespace("v1")->group(function() {
     Route::group(['prefix' => '{apikey}/', 'middleware' => 'apikey'], function () {
         // CBT
-        Route::get('cbt/block', 'APIController@getCBTBlocks');
-        Route::get('cbt/block/{id}', 'APIController@getCBTChapters')->where('id', '[0-9]+');
-        Route::get('cbt/chapter/{id}', 'APIController@getCBTChapter')->where('id', '[0-9]+');
-        Route::put('cbt/progress/{cid}', 'APIController@putCBTProgress')->where('cid', '[0-9]+');
+        Route::get('cbt/block', 'CBTController@getCBTBlocks');
+        Route::get('cbt/block/{id}', 'CBTController@getCBTChapters')->where('id', '[0-9]+');
+        Route::get('cbt/chapter/{id}', 'CBTController@getCBTChapter')->where('id', '[0-9]+');
+        Route::put('cbt/progress/{cid}', 'CBTController@putCBTProgress')->where('cid', '[0-9]+');
 
         Route::get('controller/{cid}', 'APIController@getController')->where('cid', '[0-9]+');
 
