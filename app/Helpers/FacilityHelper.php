@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\User;
 use Cache;
 use App\Facility;
 use App\Exceptions\FacilityNotFoundException;
@@ -80,9 +81,9 @@ class FacilityHelper
         foreach ($staff as $s) {
             $data[] = [
                 'cid' => $s->cid,
-                "name" => $s->fullname(),
-                "email" => $s->email,
-                "rating" => $s->rating
+                "name" => $s->user->fullname(),
+                "email" => $s->user->email,
+                "rating" => $s->user->rating
             ];
         }
         return $data;
