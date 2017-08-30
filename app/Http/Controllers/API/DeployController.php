@@ -13,7 +13,9 @@ class DeployController extends Controller
                 \Log::warn("Invalid payload received from github push event: $payload");
                 return;
             }
-            system("cd " . base_path() . "; sh deploy.sh");
+            exec("cd " . base_path() . " && sh deploy.sh", $output, $return);
+            \Log::info("Deploy ran: " . base64_encode($output) . ", return $return");
+            return implode($output);
         }
     }
 }
