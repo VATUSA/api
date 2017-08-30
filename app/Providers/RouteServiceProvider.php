@@ -16,6 +16,7 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected $namespace = 'App\Http\Controllers';
     protected $namespaceapi = "App\Http\Controllers\API";
+    protected $namespacelogin = "App\Http\Controllers\Login";
 
     /**
      * Define your route model bindings, pattern filters, etc.
@@ -37,10 +38,8 @@ class RouteServiceProvider extends ServiceProvider
     public function map()
     {
         $this->mapApiRoutes();
-
-        $this->mapWebRoutes();
-
-        //
+        $this->mapLoginRoutes();
+        //$this->mapWebRoutes();
     }
 
     /**
@@ -66,9 +65,29 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected function mapApiRoutes()
     {
-        Route::domain("api.vatusa.net")
-            ->middleware("api")
-            ->namespace($this->namespaceapi)
-            ->group(base_path("routes/api.php"));
+        if (env('APP_ENV') == "dev") {
+            Route::domain("apidev.vatusa.net")
+                ->middleware("api")
+                ->namespace($this->namespaceapi)
+                ->group(base_path("routes/api.php"));
+        } else {
+            Route::domain("api.vatusa.net")
+                ->middleware("api")
+                ->namespace($this->namespaceapi)
+                ->group(base_path("routes/api.php"));
+        }
+    }
+
+    protected function mapLoginRoutes()
+    {
+        if (env('APP_ENV') == "dev") {
+            Route::domain("logindev.vatusa.net")
+                ->namespace($this->namespacelogin)
+                ->group(base_path("routes/login.php"));
+        } else {
+            Route::domain("login.vatusa.net")
+                ->namespace($this->namespacelogin)
+                ->group(base_path("routes/login.php"));
+        }
     }
 }

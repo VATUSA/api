@@ -56,3 +56,15 @@ function isTest(Request $request) {
 
     return false;
 }
+
+function randomPassword()
+{
+    $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890,./-=+_!@#$%^&*() {}[];:<>?';
+    $pass = [];
+    $alphaLength = strlen($alphabet) - 1;
+    for ($i = 0; $i < 24; $i++) {
+        $n = rand(0, $alphaLength);
+        $pass[] = $alphabet[$n];
+    }
+    return implode($pass);
+}
