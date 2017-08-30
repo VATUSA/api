@@ -7,10 +7,14 @@ Route::prefix("v2")->namespace("v2")->group(function() {
     });
 });
 
+/* Allow version 1 to also prefix v1 */
 Route::prefix('v1')->namespace("v1")->group(function() {
     require("api-v1.php");
 });
 
-require("api-v1.php");
+/* Assume no version prefix is v1 */
+Route::namespace("v1")->group(function() {
+    require("api-v1.php");
+});
 
 Route::post('/deploy', 'DeployController@getDeploy');
