@@ -77,8 +77,8 @@ class SSOController extends Controller
             $request->input('oauth_verifier'),
             function($user, $request) {
                 unset($_SESSION['SSO']);
-                $return = $request->session()->get("return", env("SSO_RETURN_FORUMS"));
-                $request->session()->forget("return");
+                $return = session("return", env("SSO_RETURN_FORUMS"));
+                session()->forget("return");
 
                 // Check if user is registered in forums...
                 if (SMFHelper::isRegistered($user->id)) {
