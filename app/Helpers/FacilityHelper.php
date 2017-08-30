@@ -49,8 +49,6 @@ class FacilityHelper
     public static function getFacilityStaff($facility) {
         if ($facility instanceof Facility) {
             $facility = $facility->id;
-        } elseif (!is_int($facility)) {
-            throw new FacilityNotFoundException("Invalid facility");
         }
         if (Cache::has("facility.$facility.staff")) {
             return Cache::get("facility.$facility.staff");
@@ -99,8 +97,6 @@ class FacilityHelper
     public static function getRoster($facility, $limit = null) {
         if ($facility instanceof Facility) {
             $facility = $facility->id;
-        } elseif (!is_int($facility)) {
-            throw new FacilityNotFoundException("Invalid facility");
         }
         if (Cache::has("facility.$facility.roster")) {
             return Cache::get("faciliy.$facility.roster");
