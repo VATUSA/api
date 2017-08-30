@@ -1,6 +1,8 @@
 <?php
 namespace App\Http\Controllers\API;
 
+use App\Http\Controllers\Controller;
+
 class DeployController extends Controller
 {
     public function getDeploy(Request $request) {
