@@ -1,5 +1,6 @@
 <?php namespace App;
 
+use App\Helpers\RatingHelper;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Auth\Passwords\CanResetPassword;
@@ -66,13 +67,13 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
     {
         if ($this->flag_homecontroller == 0) return false;
 
-        if ($this->rating == Helper::ratingIntFromShort("OBS"))
+        if ($this->rating == RatingHelper::shortToInt("OBS"))
             return $this->isS1Eligible();
-        if ($this->rating == Helper::ratingIntFromShort("S1"))
-            return $this->isS2Eligible();
-        if ($this->rating == Helper::ratingIntFromShort("S2"))
+        if ($this->rating == RatingHelper::shortToInt("S1"))
+        return $this->isS2Eligible();
+        if ($this->rating == RatingHelper::shortToInt("S2"))
             return $this->isS3Eligible();
-        if ($this->rating == Helper::ratingIntFromShort("S3"))
+        if ($this->rating == RatingHelper::shortToInt("S3"))
             return $this->isC1Eligible();
 
         return false;
@@ -83,7 +84,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
      */
     public function isS1Eligible()
     {
-        if ($this->rating > Helper::ratingIntFromShort("OBS"))
+        if ($this->rating > RatingHelper::shortToInt("OBS"))
             return false;
 
 
@@ -98,7 +99,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
      */
     public function isS2Eligible()
     {
-        if ($this->rating != Helper::ratingIntFromShort("S1"))
+        if ($this->rating != RatingHelper::shortToInt("S1"))
             return false;
 
         $er = ExamResults::where('cid', $this->cid)->where('exam_id', config('exams.S2'))->where('passed',1)->count();
@@ -111,7 +112,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
      */
     public function isS3Eligible()
     {
-        if ($this->rating != Helper::ratingIntFromShort("S2"))
+        if ($this->rating != RatingHelper::shortToInt("S2"))
             return false;
 
         $er = ExamResults::where('cid', $this->cid)->where('exam_id', config('exams.S3'))->where('passed',1)->count();
@@ -124,7 +125,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
      */
     public function isC1Eligible()
     {
-        if ($this->rating != Helper::ratingIntFromShort("S3"))
+        if ($this->rating != RatingHelper::shortToInt("S3"))
             return false;
 
         $er = ExamResults::where('cid', $this->cid)->where('exam_id', config('exams.C1'))->where('passed',1)->count();
@@ -191,8 +192,8 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
         $t->actiontext = $msg;
         $t->save();
 
-        if ($this->rating >= Helper::ratingIntFromShort("I1"))
-            SMFHelper::createPost(7262, 82, "User Removal: " . $this->fullname() . " (" . Helper::ratingShortFromInt($this->rating) . ") from " . $facility, "User " . $this->fullname() . " (" . $this->cid . "/" . Helper::ratingShortFromInt($this->rating) . ") was removed from $facility and holds a higher rating.  Please check for demotion requirements.  [url=https://www.vatusa.net/mgt/controller/" . $this->cid . "]Member Management[/url]");
+        if ($this->rating >= RatingHelper::shortToInt("I1"))
+            SMFHelper::createPost(7262, 82, "User Removal: " . $this->fullname() . " (" . RatingHelper::intToShort($this->rating) . ") from " . $facility, "User " . $this->fullname() . " (" . $this->cid . "/" . RatingHelper::intToShort($this->rating) . ") was removed from $facility and holds a higher rating.  Please check for demotion requirements.  [url=https://www.vatusa.net/mgt/controller/" . $this->cid . "]Member Management[/url]");
     }
 }
 
