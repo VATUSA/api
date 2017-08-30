@@ -9,7 +9,7 @@ class DeployController extends Controller
 {
     public function getDeploy(Request $request)
     {
-        $payload = json_parse($request->input("payload"));
+        $payload = decode_json($request->input("payload"));
         if (!$payload) {
             \Log::warn("Invalid payload received from github push event: $payload");
             return;
