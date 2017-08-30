@@ -137,11 +137,11 @@ class SMFHelper
      * @return mixed
      */
     public static function isRegistered($cid) {
-        return \DB::connect("forums")->table("smf_members")->where("member_name", $cid)->count();
+        return \DB::connection("forums")->table("smf_members")->where("member_name", $cid)->count();
     }
 
     public static function updateData($cid, $last, $first, $email) {
-        \DB::connect("forums")->table("smf_members")
+        \DB::connection("forums")->table("smf_members")
                                 ->where("member_name", $cid)
                                 ->update([
                                     'real_name' => "$first $last",
