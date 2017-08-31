@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Login;
 
 use App\Exceptions\FacilityNotFoundException;
+use App\Facility;
 use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
 use App\Helpers\ULSHelper;
 use App\ULSToken;
+use App\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
@@ -160,7 +162,7 @@ class ULSController extends Controller
         ];
         if ($format == "xml") {
             header("Content-type: application/xml");
-            $xml_info = new SimpleXMLElement("<?xml version=\"1.0\"?><user></user>");
+            $xml_info = new \SimpleXMLElement("<?xml version=\"1.0\"?><user></user>");
             arrayToXml($return, $xml_info);
             return $xml_info->asXML();
         } else {
