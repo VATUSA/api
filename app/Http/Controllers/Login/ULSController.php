@@ -71,7 +71,7 @@ class ULSController extends Controller
         $uls_token->expired = 0;
         $uls_token->save();
 
-        $facility = Facility::where($request->session()->get("fac"))->first();
+        $facility = Facility::where("id", $request->session()->get("fac"))->first();
 
         $redirect = null;
         if ($request->session()->has("dev")) {
