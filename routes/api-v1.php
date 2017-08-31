@@ -1,5 +1,5 @@
 <?php
-Route::group(['prefix' => '{apikey}/', 'middleware' => 'apikey'], function () {
+Route::group(['prefix' => '{apikey}/', 'middleware' => 'semiprivate'], function () {
 // CBT
     Route::get('cbt/block', 'CBTController@getCBTBlocks');
     Route::get('cbt/block/{id}', 'CBTController@getCBTChapters')->where('id', '[0-9]+');
@@ -30,22 +30,25 @@ Route::group(['prefix' => '{apikey}/', 'middleware' => 'apikey'], function () {
 
     Route::get('conntest', 'PublicController@getConnectionTest');
 });
-Route::get('news.{ext},{limit}', 'PublicController@getNews')->where(['ext' => '[A-Za-z]+', 'limit' => '\d+']);
-Route::get('news,{limit}', 'PublicController@getNews')->where(['ext' => '[A-Za-z]+', 'limit' => '\d+']);
-Route::get('news.{ext}', 'PublicController@getNews')->where(['ext' => '[A-Za-z]+', 'limit' => '\d+']);
-Route::get('news,{limit}.{ext}', 'PublicController@getNews')->where(['ext' => '[A-Za-z]+', 'limit' => '\d+']);
-Route::get('news', 'PublicController@getNews')->where(['ext' => '[A-Za-z]+', 'limit' => '\d+']);
 
-Route::get('events.{ext},{limit}', 'PublicController@getEvents')->where(['ext' => '[A-Za-z]+', 'limit' => '\d+']);
-Route::get('events,{limit}', 'PublicController@getEvents')->where(['ext' => '[A-Za-z]+', 'limit' => '\d+']);
-Route::get('events.{ext}', 'PublicController@getEvents')->where(['ext' => '[A-Za-z]+', 'limit' => '\d+']);
-Route::get('events,{limit}.{ext}', 'PublicController@getEvents')->where(['ext' => '[A-Za-z]+', 'limit' => '\d+']);
-Route::get('events', 'PublicController@getEvents')->where(['ext' => '[A-Za-z]+', 'limit' => '\d+']);
+Route::group(['middleware' => 'public'], function() {
+    Route::get('news.{ext},{limit}', 'PublicController@getNews')->where(['ext' => '[A-Za-z]+', 'limit' => '\d+']);
+    Route::get('news,{limit}', 'PublicController@getNews')->where(['ext' => '[A-Za-z]+', 'limit' => '\d+']);
+    Route::get('news.{ext}', 'PublicController@getNews')->where(['ext' => '[A-Za-z]+', 'limit' => '\d+']);
+    Route::get('news,{limit}.{ext}', 'PublicController@getNews')->where(['ext' => '[A-Za-z]+', 'limit' => '\d+']);
+    Route::get('news', 'PublicController@getNews')->where(['ext' => '[A-Za-z]+', 'limit' => '\d+']);
 
-Route::get('roster-{fac}.{ext},{limit}', 'PublicController@getRoster')->where(['fac' => '[A-Z][A-Z][A-Z]', 'ext' => '[A-Za-z]+', 'limit' => '\d+']);
-Route::get('roster-{fac},{limit}', 'PublicController@getRoster')->where(['fac' => '[A-Z][A-Z][A-Z]', 'ext' => '[A-Za-z]+', 'limit' => '\d+']);
-Route::get('roster-{fac}.{ext}', 'PublicController@getRoster')->where(['fac' => '[A-Z][A-Z][A-Z]', 'ext' => '[A-Za-z]+', 'limit' => '\d+']);
-Route::get('roster-{fac},{limit}.{ext}', 'PublicController@getRoster')->where(['fac' => '[A-Z][A-Z][A-Z]', 'ext' => '[A-Za-z]+', 'limit' => '\d+']);
-Route::get('roster-{fac}', 'PublicController@getRoster')->where(['fac' => '[A-Z][A-Z][A-Z]', 'ext' => '[A-Za-z]+', 'limit' => '\d+']);
+    Route::get('events.{ext},{limit}', 'PublicController@getEvents')->where(['ext' => '[A-Za-z]+', 'limit' => '\d+']);
+    Route::get('events,{limit}', 'PublicController@getEvents')->where(['ext' => '[A-Za-z]+', 'limit' => '\d+']);
+    Route::get('events.{ext}', 'PublicController@getEvents')->where(['ext' => '[A-Za-z]+', 'limit' => '\d+']);
+    Route::get('events,{limit}.{ext}', 'PublicController@getEvents')->where(['ext' => '[A-Za-z]+', 'limit' => '\d+']);
+    Route::get('events', 'PublicController@getEvents')->where(['ext' => '[A-Za-z]+', 'limit' => '\d+']);
 
-Route::get('planes', 'APIController@getPublicPlanes');
+    Route::get('roster-{fac}.{ext},{limit}', 'PublicController@getRoster')->where(['fac' => '[A-Z][A-Z][A-Z]', 'ext' => '[A-Za-z]+', 'limit' => '\d+']);
+    Route::get('roster-{fac},{limit}', 'PublicController@getRoster')->where(['fac' => '[A-Z][A-Z][A-Z]', 'ext' => '[A-Za-z]+', 'limit' => '\d+']);
+    Route::get('roster-{fac}.{ext}', 'PublicController@getRoster')->where(['fac' => '[A-Z][A-Z][A-Z]', 'ext' => '[A-Za-z]+', 'limit' => '\d+']);
+    Route::get('roster-{fac},{limit}.{ext}', 'PublicController@getRoster')->where(['fac' => '[A-Z][A-Z][A-Z]', 'ext' => '[A-Za-z]+', 'limit' => '\d+']);
+    Route::get('roster-{fac}', 'PublicController@getRoster')->where(['fac' => '[A-Z][A-Z][A-Z]', 'ext' => '[A-Za-z]+', 'limit' => '\d+']);
+
+    Route::get('planes', 'APIController@getPublicPlanes');
+});
