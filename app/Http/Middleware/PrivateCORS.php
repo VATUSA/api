@@ -12,7 +12,7 @@ class PrivateCORS
      */
     public function handle($request, Closure $next)
     {
-        if (!isset($_SERVER['ORIGIN'])) { abort(400, "Malformed request"); }
+        //if (!isset($_SERVER['ORIGIN'])) { abort(400, "Malformed request"); }
         header('Access-Control-Allow-Origin: *.vatusa.net');
         header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
         header('Access-Control-Allow-Headers: Origin, Content-Type, Accept, Authorization, X-Request-With');

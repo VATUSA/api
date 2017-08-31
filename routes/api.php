@@ -6,7 +6,7 @@ Route::prefix("v2")->namespace("v2")->group(function() {
         Route::get("/facility/{all?}", "FacilityController@getIndex")->where("all", "all");
     });
     Route::middleware("private")->group(function() {
-        Route::get("test", function() { echo "Test complete."; });
+        Route::get("auth", "AuthController@getAuth");
     });
 });
 
