@@ -124,8 +124,7 @@ class SSOController extends Controller
                 }
 
                 \Auth::login($member);
-                echo "Done.. you are logged in as "; var_dump($member);
-                //return redirect($return);
+                return redirect($return);
             }
         );
     }
