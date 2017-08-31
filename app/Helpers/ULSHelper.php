@@ -3,6 +3,9 @@
 namespace App\Helpers;
 
 use App\Facility;
+use App\User;
+
+require_once(config('sso.forumapi',''));
 
 class ULSHelper
 {

@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Classes\OAuth\SSO;
 
-require(config('sso.forumapi',''));
+require_once(config('sso.forumapi',''));
 
 /**
  * Class SSOController
