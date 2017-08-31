@@ -150,15 +150,15 @@ class ULSController extends Controller
                 "short" => RatingHelper::intToShort($user->rating),
                 "long" => RatingHelper::intToLong($user->rating),
             ],
-            "facility" => array(
+            "facility" => [
                 "id" => $user->facility,
                 "short" => $user->facility,
-                "long" => $user->facility->name,
-                "position" => array (
+                "long" => $facility->name,
+                "position" => [
                     "short" => $position['short'],
                     "long" => $position['long']
-                ),
-            ),
+                ],
+            ],
         ];
         if ($format == "xml") {
             header("Content-type: application/xml");
