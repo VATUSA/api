@@ -56,7 +56,7 @@ class ULSController extends Controller
         $uls_token = ULSToken::where("token", $token)->first();
         if ($uls_token) {
             if ($uls_token->date->diffInSeconds(Carbon::Now()) >= 45 || $uls_token->cid == \Auth::user()->cid) {
-                $uls_token->delete();
+                \DB::table("uls_tokens")->where("token", $token)->delete();
             } else {
                 abort(500, "Unable to generate ULS Token");
             }
@@ -107,12 +107,12 @@ class ULSController extends Controller
 
         $token = ULSToken::where("token", $request->get("token"))->first();
         if (!$token || $token->date->diffInSeconds(Carbon::Now()) >= 45) {
-            $token->delete();
+            \DB::table("uls_tokens")->where("token", $token->token)->delete();
             abort(400, "invalid token");
         }
         $user = User::find($token->cid);
         $facility = Facility::find($user->facility);
-        $token->delete();
+        \DB::table("uls_tokens")->where("token", $token->token)->delete();
 
         $position['short'] = $position['long'] = "None";
         if (RoleHelper::has($user->cid, $facility->id, "ATM")) {
