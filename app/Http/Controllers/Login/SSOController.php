@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Login;
 
 use App\Classes\SMFHelper;
 use App\Helpers\EmailHelper;
+use App\Helpers\ULSHelper;
 use App\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -54,6 +55,14 @@ class SSOController extends Controller
             $request->session()->put('return', env('SSO_RETURN_FORUMS'));
         }
 
+        /* If already logged in, don't send to SSO */
+        if (\Auth::check()) {
+            $return = $request->session()->get("return");
+            $request->session()->forget("return");
+            ULSHelper::doHandleLogin(\Auth::user()->cid, $return);
+            return;
+        }
+
         $this->sso->login(
             config('sso.return'),
             function($key, $secret, $url) {
@@ -101,8 +110,6 @@ class SSOController extends Controller
                         throw new \Exception("Failed to create forum user");
                     }
                 }
-
-                smfapi_login($user->id, 14400);
                 $member = User::find($user->id);
                 if (!$member) {
                     $member = new User();
@@ -123,8 +130,7 @@ class SSOController extends Controller
                     }
                 }
 
-                \Auth::login($member);
-                return redirect($return);
+                ULSHelper::doHandleLogin($user->id, $return);
             }
         );
     }

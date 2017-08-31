@@ -25,4 +25,10 @@ class ULSHelper
         $token = sha1($tokenRaw);
         return $token;
     }
+
+    public static function doHandleLogin($cid, $return) {
+        smfapi_login($cid, 14400);
+        \Auth::login(User::find($cid));
+        header("Location: $return");
+    }
 }
