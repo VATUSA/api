@@ -37,12 +37,17 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
 
-        'public-api' => [
-            \Barryvdh\Cors\HandleCors::class
+        'semiprivate' => [
+            \App\Http\Middleware\SemiPrivateCORS::class,
+            \App\Http\Middleware\APIKey::class,
         ],
 
-        'apikey' => [
-            \App\Http\Middleware\APIKey::class
+        'public' => [
+            \App\Http\Middleware\PublicCORS::class
+        ],
+
+        'private' => [
+            \App\Http\Middleware\PrivateCORS::class,
         ],
 
         'api' => [
@@ -66,5 +71,7 @@ class Kernel extends HttpKernel
         'can' => \Illuminate\Auth\Middleware\Authorize::class,
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+        'publiccors' => \App\Http\Middleware\PublicCORS::class,
+
     ];
 }
