@@ -57,6 +57,9 @@ function isTest(Request $request) {
     return false;
 }
 
+/**
+ * @return string
+ */
 function randomPassword()
 {
     $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890,./-=+_!@#$%^&*() {}[];:<>?';
@@ -67,4 +70,26 @@ function randomPassword()
         $pass[] = $alphabet[$n];
     }
     return implode($pass);
+}
+
+/**
+ * @param $data_array
+ * @param $xml
+ */
+function arrayToXml($data_array, &$xml) {
+    foreach($data_array as $key => $value) {
+        if(is_array($value)) {
+            if(!is_numeric($key)){
+                $subnode = $xml->addChild("$key");
+                arrayToXml($value, $subnode);
+            }
+            else{
+                $subnode = $xml->addChild("item$key");
+                arrayToXml($value, $subnode);
+            }
+        }
+        else {
+            $xml->addChild("$key",htmlspecialchars("$value"));
+        }
+    }
 }
