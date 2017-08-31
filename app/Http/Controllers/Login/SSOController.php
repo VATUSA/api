@@ -66,7 +66,7 @@ class SSOController extends Controller
         $this->sso->login(
             config('sso.return'),
             function($key, $secret, $url) {
-                $_SESSION['SSO'] = compact('key', 'secret');
+                session(['SSO' => compact('key', 'secret')]);
                 header("Location: $url");
                 exit;
             }
@@ -75,17 +75,17 @@ class SSOController extends Controller
 
     public function getReturn(Request $request) {
         if (isset($_REQUEST['cancel'])) {
-            unset($_SESSION['SSO']);
+            $request->session()->forget("SSO");
             $request->session()->forget("return");
             echo "Login request cancelled."; exit;
         }
-        $session = $_SESSION['SSO'];
+        $session = $request->session()->get("SSO");
         $this->sso->validate(
             $session['key'],
             $session['secret'],
             $request->input('oauth_verifier'),
             function($user, $request) {
-                unset($_SESSION['SSO']);
+                session()->forget("SSO");
                 $return = session("return", env("SSO_RETURN_FORUMS"));
                 session()->forget("return");
 
