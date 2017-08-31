@@ -135,9 +135,13 @@ class ULSController extends Controller
             $position['short'] = "FE";
             $position['long'] = "Facility Engineer";
         }
-        if (RoleHelper::has($user->cid, $facility->id, "WM")) {
+        elseif (RoleHelper::has($user->cid, $facility->id, "WM")) {
             $position['short'] = "WM";
             $position['long'] = "Webmaster";
+        }
+        if (RoleHelper::isVATUSAStaff($user->cid, true)) {
+            $position['short'] = "USA";
+            $position['long'] = "VATUSA Division Staff";
         }
 
         $return = [
