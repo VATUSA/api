@@ -57,7 +57,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
      */
     public function facility()
     {
-        return $this->belongsTo('App\Facility', 'facility')->first();
+        return $this->belongsTo('App\Facility', 'facility');
     }
 
     /**
