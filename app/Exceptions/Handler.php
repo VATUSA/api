@@ -48,7 +48,7 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
-        if (function_exists($exception->getStatus())) {
+        if (method_exists($exception, 'getStatus')) {
             $status = $exception->getStatus();
         } else {
             $status = 500;
