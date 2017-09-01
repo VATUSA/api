@@ -1,0 +1,418 @@
+#%RAML 1.0
+title: VATUSA API
+version: v2
+baseUri: https://api.vatusa.net/v2
+baseUriParameters: {}
+documentation:
+- title: VATUSA API
+  content: |
+    Utilize the VATUSA API
+
+    The Private group requires JSON Web Tokens for all routes but /auth/jwt, which requires a valid session cookie.  These routes are specifically for vatusa.net only.
+
+    Semi-Private group requires a valid API Key passed as part of the query string.  ?apikey=()
+
+    Public group requires no authentication.
+
+    All calls must be via https://api.vatusa.net/v2.  Non-secured connections will be rejected.
+securitySchemes:
+  auth:
+    type: Pass Through
+    describedBy:
+      headers:
+        JWT:
+          required: true
+          displayName: JWT
+          type: string
+        Session Cookie:
+          required: true
+          displayName: Session Cookie
+          type: string
+types:
+  AuthJwtResponse:
+    displayName: AuthJwtResponse
+    type: object
+    properties:
+      token:
+        required: false
+        displayName: token
+        type: string
+  AuthJwtException:
+    displayName: AuthJwtException
+    type: object
+    properties:
+      status:
+        required: false
+        displayName: status
+        type: string
+      msg:
+        required: false
+        displayName: msg
+        type: string
+  AuthUserResponse:
+    displayName: AuthUserResponse
+    type: object
+    properties:
+      cid:
+        required: false
+        displayName: cid
+        type: integer
+        format: int32
+      name_first:
+        required: false
+        displayName: name_first
+        type: string
+      name_last:
+        required: false
+        displayName: name_last
+        type: string
+      email:
+        required: false
+        displayName: email
+        type: string
+      rating:
+        required: false
+        displayName: rating
+        type: Rating
+      facility:
+        required: false
+        displayName: facility
+        type: Facility
+  Rating:
+    displayName: Rating
+    type: object
+    properties:
+      id:
+        required: false
+        displayName: id
+        type: integer
+        format: int32
+      short:
+        required: false
+        displayName: short
+        type: string
+      long:
+        required: false
+        displayName: long
+        type: string
+  Facility:
+    displayName: Facility
+    type: object
+    properties:
+      id:
+        required: false
+        displayName: id
+        type: string
+      name:
+        required: false
+        displayName: name
+        type: string
+  FacilitiesResponse:
+    displayName: FacilitiesResponse
+    type: object
+    properties:
+      id:
+        required: false
+        displayName: id
+        type: string
+      name:
+        required: false
+        displayName: name
+        type: string
+      url:
+        required: false
+        displayName: url
+        type: string
+      region:
+        required: false
+        displayName: region
+        type: integer
+        format: int32
+      active:
+        required: false
+        displayName: active
+        type: boolean
+  FacilitiesByIdResponse:
+    displayName: FacilitiesByIdResponse
+    type: object
+    properties:
+      id:
+        required: false
+        displayName: id
+        type: string
+      name:
+        required: false
+        displayName: name
+        type: string
+      url:
+        required: false
+        displayName: url
+        type: string
+      region:
+        required: false
+        displayName: region
+        type: integer
+        format: int32
+      active:
+        required: false
+        displayName: active
+        type: boolean
+      staff:
+        required: false
+        displayName: staff
+        type: Staff
+  Staff:
+    displayName: Staff
+    type: object
+    properties:
+      atm:
+        required: false
+        displayName: atm
+        type: array
+        items:
+          type: Atm
+      datm:
+        required: false
+        displayName: datm
+        type: array
+        items:
+          type: Datm
+      ta:
+        required: false
+        displayName: ta
+        type: array
+        items:
+          type: Tum
+      ec:
+        required: false
+        displayName: ec
+        type: array
+        items:
+          type: Ec
+      fe:
+        required: false
+        displayName: fe
+        type: array
+        items:
+          type: Fe
+      wm:
+        required: false
+        displayName: wm
+        type: array
+        items:
+          type: Wm
+  Atm:
+    displayName: Atm
+    type: object
+    properties:
+      cid:
+        required: false
+        displayName: cid
+        type: integer
+        format: int32
+      name_first:
+        required: false
+        displayName: name_first
+        type: string
+      name_last:
+        required: false
+        displayName: name_last
+        type: string
+      email:
+        required: false
+        displayName: email
+        type: string
+      rating:
+        required: false
+        displayName: rating
+        type: Rating
+  Datm:
+    displayName: Datm
+    type: object
+    properties:
+      cid:
+        required: false
+        displayName: cid
+        type: integer
+        format: int32
+      name_first:
+        required: false
+        displayName: name_first
+        type: string
+      name_last:
+        required: false
+        displayName: name_last
+        type: string
+      email:
+        required: false
+        displayName: email
+        type: string
+      rating:
+        required: false
+        displayName: rating
+        type: Rating
+  Tum:
+    displayName: Tum
+    type: object
+    properties:
+      cid:
+        required: false
+        displayName: cid
+        type: integer
+        format: int32
+      name_first:
+        required: false
+        displayName: name_first
+        type: string
+      name_last:
+        required: false
+        displayName: name_last
+        type: string
+      email:
+        required: false
+        displayName: email
+        type: string
+      rating:
+        required: false
+        displayName: rating
+        type: Rating
+  Ec:
+    displayName: Ec
+    type: object
+    properties:
+      cid:
+        required: false
+        displayName: cid
+        type: integer
+        format: int32
+      name_first:
+        required: false
+        displayName: name_first
+        type: string
+      name_last:
+        required: false
+        displayName: name_last
+        type: string
+      email:
+        required: false
+        displayName: email
+        type: string
+      rating:
+        required: false
+        displayName: rating
+        type: Rating
+  Fe:
+    displayName: Fe
+    type: object
+    properties:
+      cid:
+        required: false
+        displayName: cid
+        type: integer
+        format: int32
+      name_first:
+        required: false
+        displayName: name_first
+        type: string
+      name_last:
+        required: false
+        displayName: name_last
+        type: string
+      email:
+        required: false
+        displayName: email
+        type: string
+      rating:
+        required: false
+        displayName: rating
+        type: Rating
+  Wm:
+    displayName: Wm
+    type: object
+    properties:
+      cid:
+        required: false
+        displayName: cid
+        type: integer
+        format: int32
+      name_first:
+        required: false
+        displayName: name_first
+        type: string
+      name_last:
+        required: false
+        displayName: name_last
+        type: string
+      email:
+        required: false
+        displayName: email
+        type: string
+      rating:
+        required: false
+        displayName: rating
+        type: Rating
+/facilities:
+  get:
+    displayName: Facilities
+    description: Gets list of VATUSA facilities.
+    responses:
+      200:
+        description: OK
+        body:
+          application/json:
+            displayName: response
+            description: OK
+            type: FacilitiesResponse
+  /{id}:
+    uriParameters:
+      id:
+        required: true
+        displayName: id
+        description: 3 letter identifier of facility
+        type: string
+    get:
+      displayName: FacilitiesById
+      description: Get in-depth information about a facility.
+      responses:
+        200:
+          description: OK
+          body:
+            application/json:
+              displayName: response
+              description: OK
+              type: FacilitiesByIdResponse
+/auth:
+  /jwt:
+    get:
+      displayName: AuthJwt
+      description: Generates a JSON Web Token given a user's current session. Restricted to VATUSA only.
+      securedBy:
+      - auth
+      responses:
+        200:
+          description: OK
+          body:
+            application/json:
+              displayName: response
+              description: OK
+              type: AuthJwtResponse
+        401:
+          description: Not authorized
+          body:
+            application/json:
+              description: Not authorized
+              type: AuthJwtException
+  /user:
+    get:
+      displayName: AuthUser
+      description: Get information about the authenticated user.
+      securedBy:
+      - auth
+      responses:
+        200:
+          description: OK
+          body:
+            application/json:
+              displayName: response
+              description: OK
+              type: AuthUserResponse
