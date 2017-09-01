@@ -162,7 +162,7 @@ class PublicController
                     'join_date' => $user->facility_join,
                     'promotion_eligible' => ($user->promotionEligible()) ? "1" : "0",
                     'rating' => $user->rating,
-                    'rating_short' => Helper::ratingShortFromInt($user->rating)
+                    'rating_short' => RatingHelper::intToShort($user->rating)
                 ];
             }
         }
