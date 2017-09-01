@@ -40,20 +40,24 @@ class Kernel extends HttpKernel
         'semiprivate' => [
             \App\Http\Middleware\SemiPrivateCORS::class,
             \App\Http\Middleware\APIKey::class,
+            \App\Http\Middleware\RequireHTTPS::class,
         ],
 
         'public' => [
-            \App\Http\Middleware\PublicCORS::class
+            \App\Http\Middleware\PublicCORS::class,
+            \App\Http\Middleware\RequireHTTPS::class,
         ],
 
         'private' => [
             \App\Http\Middleware\PrivateCORS::class,
+            \App\Http\Middleware\RequireHTTPS::class,
         ],
 
         'api' => [
             \App\Http\Middleware\Subdomain::class,
             'throttle:60,1',
             'bindings',
+            \App\Http\Middleware\RequireHTTPS::class,
         ],
     ];
 
@@ -71,7 +75,5 @@ class Kernel extends HttpKernel
         'can' => \Illuminate\Auth\Middleware\Authorize::class,
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-        'publiccors' => \App\Http\Middleware\PublicCORS::class,
-
     ];
 }
