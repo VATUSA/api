@@ -1,0 +1,190 @@
+swagger: "2.0"
+info:
+  title: VATUSA API
+  description: |
+    Utilize the VATUSA API
+
+    The Private group requires JSON Web Tokens for all routes but /auth/jwt, which requires a valid session cookie.  These routes are specifically for vatusa.net only.
+
+    Semi-Private group requires a valid API Key passed as part of the query string.  ?apikey=()
+
+    Public group requires no authentication.
+
+    All calls must be via https://api.vatusa.net/v2.  Non-secured connections will be rejected.
+  version: "v2"
+  contact:
+    name: Data Services Manager
+    email: vatusa6@vatusa.net
+host: api.vatusa.net
+basePath: /v2
+schemes: [ https ]
+produces:
+- application/json
+tags:
+- name: Public
+  description: Access for all
+- name: SemiPrivate
+  description: Access for VATUSA Facilities only via API Key
+- name: Private
+  description: Access for VATUSA only via JWT or Session Cookie
+paths:
+  /auth/jwt:
+    get:
+      description: Generates a JSON Web Token given a user's current session. Restricted to VATUSA only.
+      tags:
+        - Private
+      security:
+        - Cookie: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              token:
+                type: "string"
+        '401':
+          description: Not authorized
+          schema:
+            type: object
+            properties:
+              status:
+                type: "string"
+              msg:
+                type: "string"
+  /auth/user:
+    get:
+      description: Get information about the authenticated user.
+      tags:
+        - Private
+      security:
+      - JWT: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              cid:
+                type: integer
+              name_first:
+                type: string
+              name_last:
+                type: string
+              email:
+                type: string
+              rating:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  short:
+                    type: string
+                  long:
+                    type: string
+              facility:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+  /facilities:
+    get:
+      description: Gets list of VATUSA facilities.
+      tags:
+        - Public
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              url:
+                type: string
+              region:
+                type: integer
+              active:
+                type: boolean
+  /facilities/{id}:
+    get:
+      description: Get in-depth information about a facility.
+      tags:
+        - Public
+      parameters:
+        - name: id
+          in: path
+          description: 3 letter identifier of facility
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: "#/definitions/Facility"
+securityDefinitions:
+  JWT:
+    type: apiKey
+    in: header
+    name: JWT
+  Cookie:
+    type: apiKey
+    name: Session Cookie
+    in: header
+  APIKey:
+    type: apiKey
+    in: query
+    name: apikey
+definitions:
+  Facility:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      url:
+        type: string
+      region:
+        type: integer
+      active:
+        type: boolean
+      staff:
+        type: object
+        properties:
+          atm:
+            $ref: "#/definitions/Staff"
+          datm:
+            $ref: "#/definitions/Staff"
+          ta:
+            $ref: "#/definitions/Staff"
+          ec:
+            $ref: "#/definitions/Staff"
+          fe:
+            $ref: "#/definitions/Staff"
+          wm:
+            $ref: "#/definitions/Staff"
+  Staff:
+    type: object
+    properties:
+      cid:
+        type: integer
+      name_first:
+        type: string
+      name_last:
+        type: string
+      email:
+        type: string
+      rating:
+        type: object
+        properties:
+          id:
+            type: integer
+          short:
+            type: string
+          long:
+            type: string
