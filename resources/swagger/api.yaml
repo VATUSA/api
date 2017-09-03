@@ -89,6 +89,106 @@ paths:
                     type: string
                   name:
                     type: string
+  /cbt/{fac}:
+    get:
+      description: Get Computer Based Training blocks for facility
+      tags:
+        - Public
+      parameters:
+        - name: fac
+          in: path
+          type: string
+          description: Facility 3 letter identifier
+          required: true
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              blocks:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    blockname:
+                      type: string
+                    access:
+                      type: string
+                      enum:
+                        - 'Senior Staff'
+                        - 'Staff'
+                        - 'Instructor'
+                        - 'C1'
+                        - 'S3'
+                        - 'S2'
+                        - 'S1'
+                        - 'All'
+        '404':
+          description: Facility not found
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+              msg:
+                type: string
+  /cbt/{fac}/{blockId}:
+    get:
+      description: Get Chapters associated with facility block
+      parameters:
+        - name: fac
+          in: path
+          type: string
+          description: Facility 3 letter identifier
+          required: true
+        - name: blockId
+          in: path
+          type: integer
+          description: Block ID number associated with facility
+          required: true
+      tags:
+        - Public
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              facId:
+                type: string
+              facName:
+                type: string
+              chapters:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    url:
+                      type: string
+        '404':
+          description: 'Not found'
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+              msg:
+                type: string
   /facilities:
     get:
       description: Gets list of VATUSA facilities.
@@ -126,6 +226,57 @@ paths:
           description: OK
           schema:
             $ref: "#/definitions/Facility"
+  /info/ace:
+    get:
+      description: Get list of ACE Team
+      tags:
+        - Public
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: "#/definitions/ACE"
+  /info/policies:
+    get:
+      description: Get current divisional policies
+      tags:
+        - Public
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: string
+                name:
+                  type: string
+                modifiedDate:
+                  type: string
+                url:
+                  type: string
+  /info/solo:
+    get:
+      description: Get list of solo certifications
+      tags:
+        - Public
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: "#/definitions/SoloCert"
+  /info/staff:
+    get:
+      description: Get list of Division Staff
+      tags:
+        - Public
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: "#/definitions/DivStaff"
 securityDefinitions:
   JWT:
     type: apiKey
@@ -140,6 +291,34 @@ securityDefinitions:
     in: query
     name: apikey
 definitions:
+  ACE:
+    type: array
+    items:
+      $ref: "#/definitions/Staff"
+  DivStaff:
+    type: array
+    items:
+      type: object
+      properties:
+        cid:
+          type: integer
+        name_first:
+          type: string
+        name_last:
+          type: string
+        email:
+          type: string
+        rating:
+          type: object
+          properties:
+            id:
+              type: integer
+            short:
+              type: string
+            long:
+              type: string
+        position:
+          type: string
   Facility:
     type: object
     properties:
@@ -168,6 +347,21 @@ definitions:
             $ref: "#/definitions/Staff"
           wm:
             $ref: "#/definitions/Staff"
+  SoloCert:
+    type: array
+    items:
+      type: object
+      properties:
+        cid:
+          type: integer
+        name_first:
+          type: string
+        name_last:
+          type: string
+        position:
+          type: string
+        validUntil:
+          type: string
   Staff:
     type: object
     properties:
