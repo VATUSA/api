@@ -6,6 +6,9 @@ use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Facility;
+use App\User;
+use App\Transfer;
 
 /**
  * Class TransferController
@@ -27,23 +30,20 @@ class TransferController extends Controller
 
         $transfers = Transfer::where('to', $facility->id)->where('status', 0)->get();
         $return['status'] = "success";
-        if (!$transfers) {
-            foreach ($transfers as $transfer) {
-                $userInfo = [];
-                $userInfo['id'] = $transfer->id;
-                $userInfo['cid'] = $transfer->cid;
-                $userInfo['fname'] = $transfer->user->fname;
-                $userInfo['lname'] = $transfer->user->lname;
-                $userInfo['rating'] = $transfer->user->rating;
-                $userInfo['rating_short'] = RatingHelper::intToShort($transfer->user->rating);
-                $userInfo['email'] = $transfer->user->email;
-                $userInfo['from_facility'] = $transfer->from;
-                $userInfo['reason'] = $transfer->reason;
-                $userInfo['submitted'] = $transfer->created_at->toDateString();
-                $return['transfers'][] = $userInfo;
-            }
-        } else {
-            $return['transfers'] = [];
+        $return['transfers'] = [];
+        foreach ($transfers as $transfer) {
+            $userInfo = [];
+            $userInfo['id'] = $transfer->id;
+            $userInfo['cid'] = $transfer->cid;
+            $userInfo['fname'] = $transfer->user->fname;
+            $userInfo['lname'] = $transfer->user->lname;
+            $userInfo['rating'] = $transfer->user->rating;
+            $userInfo['rating_short'] = RatingHelper::intToShort($transfer->user->rating);
+            $userInfo['email'] = $transfer->user->email;
+            $userInfo['from_facility'] = $transfer->from;
+            $userInfo['reason'] = $transfer->reason;
+            $userInfo['submitted'] = $transfer->created_at->toDateString();
+            $return['transfers'][] = $userInfo;
         }
 
         return encode_json($return);
@@ -56,7 +56,7 @@ class TransferController extends Controller
      * @return string
      */
     public function postTransfer(Request $request, $apikey, $id) {
-        $transfer = Transfers::find($id);
+        $transfer = Transfer::find($id);
         $return = [];
         if (!$transfer) {
             return generate_error("Transfer not found");

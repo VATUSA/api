@@ -47,12 +47,12 @@ class RatingHelper {
     ];
 
     public static function intToShort($rating) {
-        if (isset($ratings[$rating])) { return static::$ratings[$rating]; }
+        if (isset(static::$ratings[$rating])) { return static::$ratings[$rating]; }
         else { return false; }
     }
 
     public static function intToLong($rating) {
-        if (isset($rating_titles[$rating])) { return static::$rating_titles[$rating]; }
+        if (isset(static::$rating_titles[$rating])) { return static::$rating_titles[$rating]; }
         else { return false; }
     }
 

@@ -43,13 +43,13 @@ class SoloController extends Controller
      * @param $position
      * @return string
      */
-    public function postSolo(Request $request, $apikey, $cid, $position) {
+    public function postCert(Request $request, $apikey, $cid, $position) {
         if (!$cid || !$position) {
             return generate_error("Malformed or missing field");
         }
 
         $exp = $request->input("expires", null);
-        if (!$exp || !preg_match("/^\d{4}-\d{2}-\d{2}", $exp)) {
+        if (!$exp || !preg_match("/^\d{4}-\d{2}-\d{2}/", $exp)) {
             return generate_error("Malformed or missing field");
         }
 
@@ -73,14 +73,13 @@ class SoloController extends Controller
      * @param $position
      * @return string
      */
-    public function deleteSolo(Request $request, $apikey, $cid, $position) {
+    public function deleteCert(Request $request, $apikey, $cid, $position) {
         if (!$cid || !$position) {
             return generate_error("Malformed or missing field");
         }
 
         if (!isTest()) {
-            $solo = Solo::where('cid', $cid)->where('position', $position)->first();
-            $solo->delete();
+            $solo = SoloCert::where('cid', $cid)->where('position', $position)->delete();
         }
 
         $return = [

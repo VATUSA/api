@@ -10,7 +10,7 @@ Route::group(['prefix' => '{apikey}/', 'middleware' => 'semiprivate'], function 
 
 // Exam
     Route::get('exam/results/{cid}', 'ExamController@getUserResults')->where('cid', '[0-9]+');
-    Route::get('exam/result/{rid}', 'ExamController@getExamResults')->where('rid', '[0-9]+');
+    Route::get('exam/result/{rid}', 'ExamController@getExamResult')->where('rid', '[0-9]+');
 
 // Roster
     Route::get('roster', 'FacilityController@getRoster');
@@ -19,9 +19,9 @@ Route::group(['prefix' => '{apikey}/', 'middleware' => 'semiprivate'], function 
     Route::delete('roster/{fac}/{cid}', 'FacilityController@deleteRoster')->where('fac', '[A-Z]{3}')->where('cid', '[0-9]+');
 
 // Solo Certs
-    Route::get('solo/{cid}', 'SoloController@getSolo')->where('cid', '[0-9]+');
-    Route::post('solo/{cid}/{position}', 'SoloController@postSolo')->where('cid', '[0-9]+')->where("position", "[0-9A-Z_]+");
-    Route::delete('solo/{cid}/{position}', 'SoloController@deleteSolo')->where('cid', '[0-9]+')->where("position", "[0-9A-Z_]+");
+    Route::get('solo/{cid}', 'SoloController@getCerts')->where('cid', '[0-9]+');
+    Route::post('solo/{cid}/{position}', 'SoloController@postCert')->where('cid', '[0-9]+')->where("position", "[0-9A-Z_]+");
+    Route::delete('solo/{cid}/{position}', 'SoloController@deleteCert')->where('cid', '[0-9]+')->where("position", "[0-9A-Z_]+");
 
 // Transfer
     Route::get('transfer', 'TransferController@getTransfers');

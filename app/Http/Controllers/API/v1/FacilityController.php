@@ -6,6 +6,7 @@ use App\Helpers\FacilityHelper;
 use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
 use App\User;
+use Illuminate\Http\Request;
 
 /**
  * Class FacilityController
