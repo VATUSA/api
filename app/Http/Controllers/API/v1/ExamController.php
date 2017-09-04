@@ -33,7 +33,7 @@ class ExamController extends Controller
         $return['score'] = $result->score;
         $return['passed'] = ($result->passed ? true : false);
         $return['date'] = $result->date;
-        foreach($result->data->get() as $data) {
+        foreach($result->data as $data) {
             $d = [
                 'question' => $data->question,
                 'correct' => $data->correct,
