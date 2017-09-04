@@ -29,7 +29,7 @@ class SemiPrivateCORS
         $ip = $request->ip();
         $apikey = $request->apikey;
 
-        if ($apikey == "vatusa") {
+        if ($apikey != "vatusa") {
             if (Facility::where('apikey', $apikey)->where('ip', $ip)->count() < 1 &&
                 Facility::where('api_sandbox_key', $apikey)->where('api_sandbox_ip', $ip)->count() < 1) {
                 \Log::warning("API Unauthorized request from $apikey and $ip");
