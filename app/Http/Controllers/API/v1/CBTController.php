@@ -1,6 +1,11 @@
 <?php
 namespace App\Http\Controllers\API\v1;
 
+use App\Facility;
+use App\TrainingBlock;
+use App\TrainingChapter;
+use App\TrainingProgress;
+use App\User;
 
 /**
  * Class CBTController
