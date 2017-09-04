@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use App\Facility;
 use App\Helpers\AuthHelper;
+use App\User;
 
 class SemiPrivateCORS
 {
@@ -53,7 +54,8 @@ class SemiPrivateCORS
                     'url' => $request->fullUrl(),
                     'data' => ($request->has('test') ? "SANDBOX: " : "LIVE: ") . $data]);
         } else {
-            if (!AuthHelper::getAuthUser()) {
+            $user = AuthHelper::getAuthUser();
+            if (!($user instanceof User)) {
                 return response()->json(generate_error("Unauthorized", true), 401);
             }
         }
