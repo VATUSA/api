@@ -10,7 +10,7 @@ Route::group(['prefix' => '{apikey}/', 'middleware' => 'semiprivate'], function 
 
 // Exam
     Route::get('exam/results/{cid}', 'ExamController@getUserResults')->where('cid', '[0-9]+');
-    Route::get('exam/result/{rid}', 'ExamController@getExamResults')->where('rid', '[0-9]+');
+    Route::get('exam/result/{rid}', 'ExamController@getExamResult')->where('rid', '[0-9]+');
 
 // Roster
     Route::get('roster', 'FacilityController@getRoster');
