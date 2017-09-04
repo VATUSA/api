@@ -49,7 +49,8 @@ function log_action($cid, $msg) {
  * @param Request $request
  * @return bool
  */
-function isTest(Request $request) {
+function isTest(Request $request = null) {
+    if (!$request) { $request = request(); }
     if ($request->has('test')) {
         return true;
     }
