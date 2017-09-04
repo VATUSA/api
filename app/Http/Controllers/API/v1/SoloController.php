@@ -49,7 +49,7 @@ class SoloController extends Controller
         }
 
         $exp = $request->input("expires", null);
-        if (!$exp || !preg_match("/^\d{4}-\d{2}-\d{2}", $exp)) {
+        if (!$exp || !preg_match("/^\d{4}-\d{2}-\d{2}/", $exp)) {
             return generate_error("Malformed or missing field");
         }
 
