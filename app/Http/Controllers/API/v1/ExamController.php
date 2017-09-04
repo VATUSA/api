@@ -61,9 +61,9 @@ class ExamController extends Controller
         }
 
         $results = ExamResults::where('cid', $cid)->orderBy('date')->get();
-        $result = [];
-        $result['status'] = 'success';
-        $result['cid'] = $cid;
+        $data = [];
+        $data['status'] = 'success';
+        $data['cid'] = $cid;
         foreach ($results as $result) {
             $exam = [];
             $exam['id'] = $result->id;
@@ -72,9 +72,9 @@ class ExamController extends Controller
             $exam['score'] = $result->score;
             $exam['passed'] = ($result->passed ? true : false);
             $exam['date'] = $result->date;
-            $result['exams'][] = $exam;
+            $data['exams'][] = $exam;
         }
 
-        return encode_json($result);
+        return encode_json($data);
     }
 }
