@@ -1,7 +1,6 @@
 <?php
 namespace App\Helpers;
 
-use Tymon\JWTAuth\JWTAuth;
 use App\User;
 use App\Exceptions\JWTTokenException;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
