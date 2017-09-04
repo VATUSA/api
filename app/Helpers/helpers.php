@@ -23,10 +23,17 @@ function decode_json($data) {
 }
 
 /**
- * @param $msg
- * @return string
+ * @param string $msg
+ * @param bool $asArray
+ * @return string|array
  */
-function generate_error($msg) {
+function generate_error($msg, $asArray = false) {
+    if ($asArray) {
+        return [
+            'status' => 'error',
+            'msg' => $msg
+        ];
+    }
     return encode_json([
         'status' => 'error',
         'msg' => $msg
