@@ -10,7 +10,7 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 class AuthHelper {
     public static function getAuthUser() {
         try {
-            $user = JWTAuth::parseToken()->authenticate();
+            $user = \JWTAuth::parseToken()->authenticate();
         } catch (TokenExpiredException $e) {
             throw new JWTTokenException("token_expired");
         } catch (TokenInvalidException $e) {
@@ -25,7 +25,7 @@ class AuthHelper {
     }
 
     public static function validToken() {
-        if (JWTAuth::parseToken()->authenticate()) {
+        if (\JWTAuth::parseToken()->authenticate()) {
             return true;
         }
 
