@@ -1,0 +1,9 @@
+    get:
+      description: Get list of Division Staff
+      tags:
+        - Public
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: "#/definitions/DivStaff"

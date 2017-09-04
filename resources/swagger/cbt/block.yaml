@@ -1,0 +1,49 @@
+    get:
+      description: Get Chapters associated with facility block
+      parameters:
+        - name: fac
+          in: path
+          type: string
+          description: Facility 3 letter identifier
+          required: true
+        - name: blockId
+          in: path
+          type: integer
+          description: Block ID number associated with facility
+          required: true
+      tags:
+        - Public
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              facId:
+                type: string
+              facName:
+                type: string
+              chapters:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    url:
+                      type: string
+        '404':
+          description: 'Not found'
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+              msg:
+                type: string

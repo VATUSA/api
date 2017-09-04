@@ -1,0 +1,15 @@
+    get:
+      description: Get in-depth information about a facility.
+      tags:
+        - Public
+      parameters:
+        - name: id
+          in: path
+          description: 3 letter identifier of facility
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: "#/definitions/Facility"

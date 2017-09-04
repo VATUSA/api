@@ -1,0 +1,9 @@
+    get:
+      description: Get list of solo certifications
+      tags:
+        - Public
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: "#/definitions/SoloCert"
