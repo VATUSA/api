@@ -79,7 +79,7 @@ class SoloController extends Controller
         }
 
         if (!isTest()) {
-            $solo = Solo::where('cid', $cid)->where('position', $position)->first();
+            $solo = SoloCert::where('cid', $cid)->where('position', $position)->first();
             $solo->delete();
         }
 

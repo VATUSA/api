@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\v1;
 use App\Facility;
 use App\Helpers\FacilityHelper;
 use App\Helpers\RatingHelper;
+use Illuminate\Http\Request;
 
 /**
  * Class PublicController

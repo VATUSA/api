@@ -6,6 +6,7 @@ use App\TrainingBlock;
 use App\TrainingChapter;
 use App\TrainingProgress;
 use App\User;
+use Illuminate\Http\Request;
 
 /**
  * Class CBTController

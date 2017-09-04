@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API\v1;
 
 use App\ExamResults;
+use App\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 

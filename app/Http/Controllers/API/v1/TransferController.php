@@ -6,6 +6,9 @@ use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Facility;
+use App\User;
+use App\Transfer;
 
 /**
  * Class TransferController
