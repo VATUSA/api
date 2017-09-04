@@ -39,7 +39,6 @@ class Kernel extends HttpKernel
 
         'semiprivate' => [
             \App\Http\Middleware\SemiPrivateCORS::class,
-            \App\Http\Middleware\APIKey::class,
             \App\Http\Middleware\RequireHTTPS::class,
         ],
 

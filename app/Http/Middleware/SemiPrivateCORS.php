@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use App\Facility;
+use App\Helpers\AuthHelper;
 
 class SemiPrivateCORS
 {
@@ -25,10 +26,10 @@ class SemiPrivateCORS
             return $next($request);
         }
 
-        if ($request->has("apikey")) {
-            $ip = $request->ip();
-            $apikey = $request->apikey;
+        $ip = $request->ip();
+        $apikey = $request->apikey;
 
+        if ($apikey == "vatusa") {
             if (Facility::where('apikey', $apikey)->where('ip', $ip)->count() < 1 &&
                 Facility::where('api_sandbox_key', $apikey)->where('api_sandbox_ip', $ip)->count() < 1) {
                 \Log::warning("API Unauthorized request from $apikey and $ip");
@@ -52,7 +53,7 @@ class SemiPrivateCORS
                     'url' => $request->fullUrl(),
                     'data' => ($request->has('test') ? "SANDBOX: " : "LIVE: ") . $data]);
         } else {
-            if (!\AuthHelper::getAuthUser()) {
+            if (!AuthHelper::getAuthUser()) {
                 return response()->json(generate_error("Unauthorized", true), 401);
             }
         }

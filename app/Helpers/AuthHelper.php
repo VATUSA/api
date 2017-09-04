@@ -1,8 +1,12 @@
 <?php
+namespace App\Helpers;
 
-use Tymon\JWTAuth;
+use Tymon\JWTAuth\JWTAuth;
 use App\User;
 use App\Exceptions\JWTTokenException;
+use Tymon\JWTAuth\Exceptions\TokenExpiredException;
+use Tymon\JWTAuth\Exceptions\TokenInvalidException;
+use Tymon\JWTAuth\Exceptions\JWTException;
 
 class AuthHelper {
     public static function getAuthUser() {
@@ -10,12 +14,14 @@ class AuthHelper {
             if (!$user = JWTAuth::parseToken()->authenticate()) {
                 return response()->json(generate_error("user not found", true), 404);
             }
-        } catch (Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
+        } catch (TokenExpiredException $e) {
             throw new JWTTokenException("token_expired");
-        } catch (Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+        } catch (TokenInvalidException $e) {
             throw new JWTTokenException("token_invalid");
-        } catch (Tymon\JWTAuth\Exceptions\JWTException $e) {
+        } catch (JWTException $e) {
             return response()->json(generate_error("token_absent", true), 404);
+        } catch (Exception $e) {
+            return response()->json(generate_error("other exception", true), 500);
         }
 
         return $user;
