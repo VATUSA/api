@@ -56,7 +56,7 @@ class TransferController extends Controller
      * @return string
      */
     public function postTransfer(Request $request, $apikey, $id) {
-        $transfer = Transfers::find($id);
+        $transfer = Transfer::find($id);
         $return = [];
         if (!$transfer) {
             return generate_error("Transfer not found");
