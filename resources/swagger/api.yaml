@@ -11,6 +11,10 @@ info:
     Public group requires no authentication.
 
     All calls must be via https://api.vatusa.net/v2.  Non-secured connections will be rejected.
+
+    Date formats will be in accordance with ISO 8601 and in UTC.  API keys are for VATUSA facilities only and
+    are found on the VATUSA website under Facility Management.  API Key and IP address verification is conducted
+    on all Semi-Private requests.  Semi-Private requests originating from VATUSA have JWT verification conducted.
   version: "v2"
   contact:
     name: Data Services Manager
@@ -28,255 +32,31 @@ tags:
 - name: Private
   description: Access for VATUSA only via JWT or Session Cookie
 paths:
+# Private
   /auth/jwt:
-    get:
-      description: Generates a JSON Web Token given a user's current session. Restricted to VATUSA only.
-      tags:
-        - Private
-      security:
-        - Cookie: []
-      responses:
-        '200':
-          description: OK
-          schema:
-            type: object
-            properties:
-              token:
-                type: "string"
-        '401':
-          description: Not authorized
-          schema:
-            type: object
-            properties:
-              status:
-                type: "string"
-              msg:
-                type: "string"
+    $ref: './auth/jwt.yaml'
   /auth/user:
-    get:
-      description: Get information about the authenticated user.
-      tags:
-        - Private
-      security:
-      - JWT: []
-      responses:
-        '200':
-          description: OK
-          schema:
-            type: object
-            properties:
-              cid:
-                type: integer
-              name_first:
-                type: string
-              name_last:
-                type: string
-              email:
-                type: string
-              rating:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                  short:
-                    type: string
-                  long:
-                    type: string
-              facility:
-                type: object
-                properties:
-                  id:
-                    type: string
-                  name:
-                    type: string
+    $ref: './auth/user.yaml'
+# Semi-Private
+  /facility/{fac}/transfers:
+    $ref: './facilities/transfers.yaml'
+# Public
   /cbt/{fac}:
-    get:
-      description: Get Computer Based Training blocks for facility
-      tags:
-        - Public
-      parameters:
-        - name: fac
-          in: path
-          type: string
-          description: Facility 3 letter identifier
-          required: true
-      responses:
-        '200':
-          description: OK
-          schema:
-            type: object
-            properties:
-              id:
-                type: string
-              name:
-                type: string
-              blocks:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                    blockname:
-                      type: string
-                    access:
-                      type: string
-                      enum:
-                        - 'Senior Staff'
-                        - 'Staff'
-                        - 'Instructor'
-                        - 'C1'
-                        - 'S3'
-                        - 'S2'
-                        - 'S1'
-                        - 'All'
-        '404':
-          description: Facility not found
-          schema:
-            type: object
-            properties:
-              status:
-                type: string
-              msg:
-                type: string
+    $ref: './cbt/fac.yaml'
   /cbt/{fac}/{blockId}:
-    get:
-      description: Get Chapters associated with facility block
-      parameters:
-        - name: fac
-          in: path
-          type: string
-          description: Facility 3 letter identifier
-          required: true
-        - name: blockId
-          in: path
-          type: integer
-          description: Block ID number associated with facility
-          required: true
-      tags:
-        - Public
-      responses:
-        '200':
-          description: OK
-          schema:
-            type: object
-            properties:
-              id:
-                type: integer
-              name:
-                type: string
-              facId:
-                type: string
-              facName:
-                type: string
-              chapters:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                    name:
-                      type: string
-                    url:
-                      type: string
-        '404':
-          description: 'Not found'
-          schema:
-            type: object
-            properties:
-              status:
-                type: string
-              msg:
-                type: string
+    $ref: './cbt/block.yaml'
   /facilities:
-    get:
-      description: Gets list of VATUSA facilities.
-      tags:
-        - Public
-      responses:
-        '200':
-          description: OK
-          schema:
-            type: object
-            properties:
-              id:
-                type: string
-              name:
-                type: string
-              url:
-                type: string
-              region:
-                type: integer
-              active:
-                type: boolean
+    $ref: './facilities/list.yaml'
   /facilities/{id}:
-    get:
-      description: Get in-depth information about a facility.
-      tags:
-        - Public
-      parameters:
-        - name: id
-          in: path
-          description: 3 letter identifier of facility
-          required: true
-          type: string
-      responses:
-        '200':
-          description: OK
-          schema:
-            $ref: "#/definitions/Facility"
+    $ref: './facilities/info.yaml'
   /info/ace:
-    get:
-      description: Get list of ACE Team
-      tags:
-        - Public
-      responses:
-        '200':
-          description: OK
-          schema:
-            $ref: "#/definitions/ACE"
+    $ref: './info/ace.yaml'
   /info/policies:
-    get:
-      description: Get current divisional policies
-      tags:
-        - Public
-      responses:
-        '200':
-          description: OK
-          schema:
-            type: array
-            items:
-              type: object
-              properties:
-                id:
-                  type: string
-                name:
-                  type: string
-                modifiedDate:
-                  type: string
-                url:
-                  type: string
+    $ref: './info/policies.yaml'
   /info/solo:
-    get:
-      description: Get list of solo certifications
-      tags:
-        - Public
-      responses:
-        '200':
-          description: OK
-          schema:
-            $ref: "#/definitions/SoloCert"
+    $ref: './info/solo.yaml'
   /info/staff:
-    get:
-      description: Get list of Division Staff
-      tags:
-        - Public
-      responses:
-        '200':
-          description: OK
-          schema:
-            $ref: "#/definitions/DivStaff"
+    $ref: './info/staff.yaml'
 securityDefinitions:
   JWT:
     type: apiKey

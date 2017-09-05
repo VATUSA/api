@@ -1,0 +1,23 @@
+  get:
+    description: Generates a JSON Web Token given a user's current session. Restricted to VATUSA only.
+    tags:
+      - Private
+    security:
+      - Cookie: []
+    responses:
+      '200':
+        description: OK
+        schema:
+          type: object
+          properties:
+            token:
+              type: "string"
+      '401':
+        description: Not authorized
+        schema:
+          type: object
+          properties:
+            status:
+              type: "string"
+            msg:
+              type: "string"
