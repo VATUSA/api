@@ -40,6 +40,17 @@ class SSOController extends Controller
      * @param Request $request
      */
     public function getIndex(Request $request) {
+        if ($request->has("logout")) {
+            smfapi_logout();
+            \Auth::logout();
+            if (isset($_SERVER['HTTP_REFERER'])) {
+                header("Location: " . $_SERVER['HTTP_REFERER']);
+            } else {
+                header("Location: https://www.vatusa.net");
+            }
+            return;
+        }
+
         /* Lots to check here ... but this is our multi-point redirect */
         if ($request->has('home')) {
             $request->session()->put('return', env('SSO_RETURN_HOME'));
