@@ -232,7 +232,6 @@ return [
         'FacilityHelper' => App\Helpers\FacilityHelper::class,
         'JWTAuth' => Tymon\JWTAuth\Facades\JWTAuth::class,
         'JWTFactory' => Tymon\JWTAuth\Facades\JWTFactory::class
-
     ],
 
 ];

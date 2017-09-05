@@ -50,7 +50,7 @@ class Kernel extends HttpKernel
         ],
 
         'private' => [
-            \Barryvdh\Cors\HandleCors::class,
+
             \App\Http\Middleware\PrivateCORS::class,
             \App\Http\Middleware\RequireHTTPS::class,
         ],
