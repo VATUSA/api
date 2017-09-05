@@ -5,8 +5,6 @@ namespace App\Helpers;
 use App\Facility;
 use App\User;
 
-require_once(config('sso.forumapi',''));
-
 class ULSHelper
 {
     public static function generateToken($facility = "") {
@@ -30,6 +28,7 @@ class ULSHelper
     }
 
     public static function doHandleLogin($cid, $return) {
+        require_once(config('sso.forumapi',''));
         smfapi_login($cid, 14400);
         \Auth::loginUsingId($cid);
         header("Location: $return");

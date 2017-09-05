@@ -10,8 +10,6 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Classes\OAuth\SSO;
 
-require_once(config('sso.forumapi',''));
-
 /**
  * Class SSOController
  * @package App\Http\Controllers\Login
@@ -40,6 +38,7 @@ class SSOController extends Controller
      * @param Request $request
      */
     public function getIndex(Request $request) {
+        require_once(config('sso.forumapi',''));
         if ($request->has("logout")) {
             smfapi_logout();
             \Auth::logout();
