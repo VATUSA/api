@@ -109,7 +109,7 @@ class FacilityHelper
         }
 
         $roster = $facility->members()->orderby('rating', 'desc')->orderBy('lname', 'asc')->orderBy('fname', 'asc')->get();
-        Cache::put("facility.$facility.roster", $roster, 24 * 60);
+        Cache::put("facility.$facility.roster", $roster, env('CACHE_TIME_ROSTER', 10)); // low cache for v1 period
         return $roster;
     }
 }
