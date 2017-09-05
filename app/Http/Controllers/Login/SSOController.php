@@ -77,9 +77,7 @@ class SSOController extends Controller
             config('sso.return'),
             function($key, $secret, $url) use ($request) {
                 $request->session()->put("SSO", ['key' => $key, 'secret' => $secret]);
-                $request->session()->save();
-                \Log::info("Got key " . json_encode($request->session()->get("SSO")));
-                \Log::info("Session info " . json_encode($request->session()->all()));
+                $request->session()->save();        // THIS *SHOULDN'T BE NEEDED!!!  But ... it is.
                 header("Location: $url");
                 exit;
             }
@@ -93,8 +91,6 @@ class SSOController extends Controller
             echo "Login request cancelled."; exit;
         }
         $sso = $request->session()->get("SSO");
-        \Log::info("Got key " . json_encode($sso));
-        \Log::info("Session info " . json_encode($request->session()->all()));
         $this->sso->validate(
             $sso['key'],
             $sso['secret'],
