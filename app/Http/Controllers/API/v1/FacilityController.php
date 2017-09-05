@@ -20,10 +20,10 @@ class FacilityController
      * @param null $limit (ignored)
      * @return string
      */
-    public function getRoster($apikey, $facility, $ext = "json", $limit = null) {
+    public function getRoster($apikey, $facility = null, $ext = "json", $limit = null) {
         if (!$facility) {
-            $fac = Facility::where('apikey', $apikey)->first();
-            $facility = $fac->id;
+            $f= Facility::where('apikey', $apikey)->first();
+            $facility = $f->id;
         } else {
             $f = Facility::find($facility);
         }
