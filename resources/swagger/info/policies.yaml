@@ -1,0 +1,20 @@
+    get:
+      description: Get current divisional policies
+      tags:
+        - Public
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: string
+                name:
+                  type: string
+                modifiedDate:
+                  type: string
+                url:
+                  type: string
