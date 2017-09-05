@@ -48,7 +48,7 @@ Route::group(['middleware' => 'public'], function() {
     Route::get('roster/{fac},{limit}', 'PublicController@getRoster')->where(['fac' => '[A-Z][A-Z][A-Z]', 'ext' => '[A-Za-z]+', 'limit' => '\d+']);
     Route::get('roster/{fac}.{ext}', 'PublicController@getRoster')->where(['fac' => '[A-Z][A-Z][A-Z]', 'ext' => '[A-Za-z]+', 'limit' => '\d+']);
     Route::get('roster/{fac},{limit}.{ext}', 'PublicController@getRoster')->where(['fac' => '[A-Z][A-Z][A-Z]', 'ext' => '[A-Za-z]+', 'limit' => '\d+']);
-    Route::get('roster/{fac}', 'PublicController@getRoster')->where(['fac' => '[A-Z][A-Z][A-Z]', 'ext' => '[A-Za-z]+', 'limit' => '\d+']);
+    Route::get('roster/{fac}', 'PublicController@getRoster')->where(['fac' => '[A-Z][A-Z][A-Z]']);
 
     Route::get('planes', 'PublicController@getPublicPlanes');
 });

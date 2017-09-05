@@ -171,9 +171,9 @@ class PublicController
         if ($ext == "xml") {
             $xmldata = new \SimpleXMLElement('<?xml version="1.0"?><api></api>');
             static::array_to_xml($return, $xmldata);
-            echo $xmldata->asXML();
+            return $xmldata->asXML();
         } elseif ($ext == "json") {
-            echo encode_json($return);
+            return encode_json($return);
         }
     }
 
