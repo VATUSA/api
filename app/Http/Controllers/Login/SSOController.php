@@ -77,7 +77,9 @@ class SSOController extends Controller
         $this->sso->login(
             config('sso.return'),
             function($key, $secret, $url) {
-                session(['SSO' => compact('key', 'secret')]);
+                session(['SSO_key' => $key]);
+                session(['SSO_secret' => $secret]);
+                
                 header("Location: $url");
                 exit;
             }
@@ -90,10 +92,9 @@ class SSOController extends Controller
             $request->session()->forget("return");
             echo "Login request cancelled."; exit;
         }
-        $session = $request->session()->get("SSO");
         $this->sso->validate(
-            $session['key'],
-            $session['secret'],
+            session('SSO_key'),
+            session('SSO_secret'),
             $request->input('oauth_verifier'),
             function($user, $request) {
                 session()->forget("SSO");

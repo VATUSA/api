@@ -31,7 +31,7 @@ class ULSHelper
 
     public static function doHandleLogin($cid, $return) {
         smfapi_login($cid, 14400);
-        \Auth::login(User::find($cid));
+        \Auth::loginUsingId($cid);
         header("Location: $return");
     }
 }
