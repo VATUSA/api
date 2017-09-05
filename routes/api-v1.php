@@ -1,5 +1,5 @@
 <?php
-Route::group(['prefix' => '{apikey}/', 'middleware' => 'semiprivate'], function () {
+Route::group(['prefix' => '{apikey}/', 'middleware' => ['semiprivate'], function () {
 // CBT
     Route::get('cbt/block', 'CBTController@getCBTBlocks');
     Route::get('cbt/block/{id}', 'CBTController@getCBTChapters')->where('id', '[0-9]+');

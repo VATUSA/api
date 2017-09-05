@@ -79,7 +79,7 @@ class SSOController extends Controller
             function($key, $secret, $url) {
                 session(['SSO_key' => $key]);
                 session(['SSO_secret' => $secret]);
-                
+
                 header("Location: $url");
                 exit;
             }
