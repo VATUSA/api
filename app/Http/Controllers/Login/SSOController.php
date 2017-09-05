@@ -77,8 +77,9 @@ class SSOController extends Controller
             config('sso.return'),
             function($key, $secret, $url) use ($request) {
                 $request->session()->put("SSO", ['key' => $key, 'secret' => $secret]);
-                \Log::info("Got key " . session('SSO_key'));
-
+                $request->session()->save();
+                \Log::info("Got key " . json_encode($request->session()->get("SSO")));
+                \Log::info("Session info " . json_encode($request->session()->all()));
                 header("Location: $url");
                 exit;
             }
@@ -93,6 +94,7 @@ class SSOController extends Controller
         }
         $sso = $request->session()->get("SSO");
         \Log::info("Got key " . json_encode($sso));
+        \Log::info("Session info " . json_encode($request->session()->all()));
         $this->sso->validate(
             $sso['key'],
             $sso['secret'],
