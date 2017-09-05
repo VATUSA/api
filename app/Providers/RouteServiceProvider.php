@@ -67,12 +67,12 @@ class RouteServiceProvider extends ServiceProvider
     {
         if (env('APP_ENV') == "dev") {
             Route::domain("apidev.vatusa.net")
-                ->middleware("api")
+                ->middleware(["api","web"])
                 ->namespace($this->namespaceapi)
                 ->group(base_path("routes/api.php"));
         } else {
             Route::domain("api.vatusa.net")
-                ->middleware("api")
+                ->middleware(["api","web"])
                 ->namespace($this->namespaceapi)
                 ->group(base_path("routes/api.php"));
         }
