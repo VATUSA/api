@@ -38,16 +38,19 @@ class Kernel extends HttpKernel
         ],
 
         'semiprivate' => [
+            \Barryvdh\Cors\HandleCors::class,
             \App\Http\Middleware\SemiPrivateCORS::class,
             \App\Http\Middleware\RequireHTTPS::class,
         ],
 
         'public' => [
+            \Barryvdh\Cors\HandleCors::class,
             \App\Http\Middleware\PublicCORS::class,
             \App\Http\Middleware\RequireHTTPS::class,
         ],
 
         'private' => [
+            \Barryvdh\Cors\HandleCors::class,
             \App\Http\Middleware\PrivateCORS::class,
             \App\Http\Middleware\RequireHTTPS::class,
         ],
