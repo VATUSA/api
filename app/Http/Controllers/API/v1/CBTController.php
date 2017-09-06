@@ -20,7 +20,7 @@ class CBTController
      */
     public function getCBTBlocks($apikey)
     {
-        $facility = Facility::where('apikey', $apikey)->first();
+        $facility = Facility::where('apikey', $apikey)->orWhere('api_sandbox_key', $apikey)->first();
 
         $blocks = TrainingBlock::where('facility', $facility->id)->orderBy('order')->get();
         $data = [];
@@ -44,7 +44,7 @@ class CBTController
      */
     public function getCBTChapters($apikey, $blockid)
     {
-        $facility = Facility::where('apikey', $apikey)->first();
+        $facility = Facility::where('apikey', $apikey)->orWhere('api_sandbox_key', $apikey)->first();
 
         $block = TrainingBlock::find($blockid);
         if ($block == null || empty($block)) {
@@ -86,7 +86,7 @@ class CBTController
      */
     public function getCBTChapter($apikey, $chapterid)
     {
-        $facility = Facility::where('apikey', $apikey)->first();
+        $facility = Facility::where('apikey', $apikey)->orWhere('api_sandbox_key', $apikey)->first();
 
         $chapter = TrainingChapter::find($chapterid);
         if ($chapter == null || empty($chapter)) {
@@ -128,7 +128,7 @@ class CBTController
     {
         parse_str(file_get_contents("php://input"), $vars);
 
-        $facility = Facility::where('apikey', $apikey)->first();
+        $facility = Facility::where('apikey', $apikey)->orWhere('api_sandbox_key', $apikey)->first();
         $chapterid = $vars['chapterId'];
         $chapter = TrainingChapter::find($chapterid);
         if ($chapter == null || empty($chapter)) {

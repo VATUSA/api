@@ -22,7 +22,7 @@ class FacilityController
      */
     public function getRoster($apikey, $facility = null, $ext = "json", $limit = null) {
         if (!$facility) {
-            $f= Facility::where('apikey', $apikey)->first();
+            $f= Facility::where('apikey', $apikey)->orWhere('api_sandbox_key', $apikey)->first();
             $facility = $f->id;
         } else {
             $f = Facility::find($facility);
@@ -41,10 +41,10 @@ class FacilityController
         }
         if (!$error) {
             $return['status'] = "ok";
-            $return['staff'] = FacilityHelper::getFacilityStaff($facility);
-            $return['users'] = [];
+            $return['facility']['staff'] = FacilityHelper::getFacilityStaff($facility);
+            $return['facility']['roster'] = [];
             foreach (FacilityHelper::getRoster($facility) as $user) {
-                $return['users'][] = [
+                $return['facility']['roster'][] = [
                     'cid' => $user->cid,
                     'fname' => $user->fname,
                     'lname' => $user->lname,
