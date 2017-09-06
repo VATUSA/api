@@ -144,7 +144,7 @@ class ULSController extends Controller
             $position['long'] = "VATUSA Division Staff";
         }
 
-        $return = [
+        $return['user'] = [
             "cid" => $user->cid,
             "name_first" => $user->fname,
             "name_last" => $user->lname,

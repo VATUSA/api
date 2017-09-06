@@ -41,10 +41,10 @@ class FacilityController
         }
         if (!$error) {
             $return['status'] = "ok";
-            $return['staff'] = FacilityHelper::getFacilityStaff($facility);
-            $return['users'] = [];
+            $return['facility']['staff'] = FacilityHelper::getFacilityStaff($facility);
+            $return['facility']['roster'] = [];
             foreach (FacilityHelper::getRoster($facility) as $user) {
-                $return['users'][] = [
+                $return['facility']['roster'][] = [
                     'cid' => $user->cid,
                     'fname' => $user->fname,
                     'lname' => $user->lname,
@@ -61,7 +61,7 @@ class FacilityController
             static::array_to_xml($return, $xmldata);
             return $xmldata->asXML();
         } elseif ($ext == "json") {
-            return encode_json($return);
+            return response()->json($return);
         }
     }
 
