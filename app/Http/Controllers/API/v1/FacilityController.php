@@ -61,7 +61,7 @@ class FacilityController
             static::array_to_xml($return, $xmldata);
             return $xmldata->asXML();
         } elseif ($ext == "json") {
-            return response()->json($return);
+            return encode_json($return);
         }
     }
 
