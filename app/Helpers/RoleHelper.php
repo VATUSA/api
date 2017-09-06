@@ -46,9 +46,7 @@ class RoleHelper {
      * @return bool
      */
     public static function delete($facility, $cid, $role) {
-        $role = Role::where("facility", $facility)->where("cid", $cid)->where("role", $role)->get();
-        if (!$role) { return false; }
-        $role->delete();
+        $role = Role::where("facility", $facility)->where("cid", $cid)->where("role", $role)->delete();
         Cache::forget("role.$facility.$role");
         return true;
     }
@@ -60,7 +58,7 @@ class RoleHelper {
      * @return bool
      */
     public static function has($cid, $facility, $role) {
-        $role = Role::where("facility", $facility)->where("cid", $cid)->where("role", $role)->get();
+        $role = Role::where("facility", $facility)->where("cid", $cid)->where("role", $role)->count();
         if ($role) {
             return true;
         }
