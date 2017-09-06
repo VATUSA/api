@@ -22,7 +22,7 @@ class FacilityController
      */
     public function getRoster($apikey, $facility = null, $ext = "json", $limit = null) {
         if (!$facility) {
-            $f= Facility::where('apikey', $apikey)->first();
+            $f= Facility::where('apikey', $apikey)->orWhere('api_sandbox_key', $apikey)->first();
             $facility = $f->id;
         } else {
             $f = Facility::find($facility);
