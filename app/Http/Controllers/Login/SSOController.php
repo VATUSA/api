@@ -43,9 +43,9 @@ class SSOController extends Controller
             smfapi_logout();
             \Auth::logout();
             if (isset($_SERVER['HTTP_REFERER'])) {
-                return redirect($url);
+                return redirect($_SERVER['HTTP_REFERER']);
             } else {
-                return redirect($url);
+                return redirect(env('SSO_RETURN_HOME'));
             }
             return;
         }
