@@ -43,9 +43,9 @@ class SSOController extends Controller
             smfapi_logout();
             \Auth::logout();
             if (isset($_SERVER['HTTP_REFERER'])) {
-                return response()->header("Location", $_SERVER['HTTP_REFERER']);
+                return redirect($url);
             } else {
-                return response()->header("Location", env('SSO_RETURN_HOME'));
+                return redirect($url);
             }
             return;
         }
@@ -78,7 +78,7 @@ class SSOController extends Controller
             function($key, $secret, $url) use ($request) {
                 $request->session()->put("SSO", ['key' => $key, 'secret' => $secret]);
                 $request->session()->save();        // THIS *SHOULDN'T BE NEEDED!!!  But ... it is.
-                return response()->header("Location", $url);
+                return redirect($url);
             }
         );
     }
