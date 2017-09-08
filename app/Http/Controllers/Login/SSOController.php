@@ -45,7 +45,7 @@ class SSOController extends Controller
             if (isset($_SERVER['HTTP_REFERER'])) {
                 return redirect($_SERVER['HTTP_REFERER']);
             } else {
-                return redirect(env('SSO_RETURN_HOME'));
+                return redirect('https://www.vatusa.net');
             }
             return;
         }
@@ -73,7 +73,7 @@ class SSOController extends Controller
             return;
         }
 
-        $this->sso->login(
+        return $this->sso->login(
             config('sso.return'),
             function($key, $secret, $url) use ($request) {
                 $request->session()->put("SSO", ['key' => $key, 'secret' => $secret]);
