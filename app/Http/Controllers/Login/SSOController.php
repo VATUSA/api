@@ -105,6 +105,7 @@ class SSOController extends Controller
                     SMFHelper::updateData($user->id, $user->name_last, $user->name_first, $user->email);
                     SMFHelper::setPermissions($user->id);
                 } else {
+                    require_once(config('sso.forumapi',''));    // I really hate doing this, but requiring globally breaks Laravel
                     $r = randomPassword();
                     $regOptions = [
                         'member_name' => $user->id,
