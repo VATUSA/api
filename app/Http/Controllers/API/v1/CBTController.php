@@ -1,4 +1,4 @@
-<?php
+return <?php
 namespace App\Http\Controllers\API\v1;
 
 use App\Facility;
@@ -50,13 +50,13 @@ class CBTController
         if ($block == null || empty($block)) {
             $data['status'] = "error";
             $data['msg'] = "Training block not found.";
-            echo encode_json($data);
+            return encode_json($data);
             exit;
         }
         if ($block->facility != $facility->id) {
             $data['status'] = "error";
             $data['msg'] = "Access denied.";
-            echo encode_json($data);
+            return encode_json($data);
             exit;
         }
 
@@ -92,14 +92,14 @@ class CBTController
         if ($chapter == null || empty($chapter)) {
             $data['status'] = "error";
             $data['msg'] = "Chapter not found.";
-            echo encode_json($data);
+            return encode_json($data);
             exit;
         }
         $block = $chapter->block()->first();
         if ($block->facility != $facility->id) {
             $data['status'] = "error";
             $data['msg'] = "Access denied.";
-            echo encode_json($data);
+            return encode_json($data);
             exit;
         }
 
@@ -134,14 +134,14 @@ class CBTController
         if ($chapter == null || empty($chapter)) {
             $data['status'] = "error";
             $data['msg'] = "Chapter not found.";
-            echo encode_json($data);
+            return encode_json($data);
             exit;
         }
         $block = $chapter->block()->first();
         if ($block->facility != $facility->id) {
             $data['status'] = "error";
             $data['msg'] = "Access denied.";
-            echo encode_json($data);
+            return encode_json($data);
             exit;
         }
 
@@ -149,14 +149,14 @@ class CBTController
         if ($user == null || empty($user)) {
             $data['status'] = "error";
             $data['msg'] = "User not found or not specified";
-            echo encode_json($data);
+            return encode_json($data);
             exit;
         }
 
         if (TrainingProgress::where('cid', $cid)->where('chapterid', $chapterid)->count()) {
             $data['status'] = "error";
             $data['msg'] = "Already completed";
-            echo encode_json($data);
+            return encode_json($data);
             exit;
         }
 
