@@ -90,6 +90,15 @@ class SSOController extends Controller
             echo "Login request cancelled."; exit;
         }
         $sso = $request->session()->get("SSO");
+        if (!isset($sso['key']) || !$sso['key'] ||
+            !isset($sso['secret']) || !$sso['secret']) {
+            return response("Your client didn't return the proper session cookie.  You may need to close your browser and try again.", 401);
+        }
+
+        if (!$request->input('oauth_verifier')) {
+            return response("Missing CERT identification.  Cannot continue.", 401);
+        }
+
         $this->sso->validate(
             $sso['key'],
             $sso['secret'],
