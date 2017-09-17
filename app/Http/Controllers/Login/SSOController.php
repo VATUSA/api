@@ -117,7 +117,7 @@ class SSOController extends Controller
                     $r = randomPassword();
                     $regOptions = [
                         'member_name' => $user->id,
-                        'real_name' => $user->name_first . " " . $user->name_first,
+                        'real_name' => $user->name_first . " " . $user->name_last,
                         'email' => $user->email,
                         'password' => $r,
                         'password_check' => $r,
