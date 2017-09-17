@@ -107,7 +107,9 @@ class ULSController extends Controller
 
         $token = ULSToken::where("token", $request->get("token"))->first();
         if (!$token || $token->date->diffInSeconds(Carbon::Now()) >= 45) {
-            \DB::table("uls_tokens")->where("token", $token->token)->delete();
+            if ($token) {
+                \DB::table("uls_tokens")->where("token", $token->token)->delete();
+            }
             abort(400, "invalid token");
         }
         $user = User::find($token->cid);
