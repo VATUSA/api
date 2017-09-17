@@ -38,7 +38,7 @@ class ULSController extends Controller
             session(['dev' => true]);
         }
 
-        header("Location: " . env('ULS_LOGIN'));
+        return redirect(env('ULS_LOGIN'));
     }
 
     /**
@@ -83,7 +83,7 @@ class ULSController extends Controller
         $request->session()->forget("fac");
 
         if ($redirect) {
-            header("Location: $redirect?token=$token");
+            return redirect("$redirect?token=$token");
         } else {
             abort(500,"Facility doesn't have a return URL configured");
         }

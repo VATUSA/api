@@ -43,9 +43,9 @@ class SSOController extends Controller
             smfapi_logout();
             \Auth::logout();
             if (isset($_SERVER['HTTP_REFERER'])) {
-                header("Location: " . $_SERVER['HTTP_REFERER']);
+                return redirect($_SERVER['HTTP_REFERER']);
             } else {
-                header("Location: https://www.vatusa.net");
+                return redirect('https://www.vatusa.net');
             }
             return;
         }
@@ -73,13 +73,12 @@ class SSOController extends Controller
             return;
         }
 
-        $this->sso->login(
+        return $this->sso->login(
             config('sso.return'),
             function($key, $secret, $url) use ($request) {
                 $request->session()->put("SSO", ['key' => $key, 'secret' => $secret]);
                 $request->session()->save();        // THIS *SHOULDN'T BE NEEDED!!!  But ... it is.
-                header("Location: $url");
-                exit;
+                return redirect($url);
             }
         );
     }
@@ -91,6 +90,15 @@ class SSOController extends Controller
             echo "Login request cancelled."; exit;
         }
         $sso = $request->session()->get("SSO");
+        if (!isset($sso['key']) || !$sso['key'] ||
+            !isset($sso['secret']) || !$sso['secret']) {
+            return response("Your client didn't return the proper session cookie.  You may need to close your browser and try again.", 401);
+        }
+
+        if (!$request->input('oauth_verifier')) {
+            return response("Missing CERT identification.  Cannot continue.", 401);
+        }
+
         $this->sso->validate(
             $sso['key'],
             $sso['secret'],
