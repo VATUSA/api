@@ -7,8 +7,10 @@
 |
 */
 
-Route::get('/', 'SSOController@getIndex');
-Route::get('/return', 'SSOController@getReturn');
+Route::middleware(['login'])->group(function() {
+    Route::get('/', 'SSOController@getIndex');
+    Route::get('/return', 'SSOController@getReturn');
+});
 
 Route::prefix("/uls")->middleware(['login'])->group(function () {
     Route::get("login", "ULSController@getLogin");
