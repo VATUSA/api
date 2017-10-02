@@ -38,7 +38,7 @@ class ULSController extends Controller
             session(['dev' => true]);
         }
 
-        header("Location: " . env('ULS_LOGIN'));
+        return redirect(env('ULS_LOGIN'));
     }
 
     /**
@@ -83,7 +83,7 @@ class ULSController extends Controller
         $request->session()->forget("fac");
 
         if ($redirect) {
-            header("Location: $redirect?token=$token");
+            return redirect("$redirect?token=$token");
         } else {
             abort(500,"Facility doesn't have a return URL configured");
         }
@@ -107,7 +107,9 @@ class ULSController extends Controller
 
         $token = ULSToken::where("token", $request->get("token"))->first();
         if (!$token || $token->date->diffInSeconds(Carbon::Now()) >= 45) {
-            \DB::table("uls_tokens")->where("token", $token->token)->delete();
+            if ($token) {
+                \DB::table("uls_tokens")->where("token", $token->token)->delete();
+            }
             abort(400, "invalid token");
         }
         $user = User::find($token->cid);
@@ -144,7 +146,7 @@ class ULSController extends Controller
             $position['long'] = "VATUSA Division Staff";
         }
 
-        $return = [
+        $return['user'] = [
             "cid" => $user->cid,
             "name_first" => $user->fname,
             "name_last" => $user->lname,

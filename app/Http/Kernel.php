@@ -38,6 +38,10 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
 
+        'login' => [
+            \App\Http\Middleware\RequireHTTPS::class,
+        ],
+
         'semiprivate' => [
             \App\Http\Middleware\SemiPrivateCORS::class,
             \App\Http\Middleware\RequireHTTPS::class,

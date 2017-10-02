@@ -23,7 +23,7 @@ class TransferController extends Controller
      */
     public function getTransfers($apikey, $facility = null) {
         if (!$facility) {
-            $facility = Facility::where('apikey', $apikey)->first();
+            $facility = Facility::where('apikey', $apikey)->orWhere('api_sandbox_key', $apikey)->first();
         } else {
             $facility = Facility::find($facility);
         }
