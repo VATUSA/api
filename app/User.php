@@ -1,6 +1,8 @@
 <?php namespace App;
 
+use App\Helpers\EmailHelper;
 use App\Helpers\RatingHelper;
+use App\Helpers\RoleHelper;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Auth\Passwords\CanResetPassword;
@@ -194,6 +196,68 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 
         if ($this->rating >= RatingHelper::shortToInt("I1"))
             SMFHelper::createPost(7262, 82, "User Removal: " . $this->fullname() . " (" . RatingHelper::intToShort($this->rating) . ") from " . $facility, "User " . $this->fullname() . " (" . $this->cid . "/" . RatingHelper::intToShort($this->rating) . ") was removed from $facility and holds a higher rating.  Please check for demotion requirements.  [url=https://www.vatusa.net/mgt/controller/" . $this->cid . "]Member Management[/url]");
+    }
+
+    public function addToFacility($facility)
+    {
+        $oldfac = $this->facility;
+        $facility = Facility::find($facility);
+        $oldfac = Facility::find($oldfac);
+
+        $this->facility = $facility->id;
+        $this->facility_join = \DB::raw("NOW()");
+        $this->save();
+
+        if ($this->rating >= RatingHelper::shortToInt("I1") && $this->rating < RatingHelper::shortToInt("SUP")) {
+            SMFHelper::createPost(7262, 82, "User Addition: ".$this->fullname()." (".RatingHelper::intToShort($this->rating).") to ".$this->facility, "User ".$this->fullname()." (".$this->cid."/".RatingHelper::intToShort($this->rating).") was added to ".$this->facility." and holds a higher rating.\n\nPlease check for demotion requirements.\n\n[url=https://www.vatusa.net/mgt/controller/".$this->cid."]Member Management[/url]");
+        }
+
+        $fc = 0;
+
+        if ($oldfac->id != "ZZN" && $oldfac->id != "ZAE") {
+            if (RoleHelper::has($this->cid, $oldfac->id, "ATM") || RoleHelper::has($this->cid, $oldfac->id, "DATM")) {
+                EmailHelper::sendEmail(["vatusa" . $oldfac->region . "@vatusa.net"], "ATM or DATM discrepancy", "emails.transfers.atm", ["user" => $this, "oldfac" => $oldfac]);
+                $fc = 1;
+            }
+            elseif (RoleHelper::has($this->cid, $oldfac->id, "TA")) {
+                EmailHelper::sendEmail(["vatusa3@vatusa.net"], "TA discrepancy", "emails.transfers.ta", ["user" => $this, "oldfac" => $oldfac]);
+                $fc = 1;
+            }
+            elseif (RoleHelper::has($this->cid, $oldfac->id, "EC") || RoleHelper::has($this->cid, $oldfac->id, "FE") || RoleHelper::has($this->cid, $oldfac->id, "WM")) {
+                EmailHelper::sendEmail([$oldfac->id . "-atm@vatusa.net", $oldfac->id . "-datm@vatusa.net"], "Staff discrepancy", "emails.transfers.otherstaff", ["user" => $this, "oldfac" => $oldfac]);
+                $fc = 1;
+            }
+        }
+
+        if ($fc) {
+            SMFHelper::createPost(7262, 82, "Staff discrepancy on transfer: " . $this->fullname() . " (" . RatingHelper::intToShort($this->rating), "User " . $this->fullname() . " (" . $this->cid . "/" . RatingHelper::intToShort($this->rating) . ") was added to facility " . $this->facility . " but holds a staff position at " . $oldfac->id . ".\n\nPlease check for accuracy.\n\n[url=https://www.vatusa.net/mgt/controller/" . $this->cid . "]Member Management[/url] [url=https://www.vatusa.net/mgt/facility/" . $oldfac->id . "]Facility Management for Old Facility[/url] [url=https://www.vatusa.net/mgt/facility/" . $this->facility . "]Facility Management for New Facility[/url]");
+        }
+
+        if ($facility->active) {
+            $welcome = $facility->welcome_text;
+            $fac = $facility->id;
+            EmailHelper::sendWelcomeEmail(
+                [$this->email],
+                "Welcome to " . $facility->name,
+                'emails.user.welcome',
+                [
+                    'welcome' => $welcome,
+                    'fname' => $this->fname,
+                    'lname' => $this->lname
+                ]
+            );
+            EmailHelper::sendEmail([
+                "$fac-atm@vatusa.net",
+                "$fac-datm@vatusa.net",
+                "vatusa" . $facility->region . "@vatusa.net"
+            ], "User added to facility", "emails.user.addedtofacility", [
+                "name" => $this->fullname(),
+                "cid" => $this->cid,
+                "email" => $this->email,
+                "rating" => RatingHelper::intToShort($this->rating),
+                "facility" => $fac
+            ]);
+        }
     }
 }
 
