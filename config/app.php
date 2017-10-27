@@ -167,7 +167,6 @@ return [
          * Package Service Providers...
          */
         Barryvdh\Cors\ServiceProvider::class,
-        Tymon\JWTAuth\Providers\JWTAuthServiceProvider::class,
 
         /*
          * Application Service Providers...
