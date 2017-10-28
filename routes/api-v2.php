@@ -11,7 +11,17 @@ Route::group(['middleware' => 'auth:jwt,web', 'prefix' => '/auth'], function() {
             'expires_in' => \Auth::guard('jwt')->factory()->getTTL() * 60
         ]);
     });
-    Route::get('test', function() {
-       return "Hi " . \Auth::user()->fullname();
+    Route::get('token/refresh', function() {
+        $token = \Auth::guard('jwt')->refresh();
+        return response()->json([
+            'token' => $token,
+            'expires_in' => \Auth::guard('jwt')->factory()->getTTL() * 60
+        ]);
     });
+    Route::get('info', function() {
+        return \Auth::user()->toJson();
+    });
+});
+Route::group(['middleware' => 'auth:jwt', 'prefix' => '/exam'], function() {
+    Route::get('request', 'ExamController@getRequest');
 });
