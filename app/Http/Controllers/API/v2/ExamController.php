@@ -111,7 +111,7 @@ class ExamController extends Controller
             'reassign' => $exam->retake_period
         ];
 
-        if ($exam->passed) {
+        if ($result->passed) {
             $assign->delete();
             $fac = $exam->facility_id;
             if ($fac == "ZAE") { $fac = \Auth::user()->facility; }
