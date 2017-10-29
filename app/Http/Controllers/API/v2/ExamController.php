@@ -148,7 +148,7 @@ class ExamController extends Controller
         if (!$assign) abort(404, "Assignment has expired");
         $exam = Exam::find($assign->exam_id);
 
-        $assign = ExamAssignment::where('cid', \Auth::user()->cid)->where('exam_id', $exam)->first();
+        $assign = ExamAssignment::where('cid', \Auth::user()->cid)->where('exam_id', $exam->id)->first();
         if (!$assign) abort(404, "Exam not assigned");
 
         // @TODO if (!ExamHelper::examCBTComplete($exam))
