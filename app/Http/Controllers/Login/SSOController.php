@@ -69,8 +69,7 @@ class SSOController extends Controller
         if (\Auth::check()) {
             $return = $request->session()->get("return");
             $request->session()->forget("return");
-            ULSHelper::doHandleLogin(\Auth::user()->cid, $return);
-            return;
+            return ULSHelper::doHandleLogin(\Auth::user()->cid, $return);
         }
 
         return $this->sso->login(
