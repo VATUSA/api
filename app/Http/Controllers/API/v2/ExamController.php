@@ -22,7 +22,7 @@ class ExamController extends Controller
             abort(403, "Forbidden");
         }
 
-        \Cache::put('exam.queue.' . $ea->cid, $id);
+        \Cache::put('exam.queue.' . $ea->cid, $id, 60);
 
         //$request->session()->put('exam_queue', $id);
 
