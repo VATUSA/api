@@ -66,7 +66,7 @@ class RouteServiceProvider extends ServiceProvider
     protected function mapApiRoutes()
     {
         if (env('APP_ENV') == "dev") {
-            Route::domain("apidev.vatusa.net")
+            Route::domain("api.vatusa.dev")
                 ->middleware(["api","web"])
                 ->namespace($this->namespaceapi)
                 ->group(base_path("routes/api.php"));

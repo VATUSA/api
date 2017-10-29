@@ -22,7 +22,7 @@ class RequireHTTPS
      */
     public function handle($request, Closure $next)
     {
-        if (!$request->secure()) {
+        if (!$request->secure() && env('APP_ENV') != "dev") {
             throw new NotSecuredException("Connection not secured");
         }
 
