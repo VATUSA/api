@@ -16,7 +16,7 @@ class ExamController extends Controller
 {
     public function postQueue(Request $request, $id) {
         $ea = ExamAssignment::find($id);
-        if ($ea) abort(404, "Assignment not found");
+        if (!$ea) abort(404, "Assignment not found");
 
         if ($ea->cid != \Auth::user()->cid) {
             abort(403, "Forbidden");
