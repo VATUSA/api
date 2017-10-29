@@ -99,7 +99,7 @@ class SSOController extends Controller
             return response("Missing CERT identification.  Cannot continue.", 401);
         }
 
-        $this->sso->validate(
+        return $this->sso->validate(
             $sso['key'],
             $sso['secret'],
             $request->input('oauth_verifier'),
@@ -150,7 +150,7 @@ class SSOController extends Controller
                     }
                 }
 
-                ULSHelper::doHandleLogin($user->id, $return);
+                return ULSHelper::doHandleLogin($user->id, $return);
             }
         );
     }
