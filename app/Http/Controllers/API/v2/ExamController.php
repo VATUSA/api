@@ -22,7 +22,9 @@ class ExamController extends Controller
             abort(403, "Forbidden");
         }
 
-        $request->session()->put('exam_queue', $id);
+        \Cache::put('exam.queue.' . $ea->cid, $id);
+
+        //$request->session()->put('exam_queue', $id);
 
         return response()->json(['status' => 'OK']);
     }
@@ -141,9 +143,10 @@ class ExamController extends Controller
     }
 
     public function getRequest(Request $request) {
-        $assignment = $request->session()->get('exam_queue', null);
-        if (!$assignment) abort(404, "No assignment queued");
-        $exam = Exam::find($assignment->exam_id);
+        if (!\Cache::has('exam.queue.' . \Auth::user()->cid)) abort(404, "No assignment queued");
+        $assign = ExamAssignment::find(\Cache::get('exam.queue.' . \Auth::user()->cid));
+        if (!$assign) abort(404, "Assignment has expired");
+        $exam = Exam::find($assign->exam_id);
 
         $assign = ExamAssignment::where('cid', \Auth::user()->cid)->where('exam_id', $exam)->first();
         if (!$assign) abort(404, "Exam not assigned");
