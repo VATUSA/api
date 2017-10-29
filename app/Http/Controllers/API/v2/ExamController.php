@@ -32,12 +32,14 @@ class ExamController extends Controller
                 'type' => $question->type
             ];
             if ($question->type == 0) {
-                $questiontemp['a'] = preg_replace("/\r?\n/", '<br>', $question->answer);
-                $questiontemp['b'] = preg_replace("/\r?\n/", '<br>', $question->alt1);
-                $questiontemp['c'] = preg_replace("/\r?\n/", '<br>', $question->alt2);
-                $questiontemp['d'] = preg_replace("/\r?\n/", '<br>', $question->alt3);
+                $order = ['one','two','three','four']; shuffle($order);
+                $questiontemp['one'] = preg_replace("/\r?\n/", '<br>', $question->answer);
+                $questiontemp['two'] = preg_replace("/\r?\n/", '<br>', $question->alt1);
+                $questiontemp['three'] = preg_replace("/\r?\n/", '<br>', $question->alt2);
+                $questiontemp['four'] = preg_replace("/\r?\n/", '<br>', $question->alt3);
+                $questiontemp['order'] = "[" . implode(",", $order) . "]";
             } else {
-                $questiontemp['a'] = $question->answer;
+                $questiontemp['one'] = $question->answer;
             }
 
             $json['questions'][] = $questiontemp;
