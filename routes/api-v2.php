@@ -24,4 +24,5 @@ Route::group(['middleware' => 'auth:jwt,web', 'prefix' => '/auth'], function() {
 });
 Route::group(['middleware' => 'auth:jwt', 'prefix' => '/exam'], function() {
     Route::get('request', 'ExamController@getRequest');
+    Route::post('submit', 'ExamController@postSubmit');
 });
