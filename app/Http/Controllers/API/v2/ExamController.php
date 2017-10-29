@@ -117,7 +117,7 @@ class ExamController extends Controller
             $assign->delete();
             $fac = $exam->facility_id;
             if ($fac == "ZAE") { $fac = \Auth::user()->facility; }
-            //EmailHelper::sendEmailFacilityTemplate($to, "Exam Passed", $fac, "exampassed", $data);
+            EmailHelper::sendEmailFacilityTemplate($to, "Exam Passed", $fac, "exampassed", $data);
             if ($exam->id == config('exams.BASIC')) {
                 \Auth::user()->flag_needbasic = 0;
                 \Auth::user()->save();
@@ -136,7 +136,7 @@ class ExamController extends Controller
             $assign->delete();
             $fac = $exam->facility_id;
             if ($fac == "ZAE") { $fac = \Auth::user()->facility; }
-            //EmailHelper::sendEmailFacilityTemplate($to, "Exam Not Passed", $fac, "examfailed", $data);
+            EmailHelper::sendEmailFacilityTemplate($to, "Exam Not Passed", $fac, "examfailed", $data);
 
             return response()->json(['results' => "Not Passed."]);
         }
