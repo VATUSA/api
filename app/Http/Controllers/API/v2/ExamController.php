@@ -45,8 +45,6 @@ class ExamController extends Controller
         $answers = json_decode(base64_decode($request->input('answers')), true);
         $questions = json_decode(base64_decode($payloads[0]), true);
 
-        \Log::info(json_encode($answers));
-
         // Verify assignment
         $assign = ExamAssignment::where('cid', \Auth::user()->cid)->where('exam_id', $questions['id'])->first();
         if (!$assign) abort(400, "Exam not assigned.");
