@@ -69,13 +69,13 @@ class ExamController extends Controller
             $erd->question = $question['question'];
             $erd->correct = $question['one'];
             $erd->is_correct = 0;
-            if ($answers[$id] == "one") {
+            if (isset($answers[$id]) && $answers[$id] == "one") {
                 $erd->is_correct = 1;
                 $erd->selected = $question['one'];
                 $correct++;
             }
             else {
-                $erd->selected = $question[$answers[$id]];
+                $erd->selected = isset($answers[$id]) ? $question[$answers[$id]] : '';
             }
             $erd->save();
         }
