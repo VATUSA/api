@@ -22,6 +22,9 @@ Route::group(['middleware' => 'auth:jwt,web', 'prefix' => '/auth'], function() {
         return \Auth::user()->toJson();
     });
 });
+Route::group(['middleware' => 'auth:web,jwt', 'prefix' => '/exam'], function() {
+    Route::post('queue/{id}', 'ExamController@getQueue');
+});
 Route::group(['middleware' => 'auth:jwt', 'prefix' => '/exam'], function() {
     Route::get('request', 'ExamController@getRequest');
     Route::post('submit', 'ExamController@postSubmit');

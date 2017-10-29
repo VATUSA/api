@@ -14,6 +14,19 @@ use App\Exam;
 
 class ExamController extends Controller
 {
+    public function postQueue(Request $request, $id) {
+        $ea = ExamAssignment::find($id);
+        if ($ea) abort(404, "Assignment not found");
+
+        if ($ea->cid != \Auth::user()->cid) {
+            abort(403, "Forbidden");
+        }
+
+        $request->session()->put('exam_queue', $id);
+
+        return response()->json(['status' => 'OK']);
+    }
+
     public function postSubmit(Request $request) {
         // Make sure all is there
         if (!$request->has('payload') || !$request->has('answers')) {
@@ -128,8 +141,9 @@ class ExamController extends Controller
     }
 
     public function getRequest(Request $request) {
-        // $exam = Session::get();  -- get from session, match assignment with exam..
-        $exam = 5;
+        $assignment = $request->session()->get('exam_queue', null);
+        if (!$assignment) abort(404, "No assignment queued");
+        $exam = Exam::find($assignment->exam_id);
 
         $assign = ExamAssignment::where('cid', \Auth::user()->cid)->where('exam_id', $exam)->first();
         if (!$assign) abort(404, "Exam not assigned");
