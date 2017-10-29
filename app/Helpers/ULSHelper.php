@@ -31,6 +31,6 @@ class ULSHelper
         require_once(config('sso.forumapi',''));
         smfapi_login($cid, 14400);
         \Auth::loginUsingId($cid);
-        header("Location: $return");
+        return redirect($return);
     }
 }
