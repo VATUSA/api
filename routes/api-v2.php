@@ -1,8 +1,4 @@
 <?php
-Route::get('/llllll', function() {
-    \Auth::loginUsingId(876594);
-    return "OK";
-});
 Route::group(['middleware' => 'auth:jwt,web', 'prefix' => '/auth'], function() {
     Route::get('token', function() {
         $token = \Auth::guard('jwt')->login(\Auth::user());
@@ -23,7 +19,7 @@ Route::group(['middleware' => 'auth:jwt,web', 'prefix' => '/auth'], function() {
     });
 });
 Route::group(['middleware' => 'auth:web,jwt', 'prefix' => '/exam'], function() {
-    Route::post('queue/{id}', 'ExamController@getQueue');
+    Route::post('queue/{id}', 'ExamController@postQueue');
 });
 Route::group(['middleware' => 'auth:jwt', 'prefix' => '/exam'], function() {
     Route::get('request', 'ExamController@getRequest');
