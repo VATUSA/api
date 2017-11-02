@@ -35,26 +35,25 @@ class ExamController extends Controller
             abort(400, "Missing data");
         }
 
+        // Replace ALL spaces with +'s in payload
+        $payload = $request->input('payload');
+        $payload = str_replace(" ", "+", $payload);
+
+        // Extract payload and verify signature, should prevent tampering
+        $payloads = explode(".", $payload);
+        if (sha1(env('EXAM_SECRET') . '$' . \Auth::user()->cid . '$' . base64_decode($payloads[0])) != $payloads[1]) {
+            abort(400, "Signature doesn't match payload");
+        }
+
         $fh = fopen(storage_path('/logs/exam.debug'), 'a');
         fwrite($fh, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
         fwrite($fh, '[' . \Carbon\Carbon::now() . '] postSubmit(): ' . \Auth::user()->cid . ' post data: ' . json_encode($_POST) . "\n");
-
-        // Extract payload and verify signature, should prevent tampering
-        $payload = $request->input('payload');
-        $payloads = explode(".", $payload);
-        fwrite($fh, "--- Payload: $payload, payload[0]: $payloads[0] decoded: " . base64_decode($payloads[0]) . ", payload[1]: $payloads[1]\n");
-        fwrite($fh, "--- Payload array: " . json_encode($payloads) . "\n");
-        fwrite($fh, "--- Expected signature: " . sha1(env('EXAM_SECRET') . '$' . \Auth::user()->cid . '$' . base64_decode($payloads[0])) . " vs $payloads[1]\n");
-        if (sha1(env('EXAM_SECRET') . '$' . \Auth::user()->cid . '$' . base64_decode($payloads[0])) != $payloads[1]) {
-            \Log::info("(" . \Auth::user()->cid . ") Got bad signature from payload.  Payload: " . base64_decode($payloads[0]) . ", signature given $payloads[1] and signature expected " . sha1(env('EXAM_SECRET') . '$' . \Auth::user()->cid . '$' . base64_decode($payloads[0])));
-            fwrite($fh, "--- !!! Didn't match\n");
-            abort(400, "Signature doesn't match payload");
-        }
-        fwrite($fh, "--- Answers: " . base64_decode($request->input("answers")) . "\n");
-        fwrite($fh, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-        fclose($fh);
         $answers = json_decode(base64_decode($request->input('answers')), true);
         $questions = json_decode(base64_decode($payloads[0]), true);
+        fwrite($fh, "--- Questions: " . json_encode($questions) . "\n");
+        fwrite($fh, "--- Answers: " . json_encode($answers) . "\n");
+        fwrite($fh, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+        fclose($fh);
 
         // Verify assignment
         $assign = ExamAssignment::where('cid', \Auth::user()->cid)->where('exam_id', $questions['id'])->first();
