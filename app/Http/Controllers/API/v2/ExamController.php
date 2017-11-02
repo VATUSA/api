@@ -44,7 +44,7 @@ class ExamController extends Controller
         $payloads = explode(".", $payload);
         fwrite($fh, "--- Payload: $payload, payload[0]: $payloads[0] decoded: " . base64_decode($payloads[0]) . ", payload[1]: $payloads[1]\n");
         fwrite($fh, "--- Payload array: " . json_encode($payloads) . "\n");
-        fwrite($fh, "--- Expected signature: " . sha1(env('EXAM_SECRET') . '$' . \Auth::user()->cid . '$' . base64_decode($payload[0])) . "\n");
+        fwrite($fh, "--- Expected signature: " . sha1(env('EXAM_SECRET') . '$' . \Auth::user()->cid . '$' . base64_decode($payloads[0])) . " vs $payloads[1]\n");
         if (sha1(env('EXAM_SECRET') . '$' . \Auth::user()->cid . '$' . base64_decode($payloads[0])) != $payloads[1]) {
             \Log::info("(" . \Auth::user()->cid . ") Got bad signature from payload.  Payload: " . base64_decode($payloads[0]) . ", signature given $payloads[1] and signature expected " . sha1(env('EXAM_SECRET') . '$' . \Auth::user()->cid . '$' . base64_decode($payloads[0])));
             fwrite($fh, "--- !!! Didn't match\n");
