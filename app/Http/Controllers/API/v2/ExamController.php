@@ -39,7 +39,7 @@ class ExamController extends Controller
         $payload = $request->input('payload');
         $payloads = explode(".", $payload);
         if (sha1(env('EXAM_SECRET') . '$' . \Auth::user()->cid . '$' . base64_decode($payloads[0])) != $payloads[1]) {
-            \Log::info("( " . \Auth::user()->cid . ") Got bad signature from payload.  Payload: $payloads[0], signature given $payloads[1] and signature expected " . sha1(env('EXAM_SECRET') . '$' . \Auth::user()->cid . '$' . base64_decode($payloads[0])));
+            \Log::info("(" . \Auth::user()->cid . ") Got bad signature from payload.  Payload: " . base64_decode($payloads[0]) . ", signature given $payloads[1] and signature expected " . sha1(env('EXAM_SECRET') . '$' . \Auth::user()->cid . '$' . base64_decode($payloads[0])));
             abort(400, "Signature doesn't match payload");
         }
 
