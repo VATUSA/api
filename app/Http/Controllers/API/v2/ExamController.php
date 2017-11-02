@@ -35,14 +35,22 @@ class ExamController extends Controller
             abort(400, "Missing data");
         }
 
+        $fh = fopen(storage_path('/logs/exam.debug'), 'a');
+        fwrite($fh, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+        fwrite($fh, '[' . \Carbon\Carbon::now() . '] postSubmit(): ' . \Auth::user()->cid . ' post data: ' . json_encode($_POST) . "\n");
+
         // Extract payload and verify signature, should prevent tampering
         $payload = $request->input('payload');
         $payloads = explode(".", $payload);
+        fwrite($fh, "--- Payload: $payload, payload[0]: $payload[0] decoded: " . base64_decode($payload[0]) . ", payload[1]: $payload[1]\n");
+        fwrite($fh, "--- Expected signature: " . sha1(env('EXAM_SECRET') . '$' . \Auth::user()->cid . '$' . base64_decode($payload[0])) . "\n");
         if (sha1(env('EXAM_SECRET') . '$' . \Auth::user()->cid . '$' . base64_decode($payloads[0])) != $payloads[1]) {
             \Log::info("(" . \Auth::user()->cid . ") Got bad signature from payload.  Payload: " . base64_decode($payloads[0]) . ", signature given $payloads[1] and signature expected " . sha1(env('EXAM_SECRET') . '$' . \Auth::user()->cid . '$' . base64_decode($payloads[0])));
+            fwrite($fh, "--- !!! Didn't match\n");
             abort(400, "Signature doesn't match payload");
         }
-
+        fwrite($fh, "--- Answers: " . base64_decode($request->input("answers")) . "\n");
+        fclose($fh);
         $answers = json_decode(base64_decode($request->input('answers')), true);
         $questions = json_decode(base64_decode($payloads[0]), true);
 
@@ -186,6 +194,11 @@ class ExamController extends Controller
         $json['numQuestions'] = $x;
         $json = json_encode($json, JSON_HEX_APOS | JSON_NUMERIC_CHECK);
         $sig = sha1(env('EXAM_SECRET') . '$' . \Auth::user()->cid . '$' . $json);
+        $fh = fopen(storage_path('/logs/exam.debug'), 'a');
+        fwrite($fh, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+        fwrite($fh, '[' . \Carbon\Carbon::now() . '] getRequest(): ' . \Auth::user()->cid . " signature $sig payload $json\n");
+        fwrite($fh, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+        fclose($fh);
         \Log::info("(" . \Auth::user()->cid . ") Got request, generating payload, signature $sig payload $json");
         return response()->json([
             'payload' => base64_encode($json) . "." . $sig
