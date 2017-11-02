@@ -51,6 +51,7 @@ class ExamController extends Controller
             abort(400, "Signature doesn't match payload");
         }
         fwrite($fh, "--- Answers: " . base64_decode($request->input("answers")) . "\n");
+        fwrite($fh, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
         fclose($fh);
         $answers = json_decode(base64_decode($request->input('answers')), true);
         $questions = json_decode(base64_decode($payloads[0]), true);
@@ -122,7 +123,7 @@ class ExamController extends Controller
         ];
 
         if ($result->passed) {
-            $assign->delete();
+            //$assign->delete();
             $fac = $exam->facility_id;
             if ($fac == "ZAE") { $fac = \Auth::user()->facility; }
             EmailHelper::sendEmailFacilityTemplate($to, "Exam Passed", $fac, "exampassed", $data);
@@ -141,7 +142,7 @@ class ExamController extends Controller
                 $reassign->reassign_date = \Carbon\Carbon::now()->addDays($exam->retake_period);
                 $reassign->save();
             }
-            $assign->delete();
+            //$assign->delete();
             $fac = $exam->facility_id;
             if ($fac == "ZAE") { $fac = \Auth::user()->facility; }
             EmailHelper::sendEmailFacilityTemplate($to, "Exam Not Passed", $fac, "examfailed", $data);
@@ -198,6 +199,7 @@ class ExamController extends Controller
         $fh = fopen(storage_path('/logs/exam.debug'), 'a');
         fwrite($fh, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
         fwrite($fh, '[' . \Carbon\Carbon::now() . '] getRequest(): ' . \Auth::user()->cid . " signature $sig payload $json\n");
+        fwrite($fh, "--- Base64'd payload: " . base64_encode($json));
         fwrite($fh, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
         fclose($fh);
         \Log::info("(" . \Auth::user()->cid . ") Got request, generating payload, signature $sig payload $json");
