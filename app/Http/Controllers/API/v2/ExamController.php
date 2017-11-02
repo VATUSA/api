@@ -83,7 +83,11 @@ class ExamController extends Controller
                 $correct++;
             }
             else {
-                $erd->selected = isset($answers[$id]) ? $question[$answers[$id]] : '';
+                if ($question['type'] == 1) {
+                    $erd->selected = ($question['one'] == "True") ? "False" : "True";
+                } else {
+                    $erd->selected = isset($answers[$id]) ? $question[$answers[$id]] : '';
+                }
             }
             $erd->save();
         }
