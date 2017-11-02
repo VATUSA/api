@@ -62,7 +62,7 @@ class SSOController extends Controller
         } elseif ($request->has('uls')) {
             $request->session()->put('return', env('SSO_RETURN_ULS'));
         } elseif ($request->has('exam')) {
-            $request->session()->put('exam', env('SSO_RETURN_EXAM', 'https://www.vatusa.net/exam/0'));
+            $request->session()->put('return', env('SSO_RETURN_EXAM', 'https://www.vatusa.net/exam/0'));
         } else {
             $request->session()->put('return', env('SSO_RETURN_FORUMS'));
         }
