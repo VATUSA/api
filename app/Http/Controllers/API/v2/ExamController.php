@@ -126,7 +126,7 @@ class ExamController extends Controller
         ];
 
         if ($result->passed) {
-            //$assign->delete();
+            $assign->delete();
             $fac = $exam->facility_id;
             if ($fac == "ZAE") { $fac = \Auth::user()->facility; }
             EmailHelper::sendEmailFacilityTemplate($to, "Exam Passed", $fac, "exampassed", $data);
@@ -145,7 +145,7 @@ class ExamController extends Controller
                 $reassign->reassign_date = \Carbon\Carbon::now()->addDays($exam->retake_period);
                 $reassign->save();
             }
-            //$assign->delete();
+            $assign->delete();
             $fac = $exam->facility_id;
             if ($fac == "ZAE") { $fac = \Auth::user()->facility; }
             EmailHelper::sendEmailFacilityTemplate($to, "Exam Not Passed", $fac, "examfailed", $data);
