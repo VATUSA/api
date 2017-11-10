@@ -123,4 +123,19 @@ class EmailHelper {
         $welcome = preg_replace("/%lname%/", $data['lname'], $welcome);
         static::sendEmail($email, $subject, $template, ['welcome' => $welcome]);
     }
+
+    /**
+     * @param $address
+     * @return int|string
+     */
+    public static function getType($address) {
+        if(\DB::connection("email")->table("virtual_users")->where("email", $address)->count() < 1) {
+            if (\DB::connection("email")->table("virtual_aliases")->where("source", $address)->count() < 1) {
+                return -1;
+            } else {
+                return "Forward";
+            }
+            return "Full";
+        }
+    }
 }
