@@ -12,27 +12,119 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Exam;
 
-class ExamController extends Controller
+class ExamController extends APIController
 {
-    public function postQueue(Request $request, $id) {
+
+    /**
+     * @param Request $request
+     * @param $examId
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @SWG\Post(
+     *     path="/exam/queue/{examId}",
+     *     summary="Add exam to queue for the VATUSA Exam Center",
+     *     description="Sets the exam as the queued exam for VEC",
+     *     produces={"application/json"},
+     *     tags={"exam"},
+     *     security={"jwt"},
+     *     @SWG\Parameter(
+     *         description="Exam ID to place in queue",
+     *         in="path",
+     *         name="examId",
+     *         required=true,
+     *         type="integer",
+     *         format="int64"
+     *     ),
+     *     @SWG\Parameter(description="JWT Token", in="header", name="bearer", required=true, type="string"),
+     *     @SWG\Response(
+     *         response="404",
+     *         description="Exam assignment not found",
+     *         @SWG\Schema(
+     *             ref="#/definitions/error"
+     *         ),
+     *         examples={
+     *             "application/json":{
+     *               "status" = "error",
+     *               "message" = "Not Found"
+     *             }
+     *        },
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden -- usually the exam assignment doesn't belong to the authenticated user",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","message"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="Exam has been queued",
+     *         @SWG\Schema(ref="#/definitions/OK"),
+     *         examples={"application/json":{"status"="OK"}}
+     *     )
+     * )
+     *
+     */
+    public function postQueue(Request $request, $examId) {
         $ea = ExamAssignment::find($id);
-        if (!$ea) abort(404, "Assignment not found");
+        if (!$ea) return response()->json(generate_error("Not Found", true), 404);
 
         if ($ea->cid != \Auth::user()->cid) {
-            abort(403, "Forbidden");
+            return response()->json(generate_error("Forbidden", true), 403);
         }
 
         \Cache::put('exam.queue.' . $ea->cid, $id, 60);
 
-        //$request->session()->put('exam_queue', $id);
-
         return response()->json(['status' => 'OK']);
     }
 
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @SWG\Post(
+     *     path="/exam/submit",
+     *     summary="Submit exam payload for grading",
+     *     description="Submit exam from VEC for grading",
+     *     produces={"application/json"},
+     *     tags={"exam"},
+     *     @SWG\Parameter(description="Exam payload (base64)", in="header", name="payload", required=true, type="string"),
+     *     @SWG\Parameter(description="Answers (base64)", in="header", name="answers", required=true, type="string"),
+     *     @SWG\Parameter(description="JWT Token", in="header", name="bearer", required=true, type="string"),
+     *     @SWG\Response(
+     *         response="400",
+     *         description="Bad Request, usually for missing parameter",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={{"application/json":{"status"="error","message"="Missing data"}},{"application/json":{"status"="error","message"="Signature doesn't match payload"}}},
+     *     ),
+     *     @SWG\Response(
+     *         response="404",
+     *         description="Exam assignment not found",
+     *         @SWG\Schema(
+     *             ref="#/definitions/error"
+     *         ),
+     *         examples={
+     *             "application/json":{
+     *               "status" = "error",
+     *               "message" = "Not Found"
+     *             }
+     *        },
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="Exam has been processed",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(type="string",property="results"),
+     *         ),
+     *         examples={{"application/json":{"results"="Not Passed"}},{"application/json":{"results"="Passed"}}},
+     *     )
+     * )
+     */
     public function postSubmit(Request $request) {
         // Make sure all is there
         if (!$request->has('payload') || !$request->has('answers')) {
-            abort(400, "Missing data");
+            return response()->json(generate_error('Missing data', true), 400);
         }
 
         // Replace ALL spaces with +'s in payload
@@ -42,22 +134,15 @@ class ExamController extends Controller
         // Extract payload and verify signature, should prevent tampering
         $payloads = explode(".", $payload);
         if (sha1(env('EXAM_SECRET') . '$' . \Auth::user()->cid . '$' . base64_decode($payloads[0])) != $payloads[1]) {
-            abort(400, "Signature doesn't match payload");
+            return response()->json(generate_error("Signature doesn't match payload", true), 400);
         }
 
-        $fh = fopen(storage_path('/logs/exam.debug'), 'a');
-        fwrite($fh, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-        fwrite($fh, '[' . \Carbon\Carbon::now() . '] postSubmit(): ' . \Auth::user()->cid . ' post data: ' . json_encode($_POST) . "\n");
         $answers = json_decode(base64_decode($request->input('answers')), true);
         $questions = json_decode(base64_decode($payloads[0]), true);
-        fwrite($fh, "--- Questions: " . json_encode($questions) . "\n");
-        fwrite($fh, "--- Answers: " . json_encode($answers) . "\n");
-        fwrite($fh, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-        fclose($fh);
 
         // Verify assignment
         $assign = ExamAssignment::where('cid', \Auth::user()->cid)->where('exam_id', $questions['id'])->first();
-        if (!$assign) abort(400, "Exam not assigned.");
+        if (!$assign) return response()->json(generate_error("Not found", true), 404);
 
         $correct = 0;
         $possible = 0;
@@ -154,14 +239,45 @@ class ExamController extends Controller
         }
     }
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @SWG\Get(
+     *     path="/exam",
+     *     summary="Generates and sends exam payload for VATUSA Exam Center based on queued exam for JWT auth'd user",
+     *     description="Generates and sends exam payload for VATUSA Exam Center based on queued exam for JWT auth'd user",
+     *     produces={"application/json"},
+     *     tags={"exam"},
+     *     security={"jwt"},
+     *     @SWG\Parameter(description="JWT Token", in="header", name="bearer", required=true, type="string"),
+     *     @SWG\Response(
+     *         response="404",
+     *         description="Queue/Exam Assignment not found",
+     *         @SWG\Schema(
+     *             ref="#/definitions/error"
+     *         ),
+     *         examples={
+     *             {"application/json":{"status"="error","message"="No exam queued"}},
+     *             {"application/json":{"status"="error","message"="No matching exam assignment"}},
+     *        },
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="Exam generated",
+     *         @SWG\Schema(type="object", @SWG\Property(property="payload", type="string", description="base64 encoded quiz payload, with signature appended"))
+     *     )
+     * )
+     */
     public function getRequest(Request $request) {
-        if (!\Cache::has('exam.queue.' . \Auth::user()->cid)) abort(404, "No assignment queued");
+        if (!\Cache::has('exam.queue.' . \Auth::user()->cid)) {
+            return response()->json(generate_error("No exam queued", true), 404);
+        }
         $assign = ExamAssignment::find(\Cache::get('exam.queue.' . \Auth::user()->cid));
-        if (!$assign) abort(404, "Assignment has expired");
+        if (!$assign) {
+            return response()->json(generate_error("No matching exam assignment", true), 404);
+        }
         $exam = Exam::find($assign->exam_id);
-
-        $assign = ExamAssignment::where('cid', \Auth::user()->cid)->where('exam_id', $exam->id)->first();
-        if (!$assign) abort(404, "Exam not assigned");
 
         // @TODO if (!ExamHelper::examCBTComplete($exam))
 
@@ -199,13 +315,6 @@ class ExamController extends Controller
         $json['numQuestions'] = $x;
         $json = json_encode($json, JSON_HEX_APOS | JSON_NUMERIC_CHECK);
         $sig = sha1(env('EXAM_SECRET') . '$' . \Auth::user()->cid . '$' . $json);
-        $fh = fopen(storage_path('/logs/exam.debug'), 'a');
-        fwrite($fh, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-        fwrite($fh, '[' . \Carbon\Carbon::now() . '] getRequest(): ' . \Auth::user()->cid . " signature $sig payload $json\n");
-        fwrite($fh, "--- Base64'd payload: " . base64_encode($json));
-        fwrite($fh, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-        fclose($fh);
-        \Log::info("(" . \Auth::user()->cid . ") Got request, generating payload, signature $sig payload $json");
         return response()->json([
             'payload' => base64_encode($json) . "." . $sig
         ]);
