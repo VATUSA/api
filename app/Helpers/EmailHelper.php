@@ -138,4 +138,42 @@ class EmailHelper {
             return "Full";
         }
     }
+
+    /**
+     * @param $source
+     * @param $destination
+     */
+    public static function setForward($source, $destination) {
+        static::deleteForward($source);
+        static::addForward($source, $destination);
+    }
+
+    /**
+     * @param string $source
+     * @param string|array $destination
+     */
+    public static function addForward($source, $destination) {
+        $parts = explode("@", $source);
+        $res = \DB::connection("email")->table("virtual_domains")->where("name", $parts[1])->first();
+        if (!$res) { return; }
+        $id = $res->id;
+
+        if (is_array($destination)) {
+            foreach($destination as $dest) {
+                \DB::connection("email")->table("virtual_aliases")->insert(['domain_id'=>$id,'source'=>$source,'dest'=>$dest]);
+            }
+        } else {
+            \DB::connection("email")->table("virtual_aliases")->insert(['domain_id'=>$id,'source'=>$source,'dest'=>$destination]);
+        }
+    }
+
+    /**
+     * @param $source
+     * @param null $destination
+     */
+    public static function deleteForward($source, $destination = null) {
+        $query = \DB::connection("email")->table("virtual_aliases")->where('source', $source);
+        if ($destination) $query = $query->where('destination', $destination);
+        $query->delete();
+    }
 }
