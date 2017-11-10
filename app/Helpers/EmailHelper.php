@@ -140,6 +140,73 @@ class EmailHelper {
     }
 
     /**
+     * @param $email
+     */
+    private static function getDomainId($email) {
+        $parts = explode("@", $email);
+        $res = \DB::connection("email")->table("virtual_domains")->where("name", $parts[1])->first();
+        if (!$res) { return; }
+        return $res->id;
+    }
+
+    /**
+     * @param $email
+     * @param $password
+     * @return int|void
+     */
+    public static function addEmail($email, $password) {
+        $id = static::getdomainId($email);
+        if (!$id) return;
+
+        if (\DB::connection("email")->table("virtual_users")->where("email", $email)->count() > 0) {
+            \Log::info("addEmail($email, ----) found duplicate email");
+            return -1;
+        }
+
+        \DB::connection("email")->table("virtual_users")->insert([
+            'domain_id' => $id,
+            'email' => $email,
+            'password' => crypt($password, '$6$' . substr(microtime()), 16)
+        ]);
+        return 1;
+    }
+
+    /**
+     * @param $email
+     * @param $password
+     * @return int|void
+     */
+    public static function setPasswordEmail($email, $password) {
+        $id = static::getdomainId($email);
+        if (!$id) return;
+
+        if (\DB::connection("email")->table("virtual_users")->where("email", $email)->count() != 1) {
+            return -1;
+        }
+
+        \DB::connection("email")->table("virtual_users")->where('email', $email)->update([
+            'password' => crypt($password, '$6$' . substr(microtime()), 16)
+        ]);
+        return 1;
+    }
+
+    /**
+     * @param $email
+     * @return int|void
+     */
+    public static function deleteEmail($email) {
+        $id = static::getdomainId($email);
+        if (!$id) return;
+
+        if (\DB::connection("email")->table("virtual_users")->where("email", $email)->count() != 1) {
+            return -1;
+        }
+
+        \DB::connection("email")->table("virtual_users")->where('email', $email)->delete();
+        return 1;
+    }
+
+    /**
      * @param $source
      * @param $destination
      */
@@ -153,10 +220,8 @@ class EmailHelper {
      * @param string|array $destination
      */
     public static function addForward($source, $destination) {
-        $parts = explode("@", $source);
-        $res = \DB::connection("email")->table("virtual_domains")->where("name", $parts[1])->first();
-        if (!$res) { return; }
-        $id = $res->id;
+        $id = static::getdomainId($source);
+        if (!$id) return;
 
         if (is_array($destination)) {
             foreach($destination as $dest) {
@@ -172,6 +237,9 @@ class EmailHelper {
      * @param null $destination
      */
     public static function deleteForward($source, $destination = null) {
+        $id = getdomainId($source);
+        if (!$id) return;
+
         $query = \DB::connection("email")->table("virtual_aliases")->where('source', $source);
         if ($destination) $query = $query->where('destination', $destination);
         $query->delete();
