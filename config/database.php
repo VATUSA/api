@@ -55,7 +55,20 @@ return [
             'collation' => 'utf8_unicode_ci',
             'prefix' => '',
             'strict' => false
-        ]
+        ],
+        'email' => [
+            'driver' => env('DB_EMAIL_CONNECTION', 'mysql'),
+            'host' => env('DB_EMAIL_HOST', '127.0.0.1'),
+            'port' => env('DB_EMAIL_PORT', 3306),
+            'database' => env('DB_EMAIL_DATABASE', 'forum'),
+            'username' => env('DB_EMAIL_USERNAME', 'forum'),
+            'password' => env('DB_EMAIL_PASSWORD', ''),
+            'charset' => 'utf8',
+            'collation' => 'utf8_unicode_ci',
+            'prefix' => '',
+            'strict' => false
+        ],
+
     ],
 
     /*
