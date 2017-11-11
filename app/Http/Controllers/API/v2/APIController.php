@@ -24,6 +24,33 @@ class APIController extends BaseController {
 }
 
 /**
+ * @SWG\SecurityScheme(
+ *   securityDefinition="jwt",
+ *   type="apiKey",
+ *   in="header",
+ *   name="JSON Web Token",
+ *   description="JSON Web Token"
+ * )
+ */
+/**
+ * @SWG\SecurityScheme(
+ *   securityDefinition="session",
+ *   type="apiKey",
+ *   in="header",
+ *   name="Session Cookie"
+ * )
+ */
+/**
+ * @SWG\SecurityScheme(
+ *     securityDefinition="apiKey",
+ *     type="apiKey",
+ *     in="query",
+ *     name="api key",
+ *     description="API Key"
+ * )
+ */
+
+/**
  *
  * @SWG\Definition(
  *     definition="error",
