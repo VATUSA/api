@@ -65,7 +65,7 @@ class ExamController extends APIController
      *
      */
     public function postQueue(Request $request, $examId) {
-        $ea = ExamAssignment::find($id);
+        $ea = ExamAssignment::find($examId);
         if (!$ea) return response()->json(generate_error("Not Found", true), 404);
 
         if ($ea->cid != \Auth::user()->cid) {
@@ -88,6 +88,7 @@ class ExamController extends APIController
      *     description="Submit exam from VEC for grading",
      *     produces={"application/json"},
      *     tags={"exam"},
+     *     security={"jwt"},
      *     @SWG\Parameter(description="Exam payload (base64)", in="header", name="payload", required=true, type="string"),
      *     @SWG\Parameter(description="Answers (base64)", in="header", name="answers", required=true, type="string"),
      *     @SWG\Parameter(description="JWT Token", in="header", name="bearer", required=true, type="string"),

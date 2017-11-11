@@ -167,6 +167,35 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         return ($f) ? Carbon::createFromTimestamp($f->last_login)->diffInDays(null) : "Unknown";
     }
 
+    public function hasEmailAccess($email) {
+        $eparts = explode("@", $email);
+
+        // Facility address
+        // (facility)-(position)@vatusa.net
+        if (strpos($eparts[0], "-") >= 1) {
+            $uparts = explode("-", $eparts[0]);
+            // ATMs,DATMs,WM have access to all addresses
+            if (RoleHelper::isSeniorStaff($this->cid, $uparts[0], false) || RoleHelper::has($this->cid, $uparts[0], "WM")) {
+                return true;
+            }
+            if (RoleHelper::has($this->cid, $uparts[0], $uparts[1])) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        // Staff address
+        // vatusa#@vatusa.net
+        if(preg_match("/^vatusa(\d+)/", $eparts[0], $match)) {
+            if (RoleHelper::has($this->cid, "ZHQ", "US" . $match[1])) {
+                return true;
+            }
+            return false;
+        }
+
+        return false;
+    }
+
     /**
      * @param string $by
      * @param string $msg
