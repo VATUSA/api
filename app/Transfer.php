@@ -1,10 +1,10 @@
 <?php
 namespace App;
 
-use App\Classes\Helper;
+use App\Helpers\Helper;
 use Illuminate\Database\Eloquent\Model;
 use App\User;
-use App\Classes\EmailHelper;
+use App\Helpers\EmailHelper;
 
 class Transfer extends Model
 {
