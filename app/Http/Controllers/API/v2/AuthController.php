@@ -13,10 +13,11 @@ class AuthController extends APIController
      * @return array|\Illuminate\Http\JsonResponse|string
      *
      * @SWG\Get(
-     *     path="/auth",
+     *     path="/auth/token",
      *     description="Get JWT.",
      *     produces={"application/json"},
      *     tags={"auth"},
+     *     security={"session"},
      *     @SWG\Response(
      *         response=200,
      *         description="Return JSON Token.",
@@ -42,6 +43,7 @@ class AuthController extends APIController
      *     description="Refresh JWT.",
      *     produces={"application/json"},
      *     tags={"auth"},
+     *     security={"jwt","session"},
      *     @SWG\Response(
      *         response=200,
      *         description="Return JSON Token.",
@@ -70,6 +72,7 @@ class AuthController extends APIController
      *     description="Get user info",
      *     produces={"application/json"},
      *     tags={"auth"},
+     *     security={"jwt","session"},
      *     @SWG\Response(
      *         response=200,
      *         description="Return User ojbect",
