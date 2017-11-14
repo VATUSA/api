@@ -9,7 +9,7 @@ use App\Facility;
  * Class FacilityController
  * @package App\Http\Controllers\API\v2
  */
-class FacilityController extends Controller
+class FacilityController extends APIController
 {
     /**
      * @param null $all

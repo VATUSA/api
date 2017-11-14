@@ -1,7 +1,6 @@
 <?php
 namespace App;
 
-use App\Helpers\Helper;
 use Illuminate\Database\Eloquent\Model;
 use App\User;
 use App\Helpers\EmailHelper;
@@ -84,7 +83,7 @@ class Transfer extends Model
                 'facname' => $this->to()->name,
                 'facid' => $this->to()->id,
                 'region' => $this->to()->region,
-                'by' => Helper::nameFromCID($by),
+                'by' => User::findName($by),
                 'msg' => $msg
             ]
         );
