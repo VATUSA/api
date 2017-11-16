@@ -8,6 +8,9 @@ use Mail;
  * @package App\Helpers
  */
 class EmailHelper {
+    public static $email_full = "FULL";
+    public static $email_forward = "FORWARD";
+
     /**
      * @param $email
      * @param $subject
@@ -133,10 +136,10 @@ class EmailHelper {
             if (\DB::connection("email")->table("virtual_aliases")->where("source", $address)->count() < 1) {
                 return -1;
             } else {
-                return "Forward";
+                return static::$email_forward;
             }
-            return "Full";
         }
+        return static::$email_full;
     }
 
     /**
@@ -166,7 +169,7 @@ class EmailHelper {
         \DB::connection("email")->table("virtual_users")->insert([
             'domain_id' => $id,
             'email' => $email,
-            'password' => crypt($password, '$6$' . substr(microtime()), 16)
+            'password' => crypt($password, '$6$' . substr(sha1(microtime()), -16))
         ]);
         return 1;
     }
@@ -185,7 +188,7 @@ class EmailHelper {
         }
 
         \DB::connection("email")->table("virtual_users")->where('email', $email)->update([
-            'password' => crypt($password, '$6$' . substr(microtime()), 16)
+            'password' => crypt($password, '$6$' . substr(sha1(microtime()), -16))
         ]);
         return 1;
     }
@@ -209,15 +212,19 @@ class EmailHelper {
     /**
      * @param $source
      * @param $destination
+     * @return null|integer
      */
     public static function setForward($source, $destination) {
-        static::deleteForward($source);
-        static::addForward($source, $destination);
+        $ret = static::deleteForward($source);
+        if (!$ret) return $ret;
+        $ret = static::addForward($source, $destination);
+        return $ret;
     }
 
     /**
      * @param string $source
      * @param string|array $destination
+     * @return null|integer
      */
     public static function addForward($source, $destination) {
         $id = static::getdomainId($source);
@@ -225,23 +232,26 @@ class EmailHelper {
 
         if (is_array($destination)) {
             foreach($destination as $dest) {
-                \DB::connection("email")->table("virtual_aliases")->insert(['domain_id'=>$id,'source'=>$source,'dest'=>$dest]);
+                \DB::connection("email")->table("virtual_aliases")->insert(['domain_id'=>$id,'source'=>$source,'destination'=>$dest]);
             }
         } else {
-            \DB::connection("email")->table("virtual_aliases")->insert(['domain_id'=>$id,'source'=>$source,'dest'=>$destination]);
+            \DB::connection("email")->table("virtual_aliases")->insert(['domain_id'=>$id,'source'=>$source,'destination'=>$destination]);
         }
+        return 1;
     }
 
     /**
      * @param $source
      * @param null $destination
+     * @return null|integer
      */
     public static function deleteForward($source, $destination = null) {
-        $id = getdomainId($source);
+        $id = static::getdomainId($source);
         if (!$id) return;
 
         $query = \DB::connection("email")->table("virtual_aliases")->where('source', $source);
         if ($destination) $query = $query->where('destination', $destination);
         $query->delete();
+        return 1;
     }
 }
