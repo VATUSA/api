@@ -236,6 +236,10 @@ class EmailHelper {
         $id = static::getdomainId($source);
         if (!$id) return;
 
+        if (strpos($destination, ",")) {
+            $destination = explode(",", $destination);
+        }
+
         if (is_array($destination)) {
             foreach($destination as $dest) {
                 \DB::connection("email")->table("virtual_aliases")->insert(['domain_id'=>$id,'source'=>$source,'destination'=>$dest]);
