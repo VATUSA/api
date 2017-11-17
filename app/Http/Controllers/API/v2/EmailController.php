@@ -59,8 +59,8 @@ class EmailController extends APIController
             }
             if ($row->facility !== "ZHQ" && $row->facility !== "ZAE" && in_array($row->role, ["ATM", "DATM", "TA", "EC", "FE", "WM"])) {
                 $temp = [
-                    "type" => EmailHelper::getType(strtoupper($row->facility . "-" . $row->role . "@vatusa.net")),
-                    "email" => strtoupper($row->facility . "-" . $row->role . "@vatusa.net"),
+                    "type" => EmailHelper::getType(strtolower($row->facility . "-" . $row->role . "@vatusa.net")),
+                    "email" => strtolower($row->facility . "-" . $row->role . "@vatusa.net"),
 
                 ];
                 if ($temp['type'] === EmailHelper::$email_forward) {
