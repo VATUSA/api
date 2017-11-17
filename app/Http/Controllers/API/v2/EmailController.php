@@ -53,7 +53,7 @@ class EmailController extends APIController
                     "email" => "vatusa" . $matches[1] . "@vatusa.net",
                 ];
                 if ($temp['type'] === EmailHelper::$email_forward) {
-                    $temp['destination'] = EmailHelper::forwardDestination("vatusa" . $matches[1] . "@vatusa.net");
+                    $temp['destination'] = implode(",", EmailHelper::forwardDestination($temp['email']));
                 }
                 $response[] = $temp;
             }
@@ -64,7 +64,7 @@ class EmailController extends APIController
 
                 ];
                 if ($temp['type'] === EmailHelper::$email_forward) {
-                    $temp["destination"] = EmailHelper::forwardDestination(strtoupper($row->facility . "-" . $row->role . "@vatusa.net"));
+                    $temp["destination"] = implode(",", EmailHelper::forwardDestination($temp['email']));
                 }
                 $response[] = $temp;
             }

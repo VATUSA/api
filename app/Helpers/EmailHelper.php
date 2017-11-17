@@ -8,7 +8,13 @@ use Mail;
  * @package App\Helpers
  */
 class EmailHelper {
+    /**
+     * @var string
+     */
     public static $email_full = "FULL";
+    /**
+     * @var string
+     */
     public static $email_forward = "FORWARD";
 
     /**
@@ -255,15 +261,17 @@ class EmailHelper {
         return 1;
     }
 
+
     /**
-     *
+     * @param $source
+     * @return array|bool
      */
     public static function forwardDestination($source) {
-        if (!static::getType($source) !== static::$email_forward) {
+        if (static::getType($source) !== static::$email_forward) {
             return false;
         }
         $result = \DB::connection("email")->table("virtual_aliases")->where('source', $source)->get();
-        $return = null;
+        $return = [];
         foreach ($result as $row) {
             $return[] = $row->destination;
         }
