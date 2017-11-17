@@ -254,4 +254,19 @@ class EmailHelper {
         $query->delete();
         return 1;
     }
+
+    /**
+     *
+     */
+    public static function forwardDestination($source) {
+        if (!static::getType($source) !== static::$email_forward) {
+            return false;
+        }
+        $result = \DB::connection("email")->table("virtual_aliases")->where('source', $source)->get();
+        $return = null;
+        foreach ($result as $row) {
+            $return[] = $row->destination;
+        }
+        return $return;
+    }
 }

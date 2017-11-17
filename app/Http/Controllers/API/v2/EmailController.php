@@ -31,6 +31,7 @@ class EmailController extends APIController
      *                 type="object",
      *                 @SWG\Property(property="type", type="string", description="Type of email (forward/full)"),
      *                 @SWG\Property(property="email", type="string", description="Email address"),
+     *                 @SWG\Property(property="destination", type="string", description="Destination for email forwards")
      *             ),
      *         ),
      *         examples={
@@ -47,16 +48,25 @@ class EmailController extends APIController
         $return = Role::where('cid', \Auth::user()->cid)->get();
         foreach ($return as $row) {
             if ($row->facility === "ZHQ" && preg_match("/^US(\d+)$/", $row->role, $matches)) {
-                $response[] = [
+                $temp = [
                     "type" => EmailHelper::getType("vatusa" . $matches[1] . "@vatusa.net"),
-                    "email" => "vatusa" . $matches[1] . "@vatusa.net"
+                    "email" => "vatusa" . $matches[1] . "@vatusa.net",
                 ];
+                if ($temp['type'] === EmailHelper::$email_forward) {
+                    $temp['destination'] = EmailHelper::forwardDestination("vatusa" . $matches[1] . "@vatusa.net");
+                }
+                $response[] = $temp;
             }
-            if ($row->facility !== "ZHQ" && $row->facility !== "ZAE" && in_array($row->role, ["ATM","DATM","TA","EC","FE","WM"])) {
-                $response[] = [
+            if ($row->facility !== "ZHQ" && $row->facility !== "ZAE" && in_array($row->role, ["ATM", "DATM", "TA", "EC", "FE", "WM"])) {
+                $temp = [
                     "type" => EmailHelper::getType(strtoupper($row->facility . "-" . $row->role . "@vatusa.net")),
-                    "email" => strtoupper($row->facility . "-" . $row->role . "@vatusa.net")
+                    "email" => strtoupper($row->facility . "-" . $row->role . "@vatusa.net"),
+
                 ];
+                if ($temp['type'] === EmailHelper::$email_forward) {
+                    $temp["destination"] = EmailHelper::forwardDestination(strtoupper($row->facility . "-" . $row->role . "@vatusa.net"));
+                }
+                $response[] = $temp;
             }
         }
         return response()->json($response);
