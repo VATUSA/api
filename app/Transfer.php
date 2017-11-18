@@ -7,6 +7,11 @@ use App\Helpers\EmailHelper;
 
 class Transfer extends Model
 {
+    // Transfer status codes
+    public static $pending = 0;
+    public static $accepted = 1;
+    public static $rejected = 2;
+
     protected $table = 'transfers';
 
     public function user()
