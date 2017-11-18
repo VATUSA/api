@@ -36,10 +36,10 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             //\App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\RequireHTTPS::class,
         ],
 
         'login' => [
-            \App\Http\Middleware\RequireHTTPS::class,
         ],
 
         'semiprivate' => [
@@ -54,7 +54,6 @@ class Kernel extends HttpKernel
 
         'private' => [
             \App\Http\Middleware\PrivateCORS::class,
-            \App\Http\Middleware\RequireHTTPS::class,
         ],
 
         'api' => [
