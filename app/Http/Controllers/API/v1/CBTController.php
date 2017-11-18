@@ -1,4 +1,4 @@
-return <?php
+<?php
 namespace App\Http\Controllers\API\v1;
 
 use App\Facility;
