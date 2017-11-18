@@ -12,10 +12,11 @@ class PrivateCORS
      */
     public function handle($request, Closure $next)
     {
-        //if (!isset($_SERVER['ORIGIN'])) { abort(400, "Malformed request"); }
-        /*header('Access-Control-Allow-Origin: *.vatusa.net');
-        header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-        header('Access-Control-Allow-Headers: Origin, Content-Type, Accept, Authorization, X-Request-With'); */
+        if(in_array($_SERVER['REQUEST_METHOD'], ["GET","PUT","DELETE","POST"])) {
+            if (!isset($_SERVER['origin']) || preg_match("/^http(s?):\/\/[^/]+\.vatusa\.net/", $_SERVER['origin'])) {
+                abort(400, "Malformed origin");
+            }
+        }
         return $next($request);
     }
 }

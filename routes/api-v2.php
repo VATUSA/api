@@ -9,8 +9,10 @@ if (env('APP_ENV', 'prod') == "dev") {
 /******************************************************************************************
  * /auth
  * Auth functions
+ *
+ * Private functions, to prevent facility APIs from capturing JWTs
  */
-Route::group(['middleware' => 'auth:jwt,web', 'prefix' => '/auth'], function() {
+Route::group(['middleware' => ['private','auth:jwt,web'], 'prefix' => '/auth'], function() {
     Route::get('token', 'AuthController@getToken');
     Route::get('token/refresh', 'AuthController@getRefreshToken');
     Route::get('info', 'AuthController@getUserInfo');
