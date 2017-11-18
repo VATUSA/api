@@ -13,7 +13,8 @@ class PrivateCORS
     public function handle($request, Closure $next)
     {
         if(in_array($_SERVER['REQUEST_METHOD'], ["GET","PUT","DELETE","POST"])) {
-            if (!isset($_SERVER['origin']) || preg_match("/^http(s?):\/\/[^/]+\.vatusa\.net/", $_SERVER['origin'])) {
+            if (!isset($_SERVER['HTTP_ORIGIN']) || preg_match("/^http(s?):\/\/[^/]+\.vatusa\.net/", $_SERVER['HTTP_ORIGIN'])) {
+
                 abort(400, "Malformed origin");
             }
         }
