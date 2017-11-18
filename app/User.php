@@ -307,6 +307,10 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         } else return 'Unknown';
     }
 
+    public function roles() {
+        return $this->hasMany("App\Role", "cid", "cid");
+    }
+
     /**
      * Get the identifier that will be stored in the subject claim of the JWT.
      *

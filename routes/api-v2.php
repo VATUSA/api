@@ -9,8 +9,10 @@ if (env('APP_ENV', 'prod') == "dev") {
 /******************************************************************************************
  * /auth
  * Auth functions
+ *
+ * Private functions, to prevent facility APIs from capturing JWTs
  */
-Route::group(['middleware' => 'auth:jwt,web', 'prefix' => '/auth'], function() {
+Route::group(['middleware' => ['private','auth:jwt,web'], 'prefix' => '/auth'], function() {
     Route::get('token', 'AuthController@getToken');
     Route::get('token/refresh', 'AuthController@getRefreshToken');
     Route::get('info', 'AuthController@getUserInfo');
@@ -43,6 +45,8 @@ Route::group(['middleware' => 'auth:jwt', 'prefix' => '/exam'], function() {
  */
 Route::get('facility', 'FacilityController@getIndex');
 Route::get('facility/{id}', 'FacilityController@getFacility')->where('id','[A-Za-z]{3}');
+Route::get('facility/{id}/staff', 'FacilityController@getStaff')->where('id','[A-Za-z]{3}');
+Route::get('facility/{id}/roster', 'FacilityController@getRoster')->where('id','[A-Za-z]{3}');
 Route::group(['middleware' => 'auth:web,jwt'], function() {
     Route::post('facility/{id}', 'FacilityController@postFacility')->where('id','[A-Za-z]{3}');
 });
