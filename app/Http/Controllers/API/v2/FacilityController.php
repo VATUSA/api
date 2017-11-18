@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\API\v2;
 
+use App\Helpers\AuthHelper;
+use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
 use App\Role;
 use App\Transfer;
 use App\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Facility;
 
@@ -143,9 +146,11 @@ class FacilityController extends APIController
         $data['stats']['controllers'] = User::where('facility', $id)->count();
         $data['stats']['pendingTransfers'] = Transfer::where('to', $id)->where('status', Transfer::$pending)->count();
 
-        \Cache::put("facility.$id.info", json_encode($data), 60);
+        $json = encode_json($data);
 
-        return response()->json($data);
+        \Cache::put("facility.$id.info", $json, 60);
+
+        return $json;
     }
 
     /**
@@ -203,5 +208,185 @@ class FacilityController extends APIController
         }
 
         return response()->json(["status" => "OK"]);
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @SWG\Get(
+     *     path="/facility/{id}/staff",
+     *     summary="Get facility staff list",
+     *     description="Get facility staff list",
+     *     produces={"application/json"},
+     *     tags={"facility"},
+     *     @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
+     *     @SWG\Response(
+     *         response="404",
+     *         description="Not found or not active",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(
+     *                 property="ATM",
+     *                 type="array",
+     *                 @SWG\Items(
+     *                     type="object",
+     *                     @SWG\Property(property="cid", type="integer"),
+     *                     @SWG\Property(property="name", type="string"),
+     *                 )
+     *             ),
+     *             @SWG\Property(
+     *                 property="DATM",
+     *                 type="array",
+     *                 @SWG\Items(
+     *                     type="object",
+     *                     @SWG\Property(property="cid", type="integer"),
+     *                     @SWG\Property(property="name", type="string"),
+     *                 )
+     *             ),
+     *             @SWG\Property(
+     *                 property="TA",
+     *                 type="array",
+     *                 @SWG\Items(
+     *                     type="object",
+     *                     @SWG\Property(property="cid", type="integer"),
+     *                     @SWG\Property(property="name", type="string"),
+     *                 )
+     *             ),
+     *             @SWG\Property(
+     *                 property="EC",
+     *                 type="array",
+     *                 @SWG\Items(
+     *                     type="object",
+     *                     @SWG\Property(property="cid", type="integer"),
+     *                     @SWG\Property(property="name", type="string"),
+     *                 )
+     *             ),
+     *             @SWG\Property(
+     *                 property="FE",
+     *                 type="array",
+     *                 @SWG\Items(
+     *                     type="object",
+     *                     @SWG\Property(property="cid", type="integer"),
+     *                     @SWG\Property(property="name", type="string"),
+     *                 )
+     *             ),
+     *             @SWG\Property(
+     *                 property="WM",
+     *                 type="array",
+     *                 @SWG\Items(
+     *                     type="object",
+     *                     @SWG\Property(property="cid", type="integer"),
+     *                     @SWG\Property(property="name", type="string"),
+     *                 )
+     *             ),
+     *         ),
+     *     )
+     * )
+     */
+    public function getStaff(Request $request, $id) {
+        $facility = Facility::find($id);
+        if (!$facility || !$facility->active) {
+            return response()->json(generate_error("Facility not found or not active", true), 404);
+        }
+
+        if (\Cache::has("facility.$id.staff")) {
+            return \Cache::get("facility.$id.staff");
+        }
+
+        $data = [];
+        $positions = ["ATM","DATM","TA","EC","FE","WM"];
+        foreach ($positions as $position) {
+            foreach (Role::where("facility", $facility->id)->where("role", $position)->get() as $row) {
+                $data[$position][] = [
+                    "cid" => $row->cid,
+                    "name" => $row->user->fullname(),
+                ];
+            }
+        }
+
+        $json = encode_json($data);
+
+        \Cache::put("facility.$id.staff", $json, 24*60);
+        return $json;
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @SWG\Get(
+     *     path="/facility/{id}/roster",
+     *     summary="Get facility roster",
+     *     description="Get facility staff.  If api key specified, email properties are defined",
+     *     produces={"application/json"},
+     *     tags={"facility"},
+     *     @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
+     *     @SWG\Response(
+     *         response="404",
+     *         description="Not found or not active",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="array",
+     *             @SWG\Items(
+     *                 type="object",
+     *                 @SWG\Property(property="cid", type="integer"),
+     *                 @SWG\Property(property="lastname", type="string"),
+     *                 @SWG\Property(property="firstname", type="string"),
+     *                 @SWG\Property(property="email", type="string", description="Empty if no API Key defined"),
+     *                 @SWG\Property(property="rating", type="string", description="Short rating string (S1, S2, etc)"),
+     *                 @SWG\Property(property="intRating", type="integer", description="Standard rating integer (OBS=1, S1=2, etc)"),
+     *                 @SWG\Property(property="joinDate", type="string", description="Date joined facility (YYYY-MM-DD)"),
+     *                 @SWG\Property(property="promotionEligible", type="boolean"),
+     *                 @SWG\Property(property="roles", type="array", @SWG\Items(title="role", type="string"))
+     *             )
+     *         ),
+     *     )
+     * )
+     */
+    public function getRoster(Request $request, $id) {
+        $facility = Facility::find($id);
+        if (!$facility || !$facility->active) {
+            return response()->json(generate_error("Facility not found or not active", true), 404);
+        }
+        $apikey = false;
+        if ($request->has("apikey")) {
+            $apikey = AuthHelper::validApiKey($_SERVER['REMOTE_ADDR'], $request->input("apikey"), $facility->id);
+        }
+
+        $data = [];
+        foreach(User::where("facility", $facility->id)->orderBy("lname")->orderBy("fname")->get() as $user) {
+            $tmp = [
+                "cid" => $user->cid,
+                "lastname" => $user->lname,
+                "firstname" => $user->fname,
+                "email" => ($apikey) ? $user->email : '',
+                "rating" => RatingHelper::intToShort($user->rating),
+                "intRating" => $user->rating,
+                "joinDate" => Carbon::createFromFormat("Y-m-d H:i:s", $user->facility_join)->format("Y-m-d"),
+                "promotionEligible" => (bool)$user->promotionEligible(),
+                "roles" => []
+            ];
+            foreach($user->roles()->where("facility", $facility->id)->get() as $role) {
+                $tmp["roles"][] = $role->role;
+            }
+            $data[] = $tmp;
+        }
+        $json = encode_json($data);
+
+        return $json;
     }
 }

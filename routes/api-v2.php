@@ -43,6 +43,8 @@ Route::group(['middleware' => 'auth:jwt', 'prefix' => '/exam'], function() {
  */
 Route::get('facility', 'FacilityController@getIndex');
 Route::get('facility/{id}', 'FacilityController@getFacility')->where('id','[A-Za-z]{3}');
+Route::get('facility/{id}/staff', 'FacilityController@getStaff')->where('id','[A-Za-z]{3}');
+Route::get('facility/{id}/roster', 'FacilityController@getRoster')->where('id','[A-Za-z]{3}');
 Route::group(['middleware' => 'auth:web,jwt'], function() {
     Route::post('facility/{id}', 'FacilityController@postFacility')->where('id','[A-Za-z]{3}');
 });

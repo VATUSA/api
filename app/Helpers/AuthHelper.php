@@ -2,30 +2,25 @@
 namespace App\Helpers;
 
 use App\User;
-use App\Exceptions\JWTTokenException;
-use Tymon\JWTAuth\Exceptions\TokenExpiredException;
-use Tymon\JWTAuth\Exceptions\TokenInvalidException;
-use Tymon\JWTAuth\Exceptions\JWTException;
+use App\Facility;
 
 class AuthHelper {
-    public static function getAuthUser() {
-        try {
-            $user = \JWTAuth::parseToken()->authenticate();
-        } catch (TokenExpiredException $e) {
-            throw new JWTTokenException("token_expired");
-        } catch (TokenInvalidException $e) {
-            throw new JWTTokenException("token_invalid");
-        } catch (JWTException $e) {
-            return response()->json(generate_error("token_absent", true), 404);
-        } catch (Exception $e) {
-            return false;
+    public static function validApiKey($ip, $key, $fac = null) {
+        $facility = Facility::where("apikey", $key)->where("ip", $ip)->first();
+        if ($facility || ($fac && $fac === $facility->id)) {
+            return true;
+        }
+        $facility = Facility::where("api_sandbox_key", $key)->where("api_sandbox_ip", $ip)->first();
+        if ($facility || ($fac && $fac === $facility->id)) {
+            return true;
         }
 
-        return $user;
+        return false;
     }
 
-    public static function validToken() {
-        if (\JWTAuth::parseToken()->authenticate()) {
+    public static function isSandboxKey($key, $fac = null) {
+        $facility = Facility::where("api_sandbox_key", $key)->first();
+        if ($facility || ($fac && $fac === $facility->id)) {
             return true;
         }
 
