@@ -29,7 +29,7 @@ class FacilityController
         }
         $error = 0;
         if (!$f || !$f->active) {
-            return generate_error("Invalid Facility");
+            return generate_error("Invalid Facility", false);
         }
         if (is_numeric($ext) && $limit == null) {
             $limit = $ext;
@@ -37,7 +37,7 @@ class FacilityController
         }
         $ext = strtolower($ext);
         if (!in_array($ext, ["xml", "json"])) {
-            return generate_error("Invalid format");
+            return generate_error("Invalid format", false);
         }
         if (!$error) {
             $return['status'] = "ok";
@@ -88,11 +88,11 @@ class FacilityController
             $vars['msg'] = $vars['reason'];
 
         if ($user == null) {
-            return generate_error("User not found");
+            return generate_error("User not found", false);
         } elseif ($user->facility != $fac) {
-            return generate_error("User not in facility");
+            return generate_error("User not in facility", false);
         } elseif (!isset($vars['by']) || !isset($vars['msg']) || $vars['msg'] == "") {
-            return generate_error("By and msg arguments not optional");
+            return generate_error("By and msg arguments not optional", false);
         } else {
             if (RoleHelper::isSeniorStaff($vars['by'], $fac)) {
                 if (!$request->has('test')) {
@@ -101,7 +101,7 @@ class FacilityController
                 $return['status'] = "success";
                 $return['msg'] = "User removed from facility.";
             } else {
-                return generate_error("Access denied");
+                return generate_error("Access denied", false);
             }
         }
 
@@ -119,7 +119,7 @@ class FacilityController
     public function getController($apikey, $cid) {
         $user = User::find($cid);
         if (!$user) {
-            return generate_error("User not found");
+            return generate_error("User not found", false);
         }
 
         $userArray['status'] = "success";

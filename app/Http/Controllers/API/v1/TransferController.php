@@ -59,15 +59,15 @@ class TransferController extends Controller
         $transfer = Transfer::find($id);
         $return = [];
         if (!$transfer) {
-            return generate_error("Transfer not found");
+            return generate_error("Transfer not found", false);
         }
         $by = (int)$_POST['by'];
         $to = $transfer->to;
         if (!RoleHelper::isSeniorStaff($by, $to)) {
-            return generate_error("Access denied");
+            return generate_error("Access denied", false);
         }
         if ($transfer->status > 0) {
-            return generate_error("Transfer not in pending status");
+            return generate_error("Transfer not in pending status", false);
         }
 
         if ($_POST['action'] == "reject") {
@@ -77,7 +77,7 @@ class TransferController extends Controller
                 }
                 $return['status'] = 'success';
             } else {
-                return generate_error("Incomplete request");
+                return generate_error("Incomplete request", false);
             }
         } elseif ($_POST['action'] == "accept") {
             if (!isTest()) {
@@ -85,7 +85,7 @@ class TransferController extends Controller
             }
             $return['status'] = "success";
         } else {
-            return generate_error("Unknown action");
+            return generate_error("Unknown action", false);
         }
 
         return encode_json($return);
