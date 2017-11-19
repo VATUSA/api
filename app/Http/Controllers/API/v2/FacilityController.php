@@ -158,8 +158,6 @@ class FacilityController extends APIController
      * @param $id
      * @return \Illuminate\Http\JsonResponse
      *
-     * @TODO: Add support for reassigning API Keys, ULS Secrets, etc.
-     *
      * @SWG\Post(
      *     path="/facility/{id}",
      *     summary="Update facility information. Requires JWT or Session Cookie",
@@ -168,7 +166,12 @@ class FacilityController extends APIController
      *     tags={"facility"},
      *     security={"json","session"},
      *     @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
-     *     @SWG\Parameter(name="url", in="formData", description="Change facility URL", type="string"),
+     *     @SWG\Parameter(name="url", in="formData", description="Change facility URL, role restricted [ATM, DATM, WM]", type="string"),
+     *     @SWG\Parameter(name="apikey", in="formData", description="Request new API Key for facility, role restricted [ATM, DATM, WM]"),
+     *     @SWG\Parameter(name="apikeySandbox", in="formData", description="Request new Sandbox API Key for facility, role restricted [ATM, DATM, WM]"),
+     *     @SWG\Parameter(name="ulsSecret", in="formData", description="Request new ULS Secret, role restricted [ATM, DATM, WM]"),
+     *     @SWG\Parameter(name="ulsReturn", in="formData", description="Set new ULS return point, role restricted [ATM, DATM, WM]"),
+     *     @SWG\Parameter(name="ulsDevReturn", in="formData", description="Set new ULS developmental return point, role restricted [ATM, DATM, WM]"),
      *     @SWG\Response(
      *         response="403",
      *         description="Forbidden",
@@ -184,7 +187,13 @@ class FacilityController extends APIController
      *     @SWG\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(ref="#/definitions/OK"),
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(property="status",type="string"),
+     *             @SWG\Property(property="apikey",type="string"),
+     *             @SWG\Property(property="apikeySandbox",type="string"),
+     *             @SWG\Property(property="ulsSecret", type="string"),
+     *         ),
      *         examples={"application/json":{"status"="OK"}}
      *     )
      * )
@@ -200,12 +209,62 @@ class FacilityController extends APIController
             return response()->json(generate_error("Forbidden", true), 403);
         }
 
+        $data = [];
+
         if ($request->has("url") && filter_var($request->input("url"), FILTER_VALIDATE_URL)) {
             $facility->url = $request->input("url");
             $facility->save();
         }
 
-        return response()->json(["status" => "OK"]);
+        if ($request->has('apikey')) {
+            if (\Auth::check() && RoleHelper::has(\Auth::user()->cid, $facility->id, ['ATM','DATM','WM'])) {
+                $data['apikey'] = randomPassword(16);
+                $facility->apikey = $data['apikey'];
+                $facility->save();
+            } else {
+                return response()->json(generate_error("Forbidden"), 403);
+            }
+        }
+
+        if ($request->has('apikeySandbox')) {
+            if (\Auth::check() && RoleHelper::has(\Auth::user()->cid, $facility->id, ['ATM','DATM','WM'])) {
+                $data['apikeySandbox'] = randomPassword(16);
+                $facility->api_sandbox_key = $data['apikeySandbox'];
+                $facility->save();
+            } else {
+                return response()->json(generate_error("Forbidden"), 403);
+            }
+        }
+
+        if ($request->has('ulsSecret')) {
+            if (\Auth::check() && RoleHelper::has(\Auth::user()->cid, $facility->id, ['ATM','DATM','WM'])) {
+                $data['ulsSecret'] = substr(hash('sha512', microtime()), -16);
+                $facility->uls_secret = $data['ulsSecret'];
+                $facility->save();
+            } else {
+                return response()->json(generate_error("Forbidden"), 403);
+            }
+        }
+
+        if ($request->has('ulsReturn')) {
+            if (\Auth::check() && RoleHelper::has(\Auth::user()->cid, $facility->id, ['ATM','DATM','WM'])) {
+                $facility->uls_return = $request->input("ulsReturn");
+                $facility->save();
+            } else {
+                return response()->json(generate_error("Forbidden"), 403);
+            }
+        }
+
+        if ($request->has('ulsDevReturn')) {
+            if (\Auth::check() && RoleHelper::has(\Auth::user()->cid, $facility->id, ['ATM','DATM','WM'])) {
+                $facility->uls_devreturn = $request->input("ulsDevReturn");
+                $facility->save();
+            } else {
+                return response()->json(generate_error("Forbidden"), 403);
+            }
+        }
+
+        return response()->json(array_merge(['status' => 'OK'], $data));
     }
 
     /**
