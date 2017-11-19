@@ -54,10 +54,19 @@ class RoleHelper {
     /**
      * @param $cid
      * @param $facility
-     * @param $role
+     * @param string|array $role
      * @return bool
      */
     public static function has($cid, $facility, $role) {
+        if (is_array($role)) {
+            foreach($role as $r) {
+                $rq = Role::Where("facility", $facility)->where("cid", $cid)->where("role", $r)->count();
+                if ($rq) return true;
+            }
+
+            return false;
+        }
+
         $role = Role::where("facility", $facility)->where("cid", $cid)->where("role", $role)->count();
         if ($role) {
             return true;
@@ -72,9 +81,17 @@ class RoleHelper {
      * @return bool
      */
     public static function isSeniorStaff($cid, $facility, $includeTA = false) {
-        if (static::has($cid, $facility, "ATM") ||
-            static::has($cid, $facility, "DATM") ||
-            ($includeTA && static::has($cid, $facility, "TA"))) {
+        if (($includeTA && static::has($cid, $facility, ['ATM','DATM','TA'])) ||
+            static::has($cid, $facility, ['ATM','DATM'])) {
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public static function isFacilityStaff($cid, $facility) {
+        if (static::has($cid, $facility, ['ATM','DATM','TA','WM','FE','EC'])) {
             return true;
         }
 

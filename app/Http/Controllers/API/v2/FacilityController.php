@@ -162,8 +162,8 @@ class FacilityController extends APIController
      *
      * @SWG\Post(
      *     path="/facility/{id}",
-     *     summary="Update facility information (role restricted)",
-     *     description="Update facility information (role restricted)",
+     *     summary="Update facility information. Requires JWT or Session Cookie",
+     *     description="Update facility information. Requires JWT or Session Cookie",
      *     produces={"application/json"},
      *     tags={"facility"},
      *     security={"json","session"},
@@ -195,9 +195,7 @@ class FacilityController extends APIController
             return response()->json(generate_error("Facility not found or not active", true), 404);
         }
 
-        if (!RoleHelper::has(\Auth::user()->cid, $id, "ATM") &&
-            !RoleHelper::has(\Auth::user()->cid, $id, "DATM") &&
-            !RoleHelper::has(\Auth::user()->cid, $id, "WM") &&
+        if (!RoleHelper::has(\Auth::user()->cid, $id, ["ATM","DATM","WM"]) &&
             !RoleHelper::isVATUSAStaff(\Auth::user()->cid)) {
             return response()->json(generate_error("Forbidden", true), 403);
         }
@@ -388,5 +386,234 @@ class FacilityController extends APIController
         $json = encode_json($data);
 
         return $json;
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @param string $id
+     * @param integer $cid
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @SWG\Delete(
+     *     path="/facility/{id}/roster/{cid}",
+     *     summary="Delete member from facility roster. JWT or Session Cookie required",
+     *     description="Delete member from facility roster.  JWT or Session Cookie required",
+     *     produces={"application/json"},
+     *     tags={"facility"},
+     *     security={"jwt","session"},
+     *     @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
+     *     @SWG\Parameter(name="cid", in="query", description="CID of controller", required=true, type="integer"),
+     *     @SWG\Parameter(name="reason", in="formData", description="Reason for deletion", required=true, type="string"),
+     *     @SWG\Response(
+     *         response="400",
+     *         description="Malformed request, missing required parameter",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Malformed request"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden -- needs to have role of ATM, DATM or VATUSA Division staff member",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","message"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="404",
+     *         description="Not found or not active",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(ref="#/definitions/OK"),
+     *         examples={"application/json":{"status"="OK"}}
+     *     )
+     * )
+     */
+    public function deleteRoster(Request $request, string $id, int $cid) {
+        $facility = Facility::find($id);
+        if (!$facility || !$facility->active) {
+            return response()->json(generate_error("Facility not found or not active"), 404);
+        }
+
+        if (!RoleHelper::isSeniorStaff(\Auth::user()->cid, $id, false)) {
+            return response()->json(generate_error("Forbidden"), 403);
+        }
+
+        $user = User::where('cid', $cid)->first();
+        if (!$user || $user->facility != $facility->id) {
+            return response()->json(generate_error("User not found or not in facility"), 404);
+        }
+
+        if (!$request->has("reason") || !$request->filled("reason")) {
+            return response()->json(generate_error("Malformed request"), 400);
+        }
+
+        $user->removeFromFacility(\Auth::user()->cid, $request->input("reason"));
+
+        return response()->json(["status"=>"OK"]);
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @param string $id
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @SWG\Get(
+     *     path="/facility/{id}/transfers",
+     *     summary="Get pending transfers",
+     *     description="Get pending transfers",
+     *     produces={"application/json"},
+     *     tags={"facility"},
+     *     security={"jwt","session","apikey"},
+     *     @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
+     *     @SWG\Response(
+     *         response="400",
+     *         description="Malformed request, missing required parameter",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Malformed request"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden -- needs to be a staff member, other than mentor",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","message"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="404",
+     *         description="Not found or not active",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="array",
+     *             @SWG\Items(
+     *                 type="object",
+     *                 @SWG\Property(property="id", type="integer", description="Transfer ID"),
+     *                 @SWG\Property(property="cid", type="integer"),
+     *                 @SWG\Property(property="name", type="string"),
+     *                 @SWG\Property(property="rating", type="string", description="Short string rating (S1, S2)"),
+     *                 @SWG\Property(property="intRating", type="integer", description="Numeric rating (OBS = 1, etc)"),
+     *                 @SWG\Property(property="date", type="string", description="Date transfer submitted (YYYY-MM-DD)"),
+     *             ),
+     *         ),
+     *         examples={"application/json":{{"id":991,"cid":876594,"name":"Daniel Hawton","rating":"C1","intRating":5,"date":"2017-11-18"}}}
+     *     )
+     * )
+     */
+    public function getTransfers(Request $request, string $id) {
+        $facility = Facility::find($id);
+        if (!$facility || !$facility->active) {
+            return response()->json(generate_error("Facility not found or not active"), 404);
+        }
+
+        if (!RoleHelper::isFacilityStaff(\Auth::user()->cid, $id) && !RoleHelper::isVATUSAStaff(\Auth::user()->cid)) {
+            return response()->json(generate_error("Forbidden"), 403);
+        }
+
+        $transfers = Transfer::where("to", $facility->id)->where("status", Transfer::$pending)->get();
+        $data = [];
+        foreach($transfers as $transfer) {
+            $data[] = [
+                'id' => $transfer->id,
+                'cid' => $transfer->cid,
+                'name' => $transfer->user->fullname(),
+                'rating' => RatingHelper::intToShort($transfer->user->rating),
+                'intRating' => $transfer->user->rating,
+                'date' => $transfer->created_at->format('Y-m-d')
+            ];
+        }
+
+        return encode_json($data);
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @param string $id
+     * @param int $transferId
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @SWG\Post(
+     *     path="/facility/{id}/transfers/{transferId}",
+     *     summary="Modify transfer request.  JWT or Session cookie required.",
+     *     description="Modify transfer request.  JWT or Session cookie required.",
+     *     produces={"application/json"},
+     *     tags={"facility"},
+     *     security={"jwt","session"},
+     *     @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
+     *     @SWG\Parameter(name="transferId", in="query", description="Transfer ID", type="integer", required=true),
+     *     @SWG\Parameter(name="action", in="formData", type="string", enum={"approve","reject"}, description="Action to take on transfer request. Valid values: approve, reject"),
+     *     @SWG\Parameter(name="reason", in="formData", type="string", description="Reason for transfer request rejection [required for rejections]"),
+     *     @SWG\Response(
+     *         response="400",
+     *         description="Malformed request, missing required parameter",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Malformed request"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden -- needs to be a staff member, other than mentor",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","message"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="404",
+     *         description="Not found or not active",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="410",
+     *         description="Gone",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Transfer is not pending"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(ref="#/definitions/OK"),
+     *         examples={"application/json":{"status"="OK"}}
+     *     )
+     * )
+     */
+    public function postTransfer(Request $request, string $id, int $transferId) {
+        $facility = Facility::find($id);
+        if (!$facility || !$facility->active) {
+            return response()->json(generate_error("Facility not found or not active"), 404);
+        }
+
+        if (!RoleHelper::isSeniorStaff(\Auth::user()->cid, $facility->id, false) && !RoleHelper::isVATUSAStaff(\Auth::user()->cid)) {
+            return response()->json(generate_error("Forbidden"), 403);
+        }
+
+        $transfer = Transfer::find($transferId);
+        if (!$transfer) {
+            return response()->json(generate_error("Transfer request not found"), 404);
+        }
+
+        if ($transfer->status !== Transfer::$pending) {
+            return response()->json(generate_error("Transfer is not pending"), 410);
+        }
+
+        if ($transfer->to !== $facility->id) {
+            return response()->json(generate_error("Forbidden"), 403);
+        }
+
+        if(!in_array($request->input("action"), ["accept","reject"]) ||
+            ($request->input("action") === "reject" && !$request->filled("reason"))) {
+
+            return response()->json(generate_error("Malformed request"), 400);
+        }
+
+        if ($request->input("action") === "accept") {
+            $transfer->accept(\Auth::user()->cid);
+        } else {
+            $transfer->reject(\Auth::user()->cid, $request->input("reason"));
+        }
+
+        return response()->json(['status'=>"OK"]);
     }
 }
