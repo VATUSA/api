@@ -25,6 +25,10 @@ class SemiPrivateCORS
      * @return mixed
      */
     public function handle($request, Closure $next) {
+        if (env('APP_ENV', 'prod') === "dev") {
+            return $next($request);
+        }
+
         if(in_array($_SERVER['REQUEST_METHOD'], ["GET","PUT","DELETE","POST"])) {
             // First try and authenticate
             $guards = ['jwt','web'];

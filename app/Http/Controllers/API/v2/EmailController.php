@@ -16,8 +16,8 @@ class EmailController extends APIController
     /**
      * @SWG\Get(
      *     path="/email",
-     *     summary="Get info of VATUSA email address assigned for user",
-     *     description="Get info of VATUSA email address assigned for user",
+     *     summary="Get info of VATUSA email address assigned for user. CORS Restricted",
+     *     description="Get info of VATUSA email address assigned for user. CORS Restricted",
      *     produces={"application/json"},
      *     tags={"email"},
      *     security={"jwt","session"},
@@ -75,8 +75,8 @@ class EmailController extends APIController
     /**
      * @SWG\Post(
      *     path="/email",
-     *     summary="Modify email account",
-     *     description="Modify email account",
+     *     summary="Modify email account. CORS Restricted",
+     *     description="Modify email account. CORS Restricted",
      *     produces={"application/json"},
      *     tags={"email"},
      *     security={"jwt","session"},

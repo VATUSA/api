@@ -22,11 +22,11 @@ class ExamController extends APIController
      *
      * @SWG\Post(
      *     path="/exam/queue/{examId}",
-     *     summary="Add exam to queue for the VATUSA Exam Center",
-     *     description="Sets the exam as the queued exam for VEC",
+     *     summary="Add exam to queue for the VATUSA Exam Center. Requires JWT or Session Cookie",
+     *     description="Sets the exam as the queued exam for VEC. Requires JWT or Session Cookie",
      *     produces={"application/json"},
      *     tags={"exam"},
-     *     security={"jwt"},
+     *     security={"jwt","session"},
      *     @SWG\Parameter(
      *         description="Exam ID to place in queue",
      *         in="path",
@@ -84,8 +84,8 @@ class ExamController extends APIController
      *
      * @SWG\Post(
      *     path="/exam/submit",
-     *     summary="Submit exam payload for grading",
-     *     description="Submit exam from VEC for grading",
+     *     summary="Submit exam payload for grading. CORS Restricted",
+     *     description="Submit exam from VEC for grading. CORS Restricted",
      *     produces={"application/json"},
      *     tags={"exam"},
      *     security={"jwt"},
@@ -246,8 +246,8 @@ class ExamController extends APIController
      *
      * @SWG\Get(
      *     path="/exam",
-     *     summary="Generates and sends exam payload for VATUSA Exam Center based on queued exam for JWT auth'd user",
-     *     description="Generates and sends exam payload for VATUSA Exam Center based on queued exam for JWT auth'd user",
+     *     summary="Generates and sends exam payload for VATUSA Exam Center based on queued exam for JWT auth'd user. CORS Restricted",
+     *     description="Generates and sends exam payload for VATUSA Exam Center based on queued exam for JWT auth'd user. CORS Restricted",
      *     produces={"application/json"},
      *     tags={"exam"},
      *     security={"jwt"},

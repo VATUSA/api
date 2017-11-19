@@ -19,12 +19,12 @@ class Transfer extends Model
         return $this->hasOne('App\User', 'cid', 'cid');
     }
 
-    public function to()
+    public function toFac()
     {
         return $this->hasOne('App\Facility', 'id', 'to');
     }
 
-    public function from()
+    public function fromFac()
     {
         return $this->hasOne('App\Facility', 'id', 'from');
     }
@@ -41,17 +41,17 @@ class Transfer extends Model
             [
                 $this->to . "-atm@vatusa.net",
                 $this->to . "-datm@vatusa.net",
-                "vatusa" . $this->to()->region . "@vatusa.net",
+                "vatusa" . $this->toFac->region . "@vatusa.net",
                 $this->from . "-atm@vatusa.net",
                 $this->from . "-datm@vatusa.net",
-                "vatusa" . $this->from()->region . "@vatusa.net",
+                "vatusa" . $this->fromFac->region . "@vatusa.net",
             ],
             "Transfer accepted",
             "emails.transfers.accepted",
             [
-                'fname' => $this->user()->fname,
-                'lname' => $this->user()->lname,
-                'cid' => $this->user()->cid,
+                'fname' => $this->user->fname,
+                'lname' => $this->user->lname,
+                'cid' => $this->user->cid,
                 'to' => $this->to,
                 'from' => $this->from,
             ]
@@ -71,23 +71,23 @@ class Transfer extends Model
 
         EmailHelper::sendEmail(
             [
-                $this->user()->email,
+                $this->user->email,
                 $this->to . "-atm@vatusa.net",
                 $this->to . "-datm@vatusa.net",
-                "vatusa" . $this->to()->region . "@vatusa.net",
+                "vatusa" . $this->toFac->region . "@vatusa.net",
                 $this->from . "-atm@vatusa.net",
                 $this->from . "-datm@vatusa.net",
-                "vatusa" . $this->from()->region . "@vatusa.net"
+                "vatusa" . $this->fromFac->region . "@vatusa.net"
             ],
             "Transfer request rejected",
             "emails.transfers.rejected",
             [
-                'fname' => $this->user()->fname,
-                'lname' => $this->user()->lname,
+                'fname' => $this->user->fname,
+                'lname' => $this->user->lname,
                 'cid' => $this->cid,
-                'facname' => $this->to()->name,
-                'facid' => $this->to()->id,
-                'region' => $this->to()->region,
+                'facname' => $this->toFac->name,
+                'facid' => $this->toFac->id,
+                'region' => $this->toFac->region,
                 'by' => User::findName($by),
                 'msg' => $msg
             ]
