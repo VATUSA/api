@@ -22,7 +22,7 @@ Route::group(['middleware' => ['private','auth:jwt,web'], 'prefix' => '/auth'], 
  * /email
  * Email functions
  */
-Route::group(['middleware' => 'auth:web,jwt', 'prefix' => '/email'], function () {
+Route::group(['middleware' => ['private', 'auth:web,jwt'], 'prefix' => '/email'], function () {
     Route::get('/', 'EmailController@getIndex');
     Route::post('/', 'EmailController@postIndex');
 });
@@ -34,7 +34,7 @@ Route::group(['middleware' => 'auth:web,jwt', 'prefix' => '/email'], function ()
 Route::group(['middleware' => 'auth:web,jwt', 'prefix' => '/exam'], function() {
     Route::post('queue/{id}', 'ExamController@postQueue');
 });
-Route::group(['middleware' => 'auth:jwt', 'prefix' => '/exam'], function() {
+Route::group(['middleware' => ['private','auth:jwt'], 'prefix' => '/exam'], function() {
     Route::get('request', 'ExamController@getRequest');
     Route::post('submit', 'ExamController@postSubmit');
 });
@@ -49,4 +49,11 @@ Route::get('facility/{id}/staff', 'FacilityController@getStaff')->where('id','[A
 Route::get('facility/{id}/roster', 'FacilityController@getRoster')->where('id','[A-Za-z]{3}');
 Route::group(['middleware' => 'auth:web,jwt'], function() {
     Route::post('facility/{id}', 'FacilityController@postFacility')->where('id','[A-Za-z]{3}');
+});
+Route::group(['middleware' => 'auth:web,jwt'], function() {
+    Route::delete('facility/{id}/roster/{cid}', 'FacilityController@deleteRoster')->where(['id' => '[A-Za-z]{3}', 'cid' => '\d+']);
+    Route::post('facility/{id}/transfers/{transferId}', 'FacilityController@postTransfer')->where(['id' => '[A-Za-z]{3}', 'transferId' => '\d+']);
+});
+Route::group(['middleware' => 'semiprivate'], function() {
+    Route::get('facility/{id}/transfers', 'FacilityController@getTransfers')->where('id', '[A-Za-z]{3}');
 });

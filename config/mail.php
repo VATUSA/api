@@ -1,13 +1,13 @@
 <?php
 
 return [
-    'driver' => 'smtp',
-    'host' => 'mail.vatusa.net',
-    'port' => 587,
+    'driver' => env('MAIL_DRIVER'),
+    'host' => env('MAIL_HOST', 'mail.vatusa.net'),
+    'port' => env('MAIL_PORT', 587),
     'from' => ['address' => 'no-reply@vatusa.net', 'name' => 'VATUSA'],
-    'encryption' => null,
-    'username' => 'no-reply@vatusa.net',
-    'password' => env("SUPPORT_EMAIL_PASSWORD"),
+    'encryption' => env('MAIL_ENCRYPT', null),
+    'username' => env('MAIL_USERNAME', 'no-reply@vatusa.net'),
+    'password' => env('MAIL_PASSWORD'),
 
     'sendmail' => '/usr/sbin/sendmail -bs',
     'pretend' => false,
