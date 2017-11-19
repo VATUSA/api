@@ -20,6 +20,6 @@ Route::prefix("/uls")->middleware(['login'])->group(function () {
     Route::prefix("/v2")->group(function() {
        Route::get('login', 'ULSv2Controller@getLogin');
        Route::get('redirect', 'ULSv2Controller@getRedirect');
-       Route::get('verify', 'ULSv2Controller@getVerify');
+       Route::get('info', 'ULSv2Controller@getInfo');
     });
 });

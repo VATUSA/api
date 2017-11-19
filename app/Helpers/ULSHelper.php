@@ -31,6 +31,7 @@ class ULSHelper
     public static function generatev2Token(User $user, Facility $facility) {
         $data = [
             'cid' => $user->cid,
+            'fac' => $facility->id,
             'exp' => time() + 45
         ];
         return encode_json(static::generatev2Signature($data, $facility->uls_secret));
