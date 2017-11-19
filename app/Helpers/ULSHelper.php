@@ -32,7 +32,8 @@ class ULSHelper
         $data = [
             'cid' => $user->cid,
             'fac' => $facility->id,
-            'exp' => time() + 45
+            'ip' => $_SERVER['REMOTE_ADDR'],
+            'exp' => time() + 20
         ];
         return encode_json(static::generatev2Signature($data, $facility->uls_secret));
     }

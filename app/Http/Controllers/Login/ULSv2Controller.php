@@ -7,6 +7,7 @@ use App\Facility;
 use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
 use App\Helpers\ULSHelper;
+use App\Role;
 use App\ULSToken;
 use App\User;
 use Illuminate\Http\Request;
@@ -42,15 +43,7 @@ class ULSv2Controller extends Controller
             abort(400, "Malformed request");
         }
 
-        if (!\Auth::check()) {
-            abort(400, "Failed authentication");
-        }
-
         $facility = Facility::where("id", $request->session()->get("fac"))->first();
-
-        $data = ULSHelper::generatev2Token(\Auth::user(), $facility);
-        $token = urlencode(base64_encode($data));
-        $token = $token . "." . hash('sha256', $facility->uls_secret . '$' . $data);
         $redirect = null;
         if ($request->session()->has("dev")) {
             $request->session()->forget("dev");
@@ -58,6 +51,15 @@ class ULSv2Controller extends Controller
         } else {
             $redirect = $facility->uls_return;
         }
+
+        if (!\Auth::check()) {
+            return redirect("$redirect?cancel");
+        }
+
+        $data = ULSHelper::generatev2Token(\Auth::user(), $facility);
+        $token = urlencode(base64_encode($data));
+        $token = $token . "." . hash('sha256', $facility->uls_secret . '$' . $data);
+
         $request->session()->forget("fac");
 
         if ($redirect) {
@@ -75,15 +77,15 @@ class ULSv2Controller extends Controller
         if (!$request->has("token")) {
             abort(400, "Malformed request");
         }
-        $data = json_decode(base64_decode(urldecode($request->input("token"))));
-        $signature = $data['signature'];
-        unset($data['signature']);
+        $data = json_decode(base64_decode(urldecode($request->input("token"))), true);
+        $signature = $data['sig'];
+        unset($data['sig']);
         $verify_sig = ULSHelper::generatev2Signature($data, env('ULS_SECRET'));
-        if ($signature !== $verify_sig) {
-            return response()->json(['status' => 'Failed'], 401);
+        if ($signature !== $verify_sig['sig']) {
+            return response()->json(['status' => 'Invalid token'], 401);
         }
 
-        if ($data['exp'] > time()) {
+        if ($data['exp'] < time()) {
             return response()->json(['status' => "Expired"], 410);
         }
 
@@ -97,7 +99,7 @@ class ULSv2Controller extends Controller
             'rating' => RatingHelper::intToShort($user->rating),
             'intRating' => $user->rating,
             'facility' => [
-                'id' => $user->facility,
+                'id' => $facility->id,
                 'name' => $facility->name
             ],
             'roles' => []
