@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use App\Facility;
+use App\Role;
 use App\User;
 
 class ULSHelper
@@ -25,6 +26,20 @@ class ULSHelper
         $tokenRaw = $fac->uls_secret . "-" . $_SERVER['REMOTE_ADDR'];
         $token = sha1($tokenRaw);
         return $token;
+    }
+
+    public static function generatev2Token(User $user, Facility $facility) {
+        $data = [
+            'cid' => $user->cid,
+            'exp' => time() + 45
+        ];
+        return encode_json(static::generatev2Signature($data, $facility->uls_secret));
+    }
+
+    public static function generatev2Signature(array $data, $secret) {
+        $signature = hash('sha256', env('ULS_SECRET') . '$' . encode_json($data));
+        $data['sig'] = $signature;
+        return $data;
     }
 
     public static function doHandleLogin($cid, $return) {

@@ -4,6 +4,13 @@ if (env('APP_ENV', 'prod') == "dev") {
         \Auth::loginUsingId('876594');
         return "OK";
     });
+    Route::get('ulstest', function() {
+        $facility = \App\Facility::find('ZAN');
+        $data = \App\Helpers\ULSHelper::generatev2Token(\Auth::user(), $facility);
+        $token = urlencode(base64_encode($data));
+        $token = $token . "." . hash('sha512', $facility->uls_secret . '$' . $data);
+        return $token;
+    });
 }
 
 /******************************************************************************************
