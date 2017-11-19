@@ -19,7 +19,7 @@ class SoloController extends Controller
      */
     public function getCerts($apikey, $cid = null) {
         if (!$cid) {
-            return generate_error("CID field required");
+            return generate_error("CID field required", false);
         }
 
         $return = [
@@ -45,12 +45,12 @@ class SoloController extends Controller
      */
     public function postCert(Request $request, $apikey, $cid, $position) {
         if (!$cid || !$position) {
-            return generate_error("Malformed or missing field");
+            return generate_error("Malformed or missing field", false);
         }
 
         $exp = $request->input("expires", null);
         if (!$exp || !preg_match("/^\d{4}-\d{2}-\d{2}/", $exp)) {
-            return generate_error("Malformed or missing field");
+            return generate_error("Malformed or missing field", false);
         }
 
         if (!isTest()) {
@@ -75,7 +75,7 @@ class SoloController extends Controller
      */
     public function deleteCert(Request $request, $apikey, $cid, $position) {
         if (!$cid || !$position) {
-            return generate_error("Malformed or missing field");
+            return generate_error("Malformed or missing field", false);
         }
 
         if (!isTest()) {

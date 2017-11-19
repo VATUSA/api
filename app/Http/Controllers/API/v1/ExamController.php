@@ -21,7 +21,7 @@ class ExamController extends Controller
     public function getExamResult($apikey, $result_id) {
         $result = ExamResults::find($result_id);
         if (!$result) {
-            return generate_error("Exam result not found");
+            return generate_error("Exam result not found", false);
         }
 
         $return = [];
@@ -53,11 +53,11 @@ class ExamController extends Controller
      */
     public function getUserResults($apikey, $cid) {
         if (!$cid) {
-            return generate_error("CID not specified");
+            return generate_error("CID not specified", false);
         }
         $user = User::find($cid);
         if (!$user) {
-            return generate_error("CID not valid");
+            return generate_error("CID not valid", false);
         }
 
         $results = ExamResults::where('cid', $cid)->orderBy('date')->get();

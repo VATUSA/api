@@ -140,7 +140,7 @@ class PublicController
         $f = Facility::find($facility);
         $error = 0;
         if (!$f || !$f->active) {
-            $return = generate_error("Invalid Facility");
+            $return = generate_error("Invalid Facility", false);
             $error = 1;
         }
         if (is_numeric($ext) && $limit == null) {
@@ -149,7 +149,7 @@ class PublicController
         }
         $ext = strtolower($ext);
         if (!in_array($ext, ["xml", "json"])) {
-            $return = generate_error("Invalid format");
+            $return = generate_error("Invalid format", false);
             $ext = "json";
             $error = 1;
         }

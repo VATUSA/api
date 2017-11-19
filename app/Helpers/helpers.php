@@ -27,7 +27,7 @@ function decode_json($data) {
  * @param bool $asArray
  * @return string|array
  */
-function generate_error($msg, $asArray = false) {
+function generate_error($msg, $asArray = true) {
     if ($asArray) {
         return [
             'status' => 'error',
