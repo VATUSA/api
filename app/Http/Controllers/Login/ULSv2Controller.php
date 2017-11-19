@@ -83,6 +83,29 @@ class ULSv2Controller extends Controller
             return response()->json(['status' => 'Failed'], 401);
         }
 
-        //$user = User::find
+        if ($data['exp'] > time()) {
+            return response()->json(['status' => "Expired"], 410);
+        }
+
+        $user = User::find($data['cid']);
+        $facility = Facility::find($data['fac']);
+        $data = [
+            'cid' => $user->cid,
+            'lastname' => $user->lname,
+            'firstname' => $user->fname,
+            'email' => $user->email,
+            'rating' => RatingHelper::intToShort($user->rating),
+            'intRating' => $user->rating,
+            'facility' => [
+                'id' => $user->facility,
+                'name' => $facility->name
+            ],
+            'roles' => []
+        ];
+        foreach(Role::where('cid', $user->cid)->where('facility', $facility->id)->get() as $role) {
+            $data['roles'][] = $role->role;
+        }
+
+        return encode_json($data);
     }
 }
