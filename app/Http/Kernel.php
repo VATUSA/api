@@ -42,9 +42,12 @@ class Kernel extends HttpKernel
         'login' => [
         ],
 
+        'APIKey' => [
+            \App\Http\Middleware\APIKey::class
+        ],
+
         'semiprivate' => [
             \App\Http\Middleware\SemiPrivateCORS::class,
-            \App\Http\Middleware\RequireHTTPS::class,
         ],
 
         'public' => [

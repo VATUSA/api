@@ -6,9 +6,15 @@ use Closure;
 use App\Facility;
 use App\Helpers\AuthHelper;
 use App\User;
+use Illuminate\Contracts\Auth\Factory as Auth;
 
 class SemiPrivateCORS
 {
+    private $auth;
+
+    public function __construct(Auth $auth) {
+        $this->auth = $auth;
+    }
     /**
      * Handle an incoming request.
      *
@@ -19,47 +25,25 @@ class SemiPrivateCORS
      * @return mixed
      */
     public function handle($request, Closure $next) {
-        /*header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-        header('Access-Control-Allow-Headers: Origin, Content-Type, Accept, Authorization, X-Request-With');
-
-        if ($request->isMethod("OPTIONS")) {
-            return $next($request);
-        } */
-
-        $ip = $request->ip();
-        $apikey = $request->apikey;
-
-        if ($apikey != "vatusa") {
-            if (Facility::where('apikey', $apikey)->where('ip', $ip)->count() < 1 &&
-                Facility::where('api_sandbox_key', $apikey)->where('api_sandbox_ip', $ip)->count() < 1) {
-                \Log::warning("API Unauthorized request from $apikey and $ip");
-                return response()->json(generate_error("Unauthorized", true), 401);
+        if(in_array($_SERVER['REQUEST_METHOD'], ["GET","PUT","DELETE","POST"])) {
+            // First try and authenticate
+            $guards = ['jwt','web'];
+            foreach($guards as $guard) {
+                if ($this->auth->guard($guard)->check()) {
+                    $this->auth->shouldUse($guard);
+                }
             }
 
-            if (Facility::where('api_sandbox_key', $apikey)->where('api_sandbox_ip', $ip)->count() >= 1) {
-                // Sandbox, force test flag..
-                $request->merge(['test' => 1]);
-                $facility = Facility::where('api_sandbox_key', $apikey)->where('api_sandbox_ip', $ip)->first();
+            // Now check it, or require apikey
+            if (!\Auth::check()) {
+                if ($request->has("apikey") && AuthHelper::validApiKey($_SERVER['REMOTE_ADDR'], $request->input("apikey"))) {
+                    return $next($request);
+                }
             } else {
-                $facility = Facility::where('apikey', $apikey)->where('ip', $ip)->first();
+                return $next($request);
             }
-            $data = file_get_contents("php://input");
-            $data .= var_export($_POST, true);
 
-            \DB::table("api_log")->insert(
-                ['facility' => $facility->id,
-                    'datetime' => \DB::raw('NOW()'),
-                    'method' => $request->method(),
-                    'url' => $request->fullUrl(),
-                    'data' => ($request->has('test') ? "SANDBOX: " : "LIVE: ") . $data]);
-        } else {
-            $user = AuthHelper::getAuthUser();
-            if (!($user instanceof User)) {
-                return response()->json(generate_error("Unauthorized", true), 401);
-            }
+            return response()->json(generate_error("Forbidden", true), 401);
         }
-
-        return $next($request);
     }
 }
