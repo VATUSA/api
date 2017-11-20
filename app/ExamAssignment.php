@@ -11,6 +11,6 @@ class ExamAssignment extends Model
 
     public function exam()
     {
-        return $this->belongsTo('App\Exam','exam_id','id')->first();
+        return $this->belongsTo('App\Exam','exam_id','id');
     }
 }
