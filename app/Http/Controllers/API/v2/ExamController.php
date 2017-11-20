@@ -138,7 +138,7 @@ class ExamController extends APIController
 
         // Extract payload and verify signature, should prevent tampering
         $payloads = explode(".", $payload);
-        if (sha1(env('EXAM_SECRET') . '$' . \Auth::user()->cid . '$' . base64_decode($payloads[0])) != $payloads[1]) {
+        if (hash('sha256', env('EXAM_SECRET') . '$' . \Auth::user()->cid . '$' . base64_decode($payloads[0])) != $payloads[1]) {
             return response()->json(generate_error("Signature doesn't match payload", true), 400);
         }
 
@@ -321,7 +321,7 @@ class ExamController extends APIController
         }
         $json['numQuestions'] = $x;
         $json = json_encode($json, JSON_HEX_APOS | JSON_NUMERIC_CHECK);
-        $sig = sha1(env('EXAM_SECRET') . '$' . \Auth::user()->cid . '$' . $json);
+        $sig = hash('sha256', env('EXAM_SECRET') . '$' . \Auth::user()->cid . '$' . $json);
         return response()->json([
             'payload' => base64_encode($json) . "." . $sig
         ]);
