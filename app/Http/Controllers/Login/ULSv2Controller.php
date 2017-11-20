@@ -58,7 +58,7 @@ class ULSv2Controller extends Controller
 
         $data = ULSHelper::generatev2Token(\Auth::user(), $facility);
         $token = urlencode(base64_encode($data));
-        $token = $token . "." . hash('sha256', $facility->uls_secret . '$' . $data);
+        $token = $token . "." . hash_hmac('sha256', $data, $facility->uls_secret);
 
         $request->session()->forget("fac");
 
