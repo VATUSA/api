@@ -18,4 +18,12 @@ class TrainingChapter extends Model
     public function block() {
         return $this->hasOne('App\TrainingBlock', 'id', 'blockid');
     }
+
+    public function isComplete(User $user = null) {
+        if (!$user) {
+            $user = \Auth::user();
+        }
+
+        return (TrainingProgress::where('cid', $user->cid)->where('chapterid', $this->id)->count() >= 1);
+    }
 }
