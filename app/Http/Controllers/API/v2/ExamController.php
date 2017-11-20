@@ -280,7 +280,9 @@ class ExamController extends APIController
         }
         $exam = Exam::find($assign->exam_id);
 
-        // @TODO if (!ExamHelper::examCBTComplete($exam))
+        if (!$exam->CBTComplete(\Auth::user())) {
+            return response()->json(["msg" => "CBTs are not complete", "cbt" => $exam->CBT->name, "cbtFacility" => $exam->CBT->facility], 400);
+        }
 
         if ($exam->number > 0)
             $questions = $exam->questions()->orderBy(\DB::raw('RAND()'))->take($exam->number)->get();
