@@ -72,7 +72,7 @@ class ExamController extends APIController
             return response()->json(generate_error("Forbidden", true), 403);
         }
 
-        \Cache::put('exam.queue.' . $ea->cid, $id, 60);
+        \Cache::put('exam.queue.' . $ea->cid, $examId, 60);
 
         return response()->json(['status' => 'OK']);
     }
