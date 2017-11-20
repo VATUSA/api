@@ -72,8 +72,8 @@ class ExamController extends APIController
             return response()->json(generate_error("Forbidden", true), 403);
         }
 
-        if (!$exam->CBTComplete(\Auth::user())) {
-            return response()->json(["msg" => "CBTs are not complete", "cbt" => $exam->CBT->name, "cbtFacility" => $exam->CBT->facility], 400);
+        if (!$ea->exam->CBTComplete(\Auth::user())) {
+            return response()->json(["msg" => "CBTs are not complete", "cbt" => $ea->exam->CBT->name, "cbtFacility" => $ea->exam->CBT->facility], 400);
         }
 
         \Cache::put('exam.queue.' . $ea->cid, $examId, 60);
