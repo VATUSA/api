@@ -76,7 +76,7 @@ class ULSv2Controller extends Controller
      */
     public function getInfo(Request $request) {
         if (!$request->has("token")) {
-            abort(400, "Malformed request");
+            return response()->json(['status' => 'Malformed request'], 400);
         }
         if (!\Cache::has(urldecode($request->input("token")))) {
             return response()->json(["status" => "Invalid token"], 401);
