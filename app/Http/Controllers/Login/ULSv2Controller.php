@@ -58,6 +58,7 @@ class ULSv2Controller extends Controller
 
         $data = ULSHelper::generatev2Token(\Auth::user(), $facility);
         $token = urlencode(base64_encode($data));
+        \Cache::put($token, "", 1);
         $token = $token . "." . hash_hmac('sha256', $data, $facility->uls_secret);
 
         $request->session()->forget("fac");
@@ -77,6 +78,11 @@ class ULSv2Controller extends Controller
         if (!$request->has("token")) {
             abort(400, "Malformed request");
         }
+        if (!\Cache::has(urldecode($request->input("token")))) {
+            return response()->json(["status" => "Invalid token"], 401);
+        }
+        \Cache::forget(urldecode($request->input("token")));
+
         $data = json_decode(base64_decode(urldecode($request->input("token"))), true);
         $signature = $data['sig'];
         unset($data['sig']);
