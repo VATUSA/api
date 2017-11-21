@@ -26,7 +26,7 @@ class ULSv2Controller extends Controller
         }
 
         $facility = Facility::find($request->get('fac'));
-        if (!$facility->active) {
+        if (!$facility || !$facility->active) {
             throw new FacilityNotFoundException("Invalid facility");
         }
 
