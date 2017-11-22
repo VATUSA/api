@@ -45,12 +45,19 @@ class SoloController extends Controller
      */
     public function postCert(Request $request, $apikey, $cid, $position) {
         if (!$cid || !$position) {
-            return generate_error("Malformed or missing field", false);
+            return response()->json(['status'=>'error','msg'=>"Invalid/missing field"], 400);
+        }
+
+        if (!preg_match("/^([A-Z0-9]{3})_(APP|CTR)$/", $position)) {
+            return response()->json(['status'=>'error','msg'=>"Invalid position"], 400);
         }
 
         $exp = $request->input("expires", null);
         if (!$exp || !preg_match("/^\d{4}-\d{2}-\d{2}/", $exp)) {
             return generate_error("Malformed or missing field", false);
+        }
+        if (\Carbon\Carbon::createFromFormat('Y-m-d', $exp)->diffInDays() > 30) {
+            return response()->json(['status'=>'error','msg'=>'Cannot be greater than 30 days'], 400);
         }
 
         if (!isTest()) {
