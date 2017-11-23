@@ -1,6 +1,7 @@
 <?php
 namespace App\Helpers;
 
+use App\Facility;
 use Cache;
 use App\Role;
 use App\User;
@@ -67,10 +68,44 @@ class RoleHelper {
             return false;
         }
 
-        $role = Role::where("facility", $facility)->where("cid", $cid)->where("role", $role)->count();
-        if ($role) {
+        $r = Role::where("facility", $facility)->where("cid", $cid)->where("role", $role)->count();
+        if ($r >= 1) {
             return true;
         }
+        return false;
+    }
+
+    /**
+     * Is the user allowed to modify a given role?
+     *
+     * @param User $user
+     * @param Facility $facility
+     * @param Role $role
+     * @return bool
+     */
+    public static function canModify(User $user, Facility $facility, Role $role) {
+        if ($facility === "ZHQ") {
+            if (static::isVATUSAStaff($user->cid, true)) {
+                return true;
+            }
+            return false;
+        }
+
+        switch($role) {
+            case "ATM":
+            case "DATM":
+            case "TA":
+                if (static::isVATUSAStaff($user->cid, true)) {
+                    return true;
+                }
+                break;
+            default:
+                if (static::has($user->cid, $facility, ['ATM','DATM']) || static::isVATUSAStaff($user->cid)) {
+                    return true;
+                }
+                break;
+        }
+
         return false;
     }
 

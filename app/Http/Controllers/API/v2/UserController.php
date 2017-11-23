@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API\v2;
 
 use App\Helpers\AuthHelper;
+use App\Helpers\EmailHelper;
 use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
 use App\Role;
@@ -13,60 +14,63 @@ use Illuminate\Http\Request;
 use App\Facility;
 
 /**
- * Class FacilityController
+ * Class UserController
  * @package App\Http\Controllers\API\v2
  */
-class FacilityController extends APIController
+class UserController extends APIController
 {
     /**
      * @return array|string
      *
-     * @SWG\Get(
-     *     path="/facility",
-     *     summary="Get list of VATUSA facilities",
-     *     description="Get list of VATUSA facilities",
+     * @SWG\Put(
+     *     path="/user/(cid)/roles/(facility)/(role)",
+     *     summary="Assign new role",
+     *     description="Assign new role",
      *     produces={"application/json"},
      *     tags={"facility"},
+     *     security={"jwt","session"},
+     *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
+     *     @SWG\Parameter(name="facility", in="path", required=true, type="string", description="Facility IATA ID"),
+     *     @SWG\Parameter(name="role", in="path", required=true, type="string", description="Role"),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthenticated",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
      *     @SWG\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
-     *             type="array",
-     *             @SWG\Items(
-     *                 type="object",
-     *                 @SWG\Property(property="id", type="string", description="IATA identifier of facility"),
-     *                 @SWG\Property(property="name", type="string", description="Name of facility"),
-     *                 @SWG\Property(property="url", type="string", description="Facility web address")
-     *             ),
-     *         ),
-     *         examples={
-     *              "application/json":{
-     *                      {"id":"ZAE","name":"Academy","url":"https://www.vatusa.net"},
-     *              }
-     *         }
+     *         @SWG\Schema(ref="#/definitions/OK"),
+     *         examples={"application/json":{"status"="OK"}}
      *     )
      * )
      */
-    public function getIndex() {
-        if (\Cache::has("facility.list.active")) {
-            return \Cache::get("facility.list.active");
+    public function putRole($cid, $facility, $role) {
+        $facility = Facility::find($facility);
+        if (!$facility || ($facility->active != 1 && $facility->id != "ZHQ" && $facility->id != "ZAE")) {
+            return response()->json(generate_error("Facility not found or invalid"), 404);
         }
 
-        $facilities = \FacilityHelper::getFacilities("name", $all);
-        $data = [];
-        foreach ($facilities as $facility) {
-            $data[] = [
-                'id' => $facility->id,
-                'name' => $facility->name,
-                'url' => $facility->url
-            ];
+        if (!RoleHelper::canModify(\Auth::user(), $facility, $role)) {
+            return response()->json(generate_error("Forbidden"), 403);
         }
-        $data = json_encode($data);
 
-        // Store for 24 hours
-        \Cache::put("facility.list.active", $data, 24 * 60);
-
-        return $data;
+        if (in_array($role, ['ATM','DATM','TA','EC','FE','WM'])) {
+            if (Role::where("facility", $facility->id)->where("role", $role)->count() == 0) {
+                // New person, setup the forward
+                $email = strtolower($facility->id . "-" . $role . "@vatusa.net");
+                if (!EmailHelper::deleteForward($email)) {
+                    \Log::critical("Couldn't delete forward for $email");
+                }
+            }
+        }
     }
 
     /**
@@ -172,12 +176,6 @@ class FacilityController extends APIController
      *     @SWG\Parameter(name="ulsSecret", in="formData", type="string", description="Request new ULS Secret, role restricted [ATM, DATM, WM]"),
      *     @SWG\Parameter(name="ulsReturn", in="formData", type="string", description="Set new ULS return point, role restricted [ATM, DATM, WM]"),
      *     @SWG\Parameter(name="ulsDevReturn", in="formData", type="string", description="Set new ULS developmental return point, role restricted [ATM, DATM, WM]"),
-     *     @SWG\Response(
-     *         response="401",
-     *         description="Unauthenticated",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
-     *     ),
      *     @SWG\Response(
      *         response="403",
      *         description="Forbidden",
@@ -474,12 +472,6 @@ class FacilityController extends APIController
      *         description="Malformed request, missing required parameter",
      *         @SWG\Schema(ref="#/definitions/error"),
      *         examples={"application/json":{"status"="error","msg"="Malformed request"}},
-     *     ),
-     *     @SWG\Response(
-     *         response="401",
-     *         description="Unauthenticated",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
      *     ),
      *     @SWG\Response(
      *         response="403",

@@ -162,6 +162,10 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     public function hasEmailAccess($email) {
         $eparts = explode("@", $email);
 
+        if (RoleHelper::isVATUSAStaff($this->cid)) {
+            return true;
+        }
+
         // Facility address
         // (facility)-(position)@vatusa.net
         if (strpos($eparts[0], "-") >= 1) {
