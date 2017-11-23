@@ -80,10 +80,10 @@ class RoleHelper {
      *
      * @param User $user
      * @param Facility $facility
-     * @param Role $role
+     * @param string $role
      * @return bool
      */
-    public static function canModify(User $user, Facility $facility, Role $role) {
+    public static function canModify(User $user, Facility $facility, string $role) {
         if ($facility === "ZHQ") {
             if (static::isVATUSAStaff($user->cid, true)) {
                 return true;
