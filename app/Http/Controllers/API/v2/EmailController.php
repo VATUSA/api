@@ -29,14 +29,14 @@ class EmailController extends APIController
      *             type="array",
      *             @SWG\Items(
      *                 type="object",
-     *                 @SWG\Property(property="type", type="string", description="Type of email (forward/full)"),
+     *                 @SWG\Property(property="type", type="string", description="Type of email (forward/full/static)"),
      *                 @SWG\Property(property="email", type="string", description="Email address"),
      *                 @SWG\Property(property="destination", type="string", description="Destination for email forwards")
      *             ),
      *         ),
      *         examples={
      *              "application/json":{
-     *                      {"type":"forward","email":"test@vatusa.net"},
+     *                      {"type":"forward","email":"test@vatusa.net","destination":"test2@vatusa.net"},
      *                      {"type":"full","email":"easy@vatusa.net"}
      *              }
      *         }
@@ -49,21 +49,25 @@ class EmailController extends APIController
         foreach ($return as $row) {
             if ($row->facility === "ZHQ" && preg_match("/^US(\d+)$/", $row->role, $matches)) {
                 $temp = [
-                    "type" => EmailHelper::getType("vatusa" . $matches[1] . "@vatusa.net"),
+                    "type" => EmailHelper::isStaticForward("vatusa" . $matches[1] . "@vatusa.net") ?
+                        EmailHelper::$email_static :
+                        EmailHelper::getType("vatusa" . $matches[1] . "@vatusa.net"),
                     "email" => "vatusa" . $matches[1] . "@vatusa.net",
                 ];
-                if ($temp['type'] === EmailHelper::$email_forward) {
+                if ($temp['type'] === EmailHelper::$email_forward || $temp['type'] === EmailHelper::$email_static) {
                     $temp['destination'] = implode(",", EmailHelper::forwardDestination($temp['email']));
                 }
                 $response[] = $temp;
             }
             if ($row->facility !== "ZHQ" && $row->facility !== "ZAE" && in_array($row->role, ["ATM", "DATM", "TA", "EC", "FE", "WM"])) {
                 $temp = [
-                    "type" => EmailHelper::getType(strtolower($row->facility . "-" . $row->role . "@vatusa.net")),
+                    "type" => EmailHelper::isStaticFoward(strtolower($row->facility . "-" . $row->role . "@vatusa.net")) ?
+                        EmailHelper::$email_static :
+                        EmailHelper::getType(strtolower($row->facility . "-" . $row->role . "@vatusa.net")),
                     "email" => strtolower($row->facility . "-" . $row->role . "@vatusa.net"),
 
                 ];
-                if ($temp['type'] === EmailHelper::$email_forward) {
+                if ($temp['type'] === EmailHelper::$email_forward || $temp['type'] === EmailHelper::$email_static) {
                     $temp["destination"] = implode(",", EmailHelper::forwardDestination($temp['email']));
                 }
                 $response[] = $temp;
