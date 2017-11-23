@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\v2;
 
 use App\Action;
 use App\Helpers\EmailHelper;
+use App\Helpers\RoleHelper;
 use App\Role;
 use App\User;
 use Illuminate\Http\Request;
@@ -80,7 +81,7 @@ class EmailController extends APIController
      * @SWG\Post(
      *     path="/email",
      *     summary="Modify email account. CORS Restricted",
-     *     description="Modify email account. CORS Restricted",
+     *     description="Modify email account. Static forwards may only be modified by the ATM, DATM or WM. CORS Restricted",
      *     produces={"application/json"},
      *     tags={"email"},
      *     security={"jwt","session"},
@@ -128,6 +129,11 @@ class EmailController extends APIController
 
         if (!\Auth::user()->hasEmailAccess($email)) {
             return response()->json(generate_error("Forbidden", true), 403);
+        }
+
+        if (EmailHelper::isStaticFoward($email) &&
+            !RoleHelper::has(\Auth::user()->cid, strtoupper(substr($email, 0, 3)), ['ATM','DATM','WM'])) {
+            return response()->json(generate_error("Forbidden static rules"), 403);
         }
 
         /* Now determine which course of action:
