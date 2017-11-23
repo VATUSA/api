@@ -62,4 +62,18 @@ class Handler extends ExceptionHandler
         ], $status);
         //return parent::render($request, $exception);
     }
+
+    /**
+     * Override the unauthenicated method to return JSON and in our format.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param AuthenticationException $exception
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function unauthenticated($request, \Illuminate\Auth\AuthenticationException $exception) {
+        return response()->json([
+            'status' => 'error',
+            'msg' => 'Unauthenticated'
+        ], 401);
+    }
 }

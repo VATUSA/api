@@ -1,6 +1,7 @@
 <?php
 namespace App\Helpers;
 
+use App\EmailConfig;
 use Mail;
 
 /**
@@ -8,14 +9,12 @@ use Mail;
  * @package App\Helpers
  */
 class EmailHelper {
-    /**
-     * @var string
-     */
     public static $email_full = "FULL";
-    /**
-     * @var string
-     */
     public static $email_forward = "FORWARD";
+    public static $email_static = "STATIC";
+
+    public static $config_user = "user";
+    public static $config_static = "static";
 
     /**
      * @param $email
@@ -146,6 +145,38 @@ class EmailHelper {
             }
         }
         return static::$email_full;
+    }
+
+    /**
+     * @param string $email
+     * @return bool
+     */
+    public static function isStaticForward($email) {
+        $email = EmailConfig::find($email);
+        if (!$email) {
+            \Log::critical("Missing email config $email in EmailHelper::isStaticForward()");
+            return false;
+        }
+
+        return $email->isStatic();
+    }
+
+    /**
+     * @param $email
+     * @param $type
+     * @param null $destination
+     */
+    public static function chgEmailConfig($email, $type, $destination = null) {
+        $email = EmailConfig::find($email);
+        if (!in_array($type, [EmailConfig::$configStatic, EmailConfig::$configUser])) {
+            throw new Exception("Invalid type $type");
+        }
+
+        $email->config = $type;
+        $email->destination = $destination;
+        $email->modified_by = \Auth::user()->cid;
+        $email->updated_at = \DB::raw("NOW()");
+        $email->save();
     }
 
     /**

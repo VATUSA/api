@@ -24,6 +24,7 @@ Route::group(['middleware' => ['private','auth:jwt,web'], 'prefix' => '/auth'], 
  */
 Route::group(['middleware' => ['private', 'auth:web,jwt'], 'prefix' => '/email'], function () {
     Route::get('/', 'EmailController@getIndex');
+    Route::get('/{address}', 'EmailController@getEmail');
     Route::post('/', 'EmailController@postIndex');
 });
 
