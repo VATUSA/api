@@ -151,7 +151,7 @@ class EmailHelper {
      * @param string $email
      * @return bool
      */
-    public static function isStaticFoward($email) {
+    public static function isStaticForward($email) {
         $email = EmailConfig::find($email);
         if (!$email) {
             \Log::critical("Missing email config $email in EmailHelper::isStaticForward()");
@@ -175,7 +175,7 @@ class EmailHelper {
         $email->config = $type;
         $email->destination = $destination;
         $email->modified_by = \Auth::user()->cid;
-        $email->modified_at = \DB::raw("NOW()");
+        $email->updated_at = \DB::raw("NOW()");
         $email->save();
     }
 

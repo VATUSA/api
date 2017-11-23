@@ -70,7 +70,7 @@ class Handler extends ExceptionHandler
      * @param AuthenticationException $exception
      * @return \Illuminate\Http\JsonResponse
      */
-    public function unauthenticated($request, AuthenticationException $exception) {
+    public function unauthenticated($request, \Illuminate\Auth\AuthenticationException $exception) {
         return response()->json([
             'status' => 'error',
             'msg' => 'Unauthenticated'

@@ -68,8 +68,8 @@ class RoleHelper {
             return false;
         }
 
-        $role = Role::where("facility", $facility)->where("cid", $cid)->where("role", $role)->count();
-        if ($role) {
+        $r = Role::where("facility", $facility)->where("cid", $cid)->where("role", $role)->count();
+        if ($r >= 1) {
             return true;
         }
         return false;
