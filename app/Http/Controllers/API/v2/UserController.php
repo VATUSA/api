@@ -20,6 +20,39 @@ use App\Facility;
 class UserController extends APIController
 {
     /**
+     * @param string $facility
+     * @param string $role
+     * @return array|string
+     *
+     * @TODO
+     *
+     * @SWG\Get(
+     *     path="/user/roles/(facility)/(role)",
+     *     summary="Get users assigned to specific role",
+     *     description="Get users assigned to specific role",
+     *     produces={"application/json"},
+     *     tags={"user","role"},
+     *     @SWG\Parameter(name="facility", in="path", required=true, type="string", description="Facility IATA ID"),
+     *     @SWG\Parameter(name="role", in="path", required=true, type="string", description="Role"),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="array",
+     *             @SWG\Items(
+     *                 type="object",
+     *                 @SWG\Property(property="cid",type="integer",description="CERT ID of user"),
+     *                 @SWG\Property(property="lastname",type="string",description="Last name"),
+     *                 @SWG\Property(property="firstname",type="string",description="First name"),
+     *             ),
+     *         ),
+     *     )
+     * ),
+     */
+    public function getRoleUsers($facility, $role) {
+
+    }
+    /**
      * @param int $cid
      * @param string $facility
      * @param string $role
@@ -153,6 +186,8 @@ class UserController extends APIController
     /**
      * @return array|string
      *
+     * @TODO
+     *
      * @SWG\Put(
      *     path="/user/(cid)/transfer",
      *     summary="Submit transfer request. Requires JWT or Session Cookie",
@@ -195,6 +230,8 @@ class UserController extends APIController
     /**
      * @return array|string
      *
+     * @TODO
+     *
      * @SWG\Get(
      *     path="/user/(cid)/transfer/checklist",
      *     summary="Get user's transfer checklist. Requires JWT, API Key, or Session Cookie",
@@ -235,6 +272,8 @@ class UserController extends APIController
     }
     /**
      * @return array|string
+     *
+     * @TODO
      *
      * @SWG\Post(
      *     path="/user/(cid)/rating",
@@ -281,6 +320,8 @@ class UserController extends APIController
     /**
      * @return array|string
      *
+     * @TODO
+     *
      * @SWG\Get(
      *     path="/user/(cid)/rating/history",
      *     summary="Get user's rating history. Requires JWT, API Key or Session Cookie",
@@ -324,6 +365,8 @@ class UserController extends APIController
     /**
      * @return array|string
      *
+     * @TODO
+     *
      * @SWG\Put(
      *     path="/user/(cid)/log",
      *     summary="Submit entry to controller's action log. Requires JWT or Session Cookie",
@@ -359,6 +402,8 @@ class UserController extends APIController
 
     /**
      * @return array|string
+     *
+     * @TODO
      *
      * @SWG\Get(
      *     path="/user/(cid)/transfer/history",
@@ -403,6 +448,8 @@ class UserController extends APIController
 
     /**
      * @return array|string
+     *
+     * @TODO
      *
      * @SWG\Get(
      *     path="/user/(cid)/cbt/history",
@@ -450,6 +497,8 @@ class UserController extends APIController
     /**
      * @return array|string
      *
+     * @TODO
+     *
      * @SWG\Put(
      *     path="/user/(cid)/cbt/progress/(blockId)",
      *     summary="Get user's CBT history. Requires JWT, API Key or Session Cookie",
@@ -485,6 +534,8 @@ class UserController extends APIController
 
     /**
      * @return array|string
+     *
+     * @TODO
      *
      * @SWG\Get(
      *     path="/user/(cid)/exam/history",
