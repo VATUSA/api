@@ -1916,16 +1916,16 @@
         },
         {
             "name": "swagger-api/swagger-ui",
-            "version": "v3.4.5",
+            "version": "v3.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/swagger-api/swagger-ui.git",
-                "reference": "2ad1bacf6f44e11e1256d09b99aa5fc400ebe0ca"
+                "reference": "91e7ade0599c760f4eae8f77e3d01b0bba43166f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/swagger-api/swagger-ui/zipball/2ad1bacf6f44e11e1256d09b99aa5fc400ebe0ca",
-                "reference": "2ad1bacf6f44e11e1256d09b99aa5fc400ebe0ca",
+                "url": "https://api.github.com/repos/swagger-api/swagger-ui/zipball/91e7ade0599c760f4eae8f77e3d01b0bba43166f",
+                "reference": "91e7ade0599c760f4eae8f77e3d01b0bba43166f",
                 "shasum": ""
             },
             "type": "library",
@@ -1969,7 +1969,7 @@
                 "swagger",
                 "ui"
             ],
-            "time": "2017-11-18T07:11:06+00:00"
+            "time": "2017-11-23T19:01:28+00:00"
         },
         {
             "name": "swiftmailer/swiftmailer",
@@ -3172,16 +3172,16 @@
         },
         {
             "name": "filp/whoops",
-            "version": "2.1.13",
+            "version": "2.1.14",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filp/whoops.git",
-                "reference": "9f640a4f129e57d3537887f840380109a4dd182b"
+                "reference": "c6081b8838686aa04f1e83ba7e91f78b7b2a23e6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filp/whoops/zipball/9f640a4f129e57d3537887f840380109a4dd182b",
-                "reference": "9f640a4f129e57d3537887f840380109a4dd182b",
+                "url": "https://api.github.com/repos/filp/whoops/zipball/c6081b8838686aa04f1e83ba7e91f78b7b2a23e6",
+                "reference": "c6081b8838686aa04f1e83ba7e91f78b7b2a23e6",
                 "shasum": ""
             },
             "require": {
@@ -3229,7 +3229,7 @@
                 "throwable",
                 "whoops"
             ],
-            "time": "2017-11-17T08:15:51+00:00"
+            "time": "2017-11-23T18:22:44+00:00"
         },
         {
             "name": "fzaninotto/faker",

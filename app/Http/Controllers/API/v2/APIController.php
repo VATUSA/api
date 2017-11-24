@@ -17,6 +17,15 @@ use \App\Http\Controllers\Controller as BaseController;
  *         title="VATUSA API",
  *         @SWG\Contact(name="Daniel Hawton", url="https://www.danielhawton.com"),
  *     ),
+ *     @SWG\Tag(name="auth",description="Internal Authentication handling commands for use by VATUSA Web Systems to translate Laravel Sessions into JSON Web Tokens"),
+ *     @SWG\Tag(name="cbt",description="Handle Computer Based Training actions"),
+ *     @SWG\Tag(name="email",description="Handle user email addresses for staff members"),
+ *     @SWG\Tag(name="exam",description="Exam center actions"),
+ *     @SWG\Tag(name="facility",description="Facility management actions"),
+ *     @SWG\Tag(name="transfer",description="Transfer request submission and handling actions"),
+ *     @SWG\Tag(name="rating",description="Rating change handling"),
+ *     @SWG\Tag(name="role",description="Role handling"),
+ *     @SWG\Tag(name="user",description="USer account management actions"),
  * )
  */
 class APIController extends BaseController {
