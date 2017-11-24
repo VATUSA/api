@@ -202,7 +202,7 @@ class ExamController extends APIController
         $log = new Action();
         $log->to = \Auth::user()->cid;
         $log->log = "Exam (" . $exam->facility_id . ") " . $exam->name . " completed.  Score $correct/$possible ($score%).";
-        $log->log .= ($exam->passed) ? " Passed." : " Not Passed.";
+        $log->log .= ($result->passed) ? " Passed." : " Not Passed.";
         $log->save();
 
         $data = [
