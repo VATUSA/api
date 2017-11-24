@@ -2,7 +2,7 @@
 /public/hot
 /public/storage
 /storage/*.key
-/storage/api-docs/*
+/storage/api-docs/api-docs.json
 /vendor
 /.idea
 /.vagrant
