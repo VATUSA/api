@@ -20,14 +20,19 @@ use App\Facility;
 class UserController extends APIController
 {
     /**
+     * @param int $cid
+     * @param string $facility
+     * @param string $role
      * @return array|string
+     *
+     * @TODO Add role, add action log entry
      *
      * @SWG\Put(
      *     path="/user/(cid)/roles/(facility)/(role)",
      *     summary="Assign new role",
      *     description="Assign new role",
      *     produces={"application/json"},
-     *     tags={"facility"},
+     *     tags={"user"},
      *     security={"jwt","session"},
      *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
      *     @SWG\Parameter(name="facility", in="path", required=true, type="string", description="Facility IATA ID"),
@@ -75,12 +80,14 @@ class UserController extends APIController
     /**
      * @return array|string
      *
+     * @TODO add action log entry
+     *
      * @SWG\Delete(
      *     path="/user/(cid)/roles/(facility)/(role)",
      *     summary="Delete role",
      *     description="Delete role",
      *     produces={"application/json"},
-     *     tags={"facility"},
+     *     tags={"user"},
      *     security={"jwt","session"},
      *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
      *     @SWG\Parameter(name="facility", in="path", required=true, type="string", description="Facility IATA ID"),
@@ -143,5 +150,90 @@ class UserController extends APIController
             }
         }
     }
+    /**
+     * @return array|string
+     *
+     * @SWG\Put(
+     *     path="/user/(cid)/transfer",
+     *     summary="Submit transfer request",
+     *     description="Submit transfer request",
+     *     produces={"application/json"},
+     *     tags={"user"},
+     *     security={"jwt","session"},
+     *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
+     *     @SWG\Parameter(name="facility", in="formData", required=true, type="string", description="Facility IATA ID"),
+     *     @SWG\Parameter(name="reason", in="formData", required=true, type="string", description="Reason for transfer request"),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthenticated",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="409",
+     *         description="There was a conflict, usually meaning the user has a pending transfer request",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Conflict"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(ref="#/definitions/OK"),
+     *         examples={"application/json":{"status"="OK"}}
+     *     )
+     * )
+     */
+    public function putTransfer($cid) {
 
+    }
+    /**
+     * @return array|string
+     *
+     * @SWG\Post(
+     *     path="/user/(cid)/rating",
+     *     summary="Submit rating change",
+     *     description="Submit rating change",
+     *     produces={"application/json"},
+     *     tags={"user"},
+     *     security={"jwt","session"},
+     *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
+     *     @SWG\Parameter(name="rating", in="formData", required=true, type="string", description="Rating to change rating to"),
+     *     @SWG\Parameter(name="examDate", in="formData", type="string", description="Date of exam (format, YYYY-MM-DD) required for C1 and below"),
+     *     @SWG\Parameter(name="examiner", in="formData", type="integer", description="CID of Examiner, if not provided or null will default to authenticated user, required for C1 and below"),
+     *     @SWG\Parameter(name="position", in="formData", type="string", description="Position sat during exam, required for C1 and below"),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthenticated",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="409",
+     *         description="Conflict, when current rating and promoted rating are the same",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Conflict"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(ref="#/definitions/OK"),
+     *         examples={"application/json":{"status"="OK"}}
+     *     )
+     * )
+     */
+    public function postRating($cid) {
+
+    }
 }
