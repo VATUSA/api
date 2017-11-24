@@ -532,8 +532,8 @@ class FacilityController extends APIController
      *
      * @SWG\Get(
      *     path="/facility/{id}/transfers",
-     *     summary="Get pending transfers",
-     *     description="Get pending transfers",
+     *     summary="Get pending transfers. Requires JWT, API Key or Session Cookie",
+     *     description="Get pending transfers. Requires JWT, API Key or Session Cookie",
      *     produces={"application/json"},
      *     tags={"facility"},
      *     security={"jwt","session","apikey"},

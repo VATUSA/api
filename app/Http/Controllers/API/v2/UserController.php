@@ -29,8 +29,8 @@ class UserController extends APIController
      *
      * @SWG\Put(
      *     path="/user/(cid)/roles/(facility)/(role)",
-     *     summary="Assign new role",
-     *     description="Assign new role",
+     *     summary="Assign new role. Requires JWT or Session Cookie",
+     *     description="Assign new role. Requires JWT or Session Cookie",
      *     produces={"application/json"},
      *     tags={"user"},
      *     security={"jwt","session"},
@@ -84,8 +84,8 @@ class UserController extends APIController
      *
      * @SWG\Delete(
      *     path="/user/(cid)/roles/(facility)/(role)",
-     *     summary="Delete role",
-     *     description="Delete role",
+     *     summary="Delete role. Requires JWT or Session Cookie",
+     *     description="Delete role. Requires JWT or Session Cookie",
      *     produces={"application/json"},
      *     tags={"user"},
      *     security={"jwt","session"},
@@ -155,8 +155,8 @@ class UserController extends APIController
      *
      * @SWG\Put(
      *     path="/user/(cid)/transfer",
-     *     summary="Submit transfer request",
-     *     description="Submit transfer request",
+     *     summary="Submit transfer request. Requires JWT or Session Cookie",
+     *     description="Submit transfer request. Requires JWT or Session Cookie",
      *     produces={"application/json"},
      *     tags={"user"},
      *     security={"jwt","session"},
@@ -195,10 +195,51 @@ class UserController extends APIController
     /**
      * @return array|string
      *
+     * @SWG\Get(
+     *     path="/user/(cid)/transfer/checklist",
+     *     summary="Get user's transfer checklist. Requires JWT, API Key, or Session Cookie",
+     *     description="Get user's checklist. Requires JWT, API Key, or Session Cookie",
+     *     produces={"application/json"},
+     *     tags={"user"},
+     *     security={"jwt","session","apikey"},
+     *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthenticated",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="array",
+     *             @SWG\Items(
+     *                 type="object",
+     *                 @SWG\Property(property="item", type="string", description="Checklist checked item"),
+     *                 @SWG\Property(property="result", type="string", description="Result of check (OK, FAIL)"),
+     *                 @SWG\Property(property="other", type="string", description="Misc info for checked item (ie, number of days since last transfer for 90 day check)")
+     *             )
+     *         ),
+     *     )
+     * )
+     */
+    public function getTransferChecklist($cid) {
+
+    }
+    /**
+     * @return array|string
+     *
      * @SWG\Post(
      *     path="/user/(cid)/rating",
-     *     summary="Submit rating change",
-     *     description="Submit rating change",
+     *     summary="Submit rating change. Requires JWT or Session Cookie",
+     *     description="Submit rating change. Requires JWT or Session Cookie",
      *     produces={"application/json"},
      *     tags={"user"},
      *     security={"jwt","session"},
@@ -234,6 +275,255 @@ class UserController extends APIController
      * )
      */
     public function postRating($cid) {
+
+    }
+
+    /**
+     * @return array|string
+     *
+     * @SWG\Get(
+     *     path="/user/(cid)/rating/history",
+     *     summary="Get user's rating history. Requires JWT, API Key or Session Cookie",
+     *     description="Get user's rating history. Requires JWT, API Key or Session Cookie",
+     *     produces={"application/json"},
+     *     tags={"user"},
+     *     security={"jwt","session","apikey"},
+     *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthenticated",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="array",
+     *             @SWG\Items(
+     *                 type="object",
+     *                 @SWG\Property(property="id", type="integer", description="Promotion ID Number"),
+     *                 @SWG\Property(property="date", type="string", description="Date of Transfer (YYYY-MM-DD)"),
+     *                 @SWG\Property(property="ratingTo", type="string", description="Rating given (S1, S2, etc)"),
+     *                 @SWG\Property(property="ratingFrom", type="string", description="Previous rating (S1, S2, etc)"),
+     *             )
+     *         ),
+     *     )
+     * )
+     */
+    public function getRatingHistory($cid) {
+
+    }
+
+    /**
+     * @return array|string
+     *
+     * @SWG\Put(
+     *     path="/user/(cid)/log",
+     *     summary="Submit entry to controller's action log. Requires JWT or Session Cookie",
+     *     description="Submit entry to controller's action log. Requires JWT or Session Cookie",
+     *     produces={"application/json"},
+     *     tags={"user"},
+     *     security={"jwt","session"},
+     *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
+     *     @SWG\Parameter(name="entry", in="formData", required=true, type="string", description="Entry to log"),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthenticated",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(ref="#/definitions/OK"),
+     *         examples={"application/json":{"status"="OK"}}
+     *     )
+     * )
+     */
+    public function putActionLog($cid) {
+
+    }
+
+    /**
+     * @return array|string
+     *
+     * @SWG\Get(
+     *     path="/user/(cid)/transfer/history",
+     *     summary="Get user's transfer history. Requires JWT or Session Cookie",
+     *     description="Get user's history. Requires JWT or Session Cookie",
+     *     produces={"application/json"},
+     *     tags={"user"},
+     *     security={"jwt","session","apikey"},
+     *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthenticated",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="array",
+     *             @SWG\Items(
+     *                 type="object",
+     *                 @SWG\Property(property="id", type="integer", description="Transfer ID Number"),
+     *                 @SWG\Property(property="date", type="string", description="Date of Transfer (YYYY-MM-DD)"),
+     *                 @SWG\Property(property="facilityTo", type="string", description="Facility IATA ID request was addressed to"),
+     *                 @SWG\Property(property="facilityFrom", type="string", description="Facility IATA ID user was in"),
+     *                 @SWG\Property(property="status", type="string", description="Status of request (pending, approved, rejected)")
+     *             )
+     *         ),
+     *     )
+     * )
+     */
+    public function getTransferHistory($cid) {
+
+    }
+
+    /**
+     * @return array|string
+     *
+     * @SWG\Get(
+     *     path="/user/(cid)/cbt/history",
+     *     summary="Get user's CBT history. Requires JWT, API Key or Session Cookie",
+     *     description="Get user's CBT history. Requires JWT, API Key or Session Cookie",
+     *     produces={"application/json"},
+     *     tags={"user"},
+     *     security={"jwt","session","apikey"},
+     *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
+     *     @SWG\Parameter(name="completedOnly", in="query", type="boolean", description="Display only completed CBT Blocks"),
+     *     @SWG\Parameter(name="facility", in="query", type="string", description="Filter for facility IATA ID"),
+     *     @SWG\Parameter(name="blockId", in="query", type="integer", description="Lookup progress of specific Block ID"),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthenticated",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="array",
+     *             @SWG\Items(
+     *                 type="object",
+     *                 @SWG\Property(property="id", type="integer", description="Block ID Number"),
+     *                 @SWG\Property(property="facility", type="string", description="Block's owning facility"),
+     *                 @SWG\Property(property="blockName", type="string", description="Name of block"),
+     *                 @SWG\Property(property="completed", type="boolean"),
+     *             )
+     *         ),
+     *     )
+     * )
+     */
+    public function getCBTProgress($cid) {
+
+    }
+
+    /**
+     * @return array|string
+     *
+     * @SWG\Put(
+     *     path="/user/(cid)/cbt/progress/(blockId)",
+     *     summary="Get user's CBT history. Requires JWT, API Key or Session Cookie",
+     *     description="Get user's CBT history. Requires JWT, API Key or Session Cookie",
+     *     produces={"application/json"},
+     *     tags={"user"},
+     *     security={"jwt","session","apikey"},
+     *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
+     *     @SWG\Parameter(name="blockId", in="query", type="integer", description="Mark progress of specific Block ID"),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthenticated",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(ref="#/definitions/OK"),
+     *         examples={"application/json":{"status"="OK"}}
+     *     )
+     * )
+     */
+    public function putCBTProgress($cid, $blockId) {
+
+    }
+
+    /**
+     * @return array|string
+     *
+     * @SWG\Get(
+     *     path="/user/(cid)/exam/history",
+     *     summary="Get user's exam history. Requires JWT, API Key or Session Cookie",
+     *     description="Get user's exam history. Requires JWT, API Key or Session Cookie",
+     *     produces={"application/json"},
+     *     tags={"user"},
+     *     security={"jwt","session","apikey"},
+     *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthenticated",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="array",
+     *             @SWG\Items(
+     *                 type="object",
+     *                 @SWG\Property(property="id", type="integer", description="Exam Result ID Number"),
+     *                 @SWG\Property(property="date", type="string", description="Date of Exam (YYYY-MM-DD)"),
+     *                 @SWG\Property(property="examName", type="string", description="Name of exam"),
+     *                 @SWG\Property(property="passed", type="boolean"),
+     *                 @SWG\Property(property="score", type="integer", description="Percentage score multiplied by 100 for whole number (98% = 0.98 * 100 = 98)"),
+     *             )
+     *         ),
+     *     )
+     * )
+     */
+    public function getExamHistory($cid) {
 
     }
 }
