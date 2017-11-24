@@ -1,4 +1,0 @@
-/jwt:
-  $ref: ./jwt.yaml
-/user:
-  $ref: ./user.yaml

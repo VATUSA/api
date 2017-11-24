@@ -1,9 +1,0 @@
-    get:
-      description: Get list of ACE Team
-      tags:
-        - Public
-      responses:
-        '200':
-          description: OK
-          schema:
-            $ref: "#/definitions/ACE"
