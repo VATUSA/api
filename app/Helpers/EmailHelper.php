@@ -167,7 +167,7 @@ class EmailHelper {
      * @param null $destination
      */
     public static function chgEmailConfig($email, $type, $destination = null) {
-        $email = EmailConfig::firstOrCreate(['email' => $email]);
+        $email = EmailConfig::firstOrCreate(['address' => $email]);
         if (!in_array($type, [EmailConfig::$configStatic, EmailConfig::$configUser])) {
             throw new Exception("Invalid type $type");
         }
