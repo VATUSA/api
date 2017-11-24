@@ -25,7 +25,8 @@ use \App\Http\Controllers\Controller as BaseController;
  *     @SWG\Tag(name="transfer",description="Transfer request submission and handling actions"),
  *     @SWG\Tag(name="rating",description="Rating change handling"),
  *     @SWG\Tag(name="role",description="Role handling"),
- *     @SWG\Tag(name="user",description="USer account management actions"),
+ *     @SWG\Tag(name="solo",description="Solo Certification handling"),
+ *     @SWG\Tag(name="user",description="User account management actions"),
  * )
  */
 class APIController extends BaseController {
