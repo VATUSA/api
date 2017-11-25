@@ -63,7 +63,7 @@ class UserController extends APIController
      * @SWG\Put(
      *     path="/user/(cid)/roles/(facility)/(role)",
      *     summary="Assign new role. Requires JWT or Session Cookie",
-     *     description="Assign new role. Requires JWT or Session Cookie",
+     *     description="Assign new role. Requires JWT or Session Cookie (required role: for FE, EC, WM roles: ATM, DATM, for MTR roles: TA, for all other roles: VATUSA STAFF)",
      *     produces={"application/json"},
      *     tags={"user","role"},
      *     security={"jwt","session"},
@@ -93,11 +93,11 @@ class UserController extends APIController
     public function putRole($cid, $facility, $role) {
         $facility = Facility::find($facility);
         if (!$facility || ($facility->active != 1 && $facility->id != "ZHQ" && $facility->id != "ZAE")) {
-            return response()->json(generate_error("Facility not found or invalid"), 404);
+            return response()->api(generate_error("Facility not found or invalid"), 404);
         }
 
         if (!RoleHelper::canModify(\Auth::user(), $facility, $role)) {
-            return response()->json(generate_error("Forbidden"), 403);
+            return response()->api(generate_error("Forbidden"), 403);
         }
 
         if (in_array($role, ['ATM','DATM','TA','EC','FE','WM'])) {
@@ -118,7 +118,7 @@ class UserController extends APIController
      * @SWG\Delete(
      *     path="/user/(cid)/roles/(facility)/(role)",
      *     summary="Delete role. Requires JWT or Session Cookie",
-     *     description="Delete role. Requires JWT or Session Cookie",
+     *     description="Delete role. Requires JWT or Session Cookie (required role: for FE, EC, WM roles: ATM, DATM, for MTR roles: TA, for all other roles: VATUSA STAFF)",
      *     produces={"application/json"},
      *     tags={"user", "role"},
      *     security={"jwt","session"},
@@ -191,7 +191,7 @@ class UserController extends APIController
      * @SWG\Put(
      *     path="/user/(cid)/transfer",
      *     summary="Submit transfer request. Requires JWT or Session Cookie",
-     *     description="Submit transfer request. Requires JWT or Session Cookie",
+     *     description="Submit transfer request. Requires JWT or Session Cookie (self or VATUSA staff)",
      *     produces={"application/json"},
      *     tags={"user","transfer"},
      *     security={"jwt","session"},
@@ -235,7 +235,7 @@ class UserController extends APIController
      * @SWG\Get(
      *     path="/user/(cid)/transfer/checklist",
      *     summary="Get user's transfer checklist. Requires JWT, API Key, or Session Cookie",
-     *     description="Get user's checklist. Requires JWT, API Key, or Session Cookie",
+     *     description="Get user's checklist. Requires JWT, API Key, or Session Cookie (required role [N/A for apikey]: ATM, DATM, WM)",
      *     produces={"application/json"},
      *     tags={"user","transfer"},
      *     security={"jwt","session","apikey"},
@@ -278,7 +278,7 @@ class UserController extends APIController
      * @SWG\Post(
      *     path="/user/(cid)/rating",
      *     summary="Submit rating change. Requires JWT or Session Cookie",
-     *     description="Submit rating change. Requires JWT or Session Cookie",
+     *     description="Submit rating change. Requires JWT or Session Cookie (required role: ATM, DATM, TA, INS, VATUSA STAFF)",
      *     produces={"application/json"},
      *     tags={"user","rating"},
      *     security={"jwt","session"},
@@ -325,7 +325,7 @@ class UserController extends APIController
      * @SWG\Get(
      *     path="/user/(cid)/rating/history",
      *     summary="Get user's rating history. Requires JWT, API Key or Session Cookie",
-     *     description="Get user's rating history. Requires JWT, API Key or Session Cookie",
+     *     description="Get user's rating history. Requires JWT, API Key or Session Cookie (required role: [N/A for API Key] ATM, DATM, TA, INS, VATUSA STAFF)",
      *     produces={"application/json"},
      *     tags={"user","rating"},
      *     security={"jwt","session","apikey"},
@@ -370,7 +370,7 @@ class UserController extends APIController
      * @SWG\Put(
      *     path="/user/(cid)/log",
      *     summary="Submit entry to controller's action log. Requires JWT or Session Cookie",
-     *     description="Submit entry to controller's action log. Requires JWT or Session Cookie",
+     *     description="Submit entry to controller's action log. Requires JWT or Session Cookie (required role: ATM, DATM, VATUSA STAFF)",
      *     produces={"application/json"},
      *     tags={"user"},
      *     security={"jwt","session"},
@@ -408,7 +408,7 @@ class UserController extends APIController
      * @SWG\Get(
      *     path="/user/(cid)/transfer/history",
      *     summary="Get user's transfer history. Requires JWT or Session Cookie",
-     *     description="Get user's history. Requires JWT or Session Cookie",
+     *     description="Get user's history. Requires JWT or Session Cookie (required role: [N/A for API Key] ATM, DATM, TA, INS, VATUSA STAFF)",
      *     produces={"application/json"},
      *     tags={"user","transfer"},
      *     security={"jwt","session","apikey"},
@@ -454,7 +454,7 @@ class UserController extends APIController
      * @SWG\Get(
      *     path="/user/(cid)/cbt/history",
      *     summary="Get user's CBT history. Requires JWT, API Key or Session Cookie",
-     *     description="Get user's CBT history. Requires JWT, API Key or Session Cookie",
+     *     description="Get user's CBT history. Requires JWT, API Key or Session Cookie (required role: [N/A for API Key] ATM, DATM, TA, INS, VATUSA STAFF)",
      *     produces={"application/json"},
      *     tags={"user","cbt"},
      *     security={"jwt","session","apikey"},
@@ -502,7 +502,7 @@ class UserController extends APIController
      * @SWG\Put(
      *     path="/user/(cid)/cbt/progress/(blockId)",
      *     summary="Get user's CBT history. Requires JWT, API Key or Session Cookie",
-     *     description="Get user's CBT history. Requires JWT, API Key or Session Cookie",
+     *     description="Get user's CBT history. Requires JWT, API Key or Session Cookie (required role: [N/A for API Key] ATM, DATM, TA, INS, VATUSA STAFF)",
      *     produces={"application/json"},
      *     tags={"user","cbt"},
      *     security={"jwt","session","apikey"},
@@ -540,7 +540,7 @@ class UserController extends APIController
      * @SWG\Get(
      *     path="/user/(cid)/exam/history",
      *     summary="Get user's exam history. Requires JWT, API Key or Session Cookie",
-     *     description="Get user's exam history. Requires JWT, API Key or Session Cookie",
+     *     description="Get user's exam history. Requires JWT, API Key or Session Cookie (required role: [N/A for API Key] ATM, DATM, TA, INS, VATUSA STAFF)",
      *     produces={"application/json"},
      *     tags={"user","exam"},
      *     security={"jwt","session","apikey"},
