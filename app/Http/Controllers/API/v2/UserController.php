@@ -93,11 +93,11 @@ class UserController extends APIController
     public function putRole($cid, $facility, $role) {
         $facility = Facility::find($facility);
         if (!$facility || ($facility->active != 1 && $facility->id != "ZHQ" && $facility->id != "ZAE")) {
-            return response()->json(generate_error("Facility not found or invalid"), 404);
+            return response()->api(generate_error("Facility not found or invalid"), 404);
         }
 
         if (!RoleHelper::canModify(\Auth::user(), $facility, $role)) {
-            return response()->json(generate_error("Forbidden"), 403);
+            return response()->api(generate_error("Forbidden"), 403);
         }
 
         if (in_array($role, ['ATM','DATM','TA','EC','FE','WM'])) {
