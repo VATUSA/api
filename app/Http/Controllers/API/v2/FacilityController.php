@@ -124,7 +124,7 @@ class FacilityController extends APIController
     public function getFacility($id) {
         $facility = Facility::find($id);
         if (!$facility || !$facility->active) {
-            return response()->json(generate_error("Facility not found or not active", true), 404);
+            return response()->api(generate_error("Facility not found or not active", true), 404);
         }
 
         if (\Cache::has("facility.$id.info")) {
@@ -207,12 +207,12 @@ class FacilityController extends APIController
     public function postFacility(Request $request, $id) {
         $facility = Facility::find($id);
         if (!$facility || !$facility->active) {
-            return response()->json(generate_error("Facility not found or not active", true), 404);
+            return response()->api(generate_error("Facility not found or not active", true), 404);
         }
 
         if (!RoleHelper::has(\Auth::user()->cid, $id, ["ATM","DATM","WM"]) &&
             !RoleHelper::isVATUSAStaff(\Auth::user()->cid)) {
-            return response()->json(generate_error("Forbidden", true), 403);
+            return response()->api(generate_error("Forbidden", true), 403);
         }
 
         $data = [];
@@ -228,7 +228,7 @@ class FacilityController extends APIController
                 $facility->apikey = $data['apikey'];
                 $facility->save();
             } else {
-                return response()->json(generate_error("Forbidden"), 403);
+                return response()->api(generate_error("Forbidden"), 403);
             }
         }
 
@@ -238,7 +238,7 @@ class FacilityController extends APIController
                 $facility->api_sandbox_key = $data['apikeySandbox'];
                 $facility->save();
             } else {
-                return response()->json(generate_error("Forbidden"), 403);
+                return response()->api(generate_error("Forbidden"), 403);
             }
         }
 
@@ -248,7 +248,7 @@ class FacilityController extends APIController
                 $facility->uls_secret = $data['ulsSecret'];
                 $facility->save();
             } else {
-                return response()->json(generate_error("Forbidden"), 403);
+                return response()->api(generate_error("Forbidden"), 403);
             }
         }
 
@@ -257,7 +257,7 @@ class FacilityController extends APIController
                 $facility->uls_return = $request->input("ulsReturn");
                 $facility->save();
             } else {
-                return response()->json(generate_error("Forbidden"), 403);
+                return response()->api(generate_error("Forbidden"), 403);
             }
         }
 
@@ -266,11 +266,11 @@ class FacilityController extends APIController
                 $facility->uls_devreturn = $request->input("ulsDevReturn");
                 $facility->save();
             } else {
-                return response()->json(generate_error("Forbidden"), 403);
+                return response()->api(generate_error("Forbidden"), 403);
             }
         }
 
-        return response()->json(array_merge(['status' => 'OK'], $data));
+        return response()->api(array_merge(['status' => 'OK'], $data));
     }
 
     /**
@@ -357,7 +357,7 @@ class FacilityController extends APIController
     public function getStaff(Request $request, $id) {
         $facility = Facility::find($id);
         if (!$facility || !$facility->active) {
-            return response()->json(generate_error("Facility not found or not active", true), 404);
+            return response()->api(generate_error("Facility not found or not active", true), 404);
         }
 
         if (\Cache::has("facility.$id.staff")) {
@@ -403,19 +403,22 @@ class FacilityController extends APIController
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(
-     *             type="array",
-     *             @SWG\Items(
-     *                 type="object",
-     *                 @SWG\Property(property="cid", type="integer"),
-     *                 @SWG\Property(property="lastname", type="string"),
-     *                 @SWG\Property(property="firstname", type="string"),
-     *                 @SWG\Property(property="email", type="string", description="Empty if no API Key defined"),
-     *                 @SWG\Property(property="rating", type="string", description="Short rating string (S1, S2, etc)"),
-     *                 @SWG\Property(property="intRating", type="integer", description="Standard rating integer (OBS=1, S1=2, etc)"),
-     *                 @SWG\Property(property="joinDate", type="string", description="Date joined facility (YYYY-MM-DD)"),
-     *                 @SWG\Property(property="promotionEligible", type="boolean"),
-     *                 @SWG\Property(property="roles", type="array", @SWG\Items(title="role", type="string"))
-     *             )
+     *             type="object",
+     *             @SWG\Property(property="status", type="string"),
+     *             @SWG\Property(property="roster", type="array",
+     *                 @SWG\Items(
+     *                     type="object",
+     *                     @SWG\Property(property="cid", type="integer"),
+     *                     @SWG\Property(property="lastname", type="string"),
+     *                     @SWG\Property(property="firstname", type="string"),
+     *                     @SWG\Property(property="email", type="string", description="Empty if no API Key defined"),
+     *                     @SWG\Property(property="rating", type="string", description="Short rating string (S1, S2, etc)"),
+     *                     @SWG\Property(property="intRating", type="integer", description="Standard rating integer (OBS=1, S1=2, etc)"),
+     *                     @SWG\Property(property="joinDate", type="string", description="Date joined facility (YYYY-MM-DD)"),
+     *                     @SWG\Property(property="promotionEligible", type="boolean"),
+     *                     @SWG\Property(property="roles", type="array", @SWG\Items(title="role", type="string"))
+     *                 )
+     *             ),
      *         ),
      *     )
      * )
@@ -423,7 +426,7 @@ class FacilityController extends APIController
     public function getRoster(Request $request, $id) {
         $facility = Facility::find($id);
         if (!$facility || !$facility->active) {
-            return response()->json(generate_error("Facility not found or not active", true), 404);
+            return response()->api(generate_error("Facility not found or not active", true), 404);
         }
         $apikey = false;
         if ($request->has("apikey")) {
@@ -448,9 +451,8 @@ class FacilityController extends APIController
             }
             $data[] = $tmp;
         }
-        $json = encode_json($data);
 
-        return $json;
+        return response()->api(['status' => 'OK', 'roster' => $data]);
     }
 
     /**
@@ -504,25 +506,25 @@ class FacilityController extends APIController
     public function deleteRoster(Request $request, string $id, int $cid) {
         $facility = Facility::find($id);
         if (!$facility || !$facility->active) {
-            return response()->json(generate_error("Facility not found or not active"), 404);
+            return response()->api(generate_error("Facility not found or not active"), 404);
         }
 
         if (!RoleHelper::isSeniorStaff(\Auth::user()->cid, $id, false)) {
-            return response()->json(generate_error("Forbidden"), 403);
+            return response()->api(generate_error("Forbidden"), 403);
         }
 
         $user = User::where('cid', $cid)->first();
         if (!$user || $user->facility != $facility->id) {
-            return response()->json(generate_error("User not found or not in facility"), 404);
+            return response()->api(generate_error("User not found or not in facility"), 404);
         }
 
         if (!$request->has("reason") || !$request->filled("reason")) {
-            return response()->json(generate_error("Malformed request"), 400);
+            return response()->api(generate_error("Malformed request"), 400);
         }
 
         $user->removeFromFacility(\Auth::user()->cid, $request->input("reason"));
 
-        return response()->json(["status"=>"OK"]);
+        return response()->api(["status"=>"OK"]);
     }
 
     /**
@@ -560,29 +562,32 @@ class FacilityController extends APIController
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(
-     *             type="array",
-     *             @SWG\Items(
-     *                 type="object",
-     *                 @SWG\Property(property="id", type="integer", description="Transfer ID"),
-     *                 @SWG\Property(property="cid", type="integer"),
-     *                 @SWG\Property(property="name", type="string"),
-     *                 @SWG\Property(property="rating", type="string", description="Short string rating (S1, S2)"),
-     *                 @SWG\Property(property="intRating", type="integer", description="Numeric rating (OBS = 1, etc)"),
-     *                 @SWG\Property(property="date", type="string", description="Date transfer submitted (YYYY-MM-DD)"),
+     *             type="object",
+     *             @SWG\Property(property="status", type="string"),
+     *             @SWG\Property(property="transfers", type="array",
+     *                 @SWG\Items(
+     *                     type="object",
+     *                     @SWG\Property(property="id", type="integer", description="Transfer ID"),
+     *                     @SWG\Property(property="cid", type="integer"),
+     *                     @SWG\Property(property="name", type="string"),
+     *                     @SWG\Property(property="rating", type="string", description="Short string rating (S1, S2)"),
+     *                     @SWG\Property(property="intRating", type="integer", description="Numeric rating (OBS = 1, etc)"),
+     *                     @SWG\Property(property="date", type="string", description="Date transfer submitted (YYYY-MM-DD)"),
+     *                 ),
      *             ),
      *         ),
-     *         examples={"application/json":{{"id":991,"cid":876594,"name":"Daniel Hawton","rating":"C1","intRating":5,"date":"2017-11-18"}}}
+     *         examples={"application/json":{"status":"OK","transfers":{"id":991,"cid":876594,"name":"Daniel Hawton","rating":"C1","intRating":5,"date":"2017-11-18"}}}
      *     )
      * )
      */
     public function getTransfers(Request $request, string $id) {
         $facility = Facility::find($id);
         if (!$facility || !$facility->active) {
-            return response()->json(generate_error("Facility not found or not active"), 404);
+            return response()->api(generate_error("Facility not found or not active"), 404);
         }
 
         if (!RoleHelper::isFacilityStaff(\Auth::user()->cid, $id) && !RoleHelper::isVATUSAStaff(\Auth::user()->cid)) {
-            return response()->json(generate_error("Forbidden"), 403);
+            return response()->api(generate_error("Forbidden"), 403);
         }
 
         $transfers = Transfer::where("to", $facility->id)->where("status", Transfer::$pending)->get();
@@ -598,7 +603,7 @@ class FacilityController extends APIController
             ];
         }
 
-        return encode_json($data);
+        return response()->api(['status' => 'OK', 'transfers' => $data]);
     }
 
     /**
@@ -653,30 +658,30 @@ class FacilityController extends APIController
     public function postTransfer(Request $request, string $id, int $transferId) {
         $facility = Facility::find($id);
         if (!$facility || !$facility->active) {
-            return response()->json(generate_error("Facility not found or not active"), 404);
+            return response()->api(generate_error("Facility not found or not active"), 404);
         }
 
         if (!RoleHelper::isSeniorStaff(\Auth::user()->cid, $facility->id, false) && !RoleHelper::isVATUSAStaff(\Auth::user()->cid)) {
-            return response()->json(generate_error("Forbidden"), 403);
+            return response()->api(generate_error("Forbidden"), 403);
         }
 
         $transfer = Transfer::find($transferId);
         if (!$transfer) {
-            return response()->json(generate_error("Transfer request not found"), 404);
+            return response()->api(generate_error("Transfer request not found"), 404);
         }
 
         if ($transfer->status !== Transfer::$pending) {
-            return response()->json(generate_error("Transfer is not pending"), 410);
+            return response()->api(generate_error("Transfer is not pending"), 410);
         }
 
         if ($transfer->to !== $facility->id) {
-            return response()->json(generate_error("Forbidden"), 403);
+            return response()->api(generate_error("Forbidden"), 403);
         }
 
         if(!in_array($request->input("action"), ["accept","reject"]) ||
             ($request->input("action") === "reject" && !$request->filled("reason"))) {
 
-            return response()->json(generate_error("Malformed request"), 400);
+            return response()->api(generate_error("Malformed request"), 400);
         }
 
         if ($request->input("action") === "accept") {
@@ -685,6 +690,6 @@ class FacilityController extends APIController
             $transfer->reject(\Auth::user()->cid, $request->input("reason"));
         }
 
-        return response()->json(['status'=>"OK"]);
+        return response()->api(['status'=>"OK"]);
     }
 }
