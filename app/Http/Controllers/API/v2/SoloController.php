@@ -61,7 +61,7 @@ class SoloController extends APIController
      * @SWG\Put(
      *     path="/solo",
      *     summary="Put new solo certification. Requires JWT, API Key, or Session cookie",
-     *     description="Put new solo certification. Requires JWT, API Key, or Session cookie",
+     *     description="Put new solo certification. Requires JWT, API Key, or Session cookie (required roles: [N/A for API Key] ATM, DATM, TA, INS)",
      *     produces={"application/json"},
      *     tags={"solo"},
      *     security={"apikey","jwt","session"},
@@ -104,7 +104,7 @@ class SoloController extends APIController
      * @SWG\Delete(
      *     path="/solo",
      *     summary="Delete solo certification. Requires JWT, API Key, or Session cookie",
-     *     description="Delete solo certification. Requires JWT, API Key, or Session cookie",
+     *     description="Delete solo certification. Requires JWT, API Key, or Session cookie (required roles: [N/A for API Key] ATM, DATM, TA, INS)",
      *     produces={"application/json"},
      *     tags={"solo"},
      *     security={"apikey","jwt","session"},

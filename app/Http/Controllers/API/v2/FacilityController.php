@@ -161,7 +161,7 @@ class FacilityController extends APIController
      * @SWG\Post(
      *     path="/facility/{id}",
      *     summary="Update facility information. Requires JWT or Session Cookie",
-     *     description="Update facility information. Requires JWT or Session Cookie",
+     *     description="Update facility information. Requires JWT or Session Cookie (required role: [N/A for API Key] ATM, DATM, WM, VATUSA STAFF)",
      *     produces={"application/json"},
      *     tags={"facility"},
      *     security={"json","session"},
@@ -389,7 +389,7 @@ class FacilityController extends APIController
      * @SWG\Get(
      *     path="/facility/{id}/roster",
      *     summary="Get facility roster",
-     *     description="Get facility staff.  If api key specified, email properties are defined",
+     *     description="Get facility staff.  If api key specified, email properties are defined or role ATM, DATM, TA, INS, WM, or VATUSA STAFF",
      *     produces={"application/json"},
      *     tags={"facility"},
      *     @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
@@ -462,7 +462,7 @@ class FacilityController extends APIController
      * @SWG\Delete(
      *     path="/facility/{id}/roster/{cid}",
      *     summary="Delete member from facility roster. JWT or Session Cookie required",
-     *     description="Delete member from facility roster.  JWT or Session Cookie required",
+     *     description="Delete member from facility roster.  JWT or Session Cookie required (required role: ATM, DATM, VATUSA STAFF)",
      *     produces={"application/json"},
      *     tags={"facility"},
      *     security={"jwt","session"},
@@ -610,14 +610,14 @@ class FacilityController extends APIController
      * @SWG\Post(
      *     path="/facility/{id}/transfers/{transferId}",
      *     summary="Modify transfer request.  JWT or Session cookie required.",
-     *     description="Modify transfer request.  JWT or Session cookie required.",
+     *     description="Modify transfer request.  JWT or Session cookie required. (required role: self, ATM, DATM, VATUSA STAFF)",
      *     produces={"application/json"},
      *     tags={"facility"},
      *     security={"jwt","session"},
      *     @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
      *     @SWG\Parameter(name="transferId", in="query", description="Transfer ID", type="integer", required=true),
-     *     @SWG\Parameter(name="action", in="formData", type="string", enum={"approve","reject"}, description="Action to take on transfer request. Valid values: approve, reject"),
-     *     @SWG\Parameter(name="reason", in="formData", type="string", description="Reason for transfer request rejection [required for rejections]"),
+     *     @SWG\Parameter(name="action", in="formData", type="string", enum={"approve","reject","cancel"}, description="Action to take on transfer request. Valid values: approve, reject, cancel (for self requests only)"),
+     *     @SWG\Parameter(name="reason", in="formData", type="string", description="Reason for transfer request rejection [required for rejections or cancellations]"),
      *     @SWG\Response(
      *         response="400",
      *         description="Malformed request, missing required parameter",
