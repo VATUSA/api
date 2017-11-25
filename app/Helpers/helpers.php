@@ -9,7 +9,7 @@ use App\Action;
  * @return string
  */
 function encode_json($data) {
-    return json_encode($data, JSON_HEX_APOS | JSON_NUMERIC_CHECK);
+    return json_encode($data, JSON_NUMERIC_CHECK);
 }
 
 /**
@@ -100,5 +100,13 @@ function arrayToXml($data_array, &$xml) {
         else {
             $xml->addChild("$key",htmlspecialchars("$value"));
         }
+    }
+}
+
+function extract_domain($domain) {
+    if (preg_match("/(?P<domain>[a-z0-9][a-z0-9\-]{1,63}\.[a-z\.]{2,6})$/i", $domain, $matches)) {
+        return $matches['domain'];
+    } else {
+        return $domain;
     }
 }
