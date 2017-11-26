@@ -48,7 +48,7 @@ class SoloController extends Controller
             return response()->json(['status'=>'error','msg'=>"Invalid/missing field"], 400);
         }
 
-        if (!preg_match("/^([A-Z0-9]{2-3})_(APP|CTR)$/", $position)) {
+        if (!preg_match("/^([A-Z0-9]{2,3})_(APP|CTR)$/", $position)) {
             return response()->json(['status'=>'error','msg'=>"Invalid position"], 400);
         }
 
