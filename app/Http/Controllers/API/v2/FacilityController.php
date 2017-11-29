@@ -11,6 +11,7 @@ use App\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Facility;
+use Jose\Component\KeyManagement\JWKFactory;
 
 /**
  * Class FacilityController
@@ -167,6 +168,7 @@ class FacilityController extends APIController
      *     security={"json","session"},
      *     @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
      *     @SWG\Parameter(name="url", in="formData", description="Change facility URL, role restricted [ATM, DATM, WM]", type="string"),
+     *     @SWG\Parameter(name="url", in="formData", description="Request new JWK", type="string"),
      *     @SWG\Parameter(name="apikey", in="formData", type="string", description="Request new API Key for facility, role restricted [ATM, DATM, WM]"),
      *     @SWG\Parameter(name="apikeySandbox", in="formData", type="string", description="Request new Sandbox API Key for facility, role restricted [ATM, DATM, WM]"),
      *     @SWG\Parameter(name="ulsSecret", in="formData", type="string", description="Request new ULS Secret, role restricted [ATM, DATM, WM]"),
@@ -220,6 +222,13 @@ class FacilityController extends APIController
         if ($request->has("url") && filter_var($request->input("url"), FILTER_VALIDATE_URL)) {
             $facility->url = $request->input("url");
             $facility->save();
+        }
+
+        if ($request->has("uls2jwk")) {
+            $data = JWKFactory::createOctKey(512, ['alg' => env('ULSV2_ALG', 'HS256'), 'use' => 'sig']);
+            $facility->uls_jwk = encode_json($data);
+            $facility->save();
+            return response()->json($data);
         }
 
         if ($request->has('apikey')) {
