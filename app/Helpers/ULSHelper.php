@@ -35,10 +35,10 @@ class ULSHelper
             'ip' => $_SERVER['REMOTE_ADDR'],
             'exp' => time() + 20
         ];
-        return encode_json(static::generatev2Signature($data, $facility->uls_secret));
+        return static::generatev2Signature($data);
     }
 
-    public static function generatev2Signature(array $data, $secret) {
+    public static function generatev2Signature(array $data) {
         $signature = hash_hmac('sha256', encode_json($data), env('ULS_SECRET') );
         $data['sig'] = $signature;
         return $data;
