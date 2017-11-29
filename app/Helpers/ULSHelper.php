@@ -30,9 +30,12 @@ class ULSHelper
 
     public static function generatev2Token(User $user, Facility $facility) {
         $data = [
-            'cid' => $user->cid,
-            'fac' => $facility->id,
+            'iss' => 'VATUSA',
+            'aud' => $facility->id,
+            'sub' => $user->cid,
             'ip' => $_SERVER['REMOTE_ADDR'],
+            'iat' => time(),
+            'nbf' => time(),
             'exp' => time() + 20
         ];
         return static::generatev2Signature($data);
