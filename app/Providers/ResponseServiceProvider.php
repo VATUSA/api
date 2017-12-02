@@ -6,16 +6,24 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Request;
 use App\Facility;
+use Jose\Component\Core\AlgorithmManager;
+use Jose\Component\Core\Converter\StandardConverter;
+use Jose\Component\Core\JWK;
+use Jose\Component\Signature\Algorithm\HS256;
+use Jose\Component\Signature\Algorithm\HS384;
+use Jose\Component\Signature\Algorithm\HS512;
+use Jose\Component\Signature\JWSBuilder;
+use Jose\Component\Signature\Serializer\JSONGeneralSerializer;
 
 class ResponseServiceProvider extends ServiceProvider
 {
     public function boot(ResponseFactory $factory) {
-        $factory->macro('api', function ($data) use ($factory) {
+        $factory->macro('api', function ($data, $status = 200, $headers = []) use ($factory) {
             $showsig = false;
             if (Request::filled("f")) {
                 $facility = Facility::find(Request::input("f"));
                 if ($facility) {
-                    $secret = $facility->apikey;
+                    $fjwk = $facility->apiv2_jwk;
                     $showsig = true;
                 }
             } else if (isset($_SERVER['HTTP_ORIGIN'])) {
@@ -23,17 +31,32 @@ class ResponseServiceProvider extends ServiceProvider
                 $facility = Facility::where('url', 'LIKE', "%$domain%")->first();
                 if ($facility) {
                     $showsig = true;
-                    $secret = $facility->apikey;
+                    $fjwk = $facility->apiv2_jwk;
                 }
             }
 
             $sig = [];
             if ($showsig) {
-                $sig['alg'] = env('API_SIGNATURE_ALGORITHM', 'sha256');
-                $sig['sig'] = hash_hmac($sig['alg'], encode_json($data), $secret);
+                $algorithmManager = AlgorithmManager::create([
+                    new HS256(), new HS384(), new HS512(),
+                ]);
+
+                $jwk = JWK::create(json_decode($facility->apiv2_jwk, true));
+
+                $jsonConverter = new StandardConverter();
+
+                $jwsBuilder = new JWSBuilder(
+                    $jsonConverter,
+                    $algorithmManager
+                );
+
+                $payload = $jsonConverter->encode($data);
+                $jws = $jwsBuilder->create()->withPayload($payload)->addSignature($jwk, ['alg'=>json_decode($facility->apiv2_jwk, true)['alg']])->build();
+                $serializer = new JSONGeneralSerializer($jsonConverter);
+                return $factory->make($serializer->serialize($jws, 0), $status, array_merge($headers, ['Content-Type' => 'application/json']));
             }
 
-            return $factory->make(encode_json(array_merge($data, $sig)));
+            return $factory->make(encode_json(array_merge($data, $sig)), $status, array_merge($headers, ['Content-Type' => 'application/json']));
         });
     }
 
