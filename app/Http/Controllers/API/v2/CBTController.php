@@ -138,7 +138,6 @@ class CBTController extends APIController
      *     produces={"application/json"},
      *     tags={"cbt"},
      *     security={"jwt","session","apikey"},
-     *     @SWG\Parameter(name="id", in="path", required=true, type="string", description="Facility IATA ID"),
      *     @SWG\Parameter(name="id", in="path", type="integer", description="Block ID"),
      *     @SWG\Parameter(name="sortOrder", in="formData", type="integer", description="Order location, sort lowest to highest"),
      *     @SWG\Parameter(name="name", in="formData", type="string", description="Name of block"),
