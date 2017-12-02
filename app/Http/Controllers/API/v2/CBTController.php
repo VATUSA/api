@@ -191,7 +191,7 @@ class CBTController extends APIController
      *             @SWG\Property(property="blockName", type="string", description="Block name"),
      *             @SWG\Property(property="facility", type="string", description="Facility IATA ID"),
      *             @SWG\Property(
-     *                 property="chapters"
+     *                 property="chapters",
      *                 type="array",
      *                 @SWG\Items(
      *                     type="object",
@@ -200,6 +200,7 @@ class CBTController extends APIController
      *                     @SWG\Property(property="name", type="string", description="Name of chapter"),
      *                     @SWG\Property(property="active", type="boolean", description="Whether or not it is active/public"),
      *                     @SWG\Property(property="link", type="string", description="Link to object"),
+     *                 ),
      *             ),
      *         ),
      *     )
