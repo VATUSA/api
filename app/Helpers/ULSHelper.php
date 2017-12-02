@@ -33,7 +33,7 @@ class ULSHelper
             'iss' => 'VATUSA',
             'aud' => $facility->id,
             'sub' => $user->cid,
-            'ip' => $_SERVER['REMOTE_ADDR'],
+            'ip' => isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'not available',
             'iat' => time(),
             'nbf' => time(),
             'exp' => time() + 20
