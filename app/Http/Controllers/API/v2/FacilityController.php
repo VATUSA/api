@@ -53,7 +53,7 @@ class FacilityController extends APIController
             return \Cache::get("facility.list.active");
         }
 
-        $facilities = \FacilityHelper::getFacilities("name", $all);
+        $facilities = FacilityHelper::getFacilities("name");
         $data = [];
         foreach ($facilities as $facility) {
             $data[] = [
@@ -225,9 +225,17 @@ class FacilityController extends APIController
         }
 
         if ($request->has("uls2jwk")) {
-            $data = JWKFactory::createOctKey(512, ['alg' => env('ULSV2_ALG', 'HS256'), 'use' => 'sig']);
+            $data = JWKFactory::createOctKey(env('ULSV2_SIZE', 512), ['alg' => env('ULSV2_ALG', 'HS256'), 'use' => 'sig']);
             $facility->uls_jwk = encode_json($data);
             $facility->save();
+            return response()->json($data);
+        }
+
+        if ($request->has("apiv2jwk")) {
+            $data = JWKFactory::createOctKey(env('APIV2_SIZE', 1024), ['alg' => env('APIV2_ALG', 'HS256'), 'use' => 'sig']);
+            $facility->apiv2_jwk = encode_json($data);
+            $facility->save();
+
             return response()->json($data);
         }
 
