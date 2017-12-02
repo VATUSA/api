@@ -14,3 +14,4 @@ yarn-error.log
 .sso.rsa
 data.*.csv
 app/Console/Commands/TransferEmails.php
+app/Console/Commands/test.php
