@@ -84,7 +84,7 @@ class ULSv2Controller extends Controller
         $payload = $jsonConverter->encode($data);
         $jws = $jwsBuilder->create()->withPayload($payload)->addSignature($jwk,['alg' => $facility_jwk['alg']]);
         $serializer = new CompactSerializer($jsonConverter);
-        $token = $serializer->serialize($jwk, 0);
+        $token = $serializer->serialize($jws, 0);
 
         $request->session()->forget("fac");
 
