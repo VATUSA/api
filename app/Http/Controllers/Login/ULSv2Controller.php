@@ -82,7 +82,7 @@ class ULSv2Controller extends Controller
 
         $data = ULSHelper::generatev2Token(\Auth::user(), $facility);
         $payload = $jsonConverter->encode($data);
-        $jws = $jwsBuilder->create()->withPayload($payload)->addSignature($jwk,['alg' => $facility_jwk['alg']]);
+        $jws = $jwsBuilder->create()->withPayload($payload)->addSignature($jwk,['alg' => $facility_jwk['alg']])->build();
         $serializer = new CompactSerializer($jsonConverter);
         $token = $serializer->serialize($jws, 0);
 
