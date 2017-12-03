@@ -124,8 +124,8 @@ class ULSv2Controller extends Controller
             return response()->json(['status' => "Expired"], 410);
         }
 
-        $user = User::find($data['cid']);
-        $facility = Facility::find($data['fac']);
+        $user = User::find($data['sub']);
+        $facility = Facility::find($data['aud']);       // Assumption, but not much risk here, checked by our signature anyway
         $data = [
             'cid' => $user->cid,
             'lastname' => $user->lname,
