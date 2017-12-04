@@ -249,7 +249,7 @@ class ExamController extends APIController
      * @return \Illuminate\Http\JsonResponse
      *
      * @SWG\Get(
-     *     path="/exam",
+     *     path="/exam/request",
      *     summary="Generates and sends exam payload for VATUSA Exam Center based on queued exam for JWT auth'd user. CORS Restricted",
      *     description="Generates and sends exam payload for VATUSA Exam Center based on queued exam for JWT auth'd user. CORS Restricted",
      *     produces={"application/json"},
@@ -326,4 +326,173 @@ class ExamController extends APIController
             'payload' => base64_encode($json) . "." . $sig
         ]);
     }
+
+    /**
+     *
+     * @SWG\Get(
+     *     path="/exams/{facility}",
+     *     summary="Generates list of exams.",
+     *     description="Generates list of exams.",
+     *     produces={"application/json"},
+     *     tags={"exam"},
+     *     @SWG\Parameter(name="facility", in="path", type="string", description="(OPTIONAL) Filter list by Facility IATA ID"),
+     *     @SWG\Response(
+     *         response="404",
+     *         description="Facility Not found",
+     *         @SWG\Schema(
+     *             ref="#/definitions/error"
+     *         ),
+     *         examples={"application/json":{"status"="error","message"="Not Found"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="array",
+     *             @SWG\Items(
+     *                 type="object",
+     *                 @SWG\Property(property="id", type="integer", description="Exam ID"),
+     *                 @SWG\Property(property="facility", type="string", description="Facility exam belongs to"),
+     *                 @SWG\Property(property="name", type="string", description="Exam name"),
+     *                 @SWG\Property(property="active", type="boolean", description="Is exam active?"),
+     *             ),
+     *         ),
+     *     )
+     * )
+     */
+
+    /**
+     *
+     * @SWG\Get(
+     *     path="/exams/{facility}/{id}",
+     *     summary="Generates details of exam. CORS Restricted Requires JWT or Session Cookie",
+     *     description="Generates details of exam. CORS Restricted Requires JWT or Session Cookie",
+     *     produces={"application/json"},
+     *     tags={"exam"},
+     *     @SWG\Parameter(name="facility", in="path", type="string", required=true, description="Filter list by Facility IATA ID"),
+     *     @SWG\Parameter(name="id", in="path", type="integer", required=true, description="Exam ID"),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthenticated",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden -- needs to have role of ATM, DATM or VATUSA Division staff member",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","message"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="404",
+     *         description="Facility/Exam Not found",
+     *         @SWG\Schema(
+     *             ref="#/definitions/error"
+     *         ),
+     *         examples={"application/json":{"status"="error","message"="Not Found"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(property="id", type="integer", description="Exam ID"),
+     *             @SWG\Property(property="facility", type="string", description="Facility exam belongs to"),
+     *             @SWG\Property(property="name", type="string", description="Exam name"),
+     *             @SWG\Property(property="active", type="boolean", description="Is exam active?"),
+     *             @SWG\Property(property="questions", type="array",
+     *                 @SWG\Items(
+     *                     type="object",
+     *                     @SWG\Property(property="questionId", type="integer"),
+     *                     @SWG\Property(property="question", type="string"),
+     *                     @SWG\Property(property="type", type="string", description="Type of exam 'multiple'/'truefalse'"),
+     *                     @SWG\Property(property="choice1", type="string"),
+     *                     @SWG\Property(property="choice2", type="string"),
+     *                     @SWG\Property(property="choice3", type="string"),
+     *                     @SWG\Property(property="choice4", type="string"),
+     *                 ),
+     *             ),
+     *         ),
+     *     )
+     * )
+     */
+
+    /**
+     *
+     * @SWG\Post(
+     *     path="/exams/{facility}/{examid}",
+     *     summary="Create new question. CORS Restricted Requires JWT or Session Cookie",
+     *     description="Create new question. CORS Restricted Requires JWT or Session Cookie",
+     *     produces={"application/json"},
+     *     tags={"exam"},
+     *     @SWG\Parameter(name="facility", in="path", type="string", required=true, description="Filter list by Facility IATA ID"),
+     *     @SWG\Parameter(name="examid", in="path", type="integer", required=true, description="Exam ID"),
+     *     @SWG\Parameter(name="question", in="formData", type="string", required=true, description="Question text"),
+     *     @SWG\Parameter(name="type", in="formData", type="string", required=true, description="Type of question (multiple|truefalse)"),
+     *     @SWG\Parameter(name="choice1", in="formData", type="string", required=true, description="Answer"),
+     *     @SWG\Parameter(name="choice2", in="formData", type="string", description="Distractor #1 (only for type=multiple)"),
+     *     @SWG\Parameter(name="choice3", in="formData", type="string", description="Distractor #2 (only for type=multiple)"),
+     *     @SWG\Parameter(name="choice4", in="formData", type="string", description="Distractor #3 (only for type=multiple)"),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthenticated",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden -- needs to have role of ATM, DATM or VATUSA Division staff member",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","message"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="object",
+     *             ref="#/definitions/OKID"
+     *         ),
+     *     )
+     * )
+     */
+
+    /**
+     *
+     * @SWG\Put(
+     *     path="/exams/{facility}/{examid}/{questionID}",
+     *     summary="Edit question. CORS Restricted Requires JWT or Session Cookie",
+     *     description="Edit question. CORS Restricted Requires JWT or Session Cookie",
+     *     produces={"application/json"},
+     *     tags={"exam"},
+     *     @SWG\Parameter(name="facility", in="path", type="string", required=true, description="Filter list by Facility IATA ID"),
+     *     @SWG\Parameter(name="examid", in="path", type="integer", required=true, description="Exam ID"),
+     *     @SWG\Parameter(name="questionid", in="path", type="integer", required=true, description="Question ID"),
+     *     @SWG\Parameter(name="question", in="formData", type="string", required=true, description="Question text"),
+     *     @SWG\Parameter(name="type", in="formData", type="string", required=true, description="Type of question (multiple|truefalse)"),
+     *     @SWG\Parameter(name="choice1", in="formData", type="string", required=true, description="Answer"),
+     *     @SWG\Parameter(name="choice2", in="formData", type="string", description="Distractor #1 (only for type=multiple)"),
+     *     @SWG\Parameter(name="choice3", in="formData", type="string", description="Distractor #2 (only for type=multiple)"),
+     *     @SWG\Parameter(name="choice4", in="formData", type="string", description="Distractor #3 (only for type=multiple)"),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthenticated",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden -- needs to have role of ATM, DATM or VATUSA Division staff member",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","message"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="object",
+     *             ref="#/definitions/OK"
+     *         ),
+     *     )
+     * )
+     */
 }
