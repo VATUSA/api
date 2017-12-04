@@ -94,7 +94,7 @@ class CBTController extends APIController
      *
      * @TODO
      *
-     * @SWG\Put(
+     * @SWG\Post(
      *     path="/cbt/blocks",
      *     summary="Create new block. Requires JWT, API Key, or Session Cookie",
      *     description="Create new block. Requires JWT, API Key or Session Cookie (required role: (N/A for API Key) ATM, DATM, TA, VATUSA STAFF)",
@@ -123,7 +123,7 @@ class CBTController extends APIController
      *     )
      * )
      */
-    public function putBlock($cid, $facility, $role) {
+    public function postBlock($cid, $facility, $role) {
 
     }
 
@@ -131,7 +131,7 @@ class CBTController extends APIController
      *
      * @TODO
      *
-     * @SWG\Post(
+     * @SWG\Put(
      *     path="/cbt/blocks/(id)",
      *     summary="Edit CBT Block. Requires JWT, API Key, or Session Cookie",
      *     description="Edit CBT Block. Requires JWT, API Key, or Session Cookie (required role: (N/A for API Key) ATM, DATM, TA, VATUSA STAFF)",
@@ -163,7 +163,7 @@ class CBTController extends APIController
      *     )
      * )
      */
-    public function postBlock($cid) {
+    public function putBlock($cid) {
 
     }
 
@@ -260,7 +260,7 @@ class CBTController extends APIController
      *
      * @TODO
      *
-     * @SWG\Put(
+     * @SWG\Post(
      *     path="/cbt/blocks/(blockId)/chapters",
      *     summary="Create new chapter. Requires JWT, API Key, or Session Cookie",
      *     description="Create new chapter. Requires JWT, API Key, or Session Cookie (required role: (N/A for apikey) ATM, DATM, TA, VATUSA STAFF)",
@@ -290,7 +290,7 @@ class CBTController extends APIController
      *     )
      * )
      */
-    public function putChapter($cid, $facility, $role) {
+    public function postChapter($cid, $facility, $role) {
 
     }
 
@@ -298,7 +298,7 @@ class CBTController extends APIController
      *
      * @TODO
      *
-     * @SWG\Post(
+     * @SWG\Put(
      *     path="/cbt/blocks/(blockId)/chapters/(chapterId)",
      *     summary="Assign new role. Requires JWT or Session Cookie",
      *     description="Assign new role. Requires JWT or Session Cookie (required role: ATM, DATM, TA, VATUSA STAFF)",
@@ -331,7 +331,7 @@ class CBTController extends APIController
      *     )
      * )
      */
-    public function postChapter($cid) {
+    public function putChapter($cid) {
 
     }
 }
