@@ -159,7 +159,7 @@ class FacilityController extends APIController
      * @param $id
      * @return \Illuminate\Http\JsonResponse
      *
-     * @SWG\Post(
+     * @SWG\Put(
      *     path="/facility/{id}",
      *     summary="Update facility information. Requires JWT or Session Cookie",
      *     description="Update facility information. Requires JWT or Session Cookie (required role: [N/A for API Key] ATM, DATM, WM, VATUSA STAFF)",
@@ -206,7 +206,7 @@ class FacilityController extends APIController
      *     )
      * )
      */
-    public function postFacility(Request $request, $id) {
+    public function putFacility(Request $request, $id) {
         $facility = Facility::find($id);
         if (!$facility || !$facility->active) {
             return response()->api(generate_error("Facility not found or not active", true), 404);
@@ -629,7 +629,7 @@ class FacilityController extends APIController
      * @param int $transferId
      * @return \Illuminate\Http\JsonResponse
      *
-     * @SWG\Post(
+     * @SWG\Put(
      *     path="/facility/{id}/transfers/{transferId}",
      *     summary="Modify transfer request.  JWT or Session cookie required.",
      *     description="Modify transfer request.  JWT or Session cookie required. (required role: self, ATM, DATM, VATUSA STAFF)",
@@ -672,7 +672,7 @@ class FacilityController extends APIController
      *     )
      * )
      */
-    public function postTransfer(Request $request, string $id, int $transferId) {
+    public function putTransfer(Request $request, string $id, int $transferId) {
         $facility = Facility::find($id);
         if (!$facility || !$facility->active) {
             return response()->api(generate_error("Facility not found or not active"), 404);
