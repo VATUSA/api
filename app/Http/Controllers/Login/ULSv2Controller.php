@@ -22,6 +22,7 @@ use Jose\Component\Signature\Algorithm\HS384;
 use Jose\Component\Signature\Algorithm\HS512;
 use Jose\Component\Signature\JWSBuilder;
 use Jose\Component\Signature\Serializer\CompactSerializer;
+use Namshi\JOSE\Base64\Base64Encoder;
 
 /**
  * Class ULSv2Controller
@@ -112,7 +113,7 @@ class ULSv2Controller extends Controller
             $token = $t;
         }
 
-        $data = json_decode(base64_decode(urldecode($request->input("token"))), true);
+        $data = json_decode(\Base64Url\Base64Url::decode($token), true);
         $signature = $data['sig'];
         unset($data['sig']);
         $verify_sig = ULSHelper::generatev2Signature($data);
