@@ -90,5 +90,19 @@ class APIController extends BaseController {
  *         type="string",
  *         example="OK",
  *     ),
- * )
+ * ),
+ * @SWG\Definition(
+ *     definition="OKID",
+ *     type="object",
+ *     @SWG\Property(
+ *         property="status",
+ *         type="string",
+ *         example="OK",
+ *     ),
+ *     @SWG\Property(
+ *         property="id",
+ *         type="integer",
+ *         example=0,
+ *     ),
+ * ),
  */
