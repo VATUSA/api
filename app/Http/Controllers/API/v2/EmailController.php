@@ -144,7 +144,7 @@ class EmailController extends APIController
     }
 
     /**
-     * @SWG\Post(
+     * @SWG\Put(
      *     path="/email",
      *     summary="Modify email account. CORS Restricted",
      *     description="Modify email account. Static forwards may only be modified by the ATM, DATM or WM. CORS Restricted",
@@ -188,7 +188,7 @@ class EmailController extends APIController
      *     )
      * )
      */
-    public function postIndex(Request $request) {
+    public function putIndex(Request $request) {
         $email = $request->input("email", null);
         if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return response()->json(generate_error("Missing required field", true), 400);
