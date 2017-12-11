@@ -60,7 +60,7 @@ class UserController extends APIController
      *
      * @TODO Add role, add action log entry
      *
-     * @SWG\Put(
+     * @SWG\Post(
      *     path="/user/(cid)/roles/(facility)/(role)",
      *     summary="Assign new role. Requires JWT or Session Cookie",
      *     description="Assign new role. Requires JWT or Session Cookie (required role: for FE, EC, WM roles: ATM, DATM, for MTR roles: TA, for all other roles: VATUSA STAFF)",
@@ -90,7 +90,7 @@ class UserController extends APIController
      *     )
      * )
      */
-    public function putRole($cid, $facility, $role) {
+    public function postRole($cid, $facility, $role) {
         $facility = Facility::find($facility);
         if (!$facility || ($facility->active != 1 && $facility->id != "ZHQ" && $facility->id != "ZAE")) {
             return response()->api(generate_error("Facility not found or invalid"), 404);
@@ -188,7 +188,7 @@ class UserController extends APIController
      *
      * @TODO
      *
-     * @SWG\Put(
+     * @SWG\Post(
      *     path="/user/(cid)/transfer",
      *     summary="Submit transfer request. Requires JWT or Session Cookie",
      *     description="Submit transfer request. Requires JWT or Session Cookie (self or VATUSA staff)",
@@ -224,7 +224,7 @@ class UserController extends APIController
      *     )
      * )
      */
-    public function putTransfer($cid) {
+    public function postTransfer($cid) {
 
     }
     /**
@@ -501,8 +501,8 @@ class UserController extends APIController
      *
      * @SWG\Put(
      *     path="/user/(cid)/cbt/progress/(blockId)",
-     *     summary="Get user's CBT history. Requires JWT, API Key or Session Cookie",
-     *     description="Get user's CBT history. Requires JWT, API Key or Session Cookie (required role: [N/A for API Key] ATM, DATM, TA, INS, VATUSA STAFF)",
+     *     summary="Updates user's CBT history. Requires JWT, API Key or Session Cookie",
+     *     description="Updates user's CBT history. Requires JWT, API Key or Session Cookie (required role: [N/A for API Key] ATM, DATM, TA, INS, VATUSA STAFF)",
      *     produces={"application/json"},
      *     tags={"user","cbt"},
      *     security={"jwt","session","apikey"},
