@@ -114,6 +114,10 @@ class ULSv2Controller extends Controller
         }
 
         $data = json_decode(\Base64Url\Base64Url::decode($token), true);
+        if (!$data) {
+            \Log::info("Got invalid token $token");
+            return response()->json(generate_error("Invalid token"), 400);
+        }
         $signature = $data['sig'];
         unset($data['sig']);
         $verify_sig = ULSHelper::generatev2Signature($data);
