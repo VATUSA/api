@@ -58,7 +58,7 @@ class SoloController extends APIController
      *
      * @TODO
      *
-     * @SWG\Put(
+     * @SWG\Post(
      *     path="/solo",
      *     summary="Put new solo certification. Requires JWT, API Key, or Session cookie",
      *     description="Put new solo certification. Requires JWT, API Key, or Session cookie (required roles: [N/A for API Key] ATM, DATM, TA, INS)",
@@ -92,7 +92,7 @@ class SoloController extends APIController
      *     )
      * ),
      */
-    public function putSolo() {
+    public function postSolo() {
 
     }
 
