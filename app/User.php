@@ -73,7 +73,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
      * @return Model|null|static
      */
     public function facility() {
-        return $this->belongsTo('App\Facility', 'facility');
+        return $this->hasOne('App\Facility', 'id','facility');
     }
 
     /**
@@ -199,8 +199,8 @@ class User extends Model implements AuthenticatableContract, JWTSubject
      */
     public function removeFromFacility($by = "Automated", $msg = "None provided", $newfac = "ZAE") {
         $facility = $this->facility;
-        $region = $this->facility()->region;
-        $facname = $this->facility()->name;
+        $region = $this->facility->region;
+        $facname = $this->facility->name;
 
         if ($facility != "ZAE") {
             EmailHelper::sendEmail(
