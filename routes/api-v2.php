@@ -58,3 +58,12 @@ Route::group(['middleware' => 'auth:web,jwt'], function() {
 Route::group(['middleware' => 'semiprivate'], function() {
     Route::get('facility/{id}/transfers', 'FacilityController@getTransfers')->where('id', '[A-Za-z]{3}');
 });
+
+/******************************************************************************************
+ * /stats
+ * Statistics functions
+ */
+
+Route::group(['prefix' => '/stats'], function() {
+    Route::get('/exams/{facility}', 'StatsController@getExams');
+});
