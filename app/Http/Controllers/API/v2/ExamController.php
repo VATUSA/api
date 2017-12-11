@@ -364,13 +364,13 @@ class ExamController extends APIController
     /**
      *
      * @SWG\Get(
-     *     path="/exams/{facility}/{id}",
+     *     path="/exams/{facility}/{examid}",
      *     summary="Generates details of exam. CORS Restricted Requires JWT or Session Cookie",
      *     description="Generates details of exam. CORS Restricted Requires JWT or Session Cookie",
      *     produces={"application/json"},
      *     tags={"exam"},
      *     @SWG\Parameter(name="facility", in="path", type="string", required=true, description="Filter list by Facility IATA ID"),
-     *     @SWG\Parameter(name="id", in="path", type="integer", required=true, description="Exam ID"),
+     *     @SWG\Parameter(name="examid", in="path", type="integer", required=true, description="Exam ID"),
      *     @SWG\Response(
      *         response="401",
      *         description="Unauthenticated",
@@ -399,6 +399,13 @@ class ExamController extends APIController
      *             @SWG\Property(property="id", type="integer", description="Exam ID"),
      *             @SWG\Property(property="facility", type="string", description="Facility exam belongs to"),
      *             @SWG\Property(property="name", type="string", description="Exam name"),
+     *             @SWG\Property(property="cbtRequired", type="object",
+     *                 @SWG\Property(property="id", type="integer", description="ID of required CBT Block"),
+     *                 @SWG\Property(property="name", type="string", description="Name of required CBT Block"),
+     *             ),
+     *             @SWG\Property(property="passingScore", type="integer", description="Passing Score Percentage * 100"),
+     *             @SWG\Property(property="retakePeriod", type="integer", description="Auto reassign on fail after X days, 0 = no auto reassign, valid values: 1, 3, 5, 7, 14"),
+     *             @SWG\Property(property="numberQuestions", type="integer", description="Number of questions to ask, 0 = all"),
      *             @SWG\Property(property="active", type="boolean", description="Is exam active?"),
      *             @SWG\Property(property="questions", type="array",
      *                 @SWG\Items(
@@ -413,6 +420,53 @@ class ExamController extends APIController
      *                 ),
      *             ),
      *         ),
+     *     )
+     * )
+     */
+
+    /**
+     *
+     * @SWG\Put(
+     *     path="/exams/{facility}/{examid}",
+     *     summary="Edit details of exam. CORS Restricted Requires JWT or Session Cookie",
+     *     description="Edit details of exam. CORS Restricted Requires JWT or Session Cookie",
+     *     produces={"application/json"},
+     *     tags={"exam"},
+     *     @SWG\Parameter(name="facility", in="path", type="string", required=true, description="Filter list by Facility IATA ID"),
+     *     @SWG\Parameter(name="examid", in="path", type="integer", required=true, description="Exam ID"),
+     *     @SWG\Parameter(name="name", in="formData", type="string", description="Exam name"),
+     *     @SWG\Parameter(name="cbtRequired", in="formData", type="integer", description="ID of CBT Required"),
+     *     @SWG\Parameter(name="passingScore", in="formData", type="integer", description="Passing Score Percentage * 100"),
+     *     @SWG\Parameter(name="retakePeriod", in="formData", type="integer", description="Auto reassign on fail after X days, 0 = no auto reassign, valid values: 1, 3, 5, 7, 14"),
+     *     @SWG\Parameter(name="numberQuestions", in="formData", type="integer", description="Number of questions to ask, 0 = all"),
+     *     @SWG\Parameter(name="active", in="formData", type="boolean", description="Is exam active? (can be passed as string)"),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthenticated",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden -- needs to have role of ATM, DATM or VATUSA Division staff member",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","message"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="404",
+     *         description="Facility/Exam Not found",
+     *         @SWG\Schema(
+     *             ref="#/definitions/error"
+     *         ),
+     *         examples={"application/json":{"status"="error","message"="Not Found"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="object",
+     *             ref="#/definitions/OK",
+     *         )
      *     )
      * )
      */
