@@ -19,7 +19,7 @@ class ResponseServiceProvider extends ServiceProvider
 {
     public function boot(ResponseFactory $factory) {
         $factory->macro('api', function ($data, $status = 200, $headers = []) use ($factory) {
-            $showsig = false;
+            $showsig = false; $fjwk = null;
             if (Request::filled("f")) {
                 $facility = Facility::find(Request::input("f"));
                 if ($facility) {
@@ -36,7 +36,7 @@ class ResponseServiceProvider extends ServiceProvider
             }
 
             $sig = [];
-            if ($showsig) {
+            if ($showsig && $fjwk != null) {
                 $algorithmManager = AlgorithmManager::create([
                     new HS256(), new HS384(), new HS512(),
                 ]);
