@@ -16,6 +16,10 @@ class Exam extends Model
         return $this->hasOne('App\Facility', 'id', 'facility_id');
     }
 
+    public function results() {
+        return $this->hasMany('App\ExamResults', 'exam_id', 'id');
+    }
+
     public function CBT() {
         return $this->hasOne("App\TrainingBlock", "id", "cbt_required");
     }
