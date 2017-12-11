@@ -42,6 +42,7 @@ class ULSHelper
     }
 
     public static function generatev2Signature(array $data) {
+        if ($data === null) return null;
         $signature = hash_hmac('sha256', encode_json($data), env('ULS_SECRET') );
         $data['sig'] = $signature;
         return $data;
