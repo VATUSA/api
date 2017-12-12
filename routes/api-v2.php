@@ -1,7 +1,7 @@
 <?php
 if (env('APP_ENV', 'prod') == "dev") {
     Route::get('llll', function() {
-        \Auth::loginUsingId('876594');
+        \Auth::loginUsingId(env('DEV_CID_LOGIN'));
         return "OK";
     });
 }
