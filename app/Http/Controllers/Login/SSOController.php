@@ -38,9 +38,13 @@ class SSOController extends Controller
      * @param Request $request
      */
     public function getIndex(Request $request) {
-        require_once(config('sso.forumapi',''));
+        if (env('APP_ENV', 'prod') != 'dev') {
+          require_once(config('sso.forumapi',''));
+        }
         if ($request->has("logout")) {
-            smfapi_logout();
+            if (env('APP_ENV', 'prod') != 'dev') {
+              smfapi_logout();
+            }
             \Auth::logout();
             if (isset($_SERVER['HTTP_REFERER'])) {
                 return redirect($_SERVER['HTTP_REFERER']);
