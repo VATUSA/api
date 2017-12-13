@@ -81,7 +81,7 @@ class RouteServiceProvider extends ServiceProvider
     protected function mapLoginRoutes()
     {
         if (env('APP_ENV') == "dev") {
-            Route::domain("logindev.vatusa.net")
+            Route::domain("login.vatusa.dev")
                 ->namespace($this->namespacelogin)
                 ->middleware("web")
                 ->group(base_path("routes/login.php"));
