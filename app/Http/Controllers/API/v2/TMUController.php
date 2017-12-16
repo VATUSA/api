@@ -28,10 +28,10 @@ class TMUController  extends APIController
      *
      * @SWG\Get(
      *     path="/tmu/(facility)/colors",
-     *     summary="Get statistics of exam results",
-     *     description="Get statistics of exam results",
+     *     summary="Change the colors of a TMU Facility's map",
+     *     description="Change the colors of a TMU Facility's map",
      *     produces={"application/json"},
-     *     tags={"stats"},
+     *     tags={"tmu"},
      *     @SWG\Parameter(name="facility", in="path", type="string", description="Filter for facility IATA ID"),
      *     @SWG\Parameter(name="month", in="query", type="integer", description="Filter by month number, requires year"),
      *     @SWG\Parameter(name="year", in="query", type="integer", description="4 digit year to limit results by"),
@@ -53,35 +53,5 @@ class TMUController  extends APIController
      *     )
      * ),
      */
-    public function getExams(Request $request, $facility = null) {
-        if ($request->has("month") && !$request->has("year")) {
-            return response()->api(generate_error("Missing required field", true), 400);
-        }
-        $facility = Facility::find($facility);
-        if (!$facility || ($facility->active != 1 && !in_array($facility->id, ['ZAE','ZHQ']))) {
-            return response()->api(generate_error("Facility not found"), 404);
-        }
 
-        $results = [];
-        foreach (Exam::where('facility_id', $facility->id)->orderBy('name')->get() as $exam) {
-            $result = ['id' => $exam->id, 'name' => $exam->name, 'taken' => 0, 'passed' => 0, 'failed' => 0];
-
-            $examresults = ExamResults::where('exam_id', $exam->id);
-            if ($request->has("month")) {
-                $examresults = $examresults->where("date", "LIKE", $request->input("year") . "-" . sprintf("%02d", $request->input("month")) . '%');
-            } elseif ($request->has("year")) {
-                $examresults = $examresults->where("date", "LIKE", $request->input("year") . "-" . '%');
-            }
-            $examresults = $examresults->get();
-            foreach($examresults as $examresult) {
-                $result['taken']++;
-                if ($examresult->passed == 1) { $result['passed']++; }
-                else { $result['failed']++; }
-            }
-
-            $results[] = $result;
-        }
-
-        return response()->api($results);
-    }
 }
