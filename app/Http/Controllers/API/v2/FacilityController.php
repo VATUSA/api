@@ -295,7 +295,7 @@ class FacilityController extends APIController
      * @SWG\Get(
      *     path="/facility/{id}/email/{templateName}",
      *     summary="Get facility's email template. Requires JWT or Session Cookie",
-     *     descriptipn="Get facility's email template. Requires JWT or Session Cookie",
+     *     description="Get facility's email template. Requires JWT or Session Cookie",
      *     produces={"application/json"},
      *     tags={"facility","email"},
      *     @SWG\Parameter(name="id", in="path", description="Facility IATA ID", required=true, type="string"),
@@ -340,7 +340,7 @@ class FacilityController extends APIController
      * @SWG\Put(
      *     path="/facility/{id}/email/{templateName}",
      *     summary="Modify facility's email template. Requires JWT or Session Cookie",
-     *     descriptipn="Modify facility's email template. Requires JWT or Session Cookie",
+     *     description="Modify facility's email template. Requires JWT or Session Cookie",
      *     produces={"application/json"},
      *     tags={"facility","email"},
      *     @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
