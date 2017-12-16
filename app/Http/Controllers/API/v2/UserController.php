@@ -156,15 +156,15 @@ class UserController extends APIController
 
         $fac = Facility::find($facility);
         if (!$fac || ($fac->active != 1 && $fac->id != "ZHQ" && $fac->id != "ZAE")) {
-            return response()->json(generate_error("Facility not found or invalid"), 404);
+            return response()->api(generate_error("Facility not found or invalid"), 404);
         }
 
         if (!RoleHelper::canModify(\Auth::user(), $facility, $role)) {
-            return response()->json(generate_error("Forbidden"), 403);
+            return response()->api(generate_error("Forbidden"), 403);
         }
 
         if (!RoleHelper::has($cid, $facility, $role)) {
-            return response()->json(generate_error("Not found"), 404);
+            return response()->api(generate_error("Not found"), 404);
         }
 
         Role::where('facility', $facility)->where('role', $role)->where('cid', $cid)->delete();
@@ -182,6 +182,8 @@ class UserController extends APIController
                 EmailHelper::setForward("$facility-$role@vatusa.net", $destination);
             }
         }
+
+        return response()->api(['status' => 'OK']);
     }
     /**
      * @return array|string
