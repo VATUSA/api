@@ -162,11 +162,11 @@ class FacilityController extends APIController
      * @SWG\Put(
      *     path="/facility/{id}",
      *     summary="Update facility information. Requires JWT or Session Cookie",
-     *     description="Update facility information. Requires JWT or Session Cookie (required role: [N/A for API Key] ATM, DATM, WM, VATUSA STAFF)",
+     *     description="Update facility information. Requires JWT or Session Cookie",
      *     produces={"application/json"},
      *     tags={"facility"},
      *     security={"json","session"},
-     *     @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
+     *     @SWG\Parameter(name="id", in="path", description="Facility IATA ID", required=true, type="string"),
      *     @SWG\Parameter(name="url", in="formData", description="Change facility URL, role restricted [ATM, DATM, WM]", type="string"),
      *     @SWG\Parameter(name="url", in="formData", description="Request new JWK", type="string"),
      *     @SWG\Parameter(name="apikey", in="formData", type="string", description="Request new API Key for facility, role restricted [ATM, DATM, WM]"),
@@ -289,6 +289,94 @@ class FacilityController extends APIController
 
         return response()->api(array_merge(['status' => 'OK'], $data));
     }
+
+    /**
+     *
+     * @SWG\Get(
+     *     path="/facility/{id}/email/{templateName}",
+     *     summary="Get facility's email template. Requires JWT or Session Cookie",
+     *     descriptipn="Get facility's email template. Requires JWT or Session Cookie",
+     *     produces={"application/json"},
+     *     tags={"facility","email"},
+     *     @SWG\Parameter(name="id", in="path", description="Facility IATA ID", required=true, type="string"),
+     *     @SWG\Parameter(name="templateName", in="path", description="Name of template (welcome, examassigned, examfailed, exampassed)", required=true, type="string"),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthenticated",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="404",
+     *         description="Not found or not active",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(property="status",type="string"),
+     *             @SWG\Property(property="template",type="string"),
+     *             @SWG\Property(property="body",type="string"),
+     *         ),
+     *         examples={"application/json":{"status"="OK"}}
+     *     )
+     * )
+     */
+    public function getEmailTemplate() {
+
+    }
+
+    /**
+     *
+     * @SWG\Put(
+     *     path="/facility/{id}/email/{templateName}",
+     *     summary="Modify facility's email template. Requires JWT or Session Cookie",
+     *     descriptipn="Modify facility's email template. Requires JWT or Session Cookie",
+     *     produces={"application/json"},
+     *     tags={"facility","email"},
+     *     @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
+     *     @SWG\Parameter(name="templateName", in="path", description="Name of template (welcome, examassigned, examfailed, exampassed)", required=true, type="string"),
+     *     @SWG\Parameter(name="body", in="formData", description="Text of template", required=true, type="string"),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthenticated",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="404",
+     *         description="Not found or not active",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(property="status",type="string"),
+     *             @SWG\Property(property="template",type="string"),
+     *             @SWG\Property(property="body",type="string"),
+     *         ),
+     *         examples={"application/json":{"status"="OK"}}
+     *     )
+     * )
+     */
 
     /**
      * @param \Illuminate\Http\Request $request
@@ -709,4 +797,8 @@ class FacilityController extends APIController
 
         return response()->api(['status'=>"OK"]);
     }
+
+    /**
+    *
+    */
 }
