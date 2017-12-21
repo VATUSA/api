@@ -20,6 +20,28 @@ use App\Facility;
 class UserController extends APIController
 {
     /**
+     * @SWG\Get(
+     *     path="/user/(cid)",
+     *     summary="Get data about user",
+     *     description="Get data about user",
+     *     produces={"application/json"},
+     *     tags={"user"},
+     *     @SWG\Parameter(name="cid",in="path",required=true,type="string",description="Cert ID"),
+     *     @SWG\Response(
+     *         response="404",
+     *         description="Not found",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Not found"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(ref="#/definitions/User")
+     *     )
+     * )
+     */
+
+    /**
      * @param string $facility
      * @param string $role
      * @return array|string
