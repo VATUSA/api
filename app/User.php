@@ -23,11 +23,18 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
  *     @SWG\Property(property="rating", type="integer", description="Rating based off array where 0=OBS, S1, S2, S3, C1, C2, C3, I1, I2, I3, SUP, ADM"),
  *     @SWG\Property(property="created_at", type="string", description="Date added to database"),
  *     @SWG\Property(property="updated_at", type="string"),
- *     @SWG\Property(property="flag_needbasic", type="integer", description="1 needs basic exam"),
- *     @SWG\Property(property="flag_xferOverride", type="integer", description="Has approved transfer override"),
- *     @SWG\Property(property="facility_join", type="string", description="Date joined facility"),
- *     @SWG\Property(property="flag_homecontroller", type="integer", description="1-Belongs to VATUSA"),
- *     @SWG\Property(property="lastactivity", type="string", description="Date last seen on website")
+ *     @SWG\Property(property="flagNeedbasic", type="integer", description="1 needs basic exam"),
+ *     @SWG\Property(property="flagXferOverride", type="integer", description="Has approved transfer override"),
+ *     @SWG\Property(property="facilityJoin", type="string", description="Date joined facility"),
+ *     @SWG\Property(property="promotionEligible", type="boolean", description="Is member eligible for promotion?"),
+ *     @SWG\Property(property="flagHomecontroller", type="integer", description="1-Belongs to VATUSA"),
+ *     @SWG\Property(property="lastactivity", type="string", description="Date last seen on website"),
+ *     @SWG\Property(property="roles", type="array",
+ *         @SWG\Items(type="object",
+ *             @SWG\Property(property="facility", type="string"),
+ *             @SWG\Property(property="role", type="string")
+ *         )
+ *     )
  * )
  */
 class User extends Model implements AuthenticatableContract, JWTSubject
