@@ -549,4 +549,71 @@ class ExamController extends APIController
      *     )
      * )
      */
+
+
+    /**
+     *
+     * @SWG\Post(
+     *     path="/exam/(id)/assign/(cid)",
+     *     summary="Assign exam id to cid. Requires JWT or Session Cookie",
+     *     description="Assign exam id to cid. Requires JWT or Session Cookie",
+     *     tags={"user","exam"},
+     *     produces={"application/json"},
+     *     @SWG\Parameter(name="id", in="path", type="integer", description="Exam ID Number"),
+     *     @SWG\Parameter(name="cid", in="path", type="integer", description="CERT ID"),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthenticated",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden -- needs to have role of ATM, DATM or VATUSA Division staff member",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","message"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="object",
+     *             ref="#/definitions/OK"
+     *         ),
+     *     )
+     * )
+     */
+
+    /**
+     *
+     * @SWG\Delete(
+     *     path="/exam/(id)/assign/(cid)",
+     *     summary="Delete exam id assignment for cid. Requires JWT or Session Cookie",
+     *     description="Delete exam id exam id for cid. Requires JWT or Session Cookie",
+     *     tags={"user","exam"},
+     *     produces={"application/json"},
+     *     @SWG\Parameter(name="id", in="path", type="integer", description="Exam ID Number"),
+     *     @SWG\Parameter(name="cid", in="path", type="integer", description="CERT ID"),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthenticated",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden -- needs to have role of ATM, DATM or VATUSA Division staff member",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","message"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="object",
+     *             ref="#/definitions/OK"
+     *         ),
+     *     )
+     * )
+     */
 }
