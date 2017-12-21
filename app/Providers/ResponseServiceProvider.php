@@ -13,7 +13,7 @@ use Jose\Component\Signature\Algorithm\HS256;
 use Jose\Component\Signature\Algorithm\HS384;
 use Jose\Component\Signature\Algorithm\HS512;
 use Jose\Component\Signature\JWSBuilder;
-use Jose\Component\Signature\Serializer\JSONGeneralSerializer;
+use Jose\Component\Signature\Serializer\JSONFlattenedSerializer;
 
 class ResponseServiceProvider extends ServiceProvider
 {
@@ -52,7 +52,7 @@ class ResponseServiceProvider extends ServiceProvider
 
                 $payload = $jsonConverter->encode($data);
                 $jws = $jwsBuilder->create()->withPayload($payload)->addSignature($jwk, ['alg'=>json_decode($facility->apiv2_jwk, true)['alg']])->build();
-                $serializer = new JSONGeneralSerializer($jsonConverter);
+                $serializer = new JSONFlattenedSerializer($jsonConverter);
                 return $factory->make($serializer->serialize($jws, 0), $status, array_merge($headers, ['Content-Type' => 'application/json']));
             }
 
