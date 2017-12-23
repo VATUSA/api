@@ -19,6 +19,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
  *     @SWG\Property(property="cid", type="integer"),
  *     @SWG\Property(property="fname", type="string", description="First name"),
  *     @SWG\Property(property="lname", type="string", description="Last name"),
+ *     @SWG\Property(property="email", type="string", description="Email address of user, will be null if API Key or necessary roles are not available (ATM, DATM, TA, WM, INS)"),
  *     @SWG\Property(property="facility", type="string", description="Facility ID"),
  *     @SWG\Property(property="rating", type="integer", description="Rating based off array where 0=OBS, S1, S2, S3, C1, C2, C3, I1, I2, I3, SUP, ADM"),
  *     @SWG\Property(property="created_at", type="string", description="Date added to database"),
