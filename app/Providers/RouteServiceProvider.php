@@ -70,6 +70,10 @@ class RouteServiceProvider extends ServiceProvider
                 ->middleware(["web","api"])
                 ->namespace($this->namespaceapi)
                 ->group(base_path("routes/api.php"));
+        } elseif (env('APP_ENV') == "livedev") {
+            Route::domain("api.dev.vatusa.net")
+                ->namespace($this->namespacelogin)
+                ->group(base_path("routes/api.php"));
         } else {
             Route::domain("api.vatusa.net")
                 ->middleware(["web","api"])
@@ -82,6 +86,11 @@ class RouteServiceProvider extends ServiceProvider
     {
         if (env('APP_ENV') == "dev") {
             Route::domain("login.vatusa.dev")
+                ->namespace($this->namespacelogin)
+                ->middleware("web")
+                ->group(base_path("routes/login.php"));
+        } elseif (env('APP_ENV') == "livedev") {
+            Route::domain("login.dev.vatusa.net")
                 ->namespace($this->namespacelogin)
                 ->middleware("web")
                 ->group(base_path("routes/login.php"));
