@@ -59,8 +59,6 @@ USER application
 RUN composer.phar install --no-dev --no-scripts
 USER root
 RUN rm /usr/local/bin/composer.phar
-RUN crontab -l | { cat; echo "*    *    *     *     *    su -c 'cd /www && php artisan schedule:run' www-data"; } | crontab -
-RUN crond
 
 ENTRYPOINT ["/bin/sh","/www/build.sh"]
 
