@@ -36,7 +36,6 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             //\App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            \App\Http\Middleware\RequireHTTPS::class,
         ],
 
         'login' => [
@@ -52,7 +51,6 @@ class Kernel extends HttpKernel
 
         'public' => [
             \App\Http\Middleware\PublicCORS::class,
-            \App\Http\Middleware\RequireHTTPS::class,
         ],
 
         'private' => [
@@ -63,7 +61,6 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\Subdomain::class,
             'throttle:60,1',
             'bindings',
-            \App\Http\Middleware\RequireHTTPS::class,
         ],
     ];
 
