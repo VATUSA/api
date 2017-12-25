@@ -49,8 +49,8 @@ class ULSHelper
     }
 
     public static function doHandleLogin($cid, $return) {
-        require_once(config('sso.forumapi', ''));
-        smfapi_login($cid, 14400);
+        //require_once(config('sso.forumapi', ''));
+        //smfapi_login($cid, 14400);
         \Auth::loginUsingId($cid);
 
         $token = [
@@ -63,12 +63,12 @@ class ULSHelper
         return redirect("https://forums.vatusa.net/api.php?login=1&token=$token&signature=$signature");
     }
 
-    function base64url_encode($data, $use_padding = false) {
+    public static function base64url_encode($data, $use_padding = false) {
         $encoded = strtr(base64_encode($data), '+/', '-_');
         return true === $use_padding ? $encoded : rtrim($encoded, '=');
     }
 
-    function base64url_decode($data) {
+    public static function base64url_decode($data) {
         return base64_decode(strtr($data, '-_', '+/'));
     }
 }

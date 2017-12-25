@@ -120,21 +120,12 @@ class SSOController extends Controller
                     SMFHelper::updateData($user->id, $user->name_last, $user->name_first, $user->email);
                     SMFHelper::setPermissions($user->id);
                 } else {
-                    require_once(config('sso.forumapi',''));    // I really hate doing this, but requiring globally breaks Laravel
-                    $r = randomPassword();
-                    $regOptions = [
-                        'member_name' => $user->id,
-                        'real_name' => $user->name_first . " " . $user->name_last,
-                        'email' => $user->email,
-                        'password' => $r,
-                        'password_check' => $r,
-                        'send_welcome_email' => false,
-                        'require' => 'nothing'
-                    ];
-                    $r = smfapi_registerMember($regOptions);
-                    if (is_array($r) || $r == false) {
-                        \Log::warning("Failed to create new user: " . base64_encode(serialize($r)) . ", " . base64_encode(serialize($regOptions)));
-                        throw new \Exception("Failed to create forum user");
+                    $token = ULSHelper::base64url_encode(json_encode($regOptions));
+                    $signature = hash_hmac("sha512", $token, env("FORUM_SECRET"));
+                    $signature = ULSHelper::base64url_encode($signature);
+                    $data = file_get_contents("https://forums.vatusa.net/api.php?register=1&data=$token&signature=$signature");
+                    if ($data != "OK") {
+                        throw new \Exception("Failed to create forum user $data");
                     }
                 }
                 $member = User::find($user->id);

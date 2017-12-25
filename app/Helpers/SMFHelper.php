@@ -111,7 +111,7 @@ class SMFHelper
      */
     public static function createPost($memberID, $board, $subject, $body)
     {
-        $smf_subject = $subject;
+        /*$smf_subject = $subject;
         $smf_subject = addslashes(htmlspecialchars($smf_subject));
         $smf_body = addslashes(htmlspecialchars($body));
         $smf_board = $board;
@@ -129,7 +129,8 @@ class SMFHelper
         $posterOptions = [
             'id' => $smf_member
         ];
-        createPost($msgOptions, $topicOptions, $posterOptions);
+        createPost($msgOptions, $topicOptions, $posterOptions);*/
+        // Coming soon?
     }
 
     /**
