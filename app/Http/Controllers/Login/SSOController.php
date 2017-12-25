@@ -47,10 +47,12 @@ class SSOController extends Controller
             }
             \Auth::logout();
             if (isset($_SERVER['HTTP_REFERER'])) {
-                return redirect($_SERVER['HTTP_REFERER']);
+                $return = $_SERVER['HTTP_REFERER'];
             } else {
-                return redirect('https://www.vatusa.net');
+                $return = 'https://www.vatusa.net';
             }
+
+            return redirect("https://forums.vatusa.net/api.php?logout=1&return=$return");
             return;
         }
 
