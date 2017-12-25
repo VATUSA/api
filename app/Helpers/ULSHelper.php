@@ -59,7 +59,7 @@ class ULSHelper
             "return" => $return
         ];
         $token = static::base64url_encode(json_encode($token));
-        $signature = static::base64url_encode("sha512", $token, env("FORUM_SECRET"));
+        $signature = static::base64url_encode("sha512", $token, base64_decode(env("FORUM_SECRET")));
         return redirect("https://forums.vatusa.net/api.php?login=1&token=$token&signature=$signature");
     }
 
