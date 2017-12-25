@@ -61,3 +61,5 @@ RUN crontab -l | { cat; echo "*    *    *     *     *    su -c 'cd /www && php a
 RUN crond
 
 ENTRYPOINT ["/bin/sh","/www/build.sh"]
+
+EXPOSE 80
