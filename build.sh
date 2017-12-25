@@ -1,4 +1,8 @@
 #!/bin/sh
 
-echo /run/secrets/key > /www/.env
-echo /run/secrets/api.env >> /www/.env
+cat /run/secrets/key > /www/.env
+cat /run/secrets/api.env >> /www/.env
+
+chown application:application /www/.env
+
+/usr/bin/supervisord --nodaemon --configuration /etc/supervisord.conf
