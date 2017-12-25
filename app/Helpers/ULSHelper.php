@@ -43,15 +43,32 @@ class ULSHelper
 
     public static function generatev2Signature(array $data) {
         if ($data === null) return null;
-        $signature = hash_hmac('sha256', encode_json($data), env('ULS_SECRET') );
+        $signature = hash_hmac('sha256', encode_json($data), env('ULS_SECRET'));
         $data['sig'] = $signature;
         return $data;
     }
 
     public static function doHandleLogin($cid, $return) {
-        require_once(config('sso.forumapi',''));
+        require_once(config('sso.forumapi', ''));
         smfapi_login($cid, 14400);
         \Auth::loginUsingId($cid);
-        return redirect($return);
+
+        $token = [
+            "cid" => $cid,
+            "nlt" => time() + 7,
+            "return" => $return
+        ];
+        $token = static::base64url_encode(json_encode($token));
+        $signature = static::base64url_encode("sha512", $token, env("FORUM_SECRET"));
+        return redirect("https://forums.vatusa.net/api.php?login=1&token=$token&signature=$signature");
+    }
+
+    function base64url_encode($data, $use_padding = false) {
+        $encoded = strtr(base64_encode($data), '+/', '-_');
+        return true === $use_padding ? $encoded : rtrim($encoded, '=');
+    }
+
+    function base64url_decode($data) {
+        return base64_decode(strtr($data, '-_', '+/'));
     }
 }
