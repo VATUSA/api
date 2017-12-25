@@ -10,8 +10,8 @@ mkdir /www/storage/logs
 chown application:application /www/storage/logs
 
 if [ "$WWW_ENV" == "prod" ]; then
-  crontab -l | { cat; echo "*    *    *     *     *    su -c 'cd /www && php artisan schedule:run' application"; } | crontab -
-  crontab -l | { cat; echo "*    *    *     *     *    su -c 'cd /www && php artisan vatsim:update' application"; } | crontab -
+  echo "*    *    *     *     *    cd /www && php artisan schedule:run" >> /etc/crontabs/application
+  echo "*    *    *     *     *    cd /www && php artisan vatsim:update" >> /etc/crontabs/application
 fi
 
 /usr/bin/supervisord --nodaemon --configuration /etc/supervisord.conf
