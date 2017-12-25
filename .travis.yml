@@ -23,7 +23,7 @@ after_success:
     docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
     docker push $DOCKER_ORG/api:latest;
     fi
-  - if [ "$TRAVIS_BRANCH" == "devel" ]; then
+  - if [ "$TRAVIS_BRANCH" == "develop" ]; then
     docker tag $DOCKER_ORG/api $DOCKER_ORG/api:devel;
     docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
     docker push $DOCKER_ORG/api:devel;
