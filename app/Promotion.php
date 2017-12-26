@@ -8,7 +8,7 @@
  *     type="object",
  *     @SWG\Property(property="id", type="integer"),
  *     @SWG\Property(property="cid", type="integer"),
- *     @SWG\Property(property="grantor", type="integer", description="CID of grantor, 11111 = system generated or conducted outside of VATUSA),
+ *     @SWG\Property(property="grantor", type="integer", description="CID of grantor, 11111 = system generated or conducted outside of VATUSA"),
  *     @SWG\Property(property="to", type="integer", description="Rating based off array where 1=OBS, S1, S2, S3, C1, C2, C3, I1, I2, I3, SUP, ADM"),
  *     @SWG\Property(property="from", type="integer", description="Rating based off array where 1=OBS, S1, S2, S3, C1, C2, C3, I1, I2, I3, SUP, ADM"),
  *     @SWG\Property(property="created_at", type="string", description="Date rating issued"),

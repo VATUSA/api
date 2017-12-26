@@ -9,6 +9,8 @@ use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
 use App\Promotion;
 use App\Role;
+use App\TrainingChapter;
+use App\TrainingProgress;
 use App\Transfer;
 use App\User;
 use Carbon\Carbon;
@@ -572,27 +574,25 @@ class UserController extends APIController
     /**
      * @return array|string
      *
-     * @TODO
-     *
      * @SWG\Get(
      *     path="/user/(cid)/transfer/history",
-     *     summary="Get user's transfer history. Requires JWT or Session Cookie",
-     *     description="Get user's history. Requires JWT or Session Cookie (required role: [N/A for API Key] ATM, DATM, TA, INS, VATUSA STAFF)",
+     *     summary="(DONE) Get user's transfer history. Requires JWT, API Key or Session Cookie",
+     *     description="(DONE) Get user's history. Requires JWT, API Key or Session Cookie (required role: [N/A for API Key] ATM, DATM, TA, WM, VATUSA STAFF)",
      *     produces={"application/json"},
      *     tags={"user","transfer"},
      *     security={"jwt","session","apikey"},
      *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
      *     @SWG\Response(
-     *         response="401",
-     *         description="Unauthenticated",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
-     *     ),
-     *     @SWG\Response(
      *         response="403",
      *         description="Forbidden",
      *         @SWG\Schema(ref="#/definitions/error"),
      *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="404",
+     *         description="Not found",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Not found"}},
      *     ),
      *     @SWG\Response(
      *         response="200",
@@ -600,49 +600,72 @@ class UserController extends APIController
      *         @SWG\Schema(
      *             type="array",
      *             @SWG\Items(
-     *                 type="object",
-     *                 @SWG\Property(property="id", type="integer", description="Transfer ID Number"),
-     *                 @SWG\Property(property="date", type="string", description="Date of Transfer (YYYY-MM-DD)"),
-     *                 @SWG\Property(property="facilityTo", type="string", description="Facility IATA ID request was addressed to"),
-     *                 @SWG\Property(property="facilityFrom", type="string", description="Facility IATA ID user was in"),
-     *                 @SWG\Property(property="status", type="string", description="Status of request (pending, approved, rejected)")
+     *                 ref="#/definitions/Transfer"
      *             )
      *         ),
+     *         examples={"application/json":{{"id":673608,"cid":1055319,"to":"ZAE","from":"ZNY","reason":"Removed for inactivity.","status":1,"actiontext":"Removed for inactivity.","actionby":0,"created_at":"2017-01-01T12:06:27+00:00","updated_at":"2017-01-01T12:06:27+00:00"}}},
      *     )
      * )
      */
     public function getTransferHistory($cid) {
+        if (!User::find($cid)) { return response()->json(generate_error("Not found"), 404); }
 
+        if (!(\Auth::check() &&
+            (
+                \Auth::user()->cid == $cid ||
+                RoleHelper::isVATUSAStaff(\Auth::user()->cid) ||
+                RoleHelper::has(\Auth::user()->cid, \Auth::user()->facility, ["ATM","DATM","TA","WM"])
+            )
+        )) {
+
+            $transfers = Transfer::where('cid', $cid)->orderBy('created_at', 'desc')->get()->toArray();
+            return response()->json($transfers);
+        }
+
+        return response()->json(generate_error("Forbidden"), 403);
     }
 
     /**
      * @return array|string
      *
-     * @TODO
-     *
      * @SWG\Get(
      *     path="/user/(cid)/cbt/history",
-     *     summary="Get user's CBT history. Requires JWT, API Key or Session Cookie",
-     *     description="Get user's CBT history. Requires JWT, API Key or Session Cookie (required role: [N/A for API Key] ATM, DATM, TA, INS, VATUSA STAFF)",
+     *     summary="Get user's CBT history.",
+     *     description="Get user's CBT history.",
      *     produces={"application/json"},
      *     tags={"user","cbt"},
      *     security={"jwt","session","apikey"},
      *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
-     *     @SWG\Parameter(name="completedOnly", in="query", type="boolean", description="Display only completed CBT Blocks"),
-     *     @SWG\Parameter(name="facility", in="query", type="string", description="Filter for facility IATA ID"),
-     *     @SWG\Parameter(name="blockId", in="query", type="integer", description="Lookup progress of specific Block ID"),
      *     @SWG\Response(
-     *         response="401",
-     *         description="Unauthenticated",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
-     *     ),
-     *     @SWG\Response(
-     *         response="403",
-     *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
-     *     ),
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="array",
+     *             @SWG\Items(
+     *                 ref="#/definitions/TrainingProgress"
+     *             )
+     *         ),
+     *         examples={"application/json":{{"cid":876594,"chapterid":51,"date":"2016-09-11T23:02:42+00:00"}}},
+     *     )
+     * )
+     */
+    public function getCBTHistory($cid) {
+        $data = TrainingProgress::where("cid", $cid)->get()->toArray();
+
+        return response()->json($data);
+    }
+
+    /**
+     * @return array|string
+     *
+     * @SWG\Get(
+     *     path="/user/(cid)/cbt/progress/(blockId)",
+     *     summary="(DONE) Get user's CBT history for block ID.",
+     *     description="(DONE) Get user's CBT history for block ID.",
+     *     produces={"application/json"},
+     *     tags={"user","cbt"},
+     *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
+     *     @SWG\Parameter(name="blockId", in="query", type="integer", description="Mark progress of specific Block ID"),
      *     @SWG\Response(
      *         response="200",
      *         description="OK",
@@ -650,33 +673,45 @@ class UserController extends APIController
      *             type="array",
      *             @SWG\Items(
      *                 type="object",
-     *                 @SWG\Property(property="id", type="integer", description="Block ID Number"),
-     *                 @SWG\Property(property="facility", type="string", description="Block's owning facility"),
-     *                 @SWG\Property(property="blockName", type="string", description="Name of block"),
+     *                 @SWG\Property(property="chapterId", type="integer"),
+     *                 @SWG\Property(property="chapterName", type="string"),
      *                 @SWG\Property(property="completed", type="boolean"),
+     *                 @SWG\Property(property="date", type="string", description="Null if not completed, otherwise date completed")
      *             )
      *         ),
+     *         examples={"application/json":{{"chapterId":97,"chapterName":"Basic ATC/S1 Orientation","completed":true,"date":"2017-04-07T19:25:44+00:00"}}}
      *     )
      * )
      */
-    public function getCBTProgress($cid) {
+    public function getCBTProgress($cid, $blockId) {
+        $chapters = TrainingChapter::where('blockid', $blockId)->get();
+        $data = [];
+        foreach ($chapters as $chapter) {
+            $tp = TrainingProgress::where('cid', $cid)->where('chapterid', $chapter->id)->first();
+            $data[] = [
+                'chapterId' => $chapter->id,
+                'chapterName' => $chapter->name,
+                'completed' => (!$tp) ? false : true,
+                'date' => (!$tp) ? null : $tp->date
+            ];
+        }
 
+        return response()->json($data);
     }
 
     /**
      * @return array|string
      *
-     * @TODO
-     *
      * @SWG\Put(
-     *     path="/user/(cid)/cbt/progress/(blockId)",
-     *     summary="Updates user's CBT history. Requires JWT, API Key or Session Cookie",
-     *     description="Updates user's CBT history. Requires JWT, API Key or Session Cookie (required role: [N/A for API Key] ATM, DATM, TA, INS, VATUSA STAFF)",
+     *     path="/user/(cid)/cbt/progress/(blockId)/(chapterId)",
+     *     summary="(DONE) Updates user's CBT history. Requires JWT, API Key or Session Cookie",
+     *     description="(DONE) Updates user's CBT history. Requires JWT, API Key or Session Cookie (must originate from user if not using API Key)",
      *     produces={"application/json"},
      *     tags={"user","cbt"},
      *     security={"jwt","session","apikey"},
      *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
      *     @SWG\Parameter(name="blockId", in="query", type="integer", description="Mark progress of specific Block ID"),
+     *     @SWG\Parameter(name="chapterId", in="query", type="integer", description="Mark progress of specific Chapter ID"),
      *     @SWG\Response(
      *         response="401",
      *         description="Unauthenticated",
@@ -697,8 +732,22 @@ class UserController extends APIController
      *     )
      * )
      */
-    public function putCBTProgress($cid, $blockId) {
+    public function putCBTProgress($cid, $blockId, $chapterId) {
+        if (!\Auth::check() && !request()->has("apikey")) {
+            return response()->json(generate_error("Unautheicated"), 401);
+        }
 
+        if (!\Auth::user()->cid != $cid && !request()->has("apikey")) {
+            return response()->json(generate_error("Forbidden"), 403);
+        }
+
+        $tp = new TrainingProgress();
+        $tp->cid = $cid;
+        $tp->chapterid = $chapterId;
+        $tp->date = Carbon::now();
+        $tp->save();
+
+        return response()->api(['status' => 'OK']);
     }
 
     /**
