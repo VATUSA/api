@@ -76,4 +76,11 @@ Route::group(['prefix' => '/users'], function() {
     Route::get('/{cid}', 'UserController@getIndex')->where('cid', '[0-9]+');
     Route::get('/roles/{facility}/{role}', 'UserController@getRoleUsers')->where(['facility' => '[A-Za-z]{3}', 'role' => '[A-Za-z0-9]+']);
     Route::get('/{cid}/transfer/checklist', 'UserController@getTransferChecklist')->where('cid','[0-9]+');
+    Route::get('/{cid}/rating/history', 'UserController@getRatingHistory')->where('cid','[0-9]+');
+
+
+    Route::group(['middleware' => 'private'], function() {
+        Route::get('/{cid}/log', 'UserController@getActionLog')->where('cid', '[0-9]+');
+        Route::post('/{cid}/log','UserController@postActionLog')->where('cid','[0-9]+');
+    });
 });

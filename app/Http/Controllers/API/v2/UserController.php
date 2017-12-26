@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\API\v2;
 
+use App\Action;
 use App\Helpers\AuthHelper;
 use App\Helpers\EmailHelper;
 use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
+use App\Promotion;
 use App\Role;
 use App\Transfer;
 use App\User;
@@ -421,18 +423,12 @@ class UserController extends APIController
      *
      * @SWG\Get(
      *     path="/user/(cid)/rating/history",
-     *     summary="Get user's rating history. Requires JWT, API Key or Session Cookie",
-     *     description="Get user's rating history. Requires JWT, API Key or Session Cookie (required role: [N/A for API Key] ATM, DATM, TA, INS, VATUSA STAFF)",
+     *     summary="(DONE) Get user's rating history. Requires JWT, API Key or Session Cookie",
+     *     description="(DONE) Get user's rating history. Requires JWT, API Key or Session Cookie (required role: [N/A for API Key] ATM, DATM, TA, INS, VATUSA STAFF)",
      *     produces={"application/json"},
      *     tags={"user","rating"},
      *     security={"jwt","session","apikey"},
      *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
-     *     @SWG\Response(
-     *         response="401",
-     *         description="Unauthenticated",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
-     *     ),
      *     @SWG\Response(
      *         response="403",
      *         description="Forbidden",
@@ -444,30 +440,38 @@ class UserController extends APIController
      *         description="OK",
      *         @SWG\Schema(
      *             type="array",
-     *             @SWG\Items(
-     *                 type="object",
-     *                 @SWG\Property(property="id", type="integer", description="Promotion ID Number"),
-     *                 @SWG\Property(property="date", type="string", description="Date of Transfer (YYYY-MM-DD)"),
-     *                 @SWG\Property(property="ratingTo", type="string", description="Rating given (S1, S2, etc)"),
-     *                 @SWG\Property(property="ratingFrom", type="string", description="Previous rating (S1, S2, etc)"),
-     *             )
+     *             @SWG\Items(ref="#/definitions/Promotion"),
      *         ),
+     *         examples={"application/json":{{"id": 9486,"cid": 876594,"grantor": 111111,"to": 8,"from": 10,"created_at": "2011-09-06T04:28:51+00:00","exam": "0000-00-00","examiner": 0,"position": ""}}},
      *     )
      * )
      */
     public function getRatingHistory($cid) {
+        if (!User::find($cid)) { return response()->json(generate_error("Not found"), 404); }
 
+        if (!request()->has("apikey") && !(\Auth::check() &&
+                (
+                    \Auth::user()->cid == $cid ||
+                    RoleHelper::isVATUSAStaff(\Auth::user()->cid) ||
+                    RoleHelper::has(\Auth::user()->cid, \Auth::user()->facility, ["ATM","DATM","WM"])
+                )
+            )) {
+
+            return response()->api(generate_error("Forbidden"), 403);
+        }
+
+        $history = Promotion::where('cid', $cid)->orderBy('created_at', 'desc')->get()->toArray();
+
+        return response()->api($history);
     }
 
     /**
      * @return array|string
      *
-     * @TODO
-     *
-     * @SWG\Put(
+     * @SWG\Get(
      *     path="/user/(cid)/log",
-     *     summary="Submit entry to controller's action log. Requires JWT or Session Cookie",
-     *     description="Submit entry to controller's action log. Requires JWT or Session Cookie (required role: ATM, DATM, VATUSA STAFF)",
+     *     summary="(DONE) Get controller's action log. CORS Restricted Requires JWT or Session Cookie",
+     *     description="(DONE) Get controller's action log. CORS Restricted Requires JWT or Session Cookie (required role: ATM, DATM, VATUSA STAFF)",
      *     produces={"application/json"},
      *     tags={"user"},
      *     security={"jwt","session"},
@@ -488,13 +492,81 @@ class UserController extends APIController
      *     @SWG\Response(
      *         response="200",
      *         description="OK",
+     *         @SWG\Schema(
+     *             type="array",
+     *             @SWG\Items(ref="#/definitions/Action"),
+     *         ),
+     *         examples={"application/json":{{"id": 579572,"to": 1394143,"log": "Joined division, facility set to ZAE by CERTSync","created_at": "2017-06-01T00:02:09+00:00"}}}
+     *     )
+     * )
+     */
+    public function getActionLog($cid) {
+        if (!User::find($cid)) { return response()->json(generate_error("Not found"), 404); }
+
+        if (!(\Auth::check() &&
+            (
+                \Auth::user()->cid == $cid ||
+                RoleHelper::isVATUSAStaff(\Auth::user()->cid) ||
+                RoleHelper::has(\Auth::user()->cid, \Auth::user()->facility, ["ATM","DATM"])
+            )
+        )) {
+
+            return response()->json(generate_error("Forbidden"), 403);
+        }
+
+        $logs = Action::where("to", $cid)->get()->toArray();
+
+        return response()->json($logs);
+    }
+
+    /**
+     * @return array|string
+     *
+     * @SWG\Post(
+     *     path="/user/(cid)/log",
+     *     summary="(DONE) Submit entry to controller's action log. CORS Restricted Requires JWT or Session Cookie",
+     *     description="(DONE) Submit entry to controller's action log. CORS Restricted Requires JWT or Session Cookie (required role: ATM, DATM, VATUSA STAFF)",
+     *     produces={"application/json"},
+     *     tags={"user"},
+     *     security={"jwt","session"},
+     *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
+     *     @SWG\Parameter(name="entry", in="formData", required=true, type="string", description="Entry to log"),
+     *     @SWG\Response(
+     *         response="400",
+     *         description="Malformed request",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Malformed request"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthenticated",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
      *         @SWG\Schema(ref="#/definitions/OK"),
      *         examples={"application/json":{"status"="OK"}}
      *     )
      * )
      */
-    public function putActionLog($cid) {
+    public function postActionLog($cid) {
+        $entry = request()->input("entry", null);
+        if (!$entry) return response()->json(generate_error("Malformed request"), 400);
+        if (!\Auth::check()) return response()->json(generate_error("Unauthenticated"), 401);
+        if (!RoleHelper::isVATUSAStaff(\Auth::user()->cid) && !RoleHelper::has(\Auth::user()->cid, \Auth::user()->facility, ["ATM","DATM"])) {
+            return response()->json(generate_error("Forbidden"), 403);
+        }
 
+        log_action($cid, $entry);
+        return response()->json(['status' => 'OK']);
     }
 
     /**
