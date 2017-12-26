@@ -18,6 +18,19 @@ class AuthHelper {
         return false;
     }
 
+    public static function validApiKeyv2($key, $fac = null) {
+        $facility = Facility::where("apikey", $key)->first();
+        if ($facility || ($fac && $fac === $facility->id)) {
+            return true;
+        }
+        $facility = Facility::where("api_sandbox_key", $key)->first();
+        if ($facility || ($fac && $fac === $facility->id)) {
+            return true;
+        }
+
+        return false;
+    }
+
     public static function isSandboxKey($key, $fac = null) {
         $facility = Facility::where("api_sandbox_key", $key)->first();
         if ($facility || ($fac && $fac === $facility->id)) {

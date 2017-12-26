@@ -10,7 +10,7 @@ Route::prefix("v2")->namespace("v2")->group(function() {
     });
 });
 
-Route::prefix('v2')->namespace('v2')->group(function() {
+Route::prefix('v2')->middleware(["apikeyv2"])->namespace('v2')->group(function() {
     require("api-v2.php");
 });
 
