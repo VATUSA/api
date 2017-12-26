@@ -1,10 +1,27 @@
 <?php
 namespace App;
 
-use Illuminate\Database\Eloquent\Model;
 use App\User;
 use App\Helpers\EmailHelper;
 
+/**
+ * Class Transfer
+ * @package App
+ *
+ * @SWG\Definition(
+ *     type="object",
+ *     @SWG\Property(property="id", type="integer"),
+ *     @SWG\Property(property="cid", type="integer"),
+ *     @SWG\Property(property="to", type="string"),
+ *     @SWG\Property(property="from", type="string"),
+ *     @SWG\Property(property="reason", type="string"),
+ *     @SWG\Property(property="status", type="integer", description="0 pending, 1 approved, 2 rejected"),
+ *     @SWG\Property(property="actiontext", type="string", description="Reasoning"),
+ *     @SWG\Property(property="actionby", type="integer", description="Cert ID, 0 is system processed [CERT Sync usually]"),
+ *     @SWG\Property(property="created_at", type="string", description="Date transfer submitted"),
+ *     @SWG\Property(property="updated_at", type="string", description="Date transfer was last acted on [not updated after processed]")
+ * )
+ */
 class Transfer extends Model
 {
     // Transfer status codes
