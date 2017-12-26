@@ -27,7 +27,8 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
  *     @SWG\Property(property="flag_needbasic", type="integer", description="1 needs basic exam"),
  *     @SWG\Property(property="flag_xferOverride", type="integer", description="Has approved transfer override"),
  *     @SWG\Property(property="facility_join", type="string", description="Date joined facility (YYYY-mm-dd hh:mm:ss)"),
- *     @SWG\Property(property="promotionEligible", type="boolean", description="Is member eligible for promotion?"),
+ *     @SWG\Property(property="promotion_eligible", type="boolean", description="Is member eligible for promotion?"),
+ *     @SWG\Property(property="transfer_eligible", type="boolean", description="Is member is eligible for transfer?"),
  *     @SWG\Property(property="flag_homecontroller", type="integer", description="1-Belongs to VATUSA"),
  *     @SWG\Property(property="lastactivity", type="string", description="Date last seen on website"),
  *     @SWG\Property(property="roles", type="array",
@@ -63,7 +64,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
      */
     protected $hidden = ['password', 'remember_token', "cert_update"];
 
-    protected $appends = ["roles", "promotion_eligible"];
+    protected $appends = ["promotion_eligible", "transfer_eligible", "roles"];
 
     /**
      * @return array
@@ -83,7 +84,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
      * @return Model|null|static
      */
     public function facility() {
-        return $this->hasOne('App\Facility', 'id','facility');
+        return $this->hasOne('App\Facility', 'id', 'facility');
     }
 
     /**
@@ -334,13 +335,89 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         return $this->getKey();
     }
 
-    /**
-     * Return a key value array, containing any custom claims to be added to the JWT.
-     *
-     * @return array
-     */
-    public function getJWTCustomClaims() {
-        return [];
+    public function transferEligible(&$checks = null) {
+        if ($checks === null)
+            $checks = [];
+
+        if (!is_array($checks)) $checks = [];
+
+        $checks['homecontroller'] = false;
+        $checks['needbasic'] = false;
+        $checks['pending'] = false;
+        $checks['initial'] = false;
+        $checks['90days'] = false;
+        $checks['promo'] = false;
+        $checks['override'] = false;
+        $checks['is_first'] = true;
+
+        if ($this->flag_homecontroller) $checks['homecontroller'] = true;
+        else $checks['homecontroller'] = false;
+
+        if ($this->flag_needbasic == false) $checks['needbasic'] = true; // true = check passed
+
+        // Pending transfer request
+        $transfer = Transfer::where('cid', $this->cid)->where('status', 0)->count();
+        if (!$transfer) $checks['pending'] = true;
+
+        $checks['initial'] = true;
+        if (!in_array($this->facility, ["ZAE", "ZZN", "ZHQ"])) {
+            if (Transfer::where('cid', $this->cid)->where('to', 'NOT LIKE', 'ZAE')->where('to', 'NOT LIKE', 'ZZN')->where('status', 1)->count() == 1) {
+                if (Carbon::createFromFormat('Y-m-d H:i:s', $this->facility_join)->diffInDays(new Carbon()) <= 30) $checks['initial'] = true;
+            } else {
+                $checks['is_first'] = false;
+            }
+        } else {
+            $checks['is_first'] = false;
+        }
+        $transfer = Transfer::where('cid', $this->cid)->where('status', 1)->where('to', 'NOT LIKE', 'ZAE')->where('to', 'NOT LIKE', 'ZZN')->where('status', 1)->orderBy('created_at', 'DESC')->first();
+        if (!$transfer) $checks['90days'] = true;
+        else {
+            $checks['days'] = Carbon::createFromFormat('Y-m-d H:i:s', $transfer->updated_at)->diffInDays(new Carbon());
+            if ($checks['days'] >= 90) {
+                $checks['90days'] = true;
+            } else {
+                $checks['90days'] = false;
+            }
+        }
+
+        // S1-S3 within 90 check
+        $promotion = Promotion::where('cid', $this->cid)->where("to", "<=", RatingHelper::shortToInt("S3"))
+            ->where('created_at', '>=', \DB::raw('DATE(NOW() - INTERVAL 90 DAY)'))->first();
+
+        if ($promotion == null) {
+            $checks['promo'] = true;
+        } else {
+            $checks['promo'] = false;
+        }
+
+        if ($this->rating >= RatingHelper::shortToInt("I1") && $this->rating <= RatingHelper::shortToInt("I3")) {
+            $checks['instructor'] = false;
+        } else {
+            $checks['instructor'] = true;
+        }
+
+        $checks['staff'] = true;
+        if (RoleHelper::isFacilityStaff($this->cid, $this->facility)) {
+            $checks['staff'] = false;
+        }
+
+        // Override flag
+        if ($this->flag_xferOverride) {
+            $checks['override'] = true;
+        } else {
+            $checks['override'] = false;
+        }
+
+        if ($checks['override']) return true;
+        if ($checks['instructor'] && $checks['staff'] && $checks['homecontroller'] && $checks['needbasic'] && $checks['pending'] && (($checks['is_first'] && $checks['initial']) || $checks['90days']) && $checks['promo']) return true;
+        else return false;
+    }
+
+    public function setTransferOverride($value = 0) {
+        $this->flag_xferoverride = $value;
+        $this->save();
+
+        log_action($this->cid, "Transfer override flag " . ($value) ? "enabled by " . \Auth::user()->fullname() : "removed");
     }
 
     public function getRolesAttribute() {
@@ -350,5 +427,17 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     public function getPromotionEligibleAttribute() {
         return $this->promotionEligible();
     }
-}
 
+    public function getTransferEligibleAttribute() {
+        return $this->transferEligible();
+    }
+
+    /**
+     * Return a key value array, containing any custom claims to be added to the JWT.
+     *
+     * @return array
+     */
+    public function getJWTCustomClaims() {
+        return [];
+    }
+}

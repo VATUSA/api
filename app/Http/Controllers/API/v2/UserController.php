@@ -22,8 +22,8 @@ class UserController extends APIController
     /**
      * @SWG\Get(
      *     path="/user/(cid)",
-     *     summary="Get data about user, email will be null if API Key not specified or staff role not assigned",
-     *     description="Get data about user",
+     *     summary="(DONE) Get data about user, email will be null if API Key not specified or staff role not assigned",
+     *     description="(DONE) Get data about user",
      *     produces={"application/json"},
      *     tags={"user"},
      *     @SWG\Parameter(name="cid",in="path",required=true,type="string",description="Cert ID"),
@@ -60,8 +60,8 @@ class UserController extends APIController
      *
      * @SWG\Get(
      *     path="/user/roles/(facility)/(role)",
-     *     summary="Get users assigned to specific role",
-     *     description="Get users assigned to specific role",
+     *     summary="(DONE) Get users assigned to specific role",
+     *     description="(DONE) Get users assigned to specific role",
      *     produces={"application/json"},
      *     tags={"user","role"},
      *     @SWG\Parameter(name="facility", in="path", required=true, type="string", description="Facility IATA ID"),
@@ -225,8 +225,6 @@ class UserController extends APIController
     /**
      * @return array|string
      *
-     * @TODO
-     *
      * @SWG\Post(
      *     path="/user/(cid)/transfer",
      *     summary="Submit transfer request. Requires JWT or Session Cookie",
@@ -237,6 +235,12 @@ class UserController extends APIController
      *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
      *     @SWG\Parameter(name="facility", in="formData", required=true, type="string", description="Facility IATA ID"),
      *     @SWG\Parameter(name="reason", in="formData", required=true, type="string", description="Reason for transfer request"),
+     *     @SWG\Response(
+     *         response="400",
+     *         description="Malformed request (missing field?)",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Malformed request"}},
+     *     ),
      *     @SWG\Response(
      *         response="401",
      *         description="Unauthenticated",
@@ -250,8 +254,14 @@ class UserController extends APIController
      *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
      *     @SWG\Response(
+     *         response="404",
+     *         description="Facility not found",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Not found"}},
+     *     ),
+     *     @SWG\Response(
      *         response="409",
-     *         description="There was a conflict, usually meaning the user has a pending transfer request",
+     *         description="There was a conflict, usually meaning the user has a pending transfer request or is not eligible",
      *         @SWG\Schema(ref="#/definitions/error"),
      *         examples={"application/json":{"status"="error","msg"="Conflict"}},
      *     ),
@@ -264,7 +274,51 @@ class UserController extends APIController
      * )
      */
     public function postTransfer($cid) {
+        if (!\Auth::check()) {
+            return response()->json(generate_error("Unauthenticated"), 401);
+        }
+        if (\Auth::user()->cid != $cid && !RoleHelper::isVATUSAStaff(\Auth::user()->cid)) {
+            return response()->json(generate_error("Forbidden"), 403);
+        }
+        $user = User::find($cid);
+        if (!$user) {
+            return response()->json(generate_error("Not found"), 404);
+        }
+        if (!$user->transferEligible()) {
+            return response()->json(generate_error("Conflict"), 409);
+        }
 
+        $facility = request()->get("facility", null);
+        $reason = request()->get("reason", null);
+        if (!$facility || !Facility::find()) {
+            return response()->json(generate_error("Not found"), 404);
+        }
+        if (strlen($reason) < 3) {
+            return response()->json(generate_error("Malformed request"), 400);
+        }
+
+        $transfer = new Transfer();
+        $transfer->cid = $cid;
+        $transfer->to = $facility;
+        $transfer->from = $user->facility;
+        $transfer->reason = $reason;
+        $transfer->save();
+
+        if ($user->flag_xferoverride) $user->setTransferOverride(0);
+
+        $emails = [];
+        if ($transfer->to != "ZAE" && $transfers->to != "ZHQ") {
+            $emails[] = $transfer->to . "-sstf@vatusa.net";
+            $emails[] = "vatusa" . $transfer->toFac->region() . "@vatusa.net";
+        }
+        if ($transfer->from != "ZAE" && $transfers->from != "ZHQ") {
+            $emails[] = $transfer->to . "-sstf@vatusa.net";
+            $emails[] = "vatusa" . $transfer->fromFac->region() . "@vatusa.net";
+        }
+
+        \Mail::to($emails)->send(new TransferRequested($transfer));
+
+        return response()->json(['status' => 'OK']);
     }
     /**
      * @return array|string
@@ -273,18 +327,12 @@ class UserController extends APIController
      *
      * @SWG\Get(
      *     path="/user/(cid)/transfer/checklist",
-     *     summary="Get user's transfer checklist. Requires JWT, API Key, or Session Cookie",
-     *     description="Get user's checklist. Requires JWT, API Key, or Session Cookie (required role [N/A for apikey]: ATM, DATM, WM)",
+     *     summary="(DONE) Get user's transfer checklist. Requires JWT, API Key, or Session Cookie",
+     *     description="(DONE) Get user's checklist. Requires JWT, API Key, or Session Cookie (required role [N/A for apikey]: ATM, DATM, WM)",
      *     produces={"application/json"},
      *     tags={"user","transfer"},
      *     security={"jwt","session","apikey"},
      *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
-     *     @SWG\Response(
-     *         response="401",
-     *         description="Unauthenticated",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
-     *     ),
      *     @SWG\Response(
      *         response="403",
      *         description="Forbidden",
@@ -300,14 +348,24 @@ class UserController extends APIController
      *                 type="object",
      *                 @SWG\Property(property="item", type="string", description="Checklist checked item"),
      *                 @SWG\Property(property="result", type="string", description="Result of check (OK, FAIL)"),
-     *                 @SWG\Property(property="other", type="string", description="Misc info for checked item (ie, number of days since last transfer for 90 day check)")
      *             )
      *         ),
      *     )
      * )
      */
     public function getTransferChecklist($cid) {
-
+        if (request()->has("apikey") || (\Auth::check() &&
+            (
+                \Auth::user()->cid == $cid ||
+                RoleHelper::isVATUSAStaff(\Auth::user()->cid) ||
+                RoleHelper::has(\Auth::user()->cid, \Auth::user()->facility, ["ATM","DATM","WM"])
+            )
+        )) {
+            $check = [];
+            $overall = User::find($cid)->transferEligible($check);
+            return response()->json(array_merge($check, ['overall' => $overall]));
+        }
+        return response()->json(generate_error("Forbidden"), 403);
     }
     /**
      * @return array|string
