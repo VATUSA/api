@@ -421,8 +421,6 @@ class UserController extends APIController
     /**
      * @return array|string
      *
-     * @TODO
-     *
      * @SWG\Get(
      *     path="/user/(cid)/rating/history",
      *     summary="(DONE) Get user's rating history. Requires JWT, API Key or Session Cookie",
