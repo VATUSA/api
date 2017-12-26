@@ -1,4 +1,5 @@
 <?php namespace App;
+use App\Helpers\RatingHelper;
 
 /**
  * Class Promotion
@@ -23,6 +24,20 @@ class Promotion extends Model {
 
     public function User() {
         $this->belongsTo('\App\User', 'cid', 'cid');
+    }
+
+    public static function process($cid, $grantor, $to, $from = null, $exam = "0000-00-00 00:00:00", $examiner = 0, $position = "n/a") {
+        $p = new Promotion();
+        $p->cid = $cid;
+        $p->grantor = $grantor;
+        $p->from = (!$from) ? User::find($cid)->rating : $from;
+        $p->to = $to;
+        $p->exam = $exam;
+        $p->examiner = ($examiner>0) ? $examiner : $grantor;
+        $p->position = $position;
+        $p->save();
+
+        return $p;
     }
 }
 
