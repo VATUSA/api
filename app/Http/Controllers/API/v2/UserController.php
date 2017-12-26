@@ -22,7 +22,7 @@ class UserController extends APIController
     /**
      * @SWG\Get(
      *     path="/user/(cid)",
-     *     summary="Get data about user",
+     *     summary="Get data about user, email will be null if API Key not specified or staff role not assigned",
      *     description="Get data about user",
      *     produces={"application/json"},
      *     tags={"user"},
@@ -40,13 +40,23 @@ class UserController extends APIController
      *     )
      * )
      */
+    public function getIndex(Request $request, $cid) {
+        $user = User::find($cid);
+        if (!$user) {
+            return response()->api(generate_error("Not found"), 404);
+        }
+        $data = $user->toArray();
+        if (!$request->has("apikey") && !(\Auth::check() && RoleHelper::isFacilityStaff(\Auth::user()->cid, \Auth::user()->facility))) {
+            $data['email'] = null;
+        }
+
+        return response()->api($data);
+    }
 
     /**
      * @param string $facility
      * @param string $role
      * @return array|string
-     *
-     * @TODO
      *
      * @SWG\Get(
      *     path="/user/roles/(facility)/(role)",
@@ -64,15 +74,20 @@ class UserController extends APIController
      *             @SWG\Items(
      *                 type="object",
      *                 @SWG\Property(property="cid",type="integer",description="CERT ID of user"),
-     *                 @SWG\Property(property="lastname",type="string",description="Last name"),
-     *                 @SWG\Property(property="firstname",type="string",description="First name"),
+     *                 @SWG\Property(property="lname",type="string",description="Last name"),
+     *                 @SWG\Property(property="fname",type="string",description="First name"),
      *             ),
      *         ),
      *     )
      * ),
      */
     public function getRoleUsers($facility, $role) {
-
+        $roles = Role::where('facility', $facility)->where('role', $role)->get();
+        $return = [];
+        foreach ($roles as $role) {
+            $return[] = ['cid' => $role->cid, 'lname' => $role->user->lname, 'fname' => $role->user->fname];
+        }
+        return response()->api($return);
     }
     /**
      * @param int $cid

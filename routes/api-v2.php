@@ -67,3 +67,12 @@ Route::group(['middleware' => 'semiprivate'], function() {
 Route::group(['prefix' => '/stats'], function() {
     Route::get('/exams/{facility}', 'StatsController@getExams');
 });
+
+/******************************************************************************************
+ * /users
+ * User functions
+ */
+Route::group(['prefix' => '/users'], function() {
+    Route::get('/{cid}', 'UserController@getIndex')->where('cid', '[0-9]+');
+    Route::get('/roles/{facility}/{role}', 'UserController@getRoleUsers')->where(['facility' => '[A-Za-z]{3}', 'role' => '[A-Za-z0-9]+']);
+});

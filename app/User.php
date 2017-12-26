@@ -3,6 +3,7 @@
 use App\Helpers\EmailHelper;
 use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
+use Illuminate\Support\Carbon;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Auth\Passwords\CanResetPassword;
@@ -24,11 +25,11 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
  *     @SWG\Property(property="rating", type="integer", description="Rating based off array where 0=OBS, S1, S2, S3, C1, C2, C3, I1, I2, I3, SUP, ADM"),
  *     @SWG\Property(property="created_at", type="string", description="Date added to database"),
  *     @SWG\Property(property="updated_at", type="string"),
- *     @SWG\Property(property="flagNeedbasic", type="integer", description="1 needs basic exam"),
- *     @SWG\Property(property="flagXferOverride", type="integer", description="Has approved transfer override"),
- *     @SWG\Property(property="facilityJoin", type="string", description="Date joined facility"),
+ *     @SWG\Property(property="flag_needbasic", type="integer", description="1 needs basic exam"),
+ *     @SWG\Property(property="flag_xferOverride", type="integer", description="Has approved transfer override"),
+ *     @SWG\Property(property="facility_join", type="string", description="Date joined facility (YYYY-mm-dd hh:mm:ss)"),
  *     @SWG\Property(property="promotionEligible", type="boolean", description="Is member eligible for promotion?"),
- *     @SWG\Property(property="flagHomecontroller", type="integer", description="1-Belongs to VATUSA"),
+ *     @SWG\Property(property="flag_homecontroller", type="integer", description="1-Belongs to VATUSA"),
  *     @SWG\Property(property="lastactivity", type="string", description="Date last seen on website"),
  *     @SWG\Property(property="roles", type="array",
  *         @SWG\Items(type="object",
@@ -61,13 +62,15 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     /**
      * @var array
      */
-    protected $hidden = ['password', 'remember_token'];
+    protected $hidden = ['password', 'remember_token', "cert_update"];
+
+    protected $appends = ["roles", "promotion_eligible"];
 
     /**
      * @return array
      */
     public function getDates() {
-        return ['created_at', 'updated_at', 'lastactivity'];
+        return ['created_at', 'updated_at', 'lastactivity', 'facility_join'];
     }
 
     /**
@@ -339,6 +342,18 @@ class User extends Model implements AuthenticatableContract, JWTSubject
      */
     public function getJWTCustomClaims() {
         return [];
+    }
+
+    public function getRolesAttribute() {
+        return Role::where('cid', $this->cid)->get();
+    }
+
+    public function getPromotionEligibleAttribute() {
+        return $this->promotionEligible();
+    }
+
+    protected function serializeDate(\DateTimeInterface $date) {
+        return $date->format(\DateTime::RFC3339);
     }
 }
 
