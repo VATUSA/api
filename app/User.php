@@ -5,7 +5,6 @@ use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
 use Illuminate\Support\Carbon;
 use Illuminate\Auth\Authenticatable;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
@@ -350,10 +349,6 @@ class User extends Model implements AuthenticatableContract, JWTSubject
 
     public function getPromotionEligibleAttribute() {
         return $this->promotionEligible();
-    }
-
-    protected function serializeDate(\DateTimeInterface $date) {
-        return $date->format(\DateTime::RFC3339);
     }
 }
 
