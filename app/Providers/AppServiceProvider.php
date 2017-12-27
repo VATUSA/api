@@ -14,7 +14,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        \URL::forceScheme('https');
+        if (env('APP_ENV') != "dev") {
+            \URL::forceScheme('https');
+        }
         Carbon::serializeUsing(function ($carbon) {
             return $carbon->toRfc3339String();
         });

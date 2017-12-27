@@ -24,8 +24,8 @@ class FacilityController extends APIController
      *
      * @SWG\Get(
      *     path="/facility",
-     *     summary="Get list of VATUSA facilities",
-     *     description="Get list of VATUSA facilities",
+     *     summary="(DONE) Get list of VATUSA facilities",
+     *     description="(DONE) Get list of VATUSA facilities",
      *     produces={"application/json"},
      *     tags={"facility"},
      *     @SWG\Response(
@@ -34,40 +34,22 @@ class FacilityController extends APIController
      *         @SWG\Schema(
      *             type="array",
      *             @SWG\Items(
-     *                 type="object",
-     *                 @SWG\Property(property="id", type="string", description="IATA identifier of facility"),
-     *                 @SWG\Property(property="name", type="string", description="Name of facility"),
-     *                 @SWG\Property(property="url", type="string", description="Facility web address")
+     *                 ref="#/definitions/Facility"
      *             ),
      *         ),
      *         examples={
      *              "application/json":{
-     *                      {"id":"ZAE","name":"Academy","url":"https://www.vatusa.net"},
+     *                      {"id": "HCF","name": "Honolulu CF","url": "http://www.hcfartcc.net","region": 7},
+     *                      {"id":"ZAB","name":"Albuquerque ARTCC","url":"http:\/\/www.zabartcc.org","region":8},
      *              }
      *         }
      *     )
      * )
      */
     public function getIndex() {
-        if (\Cache::has("facility.list.active")) {
-            return \Cache::get("facility.list.active");
-        }
+        $data = Facility::where("active", 1)->get()->toArray();
 
-        $facilities = FacilityHelper::getFacilities("name");
-        $data = [];
-        foreach ($facilities as $facility) {
-            $data[] = [
-                'id' => $facility->id,
-                'name' => $facility->name,
-                'url' => $facility->url
-            ];
-        }
-        $data = json_encode($data);
-
-        // Store for 24 hours
-        \Cache::put("facility.list.active", $data, 24 * 60);
-
-        return $data;
+        return response()->json($data);
     }
 
     /**
@@ -76,8 +58,8 @@ class FacilityController extends APIController
      *
      * @SWG\Get(
      *     path="/facility/{id}",
-     *     summary="Get facility information",
-     *     description="Get facility information",
+     *     summary="(DONE) Get facility information",
+     *     description="(DONE) Get facility information",
      *     produces={"application/json"},
      *     tags={"facility"},
      *     @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
@@ -92,17 +74,12 @@ class FacilityController extends APIController
      *         description="OK",
      *         @SWG\Schema(
      *             type="object",
-     *             @SWG\Property(property="id", type="string", description="IATA identifier of facility"),
-     *             @SWG\Property(property="name", type="string", description="Name of facility"),
-     *             @SWG\Property(property="url", type="string", description="Facility web address"),
+     *             @SWG\Property(property="facility", ref="#/definitions/Facility"),
      *             @SWG\Property(
      *                 property="roles",
      *                 type="array",
      *                 @SWG\Items(
-     *                     type="object",
-     *                     @SWG\Property(property="cid", type="integer", description="CERT ID"),
-     *                     @SWG\Property(property="name", type="string", description="User's name"),
-     *                     @SWG\Property(property="role", type="string", description="Role")
+     *                     ref="#/definitions/Role",
      *                 ),
      *             ),
      *             @SWG\Property(
@@ -114,9 +91,7 @@ class FacilityController extends APIController
      *         ),
      *         examples={
      *              "application/json":{
-     *                      "id":"ZAE","name":"Academy","url":"https://www.vatusa.net",
-     *                      "roles":{{"cid":876594,"name":"Daniel Hawton","role":"MTR"}},
-     *                      "stats":{"controllers":123,"pendingTransfers":0}
+     *                      {"id":"HCF","name":"Honolulu CF","url":"http:\/\/www.hcfartcc.net","role":{{"cid":1245046,"name":"Toby Rice","role":"MTR"},{"cid":1152158,"name":"Taylor Broad","role":"MTR"},{"cid":1147076,"name":"Dave Mayes","role":"ATM"},{"cid":1245046,"name":"Toby Rice","role":"DATM"},{"cid":1289149,"name":"Israel Reyes","role":"FE"},{"cid":1152158,"name":"Taylor Broad","role":"WM"}},"stats":{"controllers":19,"pendingTransfers":0}}
      *              }
      *         }
      *     )
@@ -133,17 +108,9 @@ class FacilityController extends APIController
         }
 
         $data = [
-            'id' => $facility->id,
-            'name' => $facility->name,
-            'url' => $facility->url
+            'facility' => $facility->toArray(),
+            'role' => Role::where('facility', $facility->id)->get()->toArray(),
         ];
-        foreach (Role::where('facility', $id)->get() as $role) {
-            $data['role'][] = [
-                'cid' => $role->cid,
-                'name' => $role->user->fullname(),
-                'role' => $role->role
-            ];
-        }
         $data['stats']['controllers'] = User::where('facility', $id)->count();
         $data['stats']['pendingTransfers'] = Transfer::where('to', $id)->where('status', Transfer::$pending)->count();
 
@@ -384,117 +351,9 @@ class FacilityController extends APIController
      * @return \Illuminate\Http\JsonResponse
      *
      * @SWG\Get(
-     *     path="/facility/{id}/staff",
-     *     summary="Get facility staff list",
-     *     description="Get facility staff list",
-     *     produces={"application/json"},
-     *     tags={"facility"},
-     *     @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
-     *     @SWG\Response(
-     *         response="404",
-     *         description="Not found or not active",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
-     *     ),
-     *     @SWG\Response(
-     *         response="200",
-     *         description="OK",
-     *         @SWG\Schema(
-     *             type="object",
-     *             @SWG\Property(
-     *                 property="ATM",
-     *                 type="array",
-     *                 @SWG\Items(
-     *                     type="object",
-     *                     @SWG\Property(property="cid", type="integer"),
-     *                     @SWG\Property(property="name", type="string"),
-     *                 )
-     *             ),
-     *             @SWG\Property(
-     *                 property="DATM",
-     *                 type="array",
-     *                 @SWG\Items(
-     *                     type="object",
-     *                     @SWG\Property(property="cid", type="integer"),
-     *                     @SWG\Property(property="name", type="string"),
-     *                 )
-     *             ),
-     *             @SWG\Property(
-     *                 property="TA",
-     *                 type="array",
-     *                 @SWG\Items(
-     *                     type="object",
-     *                     @SWG\Property(property="cid", type="integer"),
-     *                     @SWG\Property(property="name", type="string"),
-     *                 )
-     *             ),
-     *             @SWG\Property(
-     *                 property="EC",
-     *                 type="array",
-     *                 @SWG\Items(
-     *                     type="object",
-     *                     @SWG\Property(property="cid", type="integer"),
-     *                     @SWG\Property(property="name", type="string"),
-     *                 )
-     *             ),
-     *             @SWG\Property(
-     *                 property="FE",
-     *                 type="array",
-     *                 @SWG\Items(
-     *                     type="object",
-     *                     @SWG\Property(property="cid", type="integer"),
-     *                     @SWG\Property(property="name", type="string"),
-     *                 )
-     *             ),
-     *             @SWG\Property(
-     *                 property="WM",
-     *                 type="array",
-     *                 @SWG\Items(
-     *                     type="object",
-     *                     @SWG\Property(property="cid", type="integer"),
-     *                     @SWG\Property(property="name", type="string"),
-     *                 )
-     *             ),
-     *         ),
-     *     )
-     * )
-     */
-    public function getStaff(Request $request, $id) {
-        $facility = Facility::find($id);
-        if (!$facility || !$facility->active) {
-            return response()->api(generate_error("Facility not found or not active", true), 404);
-        }
-
-        if (\Cache::has("facility.$id.staff")) {
-            return \Cache::get("facility.$id.staff");
-        }
-
-        $data = [];
-        $positions = ["ATM","DATM","TA","EC","FE","WM"];
-        foreach ($positions as $position) {
-            foreach (Role::where("facility", $facility->id)->where("role", $position)->get() as $row) {
-                $data[$position][] = [
-                    "cid" => $row->cid,
-                    "name" => $row->user->fullname(),
-                ];
-            }
-        }
-
-        $json = encode_json($data);
-
-        \Cache::put("facility.$id.staff", $json, 24*60);
-        return $json;
-    }
-
-    /**
-     * @param \Illuminate\Http\Request $request
-     * @param $id
-     * @return \Illuminate\Http\JsonResponse
-     *
-     * @SWG\Get(
      *     path="/facility/{id}/roster",
-     *     summary="Get facility roster",
-     *     description="Get facility staff.  If api key specified, email properties are defined or role ATM, DATM, TA, INS, WM, or VATUSA STAFF",
+     *     summary="(DONE) Get facility roster",
+     *     description="(DONE) Get facility staff.  If api key is not specified, email properties are defined for role ATM, DATM, TA, INS, WM, or VATUSA STAFF",
      *     produces={"application/json"},
      *     tags={"facility"},
      *     @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
@@ -508,21 +367,10 @@ class FacilityController extends APIController
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(
-     *             type="object",
-     *             @SWG\Property(property="status", type="string"),
-     *             @SWG\Property(property="roster", type="array",
-     *                 @SWG\Items(
-     *                     type="object",
-     *                     @SWG\Property(property="cid", type="integer"),
-     *                     @SWG\Property(property="lastname", type="string"),
-     *                     @SWG\Property(property="firstname", type="string"),
-     *                     @SWG\Property(property="email", type="string", description="Empty if no API Key defined"),
-     *                     @SWG\Property(property="rating", type="string", description="Short rating string (S1, S2, etc)"),
-     *                     @SWG\Property(property="intRating", type="integer", description="Standard rating integer (OBS=1, S1=2, etc)"),
-     *                     @SWG\Property(property="joinDate", type="string", description="Date joined facility (YYYY-MM-DD)"),
-     *                     @SWG\Property(property="promotionEligible", type="boolean"),
-     *                     @SWG\Property(property="roles", type="array", @SWG\Items(title="role", type="string"))
-     *                 )
+     *             type="array",
+     *             @SWG\Items(
+     *                 type="object",
+     *                 ref="#/definitions/User",
      *             ),
      *         ),
      *     )
@@ -530,34 +378,17 @@ class FacilityController extends APIController
      */
     public function getRoster(Request $request, $id) {
         $facility = Facility::find($id);
-        if (!$facility || !$facility->active) {
-            return response()->api(generate_error("Facility not found or not active", true), 404);
+        if (!$facility || $facility->active != 1) {
+            return response()->api(generate_error("Not found"), 404);
         }
-        $apikey = false;
-        if ($request->has("apikey")) {
-            $apikey = AuthHelper::validApiKey($_SERVER['REMOTE_ADDR'], $request->input("apikey"), $facility->id);
-        }
-
-        $data = [];
-        foreach(User::where("facility", $facility->id)->orderBy("lname")->orderBy("fname")->get() as $user) {
-            $tmp = [
-                "cid" => $user->cid,
-                "lastname" => $user->lname,
-                "firstname" => $user->fname,
-                "email" => ($apikey) ? $user->email : '',
-                "rating" => RatingHelper::intToShort($user->rating),
-                "intRating" => $user->rating,
-                "joinDate" => Carbon::createFromFormat("Y-m-d H:i:s", $user->facility_join)->format("Y-m-d"),
-                "promotionEligible" => (bool)$user->promotionEligible(),
-                "roles" => []
-            ];
-            foreach($user->roles()->where("facility", $facility->id)->get() as $role) {
-                $tmp["roles"][] = $role->role;
+        $roster = $facility->members->toArray();
+        if (!$request->has("apikey") && !(\Auth::check() && RoleHelper::isFacilityStaff(\Auth::user()->cid, \Auth::user()->facility))) {
+            $count = count($roster);
+            for ($i = 0 ; $i < $count ; $i++) {
+                $roster[$i]['email'] = null;
             }
-            $data[] = $tmp;
         }
-
-        return response()->api(['status' => 'OK', 'roster' => $data]);
+        return response()->json($roster);
     }
 
     /**
@@ -568,8 +399,8 @@ class FacilityController extends APIController
      *
      * @SWG\Delete(
      *     path="/facility/{id}/roster/{cid}",
-     *     summary="Delete member from facility roster. JWT or Session Cookie required",
-     *     description="Delete member from facility roster.  JWT or Session Cookie required (required role: ATM, DATM, VATUSA STAFF)",
+     *     summary="(DONE) Delete member from facility roster. JWT or Session Cookie required",
+     *     description="(DONE) Delete member from facility roster.  JWT or Session Cookie required (required role: ATM, DATM, VATUSA STAFF)",
      *     produces={"application/json"},
      *     tags={"facility"},
      *     security={"jwt","session"},
@@ -639,8 +470,8 @@ class FacilityController extends APIController
      *
      * @SWG\Get(
      *     path="/facility/{id}/transfers",
-     *     summary="Get pending transfers. Requires JWT, API Key or Session Cookie",
-     *     description="Get pending transfers. Requires JWT, API Key or Session Cookie",
+     *     summary="(DONE) Get pending transfers. Requires JWT, API Key or Session Cookie",
+     *     description="(DONE) Get pending transfers. Requires JWT, API Key or Session Cookie",
      *     produces={"application/json"},
      *     tags={"facility"},
      *     security={"jwt","session","apikey"},
@@ -691,7 +522,11 @@ class FacilityController extends APIController
             return response()->api(generate_error("Facility not found or not active"), 404);
         }
 
-        if (!RoleHelper::isFacilityStaff(\Auth::user()->cid, $id) && !RoleHelper::isVATUSAStaff(\Auth::user()->cid)) {
+        if (!$request->has("apikey") && !\Auth::check()) {
+            return response()->api(generate_error("Unauthenticated"), 401);
+        }
+
+        if (!$request->has("apikey") && !RoleHelper::isFacilityStaff(\Auth::user()->cid, $id) && !RoleHelper::isVATUSAStaff(\Auth::user()->cid)) {
             return response()->api(generate_error("Forbidden"), 403);
         }
 
@@ -766,6 +601,10 @@ class FacilityController extends APIController
             return response()->api(generate_error("Facility not found or not active"), 404);
         }
 
+        if (!\Auth::check()) {
+            return response()->api(generate_error("Unauthenticated"), 401);
+        }
+
         if (!RoleHelper::isSeniorStaff(\Auth::user()->cid, $facility->id, false) && !RoleHelper::isVATUSAStaff(\Auth::user()->cid)) {
             return response()->api(generate_error("Forbidden"), 403);
         }
@@ -797,8 +636,4 @@ class FacilityController extends APIController
 
         return response()->api(['status'=>"OK"]);
     }
-
-    /**
-    *
-    */
 }
