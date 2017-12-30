@@ -14,8 +14,8 @@ class AuthController extends APIController
      *
      * @SWG\Get(
      *     path="/auth/token",
-     *     summary="Get JWT. CORS Restricted",
-     *     description="Get JWT. CORS Restricted",
+     *     summary="(DONE) Get JWT. CORS Restricted",
+     *     description="(DONE) Get JWT. CORS Restricted",
      *     produces={"application/json"},
      *     tags={"auth"},
      *     security={"session"},
@@ -41,8 +41,8 @@ class AuthController extends APIController
      *
      * @SWG\Get(
      *     path="/auth/token/refresh",
-     *     summary="Refresh JWT. CORS Restricted",
-     *     description="Refresh JWT. CORS Restricted",
+     *     summary="(DONE) Refresh JWT. CORS Restricted",
+     *     description="(DONE) Refresh JWT. CORS Restricted",
      *     produces={"application/json"},
      *     tags={"auth"},
      *     security={"jwt","session"},
@@ -71,8 +71,8 @@ class AuthController extends APIController
      *
      * @SWG\Get(
      *     path="/auth/info",
-     *     summary="Get information about logged in user. CORS Restricted",
-     *     description="Get user info. CORS Restricted",
+     *     summary="(DONE) Get information about logged in user. CORS Restricted",
+     *     description="(DONE) Get user info. CORS Restricted",
      *     produces={"application/json"},
      *     tags={"auth"},
      *     security={"jwt","session"},

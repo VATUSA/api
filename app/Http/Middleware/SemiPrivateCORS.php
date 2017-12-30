@@ -40,8 +40,10 @@ class SemiPrivateCORS
 
             // Now check it, or require apikey
             if (!\Auth::check()) {
-                if ($request->has("apikey") && AuthHelper::validApiKey($_SERVER['REMOTE_ADDR'], $request->input("apikey"))) {
+                if ($request->has("apikey") && AuthHelper::validApiKeyv2($request->input("apikey"))) {
                     return $next($request);
+                } elseif ($request->has("apikey")) {
+                    return response()->json(generate_error("Invalid API Key"), 400);
                 }
             } else {
                 return $next($request);

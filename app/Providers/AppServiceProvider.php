@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Carbon;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -13,7 +14,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        if (env('APP_ENV') != "dev") {
+            \URL::forceScheme('https');
+        }
+        Carbon::serializeUsing(function ($carbon) {
+            return $carbon->toRfc3339String();
+        });
     }
 
     /**
