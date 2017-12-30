@@ -133,7 +133,18 @@ class RoleHelper {
         return false;
     }
 
+    public static function isInstructor($cid) {
+        $user = User::find($cid);
+        if ($user->rating >= RatingHelper::shortToInt("I1")) {
+            return true;
+        }
+
+        return false;
+    }
+
     public static function isVATUSAStaff($cid = null, $skipWebTeam = false) {
+        if (!$cid) $cid = \Auth::user()->cid;
+
         $user = User::where('cid', $cid)->first();
         if ($user == null) {
             return false;
