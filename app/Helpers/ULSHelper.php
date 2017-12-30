@@ -22,8 +22,9 @@ class ULSHelper
             echo 'Secret not available for defined facility.';
             exit;
         }
-
-        $tokenRaw = $fac->uls_secret . "-" . $_SERVER['REMOTE_ADDR'];
+        if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) { $ip = $_SERVER['HTTP_X_FORWARDED_FOR']; }
+        else { $ip = $_SERVER['REMOTE_ADDR']; }
+        $tokenRaw = $fac->uls_secret . "-" . $ip;
         $token = sha1($tokenRaw);
         return $token;
     }
