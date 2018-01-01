@@ -12,6 +12,7 @@ use App\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Facility;
+use App\SoloCert;
 
 /**
  * Class SoloController
@@ -20,17 +21,13 @@ use App\Facility;
 class SoloController extends APIController
 {
     /**
-     * @return string
-     *
-     * @TODO
-     *
      * @SWG\Get(
      *     path="/solo",
-     *     summary="Get list of active solo certifications",
-     *     description="Get list of active solo certifications",
+     *     summary="(DONE) Get list of active solo certifications",
+     *     description="(DONE) Get list of active solo certifications",
      *     produces={"application/json"},
      *     tags={"solo"},
-     *     @SWG\Parameter(name="facility", in="path", type="string", description="Filter for facility IATA ID"),
+     *     @SWG\Parameter(name="position", in="query", type="string", description="Filter for position"),
      *     @SWG\Response(
      *         response="200",
      *         description="OK",
@@ -49,19 +46,19 @@ class SoloController extends APIController
      *     )
      * ),
      */
-    public function getSolo() {
-
+    public function getIndex(Request $request) {
+        $solos = SoloCert::where('expires', '>', \DB::raw("NOW()"));
+        if ($request->has("position")) {
+            $solos = $solos->where("position", $request->input("position"));
+        }
+        return response()->api($solos->get()->toArray());
     }
 
     /**
-     * @return string
-     *
-     * @TODO
-     *
      * @SWG\Post(
      *     path="/solo",
-     *     summary="Put new solo certification. Requires JWT, API Key, or Session cookie",
-     *     description="Put new solo certification. Requires JWT, API Key, or Session cookie (required roles: [N/A for API Key] ATM, DATM, TA, INS)",
+     *     summary="(DONE) Put new solo certification. Requires JWT, API Key, or Session cookie",
+     *     description="(DONE) Put new solo certification. Requires JWT, API Key, or Session cookie (required roles: [N/A for API Key] ATM, DATM, TA, INS)",
      *     produces={"application/json"},
      *     tags={"solo"},
      *     security={"apikey","jwt","session"},
@@ -75,10 +72,16 @@ class SoloController extends APIController
      *         examples={{"application/json":{"status"="error","message"="Invalid position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
      *     ),
      *     @SWG\Response(
-     *         response="404",
-     *         description="Not found, controller doesn't exist",
+     *         response="401",
+     *         description="Unauthenticated",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","message"="Not found"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
      *     @SWG\Response(
      *         response="200",
@@ -92,29 +95,69 @@ class SoloController extends APIController
      *     )
      * ),
      */
-    public function postSolo() {
+    public function postSolo(Request $request) {
+        if (!$request->has("apikey")) {
+            if (!\Auth::check()) {
+                return response()->api(generate_error("Unauthenticated"), 401);
+            }
+            if (!RoleHelper::isFacilityStaff() &&
+                !RoleHelper::isVATUSAStaff() &&
+                !RoleHelper::isInstructor()) {
 
+                return response()->api(generate_error("Forbidden"), 403);
+            }
+        }
+
+        if (!$request->has("cid") || !$request->has("position") || !$request->has("expDate")) {
+            return response()->api(generate_error("Malformed request"), 400);
+        }
+
+        $position = $request->input("position");
+        if (!preg_match("/^([A-Z0-9]{2,3})_(APP|CTR)$/", $request->input("position"))) {
+            return response()->api(generate_error("Malformed position"), 400);
+        }
+
+        $exp = $request->input("expDate", null);
+        if (!$exp || !preg_match("/^\d{4}-\d{2}-\d{2}/", $exp)) {
+            return generate_error("Malformed or missing field", false);
+        }
+
+        if (\Carbon\Carbon::createFromFormat('Y-m-d', $exp)->diffInDays() > 30) {
+            return response()->json(generate_error("Invalid date"), 400);
+        }
+
+        if (!isTest()) {
+            $solo = new SoloCert();
+            $solo->cid = $cid;
+            $solo->position = $position;
+            $solo->expires = $exp;
+            $solo->save();
+        }
+
+        return response()->api(['status' => 'OK']);
     }
 
     /**
-     * @return string
-     *
-     * @TODO
-     *
      * @SWG\Delete(
      *     path="/solo",
-     *     summary="Delete solo certification. Requires JWT, API Key, or Session cookie",
-     *     description="Delete solo certification. Requires JWT, API Key, or Session cookie (required roles: [N/A for API Key] ATM, DATM, TA, INS)",
+     *     summary="(DONE) Delete solo certification. Requires JWT, API Key, or Session cookie",
+     *     description="(DONE) Delete solo certification. Requires JWT, API Key, or Session cookie (required roles: [N/A for API Key] ATM, DATM, TA, INS)",
      *     produces={"application/json"},
      *     tags={"solo"},
      *     security={"apikey","jwt","session"},
      *     @SWG\Parameter(name="cid", in="formData", type="integer", required=true, description="CERT ID"),
      *     @SWG\Parameter(name="position", in="formData", type="string", required=true, description="Position ID (XYZ_APP, ZZZ_CTR)"),
      *     @SWG\Response(
-     *         response="404",
-     *         description="Not found, solo certification doesn't exist",
+     *         response="401",
+     *         description="Unauthenticated",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","message"="Not found"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
      *     @SWG\Response(
      *         response="200",
@@ -125,6 +168,22 @@ class SoloController extends APIController
      * ),
      */
     public function deleteSolo() {
+        if (!$request->has("apikey")) {
+            if (!\Auth::check()) {
+                return response()->api(generate_error("Unauthenticated"), 401);
+            }
+            if (!RoleHelper::isFacilityStaff() &&
+                !RoleHelper::isVATUSAStaff() &&
+                !RoleHelper::isInstructor()) {
 
+                return response()->api(generate_error("Forbidden"), 403);
+            }
+        }
+
+        SoloCert::where('cid', $request->input("cid"))
+            ->where("position", $request->input("position"))
+            ->delete();
+
+        return response()->api(["status" => "OK"]);
     }
 }
