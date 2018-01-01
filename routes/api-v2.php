@@ -60,6 +60,18 @@ Route::group(['middleware' => 'semiprivate'], function() {
 });
 
 /******************************************************************************************
+ * /solo
+ * Statistics functions
+ */
+
+Route::group(['prefix' => '/solo'], function() {
+    Route::get('/', 'SoloController@getIndex');
+    Route::post('/', 'SoloController@postSolo');
+    Route::delete('/', 'SoloController@deleteSolo');
+});
+
+
+/******************************************************************************************
  * /stats
  * Statistics functions
  */
