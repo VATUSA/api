@@ -1,4 +1,4 @@
--- MySQL dump 10.16  Distrib 10.1.25-MariaDB, for debian-linux-gnu (x86_64)
+ -- MySQL dump 10.16  Distrib 10.1.25-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: vatusa
 -- ------------------------------------------------------
@@ -17,6 +17,8 @@
 --
 -- Dumping data for table `knowledgebase_categories`
 --
+
+TRUNCATE TABLE `knowledgebase_categories`;
 
 LOCK TABLES `knowledgebase_categories` WRITE;
 /*!40000 ALTER TABLE `knowledgebase_categories` DISABLE KEYS */;
