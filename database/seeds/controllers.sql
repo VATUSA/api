@@ -4,6 +4,7 @@ LIMIT 0, 1000
 
 -- Date: 2017-12-30 13:43
 */
+TRUNCATE TABLE `controllers`;
 INSERT INTO `controllers` (`cid`,`fname`,`lname`,`email`,`facility`,`rating`,`created_at`,`updated_at`,`flag_needbasic`,`flag_xferOverride`,`facility_join`,`flag_homecontroller`,`remember_token`,`cert_update`,`lastactivity`) VALUES (800006,'George','Marinakis','fake@email.com','ZID',12,'2016-08-20 01:06:07','2017-12-30 11:32:23',0,0,'1900-01-01 00:00:01',1,'',1,'2015-09-18 19:15:41');
 INSERT INTO `controllers` (`cid`,`fname`,`lname`,`email`,`facility`,`rating`,`created_at`,`updated_at`,`flag_needbasic`,`flag_xferOverride`,`facility_join`,`flag_homecontroller`,`remember_token`,`cert_update`,`lastactivity`) VALUES (800007,'Jonathan','Reid','fake@email.com','ZFW',12,'2016-08-20 01:06:07','2017-12-30 11:32:23',0,0,'2017-11-14 11:31:49',1,'',1,'2017-11-15 13:05:05');
 INSERT INTO `controllers` (`cid`,`fname`,`lname`,`email`,`facility`,`rating`,`created_at`,`updated_at`,`flag_needbasic`,`flag_xferOverride`,`facility_join`,`flag_homecontroller`,`remember_token`,`cert_update`,`lastactivity`) VALUES (800008,'Joel','Lesser','fake@email.com','ZAE',12,'2016-08-20 01:06:07','2017-12-30 11:32:23',0,0,'2016-11-22 13:30:29',1,'',1,'2015-09-18 19:15:41');
