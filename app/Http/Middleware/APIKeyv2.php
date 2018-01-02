@@ -20,11 +20,11 @@ class APIKeyv2
      */
     public function handle($request, Closure $next) {
         $ip = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR'] : "";
-        $apikey = $request->get('apikey', null);
+        $apikey = $request->input('apikey', null);
 
         if ($apikey != null) {
             if (!AuthHelper::validApiKeyv2($apikey)) {
-                return response()->json(generate_error("Bad request"), 400);
+                return response()->json(generate_error("Invalid key"), 403);
             }
         }
 
