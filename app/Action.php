@@ -14,7 +14,7 @@ namespace App;
  * )
  */
 class Action extends Model {
-    protected $table = 'action'';
+    protected $table = 'action';
     protected $hidden = ['updated_at'];
 }
 
