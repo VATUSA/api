@@ -83,7 +83,7 @@ class EmailHelper {
         $t = FacilityHelper::findEmailTemplate($fac, $template);
 
         $tpl = 'tmp_' . sha1(json_encode($email));
-        $fp = fopen(resource_path('views/emails/' . $tpl), "w");
+        $fp = fopen(resource_path('views/emails/' . $tpl . ".blade.php"), "w");
         fwrite($fp, $t->body);
         fclose($fp);
 
