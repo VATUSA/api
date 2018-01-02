@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API\v2;
 
 use App\Helpers\AuthHelper;
+use App\Helpers\FacilityHelper;
 use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
 use App\Role;
@@ -15,6 +16,7 @@ use Jose\Component\KeyManagement\JWKFactory;
 
 /**
  * Class FacilityController
+ *
  * @package App\Http\Controllers\API\v2
  */
 class FacilityController extends APIController
@@ -46,7 +48,8 @@ class FacilityController extends APIController
      *     )
      * )
      */
-    public function getIndex() {
+    public function getIndex()
+    {
         $data = Facility::where("active", 1)->get()->toArray();
 
         return response()->json($data);
@@ -54,6 +57,7 @@ class FacilityController extends APIController
 
     /**
      * @param $id
+     *
      * @return \Illuminate\Http\JsonResponse
      *
      * @SWG\Get(
@@ -97,10 +101,13 @@ class FacilityController extends APIController
      *     )
      * )
      */
-    public function getFacility($id) {
+    public function getFacility($id)
+    {
         $facility = Facility::find($id);
         if (!$facility || !$facility->active) {
-            return response()->api(generate_error("Facility not found or not active", true), 404);
+            return response()->api(
+                generate_error("Facility not found or not active", true), 404
+            );
         }
 
         if (\Cache::has("facility.$id.info")) {
@@ -112,7 +119,9 @@ class FacilityController extends APIController
             'role' => Role::where('facility', $facility->id)->get()->toArray(),
         ];
         $data['stats']['controllers'] = User::where('facility', $id)->count();
-        $data['stats']['pendingTransfers'] = Transfer::where('to', $id)->where('status', Transfer::$pending)->count();
+        $data['stats']['pendingTransfers'] = Transfer::where('to', $id)->where(
+            'status', Transfer::$pending
+        )->count();
 
         $json = encode_json($data);
 
@@ -123,7 +132,8 @@ class FacilityController extends APIController
 
     /**
      * @param \Illuminate\Http\Request $request
-     * @param $id
+     * @param                          $id
+     *
      * @return \Illuminate\Http\JsonResponse
      *
      * @SWG\Put(
@@ -173,33 +183,47 @@ class FacilityController extends APIController
      *     )
      * )
      */
-    public function putFacility(Request $request, $id) {
+    public function putFacility(Request $request, $id)
+    {
         $facility = Facility::find($id);
         if (!$facility || !$facility->active) {
-            return response()->api(generate_error("Facility not found or not active", true), 404);
+            return response()->api(
+                generate_error("Facility not found or not active", true), 404
+            );
         }
 
-        if (!RoleHelper::has(\Auth::user()->cid, $id, ["ATM","DATM","WM"]) &&
-            !RoleHelper::isVATUSAStaff(\Auth::user()->cid)) {
+        if (!RoleHelper::has(\Auth::user()->cid, $id, ["ATM", "DATM", "WM"])
+            && !RoleHelper::isVATUSAStaff(\Auth::user()->cid)
+        ) {
             return response()->api(generate_error("Forbidden", true), 403);
         }
 
         $data = [];
 
-        if ($request->has("url") && filter_var($request->input("url"), FILTER_VALIDATE_URL)) {
+        if ($request->has("url")
+            && filter_var(
+                $request->input("url"), FILTER_VALIDATE_URL
+            )
+        ) {
             $facility->url = $request->input("url");
             $facility->save();
         }
 
         if ($request->has("uls2jwk")) {
-            $data = JWKFactory::createOctKey(env('ULSV2_SIZE', 512), ['alg' => env('ULSV2_ALG', 'HS256'), 'use' => 'sig']);
+            $data = JWKFactory::createOctKey(
+                env('ULSV2_SIZE', 512),
+                ['alg' => env('ULSV2_ALG', 'HS256'), 'use' => 'sig']
+            );
             $facility->uls_jwk = encode_json($data);
             $facility->save();
             return response()->json($data);
         }
 
         if ($request->has("apiv2jwk")) {
-            $data = JWKFactory::createOctKey(env('APIV2_SIZE', 1024), ['alg' => env('APIV2_ALG', 'HS256'), 'use' => 'sig']);
+            $data = JWKFactory::createOctKey(
+                env('APIV2_SIZE', 1024),
+                ['alg' => env('APIV2_ALG', 'HS256'), 'use' => 'sig']
+            );
             $facility->apiv2_jwk = encode_json($data);
             $facility->save();
 
@@ -207,7 +231,11 @@ class FacilityController extends APIController
         }
 
         if ($request->has('apikey')) {
-            if (\Auth::check() && RoleHelper::has(\Auth::user()->cid, $facility->id, ['ATM','DATM','WM'])) {
+            if (\Auth::check()
+                && RoleHelper::has(
+                    \Auth::user()->cid, $facility->id, ['ATM', 'DATM', 'WM']
+                )
+            ) {
                 $data['apikey'] = randomPassword(16);
                 $facility->apikey = $data['apikey'];
                 $facility->save();
@@ -217,7 +245,11 @@ class FacilityController extends APIController
         }
 
         if ($request->has('apikeySandbox')) {
-            if (\Auth::check() && RoleHelper::has(\Auth::user()->cid, $facility->id, ['ATM','DATM','WM'])) {
+            if (\Auth::check()
+                && RoleHelper::has(
+                    \Auth::user()->cid, $facility->id, ['ATM', 'DATM', 'WM']
+                )
+            ) {
                 $data['apikeySandbox'] = randomPassword(16);
                 $facility->api_sandbox_key = $data['apikeySandbox'];
                 $facility->save();
@@ -227,7 +259,11 @@ class FacilityController extends APIController
         }
 
         if ($request->has('ulsSecret')) {
-            if (\Auth::check() && RoleHelper::has(\Auth::user()->cid, $facility->id, ['ATM','DATM','WM'])) {
+            if (\Auth::check()
+                && RoleHelper::has(
+                    \Auth::user()->cid, $facility->id, ['ATM', 'DATM', 'WM']
+                )
+            ) {
                 $data['ulsSecret'] = substr(hash('sha512', microtime()), -16);
                 $facility->uls_secret = $data['ulsSecret'];
                 $facility->save();
@@ -237,7 +273,11 @@ class FacilityController extends APIController
         }
 
         if ($request->has('ulsReturn')) {
-            if (\Auth::check() && RoleHelper::has(\Auth::user()->cid, $facility->id, ['ATM','DATM','WM'])) {
+            if (\Auth::check()
+                && RoleHelper::has(
+                    \Auth::user()->cid, $facility->id, ['ATM', 'DATM', 'WM']
+                )
+            ) {
                 $facility->uls_return = $request->input("ulsReturn");
                 $facility->save();
             } else {
@@ -246,7 +286,11 @@ class FacilityController extends APIController
         }
 
         if ($request->has('ulsDevReturn')) {
-            if (\Auth::check() && RoleHelper::has(\Auth::user()->cid, $facility->id, ['ATM','DATM','WM'])) {
+            if (\Auth::check()
+                && RoleHelper::has(
+                    \Auth::user()->cid, $facility->id, ['ATM', 'DATM', 'WM']
+                )
+            ) {
                 $facility->uls_devreturn = $request->input("ulsDevReturn");
                 $facility->save();
             } else {
@@ -261,8 +305,8 @@ class FacilityController extends APIController
      *
      * @SWG\Get(
      *     path="/facility/{id}/email/{templateName}",
-     *     summary="Get facility's email template. Requires JWT or Session Cookie",
-     *     description="Get facility's email template. Requires JWT or Session Cookie",
+     *     summary="(DONE) Get facility's email template. Requires API Key, JWT or Session Cookie",
+     *     description="(DONE) Get facility's email template. Requires API Key, JWT or Session Cookie",
      *     produces={"application/json"},
      *     tags={"facility","email"},
      *     @SWG\Parameter(name="id", in="path", description="Facility IATA ID", required=true, type="string"),
@@ -281,7 +325,7 @@ class FacilityController extends APIController
      *     ),
      *     @SWG\Response(
      *         response="404",
-     *         description="Not found or not active",
+     *         description="Not found",
      *         @SWG\Schema(ref="#/definitions/error"),
      *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
      *     ),
@@ -290,24 +334,41 @@ class FacilityController extends APIController
      *         description="OK",
      *         @SWG\Schema(
      *             type="object",
-     *             @SWG\Property(property="status",type="string"),
-     *             @SWG\Property(property="template",type="string"),
-     *             @SWG\Property(property="body",type="string"),
+     *             ref="#/definitions/EmailTemplate"
      *         ),
-     *         examples={"application/json":{"status"="OK"}}
      *     )
      * )
      */
-    public function getEmailTemplate() {
+    public function getEmailTemplate(Request $request, $id, $templateName)
+    {
+        if (!\Auth::check() && !$request->has("apikey")) {
+            return response()->api(generate_error("Unauthenticated"), 401);
+        }
+        if (\Auth::check() && (!RoleHelper::isSeniorStaff(\Auth::user()->cid, $id, true)
+            && !RoleHelper::isVATUSAStaff())
+        ) {
+            return response()->api(generate_error("Forbidden"), 403);
+        }
+        $facility = Facility::find($id);
+        if (!$facility || $facility->active != 1
+            || !in_array(
+                $templateName, FacilityHelper::EmailTemplates()
+            )
+        ) {
+            return response()->api(generate_error("Not Found"), 404);
+        }
 
+        $template = FacilityHelper::findEmailTemplate($id, $templateName);
+
+        return response()->api($template->toArray());
     }
 
     /**
      *
-     * @SWG\Put(
+     * @SWG\Post(
      *     path="/facility/{id}/email/{templateName}",
-     *     summary="Modify facility's email template. Requires JWT or Session Cookie",
-     *     description="Modify facility's email template. Requires JWT or Session Cookie",
+     *     summary="(DONE) Modify facility's email template. Requires JWT or Session Cookie",
+     *     description="(DONE) Modify facility's email template. Requires JWT or Session Cookie",
      *     produces={"application/json"},
      *     tags={"facility","email"},
      *     @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
@@ -344,10 +405,36 @@ class FacilityController extends APIController
      *     )
      * )
      */
+    function postEmailTemplate(Request $request, $id, $templateName)
+    {
+        if (!\Auth::check()) {
+            return response()->api(generate_error("Unauthenticated"), 401);
+        }
+        if (!RoleHelper::isSeniorStaff(\Auth::user()->cid, $id, true)
+            && !RoleHelper::isVATUSAStaff()
+        ) {
+            return response()->api(generate_error("Forbidden"), 403);
+        }
+        $facility = Facility::find($id);
+        if (!$facility || $facility->active != 1
+            || !in_array(
+                $templateName, FacilityHelper::EmailTemplates()
+            )
+        ) {
+            return response()->api(generate_error("Not Found"), 404);
+        }
+
+        $template = FacilityHelper::findEmailTemplate($id, $templateName);
+        $template->body = $request->input("body");
+        $template->save();
+
+        return response()->api(['status' => 'OK']);
+    }
 
     /**
      * @param \Illuminate\Http\Request $request
-     * @param $id
+     * @param                          $id
+     *
      * @return \Illuminate\Http\JsonResponse
      *
      * @SWG\Get(
@@ -376,15 +463,21 @@ class FacilityController extends APIController
      *     )
      * )
      */
-    public function getRoster(Request $request, $id) {
+    public function getRoster(Request $request, $id)
+    {
         $facility = Facility::find($id);
         if (!$facility || $facility->active != 1) {
             return response()->api(generate_error("Not found"), 404);
         }
         $roster = $facility->members->toArray();
-        if (!$request->has("apikey") && !(\Auth::check() && RoleHelper::isFacilityStaff(\Auth::user()->cid, \Auth::user()->facility))) {
+        if (!$request->has("apikey")
+            && !(\Auth::check()
+                && RoleHelper::isFacilityStaff(
+                    \Auth::user()->cid, \Auth::user()->facility
+                ))
+        ) {
             $count = count($roster);
-            for ($i = 0 ; $i < $count ; $i++) {
+            for ($i = 0; $i < $count; $i++) {
                 $roster[$i]['email'] = null;
             }
         }
@@ -393,8 +486,9 @@ class FacilityController extends APIController
 
     /**
      * @param \Illuminate\Http\Request $request
-     * @param string $id
-     * @param integer $cid
+     * @param string                   $id
+     * @param integer                  $cid
+     *
      * @return \Illuminate\Http\JsonResponse
      *
      * @SWG\Delete(
@@ -439,10 +533,13 @@ class FacilityController extends APIController
      *     )
      * )
      */
-    public function deleteRoster(Request $request, string $id, int $cid) {
+    public function deleteRoster(Request $request, string $id, int $cid)
+    {
         $facility = Facility::find($id);
         if (!$facility || !$facility->active) {
-            return response()->api(generate_error("Facility not found or not active"), 404);
+            return response()->api(
+                generate_error("Facility not found or not active"), 404
+            );
         }
 
         if (!RoleHelper::isSeniorStaff(\Auth::user()->cid, $id, false)) {
@@ -451,21 +548,26 @@ class FacilityController extends APIController
 
         $user = User::where('cid', $cid)->first();
         if (!$user || $user->facility != $facility->id) {
-            return response()->api(generate_error("User not found or not in facility"), 404);
+            return response()->api(
+                generate_error("User not found or not in facility"), 404
+            );
         }
 
         if (!$request->has("reason") || !$request->filled("reason")) {
             return response()->api(generate_error("Malformed request"), 400);
         }
 
-        $user->removeFromFacility(\Auth::user()->cid, $request->input("reason"));
+        $user->removeFromFacility(
+            \Auth::user()->cid, $request->input("reason")
+        );
 
-        return response()->api(["status"=>"OK"]);
+        return response()->api(["status" => "OK"]);
     }
 
     /**
      * @param \Illuminate\Http\Request $request
-     * @param string $id
+     * @param string                   $id
+     *
      * @return \Illuminate\Http\JsonResponse
      *
      * @SWG\Get(
@@ -516,23 +618,33 @@ class FacilityController extends APIController
      *     )
      * )
      */
-    public function getTransfers(Request $request, string $id) {
+    public function getTransfers(Request $request, string $id)
+    {
         $facility = Facility::find($id);
         if (!$facility || !$facility->active) {
-            return response()->api(generate_error("Facility not found or not active"), 404);
+            return response()->api(
+                generate_error("Facility not found or not active"), 404
+            );
         }
 
         if (!$request->has("apikey") && !\Auth::check()) {
             return response()->api(generate_error("Unauthenticated"), 401);
         }
 
-        if (!$request->has("apikey") && !RoleHelper::isFacilityStaff(\Auth::user()->cid, $id) && !RoleHelper::isVATUSAStaff(\Auth::user()->cid)) {
+        if (!$request->has("apikey")
+            && !RoleHelper::isFacilityStaff(
+                \Auth::user()->cid, $id
+            )
+            && !RoleHelper::isVATUSAStaff(\Auth::user()->cid)
+        ) {
             return response()->api(generate_error("Forbidden"), 403);
         }
 
-        $transfers = Transfer::where("to", $facility->id)->where("status", Transfer::$pending)->get();
+        $transfers = Transfer::where("to", $facility->id)->where(
+            "status", Transfer::$pending
+        )->get();
         $data = [];
-        foreach($transfers as $transfer) {
+        foreach ($transfers as $transfer) {
             $data[] = [
                 'id' => $transfer->id,
                 'cid' => $transfer->cid,
@@ -548,8 +660,9 @@ class FacilityController extends APIController
 
     /**
      * @param \Illuminate\Http\Request $request
-     * @param string $id
-     * @param int $transferId
+     * @param string                   $id
+     * @param int                      $transferId
+     *
      * @return \Illuminate\Http\JsonResponse
      *
      * @SWG\Put(
@@ -595,35 +708,48 @@ class FacilityController extends APIController
      *     )
      * )
      */
-    public function putTransfer(Request $request, string $id, int $transferId) {
+    public function putTransfer(Request $request, string $id, int $transferId)
+    {
         $facility = Facility::find($id);
         if (!$facility || !$facility->active) {
-            return response()->api(generate_error("Facility not found or not active"), 404);
+            return response()->api(
+                generate_error("Facility not found or not active"), 404
+            );
         }
 
         if (!\Auth::check()) {
             return response()->api(generate_error("Unauthenticated"), 401);
         }
 
-        if (!RoleHelper::isSeniorStaff(\Auth::user()->cid, $facility->id, false) && !RoleHelper::isVATUSAStaff(\Auth::user()->cid)) {
+        if (!RoleHelper::isSeniorStaff(\Auth::user()->cid, $facility->id, false)
+            && !RoleHelper::isVATUSAStaff(\Auth::user()->cid)
+        ) {
             return response()->api(generate_error("Forbidden"), 403);
         }
 
         $transfer = Transfer::find($transferId);
         if (!$transfer) {
-            return response()->api(generate_error("Transfer request not found"), 404);
+            return response()->api(
+                generate_error("Transfer request not found"), 404
+            );
         }
 
         if ($transfer->status !== Transfer::$pending) {
-            return response()->api(generate_error("Transfer is not pending"), 410);
+            return response()->api(
+                generate_error("Transfer is not pending"), 410
+            );
         }
 
         if ($transfer->to !== $facility->id) {
             return response()->api(generate_error("Forbidden"), 403);
         }
 
-        if(!in_array($request->input("action"), ["accept","reject"]) ||
-            ($request->input("action") === "reject" && !$request->filled("reason"))) {
+        if (!in_array($request->input("action"), ["accept", "reject"])
+            || ($request->input("action") === "reject"
+                && !$request->filled(
+                    "reason"
+                ))
+        ) {
 
             return response()->api(generate_error("Malformed request"), 400);
         }
@@ -634,6 +760,6 @@ class FacilityController extends APIController
             $transfer->reject(\Auth::user()->cid, $request->input("reason"));
         }
 
-        return response()->api(['status'=>"OK"]);
+        return response()->api(['status' => "OK"]);
     }
 }

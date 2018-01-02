@@ -15,7 +15,7 @@ class EmailTemplates extends Migration
     {
         Schema::create('email_templates', function(Blueprint $table)
         {
-            $table->integer('id')->unsigned()->primary();
+            $table->increments('id')->unsigned();
             $table->string('facility_id');
             $table->string('template');
             $table->text('body');
