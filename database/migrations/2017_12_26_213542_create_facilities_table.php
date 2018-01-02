@@ -33,6 +33,7 @@ class CreateFacilitiesTable extends Migration {
 			$table->string('ip', 128);
 			$table->string('api_sandbox_key');
 			$table->string('api_sandbox_ip', 128);
+			$table->text('apiv2_jwk', 16777215);
 			$table->text('welcome_text', 16777215);
 			$table->integer('ace');
 		});

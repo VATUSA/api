@@ -54,9 +54,11 @@ Route::group(['middleware' => 'auth:web,jwt'], function() {
 Route::group(['middleware' => 'auth:web,jwt'], function() {
     Route::delete('facility/{id}/roster/{cid}', 'FacilityController@deleteRoster')->where(['id' => '[A-Za-z]{3}', 'cid' => '\d+']);
     Route::put('facility/{id}/transfers/{transferId}', 'FacilityController@putTransfer')->where(['id' => '[A-Za-z]{3}', 'transferId' => '\d+']);
+    Route::post('facility/{id}/email/{templateName}', 'FacilityController@postEmailTemplate');
 });
 Route::group(['middleware' => 'semiprivate'], function() {
     Route::get('facility/{id}/transfers', 'FacilityController@getTransfers')->where('id', '[A-Za-z]{3}');
+    Route::get('facility/{id}/email/{templateName}', 'FacilityController@getemailTemplate');
 });
 
 /******************************************************************************************
