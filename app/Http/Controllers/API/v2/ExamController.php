@@ -6,6 +6,7 @@ use App\ExamAssignment;
 use App\ExamReassignment;
 use App\ExamResults;
 use App\ExamResultsData;
+use App\Facility;
 use App\Helpers\EmailHelper;
 use App\User;
 use Illuminate\Http\Request;
@@ -22,8 +23,8 @@ class ExamController extends APIController
      *
      * @SWG\Post(
      *     path="/exam/queue/{examId}",
-     *     summary="Add exam to queue for the VATUSA Exam Center. Requires JWT or Session Cookie",
-     *     description="Sets the exam as the queued exam for VEC. Requires JWT or Session Cookie",
+     *     summary="(DONE) Add exam to queue for the VATUSA Exam Center. Requires JWT or Session Cookie",
+     *     description="(DONE) Sets the exam as the queued exam for VEC. Requires JWT or Session Cookie",
      *     produces={"application/json"},
      *     tags={"exam"},
      *     security={"jwt","session"},
@@ -88,8 +89,8 @@ class ExamController extends APIController
      *
      * @SWG\Post(
      *     path="/exam/submit",
-     *     summary="Submit exam payload for grading. CORS Restricted",
-     *     description="Submit exam from VEC for grading. CORS Restricted",
+     *     summary="(DONE) Submit exam payload for grading. CORS Restricted",
+     *     description="(DONE) Submit exam from VEC for grading. CORS Restricted",
      *     produces={"application/json"},
      *     tags={"exam"},
      *     security={"jwt"},
@@ -250,8 +251,8 @@ class ExamController extends APIController
      *
      * @SWG\Get(
      *     path="/exam/request",
-     *     summary="Generates and sends exam payload for VATUSA Exam Center based on queued exam for JWT auth'd user. CORS Restricted",
-     *     description="Generates and sends exam payload for VATUSA Exam Center based on queued exam for JWT auth'd user. CORS Restricted",
+     *     summary="(DONE) Generates and sends exam payload for VATUSA Exam Center based on queued exam for JWT auth'd user. CORS Restricted",
+     *     description="(DONE) Generates and sends exam payload for VATUSA Exam Center based on queued exam for JWT auth'd user. CORS Restricted",
      *     produces={"application/json"},
      *     tags={"exam"},
      *     security={"jwt"},
@@ -331,19 +332,11 @@ class ExamController extends APIController
      *
      * @SWG\Get(
      *     path="/exams/{facility}",
-     *     summary="Generates list of exams.",
-     *     description="Generates list of exams.",
+     *     summary="(DONE) Generates list of exams.",
+     *     description="(DONE) Generates list of exams.",
      *     produces={"application/json"},
      *     tags={"exam"},
      *     @SWG\Parameter(name="facility", in="path", type="string", description="(OPTIONAL) Filter list by Facility IATA ID"),
-     *     @SWG\Response(
-     *         response="404",
-     *         description="Facility Not found",
-     *         @SWG\Schema(
-     *             ref="#/definitions/error"
-     *         ),
-     *         examples={"application/json":{"status"="error","message"="Not Found"}},
-     *     ),
      *     @SWG\Response(
      *         response="200",
      *         description="OK",
@@ -351,15 +344,23 @@ class ExamController extends APIController
      *             type="array",
      *             @SWG\Items(
      *                 type="object",
-     *                 @SWG\Property(property="id", type="integer", description="Exam ID"),
-     *                 @SWG\Property(property="facility", type="string", description="Facility exam belongs to"),
-     *                 @SWG\Property(property="name", type="string", description="Exam name"),
-     *                 @SWG\Property(property="active", type="boolean", description="Is exam active?"),
+     *                 ref="#/definitions/Exam"
      *             ),
      *         ),
+     *         examples={"application/json":{{"id":50,"facility_id":"ZAE","name":"VATUSA - S2 Rating (TWR) Controller Exam","number":20,"is_active":1,"cbt_required":118,"retake_period":3,"passing_score":80,"answer_visibility":"all_passed"}}},
      *     )
      * )
      */
+    public function getExams(Request $request, $facility = null) {
+        if ($facility) {
+            $exams = Exam::where('facility_id', $facility);
+        } else {
+            $exams = Exam::where('facility_id','LIKE','%');
+        }
+        $exams = $exams->orderBy('name')->get();
+
+        return response()->api($exams->toArray());
+    }
 
     /**
      *
