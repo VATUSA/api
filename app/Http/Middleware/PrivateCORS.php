@@ -21,6 +21,11 @@ class PrivateCORS
                 abort(400, "Malformed origin " . $_SERVER['HTTP_ORIGIN']);
             }
         }
-        return $next($request);
+
+        return $next($request)
+            ->header("Access-Control-Allow-Credentials", "true")
+            ->header("Access-Control-Allow-Headers", "x-csrf-token")
+            ->header("Access-Control-Allow-Methods", $_SERVER['REQUEST_METHOD'])
+            ->header("Access-Control-Allow-Origin", $_SERVER['HTTP_ORIGIN']);
     }
 }
