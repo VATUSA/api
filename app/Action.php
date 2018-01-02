@@ -14,7 +14,7 @@ namespace App;
  * )
  */
 class Action extends Model {
-    protected $table = 'action_log';
-    protected $hidden = ['from','updated_at'];
+    protected $table = 'email_templates';
+    protected $hidden = ['updated_at'];
 }
 

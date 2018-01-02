@@ -12,6 +12,7 @@ chown application:application /www/storage/logs
 if [ "$WWW_ENV" == "prod" ]; then
   echo "*    *    *     *     *    cd /www && php artisan schedule:run" >> /etc/crontabs/application
   echo "*    *    *     *     *    cd /www && php artisan vatsim:flights" >> /etc/crontabs/application
+  cd /www && php artisan migrate
 fi
 
 /usr/bin/supervisord --nodaemon --configuration /etc/supervisord.conf

@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\EmailTemplate;
 use App\User;
 use Cache;
 use App\Facility;
@@ -111,5 +112,39 @@ class FacilityHelper
         $roster = $facility->members()->orderby('rating', 'desc')->orderBy('lname', 'asc')->orderBy('fname', 'asc')->get();
         Cache::put("facility.$facility.roster", $roster, env('CACHE_TIME_ROSTER', 10)); // low cache for v1 period
         return $roster;
+    }
+
+    public static function EmailTemplates() {
+        return [
+            'examassigned',
+            'exampassed',
+            'examfailed',
+        ];
+    }
+
+    public static function EmailTemplateMap($id) {
+        switch ($id) {
+        case 'examassigned':
+            return resource_path('views/emails/exam/assign.blade.php');
+        case 'exampassed':
+            return resource_path('views/emails/exam/passed.blade.php');
+        case 'examfailed':
+            return resource_path('views/emails/exam/failed.blade.php');
+        default:
+            abort(500, "$id is not known");
+        }
+    }
+
+    public static function findEmailTemplate($id, $tn) {
+        $template = EmailTemplate::where('facility_id', $id)->where('template', $tn)->first();
+        if (!$template) {
+            $template = new EmailTemplate();
+            $template->facility_id = $id;
+            $template->template = $tn;
+            $template->body = file_get_contents(static::EmailTemplateMap($tn));
+            $template->save();
+        }
+
+        return $template;
     }
 }
