@@ -32,6 +32,8 @@ Route::group(['middleware' => ['private', 'auth:web,jwt'], 'prefix' => '/email']
  * /exam
  * Exam functions
  */
+Route::get('/exams', 'ExamController@getExams');
+Route::get('/exams/{facility}', 'ExamController@getExams')->where('facility', '[A-Z]{3}');
 Route::group(['middleware' => 'auth:web,jwt', 'prefix' => '/exam'], function() {
     Route::post('queue/{id}', 'ExamController@postQueue');
 });

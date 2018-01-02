@@ -2,6 +2,7 @@
 namespace App\Helpers;
 
 use App\EmailConfig;
+use App\Facility;
 use Mail;
 
 /**
@@ -85,13 +86,9 @@ class EmailHelper {
             'examfailed' => 'emails.exam.failed',
             'transferpending' => 'emails.transfers.pending'
         ];
-        if (view()->exists("emails.facility.$fac." . $template)) {
-            $template = "emails.facility.$fac.$template";
-        } else {
-            $template = $global_templates[$template];
-        }
+        $tpl = FacilityHelper::findEmailTemplate($fac, $template);
 
-        static::sendEmail($email, $subject, $template, $data);
+        static::sendEmail($email, $subject, $tpl->body, $data);
     }
     /**
      * Send an email from support
