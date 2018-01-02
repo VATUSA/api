@@ -82,7 +82,7 @@ class EmailHelper {
     {
         $t = FacilityHelper::findEmailTemplate($fac, $template);
 
-        $tpl = 'tmp_' . sha1(json_encode($email)) . ".blade.php";
+        $tpl = 'tmp_' . sha1(json_encode($email));
         $fp = fopen(resource_path('views/emails/' . $tpl), "w");
         fwrite($fp, $t->body);
         fclose($fp);
@@ -93,7 +93,7 @@ class EmailHelper {
             $msg->subject("[VATUSA] $subject");
         });
 
-        unlink(resource_path("views/emails/$tpl"));
+        unlink(resource_path("views/emails/$tpl.blade.php"));
     }
     /**
      * Send an email from support
