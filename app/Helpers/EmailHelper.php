@@ -2,6 +2,7 @@
 namespace App\Helpers;
 
 use App\EmailConfig;
+use App\Facility;
 use Mail;
 
 /**
@@ -61,7 +62,7 @@ class EmailHelper {
      */
     public static function sendEmailFrom($email, $from_email, $from_name, $subject, $template, $data)
     {
-        Mail::send($template, $data, function ($msg) use ($data, $from_email, $from_name, $email, $subject) {
+        Mail::send("emails.$template", $data, function ($msg) use ($data, $from_email, $from_name, $email, $subject) {
             $msg->from("no-reply@vatusa.net", "$from_name");
             $msg->replyTo($from_email, $from_name);
             $msg->to($email);
@@ -79,19 +80,20 @@ class EmailHelper {
      */
     public static function sendEmailFacilityTemplate($email, $subject, $fac, $template, $data)
     {
-        $global_templates = [
-            'examassigned' => "emails.exam.assign",
-            'exampassed' => 'emails.exam.passed',
-            'examfailed' => 'emails.exam.failed',
-            'transferpending' => 'emails.transfers.pending'
-        ];
-        if (view()->exists("emails.facility.$fac." . $template)) {
-            $template = "emails.facility.$fac.$template";
-        } else {
-            $template = $global_templates[$template];
-        }
+        $t = FacilityHelper::findEmailTemplate($fac, $template);
 
-        static::sendEmail($email, $subject, $template, $data);
+        $tpl = 'tmp_' . sha1(json_encode($email));
+        $fp = fopen(resource_path('views/emails/' . $tpl, "w"));
+        fwrite($fp, $t->body);
+        fclose($fp);
+
+        Mail::send("emails.$tpl", $data, function ($msg) use ($data, $email, $subject) {
+            $msg->from('no-reply@vatusa.net', "VATUSA Web Services");
+            $msg->to($email);
+            $msg->subject("[VATUSA] $subject");
+        });
+
+        unlink(resource_path("views/emails/$tpl"));
     }
     /**
      * Send an email from support

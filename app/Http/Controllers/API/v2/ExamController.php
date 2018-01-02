@@ -3,11 +3,16 @@ namespace App\Http\Controllers\API\v2;
 
 use App\Action;
 use App\ExamAssignment;
+use App\ExamQuestions;
 use App\ExamReassignment;
 use App\ExamResults;
 use App\ExamResultsData;
+use App\Facility;
 use App\Helpers\EmailHelper;
+use App\Helpers\RoleHelper;
+use App\TrainingBlock;
 use App\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Exam;
@@ -22,8 +27,8 @@ class ExamController extends APIController
      *
      * @SWG\Post(
      *     path="/exam/queue/{examId}",
-     *     summary="Add exam to queue for the VATUSA Exam Center. Requires JWT or Session Cookie",
-     *     description="Sets the exam as the queued exam for VEC. Requires JWT or Session Cookie",
+     *     summary="(DONE) Add exam to queue for the VATUSA Exam Center. Requires JWT or Session Cookie",
+     *     description="(DONE) Sets the exam as the queued exam for VEC. Requires JWT or Session Cookie",
      *     produces={"application/json"},
      *     tags={"exam"},
      *     security={"jwt","session"},
@@ -88,8 +93,8 @@ class ExamController extends APIController
      *
      * @SWG\Post(
      *     path="/exam/submit",
-     *     summary="Submit exam payload for grading. CORS Restricted",
-     *     description="Submit exam from VEC for grading. CORS Restricted",
+     *     summary="(DONE) Submit exam payload for grading. CORS Restricted",
+     *     description="(DONE) Submit exam from VEC for grading. CORS Restricted",
      *     produces={"application/json"},
      *     tags={"exam"},
      *     security={"jwt"},
@@ -250,8 +255,8 @@ class ExamController extends APIController
      *
      * @SWG\Get(
      *     path="/exam/request",
-     *     summary="Generates and sends exam payload for VATUSA Exam Center based on queued exam for JWT auth'd user. CORS Restricted",
-     *     description="Generates and sends exam payload for VATUSA Exam Center based on queued exam for JWT auth'd user. CORS Restricted",
+     *     summary="(DONE) Generates and sends exam payload for VATUSA Exam Center based on queued exam for JWT auth'd user. CORS Restricted",
+     *     description="(DONE) Generates and sends exam payload for VATUSA Exam Center based on queued exam for JWT auth'd user. CORS Restricted",
      *     produces={"application/json"},
      *     tags={"exam"},
      *     security={"jwt"},
@@ -331,19 +336,11 @@ class ExamController extends APIController
      *
      * @SWG\Get(
      *     path="/exams/{facility}",
-     *     summary="Generates list of exams.",
-     *     description="Generates list of exams.",
+     *     summary="(DONE) Generates list of exams.",
+     *     description="(DONE) Generates list of exams.",
      *     produces={"application/json"},
      *     tags={"exam"},
      *     @SWG\Parameter(name="facility", in="path", type="string", description="(OPTIONAL) Filter list by Facility IATA ID"),
-     *     @SWG\Response(
-     *         response="404",
-     *         description="Facility Not found",
-     *         @SWG\Schema(
-     *             ref="#/definitions/error"
-     *         ),
-     *         examples={"application/json":{"status"="error","message"="Not Found"}},
-     *     ),
      *     @SWG\Response(
      *         response="200",
      *         description="OK",
@@ -351,38 +348,33 @@ class ExamController extends APIController
      *             type="array",
      *             @SWG\Items(
      *                 type="object",
-     *                 @SWG\Property(property="id", type="integer", description="Exam ID"),
-     *                 @SWG\Property(property="facility", type="string", description="Facility exam belongs to"),
-     *                 @SWG\Property(property="name", type="string", description="Exam name"),
-     *                 @SWG\Property(property="active", type="boolean", description="Is exam active?"),
+     *                 ref="#/definitions/Exam"
      *             ),
      *         ),
+     *         examples={"application/json":{{"id":50,"facility_id":"ZAE","name":"VATUSA - S2 Rating (TWR) Controller Exam","number":20,"is_active":1,"cbt_required":118,"retake_period":3,"passing_score":80,"answer_visibility":"all_passed"}}},
      *     )
      * )
      */
+    public function getExams(Request $request, $facility = null) {
+        if ($facility) {
+            $exams = Exam::where('facility_id', $facility);
+        } else {
+            $exams = Exam::where('facility_id','LIKE','%');
+        }
+        $exams = $exams->orderBy('name')->get();
+
+        return response()->api($exams->toArray());
+    }
 
     /**
      *
      * @SWG\Get(
-     *     path="/exams/{facility}/{examid}",
-     *     summary="Generates details of exam. CORS Restricted Requires JWT or Session Cookie",
-     *     description="Generates details of exam. CORS Restricted Requires JWT or Session Cookie",
+     *     path="/exams/{examid}",
+     *     summary="(DONE) Generates list of exams.",
+     *     description="(DONE) Generates list of exams.",
      *     produces={"application/json"},
      *     tags={"exam"},
-     *     @SWG\Parameter(name="facility", in="path", type="string", required=true, description="Filter list by Facility IATA ID"),
-     *     @SWG\Parameter(name="examid", in="path", type="integer", required=true, description="Exam ID"),
-     *     @SWG\Response(
-     *         response="401",
-     *         description="Unauthenticated",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
-     *     ),
-     *     @SWG\Response(
-     *         response="403",
-     *         description="Forbidden -- needs to have role of ATM, DATM or VATUSA Division staff member",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","message"="Forbidden"}},
-     *     ),
+     *     @SWG\Parameter(name="examid", in="path", type="string", required=true, description="Get exam details of id"),
      *     @SWG\Response(
      *         response="404",
      *         description="Facility/Exam Not found",
@@ -396,40 +388,64 @@ class ExamController extends APIController
      *         description="OK",
      *         @SWG\Schema(
      *             type="object",
-     *             @SWG\Property(property="id", type="integer", description="Exam ID"),
-     *             @SWG\Property(property="facility", type="string", description="Facility exam belongs to"),
-     *             @SWG\Property(property="name", type="string", description="Exam name"),
-     *             @SWG\Property(property="cbtRequired", type="object",
-     *                 @SWG\Property(property="id", type="integer", description="ID of required CBT Block"),
-     *                 @SWG\Property(property="name", type="string", description="Name of required CBT Block"),
-     *             ),
-     *             @SWG\Property(property="passingScore", type="integer", description="Passing Score Percentage * 100"),
-     *             @SWG\Property(property="retakePeriod", type="integer", description="Auto reassign on fail after X days, 0 = no auto reassign, valid values: 1, 3, 5, 7, 14"),
-     *             @SWG\Property(property="numberQuestions", type="integer", description="Number of questions to ask, 0 = all"),
-     *             @SWG\Property(property="active", type="boolean", description="Is exam active?"),
-     *             @SWG\Property(property="questions", type="array",
-     *                 @SWG\Items(
-     *                     type="object",
-     *                     @SWG\Property(property="questionId", type="integer"),
-     *                     @SWG\Property(property="question", type="string"),
-     *                     @SWG\Property(property="type", type="string", description="Type of exam 'multiple'/'truefalse'"),
-     *                     @SWG\Property(property="choice1", type="string"),
-     *                     @SWG\Property(property="choice2", type="string"),
-     *                     @SWG\Property(property="choice3", type="string"),
-     *                     @SWG\Property(property="choice4", type="string"),
-     *                 ),
-     *             ),
+     *             ref="#/definitions/Exam"
      *         ),
+     *         examples={"application/json":{"id":50,"facility_id":"ZAE","name":"VATUSA - S2 Rating (TWR) Controller Exam","number":20,"is_active":1,"cbt_required":118,"retake_period":3,"passing_score":80,"answer_visibility":"all_passed"}},
      *     )
      * )
      */
+    public function getExambyId(Request $request, $id) {
+        $exam = Exam::find($id);
+        if (!$exam) {
+            return response()->api(generate_error("Not found"), 404);
+        }
+
+        return response()->api($exam->toArray());
+    }
+
+    /**
+     *
+     * @SWG\Get(
+     *     path="/exams/{examid}/questions",
+     *     summary="(DONE) Generates list of questions.",
+     *     description="(DONE) Generates list of questions.",
+     *     produces={"application/json"},
+     *     tags={"exam"},
+     *     @SWG\Parameter(name="examid", in="path", type="string", required=true, description="exam id"),
+     *     @SWG\Response(
+     *         response="404",
+     *         description="Not found",
+     *         @SWG\Schema(
+     *             ref="#/definitions/error"
+     *         ),
+     *         examples={"application/json":{"status"="error","message"="Not Found"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="object",
+     *             ref="#/definitions/Exam"
+     *         ),
+     *         examples={"application/json":{{"id":1959,"exam_id":53,"question":"Green Bay is a Class __ airspace.","type":0,"answer":"Charlie","alt1":"Bravo","alt2":"Delta","alt3":"Foxtrot"}}},
+     *     )
+     * )
+     */
+    public function getExamQuestions(Request $request, $id) {
+        $exam = Exam::find($id);
+        if (!$exam) {
+            return response()->api(generate_error("Not found"), 404);
+        }
+
+        return response()->api($exam->questions->toArray());
+    }
 
     /**
      *
      * @SWG\Put(
-     *     path="/exams/{facility}/{examid}",
-     *     summary="Edit details of exam. CORS Restricted Requires JWT or Session Cookie",
-     *     description="Edit details of exam. CORS Restricted Requires JWT or Session Cookie",
+     *     path="/exams/{examid}",
+     *     summary="(DONE) Edit details of exam. CORS Restricted Requires JWT or Session Cookie",
+     *     description="(DONE) Edit details of exam. CORS Restricted Requires JWT or Session Cookie",
      *     produces={"application/json"},
      *     tags={"exam"},
      *     @SWG\Parameter(name="facility", in="path", type="string", required=true, description="Filter list by Facility IATA ID"),
@@ -439,7 +455,7 @@ class ExamController extends APIController
      *     @SWG\Parameter(name="passingScore", in="formData", type="integer", description="Passing Score Percentage * 100"),
      *     @SWG\Parameter(name="retakePeriod", in="formData", type="integer", description="Auto reassign on fail after X days, 0 = no auto reassign, valid values: 1, 3, 5, 7, 14"),
      *     @SWG\Parameter(name="numberQuestions", in="formData", type="integer", description="Number of questions to ask, 0 = all"),
-     *     @SWG\Parameter(name="active", in="formData", type="boolean", description="Is exam active? (can be passed as string)"),
+     *     @SWG\Parameter(name="active", in="formData", type="integer", description="Is exam active? (numeric representation of bool 1 = active, 0 = not active)"),
      *     @SWG\Response(
      *         response="401",
      *         description="Unauthenticated",
@@ -470,13 +486,71 @@ class ExamController extends APIController
      *     )
      * )
      */
+    public function putExam(Request $request, string $id) {
+        if (!\Auth::check()) {
+            return response()->api(generate_error("Unauthenticated"), 401);
+        }
+        $return = []; $error = [];
+        $exam = Exam::find($id);
+        if (!$exam) {
+            return response()->api(generate_error("Not found"), 404);
+        }
+        if (!RoleHelper::isSeniorStaff(\Auth::user()->cid, $exam->facility_id, true) && !RoleHelper::isVATUSAStaff()) {
+            return response()->api(generate_error("Forbidden"), 403);
+        }
+
+        if ($request->has("cbtRequired") && is_numeric($request->input("cbtRequired"))) {
+            $exam->cbt_required = $request->input("cbtRequired");
+        } elseif ($request->has("cbtRequired")) {
+            $error[] = "CBT Required ID not valid";
+        }
+
+        if ($request->has("passingScore") && is_numeric($request->input("passingScore"))) {
+            if ($request->input("passingScore") < 2 || $request->input("passingScore") > 100) {
+                $exam->passing_score = $request->input("passingScore");
+            } else {
+                $error[] = "Passing Score not valid";
+            }
+        }
+
+        if ($request->has("retakePeriod")) {
+            if (is_numeric($request->input("retakePeriod"))) {
+                $exam->retake_period = $request->input("retakePeriod");
+            } else {
+                $error[] = "Invalid retake period";
+            }
+        }
+
+        if ($request->has("numberQuestions")) {
+            if (is_numeric($request->input("numberQuestions"))) {
+                $exam->number_questions = $request->input("numberQuestions");
+            } else {
+                $error[] = "Invalid number questions";
+            }
+        }
+
+        if ($request->has("active")) {
+            if ($request->input("active") > 1 || $request->input("active") < 0) {
+                $error[] = "Invalid active value";
+            } else {
+                $exam->active = $request->input("active");
+            }
+        }
+
+        $exam->save();
+
+        $return['status'] = "ok";
+        if (!empty($error)) { $return['errors'] = $error; }
+
+        return response()->api(['status' => 'ok', 'errors' => $error]);
+    }
 
     /**
      *
      * @SWG\Post(
-     *     path="/exams/{facility}/{examid}",
-     *     summary="Create new question. CORS Restricted Requires JWT or Session Cookie",
-     *     description="Create new question. CORS Restricted Requires JWT or Session Cookie",
+     *     path="/exams/{examid}",
+     *     summary="(DONE) Create new question. CORS Restricted Requires JWT or Session Cookie",
+     *     description="(DONE) Create new question. CORS Restricted Requires JWT or Session Cookie",
      *     produces={"application/json"},
      *     tags={"exam"},
      *     @SWG\Parameter(name="facility", in="path", type="string", required=true, description="Filter list by Facility IATA ID"),
@@ -509,13 +583,45 @@ class ExamController extends APIController
      *     )
      * )
      */
+    public function postExamQuestion(Request $request, $examid) {
+        if (!\Auth::check()) {
+            return response()->api(generate_error("Unauthenticated"), 401);
+        }
+        $exam = Exam::find($examid);
+        if (!$exam) {
+            return response()->api(generate_error("Not found"), 404);
+        }
+        if (!RoleHelper::isSeniorStaff(\Auth::user()->cid, $exam->facility_id, true) && !RoleHelper::isVATUSAStaff()) {
+            return response()->api(generate_error("Forbidden"), 403);
+        }
+
+        $question = new ExamQuestions();
+        $question->exam_id = $examid;
+        $question->question = $request->input("question");
+        if ($request->input("type") == "multiple") {
+            $question->type = 1;
+            $question->answer = $request->input("choice1");
+            $question->alt1 = $request->input("choice2");
+            $question->alt3 = $request->input("choice3");
+            $question->alt4 = $request->input("choice4");
+        } elseif ($request->input("type") == "truefalse") {
+            if ($request->input("choice1") != "True" && $request->input("choice1") != "False") {
+                return response()->api(generate_error("Invalid answer"), 400);
+            }
+            $question->type = 0;
+            $question->answer = $request->input("choice1");
+        }
+        $question->save();
+
+        return response()->api(["status" => "OK", "id" => $question->id]);
+    }
 
     /**
      *
      * @SWG\Put(
-     *     path="/exams/{facility}/{examid}/{questionID}",
-     *     summary="Edit question. CORS Restricted Requires JWT or Session Cookie",
-     *     description="Edit question. CORS Restricted Requires JWT or Session Cookie",
+     *     path="/exams/{examid}/{questionID}",
+     *     summary="(DONE) Edit question. CORS Restricted Requires JWT or Session Cookie",
+     *     description="(DONE) Edit question. CORS Restricted Requires JWT or Session Cookie",
      *     produces={"application/json"},
      *     tags={"exam"},
      *     @SWG\Parameter(name="facility", in="path", type="string", required=true, description="Filter list by Facility IATA ID"),
@@ -549,18 +655,64 @@ class ExamController extends APIController
      *     )
      * )
      */
+    public function putExamQuestion(Request $request, $examid, $questionid)
+    {
+        if (!\Auth::check()) {
+            return response()->api(generate_error("Unauthenticated"), 401);
+        }
+        $exam = Exam::find($examid);
+        if (!$exam) {
+            return response()->api(generate_error("Not found"), 404);
+        }
+        if (!RoleHelper::isSeniorStaff(
+                \Auth::user()->cid, $exam->facility_id, true
+            )
+            && !RoleHelper::isVATUSAStaff()
+        ) {
+            return response()->api(generate_error("Forbidden"), 403);
+        }
+        $question = ExamQuestions::find($questionid);
+        if (!$question) {
+            return response()->api(generate_error("Not found"), 404);
+        }
+        if ($question->exam_id != $examid) {
+            return response()->api(generate_error("Malformed request"), 400);
+        }
+        $question->exam_id = $examid;
+        $question->question = $request->input("question");
+        if ($request->input("type") == "multiple") {
+            $question->type = 1;
+            $question->answer = $request->input("choice1");
+            $question->alt1 = $request->input("choice2");
+            $question->alt3 = $request->input("choice3");
+            $question->alt4 = $request->input("choice4");
+        } elseif ($request->input("type") == "truefalse") {
+            if ($request->input("choice1") != "True"
+                && $request->input(
+                    "choice1"
+                ) != "False"
+            ) {
+                return response()->api(generate_error("Invalid answer"), 400);
+            }
+            $question->type = 0;
+            $question->answer = $request->input("choice1");
+        }
+        $question->save();
 
+        return response()->api(["status" => "OK", "id" => $question->id]);
+    }
 
     /**
      *
      * @SWG\Post(
      *     path="/exam/(id)/assign/(cid)",
-     *     summary="Assign exam id to cid. Requires JWT or Session Cookie",
-     *     description="Assign exam id to cid. Requires JWT or Session Cookie",
+     *     summary="(DONE) Assign exam id to cid. Requires JWT or Session Cookie",
+     *     description="(DONE) Assign exam id to cid. Requires JWT or Session Cookie",
      *     tags={"user","exam"},
      *     produces={"application/json"},
      *     @SWG\Parameter(name="id", in="path", type="integer", description="Exam ID Number"),
      *     @SWG\Parameter(name="cid", in="path", type="integer", description="CERT ID"),
+     *     @SWG\Parameter(name="expire", in="formData", type="integer", description="Days until expiration, 7 default"),
      *     @SWG\Response(
      *         response="401",
      *         description="Unauthenticated",
@@ -574,6 +726,12 @@ class ExamController extends APIController
      *         examples={"application/json":{"status"="error","message"="Forbidden"}},
      *     ),
      *     @SWG\Response(
+     *         response="409",
+     *         description="Conflict - likely means already assigned",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","message"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(
@@ -583,13 +741,68 @@ class ExamController extends APIController
      *     )
      * )
      */
+    public function postExamAssign(Request $request, $examid, $cid) {
+        if (!\Auth::check()) {
+            return response()->api(generate_error("Unauthenticated"), 401);
+        }
+        if (!RoleHelper::isSeniorStaff() &&
+            !RoleHelper::isInstructor() &&
+            !RoleHelper::isVATUSAStaff()) {
+            return response()->api(generate_error("Forbidden"), 403);
+        }
+
+        $exam = Exam::find($examid);
+        if (!$exam) {
+            return response()->api(generate_error("Not found"), 404);
+        }
+
+        if (ExamAssignment::hasAssignment($cid, $examid)) {
+            return response()->api(generate_error("Conflict"), 409);
+        }
+
+        $days = $request->input("expire", 7);
+
+        $ea = new ExamAssignment();
+        $ea->cid = $cid;
+        $ea->instructor_id = \Auth::user()->cid;
+        $ea->exam_id = $examid;
+        $ea->assigned_date = Carbon::now();
+        $ea->expire_date = Carbon::create()->addDays($days);
+        $ea->save();
+
+        if ($exam->cbt_required > 0) {
+            $cbt = TrainingBlock::find($exam->cbt_required);
+        }
+
+        $data = [
+            'exam_name' => "(" . $exam->facility_id . ") " . $exam->name,
+            'instructor_name' => \Auth::user()->fullname(),
+            'end_date' => Carbon::create()->addDays($days)->toDayDateTimeString(),
+            'student_name' => User::find($cid)->fullname(),
+            'cbt_required' => $exam->cbt_required,
+            'cbt_facility' => (isset($cbt)) ? $cbt->facility_id : null,
+            'cbt_block' => (isset($cbt)) ? $exam->cbt_reuqired : null
+        ];
+        $to[] = User::find($cid)->email;
+        $to[] = \Auth::user()->email;
+        if ($exam->facility_id != "ZAE") {
+            $to[] = $exam->facility_id . "-TA@vatusa.net";
+        }
+
+        EmailHelper::sendEmailFacilityTemplate($to, "Exam Assigned", $exam->facility_id, "examassigned", $data);
+
+        log_action($cid, "Exam (" . $exam->facility_id . ") " . $exam->name .
+            " assigned by " . \Auth::user()->fullname() . ", expires " . $data['end_date']);
+
+        return response()->api(['status' => 'OK']);
+    }
 
     /**
      *
      * @SWG\Delete(
      *     path="/exam/(id)/assign/(cid)",
-     *     summary="Delete exam id assignment for cid. Requires JWT or Session Cookie",
-     *     description="Delete exam id exam id for cid. Requires JWT or Session Cookie",
+     *     summary="(DONE) Delete exam id assignment for cid. Requires JWT or Session Cookie",
+     *     description="(DONE) Delete exam id exam id for cid. Requires JWT or Session Cookie",
      *     tags={"user","exam"},
      *     produces={"application/json"},
      *     @SWG\Parameter(name="id", in="path", type="integer", description="Exam ID Number"),
@@ -616,4 +829,31 @@ class ExamController extends APIController
      *     )
      * )
      */
+    public function deleteExamAssignment(Request $request, $examid, $cid)
+    {
+        if (!\Auth::check()) {
+            return response()->api(generate_error("Unauthenticated"), 401);
+        }
+        if (!RoleHelper::isSeniorStaff()
+            && !RoleHelper::isInstructor()
+            && !RoleHelper::isVATUSAStaff()
+        ) {
+            return response()->api(generate_error("Forbidden"), 403);
+        }
+
+        $exam = Exam::find($examid);
+        if (!$exam) {
+            return response()->api(generate_error("Not found"), 404);
+        }
+
+        if (!ExamAssignment::hasAssignment($cid, $examid)) {
+            return response()->api(generate_error("Conflict"), 409);
+        }
+        ExamAssignment::where('cid', $cid)->where('exam_id', $examid)->delete();
+        ExamReassignment::where('cid', $cid)->where('exam_id', $examid)->delete();
+        log_action($cid, "Exam (" . $exam->facility_id . ") " . $exam->name .
+            " unassigned by " . \Auth::user()->fullname());
+
+        return response()->api(['status' => 'OK']);
+    }
 }

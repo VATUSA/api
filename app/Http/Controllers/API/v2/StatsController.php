@@ -22,14 +22,11 @@ use App\Facility;
 class StatsController  extends APIController
 {
     /**
-     * @return string
-     *
-     * @TODO
      *
      * @SWG\Get(
      *     path="/stats/exams/(facility)",
-     *     summary="Get statistics of exam results",
-     *     description="Get statistics of exam results",
+     *     summary="(DONE) Get statistics of exam results",
+     *     description="(DONE) Get statistics of exam results",
      *     produces={"application/json"},
      *     tags={"stats"},
      *     @SWG\Parameter(name="facility", in="path", type="string", description="Filter for facility IATA ID"),
