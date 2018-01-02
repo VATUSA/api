@@ -41,14 +41,6 @@ $app->singleton(
     App\Exceptions\Handler::class
 );
 
-// For Docker
-$app->configureMonologUsing(function($monolog) {
-    // Always add the stderr output for errors over WARNING level.
-    $monolog->pushHandler(
-        new \Monolog\Handler\StreamHandler('php://stderr', \Monolog\Logger::WARNING)
-    );
-});
-
 /*
 |--------------------------------------------------------------------------
 | Return The Application
