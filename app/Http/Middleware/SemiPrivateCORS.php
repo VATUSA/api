@@ -46,7 +46,11 @@ class SemiPrivateCORS
                     return response()->json(generate_error("Invalid API Key"), 400);
                 }
             } else {
-                return $next($request);
+                return $next($request)
+                    ->header("Access-Control-Allow-Credentials", "true")
+                    ->header("Access-Control-Allow-Headers", "x-csrf-token")
+                    ->header("Access-Control-Allow-Methods", $_SERVER['REQUEST_METHOD'])
+                    ->header("Access-Control-Allow-Origin", $_SERVER['HTTP_ORIGIN']);
             }
 
             return response()->json(generate_error("Forbidden", true), 401);
