@@ -17,8 +17,8 @@ class EmailController extends APIController
     /**
      * @SWG\Get(
      *     path="/email",
-     *     summary="Get info of VATUSA email address assigned for user. CORS Restricted",
-     *     description="Get info of VATUSA email address assigned for user. CORS Restricted",
+     *     summary="(DONE) Get info of VATUSA email address assigned for user. CORS Restricted",
+     *     description="(DONE) Get info of VATUSA email address assigned for user. CORS Restricted",
      *     produces={"application/json"},
      *     tags={"email"},
      *     security={"jwt","session"},
@@ -83,8 +83,8 @@ class EmailController extends APIController
      *
      * @SWG\Get(
      *     path="/email/(address)",
-     *     summary="Get info of VATUSA email address. CORS Restricted",
-     *     description="Get info of VATUSA email address. CORS Restricted",
+     *     summary="(DONE) Get info of VATUSA email address. CORS Restricted",
+     *     description="(DONE) Get info of VATUSA email address. CORS Restricted",
      *     produces={"application/json"},
      *     tags={"email"},
      *     security={"jwt","session"},
@@ -146,8 +146,8 @@ class EmailController extends APIController
     /**
      * @SWG\Put(
      *     path="/email",
-     *     summary="Modify email account. CORS Restricted",
-     *     description="Modify email account. Static forwards may only be modified by the ATM, DATM or WM. CORS Restricted",
+     *     summary="(DONE) Modify email account. CORS Restricted",
+     *     description="(DONE) Modify email account. Static forwards may only be modified by the ATM, DATM or WM. CORS Restricted",
      *     produces={"application/json"},
      *     tags={"email"},
      *     security={"jwt","session"},
