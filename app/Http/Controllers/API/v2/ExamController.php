@@ -217,7 +217,8 @@ class ExamController extends APIController
             'possible' => $possible,
             'score' => $score,
             'student_name' => \Auth::user()->fullname(),
-            'reassign' => $exam->retake_period
+            'reassign' => 0,
+            'reassign_date' => null
         ];
 
         if ($result->passed) {
@@ -239,6 +240,9 @@ class ExamController extends APIController
                 $reassign->exam_id = $assign->exam_id;
                 $reassign->reassign_date = \Carbon\Carbon::now()->addDays($exam->retake_period);
                 $reassign->save();
+
+                $data['reassign'] = $exam->retake_period;
+                $data['reassign_date'] = $reassign->reassign_date;
             }
             $assign->delete();
             $fac = $exam->facility_id;
