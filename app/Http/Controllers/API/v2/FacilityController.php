@@ -360,6 +360,21 @@ class FacilityController extends APIController
 
         $template = FacilityHelper::findEmailTemplate($id, $templateName);
 
+        switch($templateName) {
+            case 'exampassed':
+                $template['variables'] = ['exam_name','instructor_name','correct','possible','score','student_name'];
+                break;
+            case 'examfailed':
+                $template['variables'] = ['exam_name','instructor_name','correct','possible','score','student_name', 'reassign', 'reassign_date'];
+                break;
+            case 'examassigned':
+                $template['variables'] = ['exam_name', 'instructor_name', 'student_name', 'end_date', 'cbt_required', 'cbt_facility', 'cbt_block'];
+                break;
+            default:
+                $template['variables'] = null;
+                break;
+        }
+
         return response()->api($template->toArray());
     }
 
@@ -425,7 +440,7 @@ class FacilityController extends APIController
         }
 
         $template = FacilityHelper::findEmailTemplate($id, $templateName);
-        $template->body = $request->input("body");
+        $template->body = preg_replace(array('/<(\?|\%)\=?(php)?/', '/(\%|\?)>/'), array('',''), $request->input("body"));
         $template->save();
 
         return response()->api(['status' => 'OK']);
