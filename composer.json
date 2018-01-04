@@ -8,7 +8,7 @@
         "php": ">=7.0.0",
         "Barryvdh/laravel-cors": "^0.9.2",
         "bonroyage/oauth": "1.*",
-        "darkaonline/l5-swagger": "5.5.*",
+        "dhawton/l5-swagger-redoc": "^5.5.4",
         "doctrine/dbal": "^2.5",
         "fideloper/proxy": "~3.3",
         "laravel/framework": "5.5.*",

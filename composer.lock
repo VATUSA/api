@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "b4b750b31b9db5e10d92f685647af5c3",
+    "content-hash": "d9c444d2c8ff8b95516cba3406c00581",
     "packages": [
         {
             "name": "barryvdh/laravel-cors",
@@ -103,23 +103,22 @@
             "time": "2014-06-25T21:04:29+00:00"
         },
         {
-            "name": "darkaonline/l5-swagger",
-            "version": "5.5.2",
+            "name": "dhawton/l5-swagger-redoc",
+            "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/DarkaOnLine/L5-Swagger.git",
-                "reference": "d77b3a4d2a09b275ffb70d8c00796bfdb8e71ee8"
+                "url": "https://github.com/dhawton/L5-Swagger-ReDoc.git",
+                "reference": "5af6c43ecca0de23230f557119b0cb11400b7049"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DarkaOnLine/L5-Swagger/zipball/d77b3a4d2a09b275ffb70d8c00796bfdb8e71ee8",
-                "reference": "d77b3a4d2a09b275ffb70d8c00796bfdb8e71ee8",
+                "url": "https://api.github.com/repos/dhawton/L5-Swagger-ReDoc/zipball/5af6c43ecca0de23230f557119b0cb11400b7049",
+                "reference": "5af6c43ecca0de23230f557119b0cb11400b7049",
                 "shasum": ""
             },
             "require": {
                 "laravel/framework": "5.5.*",
                 "php": "^7.0",
-                "swagger-api/swagger-ui": "^3.0",
                 "zircote/swagger-php": "~2.0"
             },
             "require-dev": {
@@ -152,15 +151,19 @@
                 {
                     "name": "Darius Matulionis",
                     "email": "darius@matulionis.lt"
+                },
+                {
+                    "name": "Daniel A. Hawton",
+                    "email": "daniel@hawton.com"
                 }
             ],
-            "description": "Swagger integration to Laravel 5",
+            "description": "Swagger integration to Laravel 5 w/ ReDoc",
             "keywords": [
                 "api",
                 "laravel",
                 "swagger"
             ],
-            "time": "2017-10-09T05:26:15+00:00"
+            "time": "2018-01-04T03:34:49+00:00"
         },
         {
             "name": "dnoegel/php-xdg-base-dir",
@@ -1605,16 +1608,16 @@
         },
         {
             "name": "paragonie/sodium_compat",
-            "version": "v1.4.0",
+            "version": "v1.5.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/paragonie/sodium_compat.git",
-                "reference": "9bfa05311d1851db0bbc2ad453c7083b9996b5b4"
+                "reference": "bb652faf69416b56ecdb3f92a16fd49f7c2a1bf7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/paragonie/sodium_compat/zipball/9bfa05311d1851db0bbc2ad453c7083b9996b5b4",
-                "reference": "9bfa05311d1851db0bbc2ad453c7083b9996b5b4",
+                "url": "https://api.github.com/repos/paragonie/sodium_compat/zipball/bb652faf69416b56ecdb3f92a16fd49f7c2a1bf7",
+                "reference": "bb652faf69416b56ecdb3f92a16fd49f7c2a1bf7",
                 "shasum": ""
             },
             "require": {
@@ -1683,7 +1686,7 @@
                 "secret-key cryptography",
                 "side-channel resistant"
             ],
-            "time": "2017-11-28T15:55:13+00:00"
+            "time": "2018-01-02T11:03:32+00:00"
         },
         {
             "name": "phpseclib/phpseclib",
@@ -2172,63 +2175,6 @@
                 "url"
             ],
             "time": "2016-01-21T19:50:30+00:00"
-        },
-        {
-            "name": "swagger-api/swagger-ui",
-            "version": "v3.8.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/swagger-api/swagger-ui.git",
-                "reference": "b749ea737d7218ff407a15ba9a3c7ad500485ce7"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/swagger-api/swagger-ui/zipball/b749ea737d7218ff407a15ba9a3c7ad500485ce7",
-                "reference": "b749ea737d7218ff407a15ba9a3c7ad500485ce7",
-                "shasum": ""
-            },
-            "type": "library",
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "Apache-2.0"
-            ],
-            "authors": [
-                {
-                    "name": "Anna Bodnia",
-                    "email": "anna.bodnia@gmail.com"
-                },
-                {
-                    "name": "Buu Nguyen",
-                    "email": "buunguyen@gmail.com"
-                },
-                {
-                    "name": "Josh Ponelat",
-                    "email": "jponelat@gmail.com"
-                },
-                {
-                    "name": "Kyle Shockey",
-                    "email": "kyleshockey1@gmail.com"
-                },
-                {
-                    "name": "Robert Barnwell",
-                    "email": "robert@robertismy.name"
-                },
-                {
-                    "name": "Sahar Jafari",
-                    "email": "shr.jafari@gmail.com"
-                }
-            ],
-            "description": " Swagger UI is a collection of HTML, Javascript, and CSS assets that dynamically generate beautiful documentation from a Swagger-compliant API.",
-            "homepage": "http://swagger.io",
-            "keywords": [
-                "api",
-                "documentation",
-                "openapi",
-                "specification",
-                "swagger",
-                "ui"
-            ],
-            "time": "2017-12-30T07:39:49+00:00"
         },
         {
             "name": "swiftmailer/swiftmailer",
@@ -5343,7 +5289,9 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": [],
+    "stability-flags": {
+        "dhawton/l5-swagger-redoc": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

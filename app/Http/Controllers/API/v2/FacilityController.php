@@ -333,7 +333,6 @@ class FacilityController extends APIController
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(
-     *             type="object",
      *             ref="#/definitions/EmailTemplate"
      *         ),
      *     )
@@ -471,7 +470,6 @@ class FacilityController extends APIController
      *         @SWG\Schema(
      *             type="array",
      *             @SWG\Items(
-     *                 type="object",
      *                 ref="#/definitions/User",
      *             ),
      *         ),
