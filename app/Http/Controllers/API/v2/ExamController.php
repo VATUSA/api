@@ -351,7 +351,6 @@ class ExamController extends APIController
      *         @SWG\Schema(
      *             type="array",
      *             @SWG\Items(
-     *                 type="object",
      *                 ref="#/definitions/Exam"
      *             ),
      *         ),
@@ -391,7 +390,6 @@ class ExamController extends APIController
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(
-     *             type="object",
      *             ref="#/definitions/Exam"
      *         ),
      *         examples={"application/json":{"id":50,"facility_id":"ZAE","name":"VATUSA - S2 Rating (TWR) Controller Exam","number":20,"is_active":1,"cbt_required":118,"retake_period":3,"passing_score":80,"answer_visibility":"all_passed"}},
@@ -428,7 +426,6 @@ class ExamController extends APIController
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(
-     *             type="object",
      *             ref="#/definitions/Exam"
      *         ),
      *         examples={"application/json":{{"id":1959,"exam_id":53,"question":"Green Bay is a Class __ airspace.","type":0,"answer":"Charlie","alt1":"Bravo","alt2":"Delta","alt3":"Foxtrot"}}},
@@ -484,7 +481,6 @@ class ExamController extends APIController
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(
-     *             type="object",
      *             ref="#/definitions/OK",
      *         )
      *     )
@@ -581,7 +577,6 @@ class ExamController extends APIController
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(
-     *             type="object",
      *             ref="#/definitions/OKID"
      *         ),
      *     )
@@ -653,7 +648,6 @@ class ExamController extends APIController
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(
-     *             type="object",
      *             ref="#/definitions/OK"
      *         ),
      *     )
@@ -739,7 +733,6 @@ class ExamController extends APIController
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(
-     *             type="object",
      *             ref="#/definitions/OK"
      *         ),
      *     )
@@ -827,7 +820,6 @@ class ExamController extends APIController
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(
-     *             type="object",
      *             ref="#/definitions/OK"
      *         ),
      *     )

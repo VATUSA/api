@@ -20,7 +20,7 @@ return [
         |--------------------------------------------------------------------------
         */
 
-        'api' => 'docs',
+        'api' => '/',
 
         /*
         |--------------------------------------------------------------------------
@@ -125,10 +125,10 @@ return [
             'description'=>'Session cookie',
             'name'=>'cookie'
         ],
-        'apiKey' => [
+        'apikey' => [
             'type' => 'apiKey',
             'description' => 'Defined API Key',
-            'name' => 'api_key',
+            'name' => 'apikey',
             'in' => 'query'
         ]
     ],

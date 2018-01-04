@@ -8,8 +8,6 @@ use \App\Http\Controllers\Controller as BaseController;
  *
  * @package App\Http\Controllers\API\v2
  *
- * @TODO Document CBT Editor, Exam Editor, Email stuff (broadcast, template editor), Div Statistics, and TMU
- *
  * @SWG\Swagger(
  *     basePath="/v2",
  *     host="api.vatusa.net",
@@ -17,6 +15,19 @@ use \App\Http\Controllers\Controller as BaseController;
  *     @SWG\Info(
  *         version="2.0",
  *         title="VATUSA API",
+ *         description="VATUSA APIv2 Documentation.
+            Authentication methods are: <ul>
+            <li> JSON Web Tokens (issued by VATUSA for VATUSA services only)</li>
+            <li> Session Cookies (issued by VATUSA for VATUSA services only)</li>
+            <li> API Keys (issued to facilities for facility use only)</li></ul>
+            <p>API methods that do not have a security method attached to it do not require a security check.</p>
+            <p>Facilities that have a APIv2 JWK defined in facility settings will have the data encapisulated in a
+            signed package.  For more information, please see the IT section of the VATUSA forums.</p>",
+ *         x={
+ *           "logo": {
+ *             "url": "https://www.vatusa.net/img/logo-light.png",
+ *           },
+ *         },
  *         @SWG\Contact(name="Daniel Hawton", url="https://www.danielhawton.com"),
  *     ),
  *     @SWG\Tag(name="auth",description="[Live] Internal Authentication handling commands for use by VATUSA Web Systems to translate Laravel Sessions into JSON Web Tokens"),
@@ -29,6 +40,7 @@ use \App\Http\Controllers\Controller as BaseController;
  *     @SWG\Tag(name="role",description="Role handling"),
  *     @SWG\Tag(name="solo",description="Solo Certification handling"),
  *     @SWG\Tag(name="stats",description="Division statistics"),
+ *     @SWG\Tag(name="support",description="Support Center"),
  *     @SWG\Tag(name="tmu", description="Traffic Management Unit"),
  *     @SWG\Tag(name="user",description="User account management actions"),
  * )
@@ -56,10 +68,10 @@ class APIController extends BaseController {
  */
 /**
  * @SWG\SecurityScheme(
- *     securityDefinition="apiKey",
+ *     securityDefinition="apikey",
  *     type="apiKey",
  *     in="query",
- *     name="api key",
+ *     name="apikey",
  *     description="API Key"
  * )
  */
