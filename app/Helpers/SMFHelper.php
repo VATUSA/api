@@ -56,6 +56,8 @@ class SMFHelper
         $grp = "";
 
         $user = User::find($cid);
+        // Safe for silent return
+        if (!$user) return;
 
         if ($user->rating == RatingHelper::shortToInt("ADM")) {
             static::setGroups($cid, static::findGroup("VATSIM Staff")); return;
