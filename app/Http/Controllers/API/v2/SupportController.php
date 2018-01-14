@@ -71,7 +71,6 @@ class SupportController extends APIController
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(
-     *           type="object",
      *           ref="#/definitions/OKID",
      *         ),
      *     )
@@ -127,7 +126,6 @@ class SupportController extends APIController
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(
-     *           type="object",
      *           ref="#/definitions/OK",
      *         ),
      *     )
@@ -184,7 +182,6 @@ class SupportController extends APIController
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(
-     *           type="object",
      *           ref="#/definitions/OK",
      *         ),
      *     )
@@ -247,7 +244,6 @@ class SupportController extends APIController
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(
-     *           type="object",
      *           ref="#/definitions/OKID",
      *         ),
      *     )
@@ -315,7 +311,6 @@ class SupportController extends APIController
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(
-     *           type="object",
      *           ref="#/definitions/OK",
      *         ),
      *     )
@@ -391,7 +386,6 @@ class SupportController extends APIController
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(
-     *           type="object",
      *           ref="#/definitions/OK",
      *         ),
      *     )
@@ -426,12 +420,12 @@ class SupportController extends APIController
      *         description="OK",
      *         @SWG\Schema(
      *             type="object",
-     *             @SWG\Property(type="string", name="status"),
-     *             @SWG\Property(name="depts", type="array"
+     *             @SWG\Property(type="string", property="status"),
+     *             @SWG\Property(property="depts", type="array",
      *                 @SWG\Items(
      *                     type="object",
-     *                     @SWG\Property(type="id", type="string", description="ID of Dept"),
-     *                     @SWG\Property(type="name", type="string", description="Name of Dept"),
+     *                     @SWG\Property(property="id", type="string", description="ID of Dept"),
+     *                     @SWG\Property(property="name", type="string", description="Name of Dept"),
      *                 ),
      *             ),
      *         ),
@@ -467,13 +461,13 @@ class SupportController extends APIController
      *         description="OK",
      *         @SWG\Schema(
      *             type="object",
-     *             @SWG\Property(type="string", name="status"),
-     *             @SWG\Property(name="staff", type="array"
+     *             @SWG\Property(type="string", property="status"),
+     *             @SWG\Property(property="staff", type="array",
      *                 @SWG\Items(
      *                     type="object",
-     *                     @SWG\Property(type="cid", type="string", description="CID of Staff Member"),
-     *                     @SWG\Property(type="name", type="string", description="Name of Dept"),
-     *                     @SWG\Property(type="role", type="string", description="Role"),
+     *                     @SWG\Property(property="cid", type="string", description="CID of Staff Member"),
+     *                     @SWG\Property(property="name", type="string", description="Name of Dept"),
+     *                     @SWG\Property(property="role", type="string", description="Role"),
      *                 ),
      *             ),
      *         ),
