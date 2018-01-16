@@ -59,9 +59,9 @@ class CBTController extends APIController
      *     @SWG\Parameter(name="id", in="path", required=true, type="integer", description="Block ID"),
      *     @SWG\Response(
      *         response="401",
-     *         description="Unauthenticated",
+     *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
@@ -105,9 +105,9 @@ class CBTController extends APIController
      *     @SWG\Parameter(name="name", in="formData", required=true, type="string", description="Name of block"),
      *     @SWG\Response(
      *         response="401",
-     *         description="Unauthenticated",
+     *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
@@ -145,9 +145,9 @@ class CBTController extends APIController
      *     @SWG\Parameter(name="access", in="formData", type="string", description="Access level (plain text options: All, Student, C1, I1, Staff, Senior Staff)"),
      *     @SWG\Response(
      *         response="401",
-     *         description="Unauthenticated",
+     *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
@@ -225,9 +225,9 @@ class CBTController extends APIController
      *     @SWG\Parameter(name="chapterId", in="path", required=true, type="integer", description="Chapter ID"),
      *     @SWG\Response(
      *         response="401",
-     *         description="Unauthenticated",
+     *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
@@ -272,9 +272,9 @@ class CBTController extends APIController
      *     @SWG\Parameter(name="name", in="formData", required=true, type="string", description="Name of block"),
      *     @SWG\Response(
      *         response="401",
-     *         description="Unauthenticated",
+     *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
@@ -313,9 +313,9 @@ class CBTController extends APIController
      *     @SWG\Parameter(name="link", in="formData", type="string", description="Link to object (PDF, YouTube, or other embeddable object"),
      *     @SWG\Response(
      *         response="401",
-     *         description="Unauthenticated",
+     *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
