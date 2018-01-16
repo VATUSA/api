@@ -94,6 +94,27 @@ Route::group(['prefix' => '/stats'], function() {
 });
 
 /******************************************************************************************
+ * /support
+ * Support functions
+ */
+
+Route::group(['prefix' => '/support'], function() {
+    Route::get('/kb', 'SupportController@getKBs');
+    Route::post('/kb', 'SupportController@postKB');
+    Route::put('/kb/{id}', 'SupportController@putKB')->where('id', '[0-9]+');
+    Route::delete('/kb/{id}', 'SupportController@deleteKB')->where('id', '[0-9]+');
+
+    Route::post('/kb/{categoryid}', 'SupportController@postKBQuestion')
+        ->where(['categoryid' => '[0-9]+']);
+    Route::put('/kb/{categoryid}/{questionid}', 'SupportController@putKBQuestion')
+        ->where(['questionid' => '[0-9]+', 'categoryid' => '[0-9]+']);
+    Route::delete('/kb/{categoryid}/{questionid}', 'SupportController@deleteKBQuestion')
+        ->where(['questionid' => '[0-9]+', 'categoryid' => '[0-9]+']);
+
+    Route::get('/tickets/depts', 'SupportController@getTicketDepts');
+});
+
+/******************************************************************************************
  * /users
  * User functions
  */
