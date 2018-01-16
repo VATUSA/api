@@ -9,6 +9,7 @@ use App\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Classes\OAuth\SSO;
+use Carbon\Carbon;
 
 /**
  * Class SSOController
@@ -146,7 +147,7 @@ class SSOController extends Controller
                     $member->lname = $user->name_last;
                     $member->rating = $user->rating->id;
                     $member->facility = (($user->division->code == "USA") ? "ZAE" : "ZZN");
-                    $member->facility_join = \DB::raw("NOW()");
+                    $member->facility_join = Carbon::now();
                     $member->flag_needbasic = 1;
                     $member->flag_xferOverride = 0;
                     $member->flag_homecontroller = (($user->division->code == "USA") ? 1 : 0);

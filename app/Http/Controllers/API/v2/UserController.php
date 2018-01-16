@@ -113,9 +113,9 @@ class UserController extends APIController
      *     @SWG\Parameter(name="role", in="path", required=true, type="string", description="Role"),
      *     @SWG\Response(
      *         response="401",
-     *         description="Unauthenticated",
+     *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
@@ -133,7 +133,7 @@ class UserController extends APIController
      */
     public function postRole($cid, $facility, $role) {
         if (!\Auth::check()) {
-            return response()->json(generate_error("Unauthenticated"), 401);
+            return response()->json(generate_error("Unauthorized"), 401);
         }
 
         $facility = Facility::find($facility);
@@ -182,9 +182,9 @@ class UserController extends APIController
      *     @SWG\Parameter(name="role", in="path", required=true, type="string", description="Role"),
      *     @SWG\Response(
      *         response="401",
-     *         description="Unauthenticated",
+     *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
@@ -208,7 +208,7 @@ class UserController extends APIController
      */
     public function deleteRole($cid, $facility, $role) {
         if (!\Auth::check()) {
-            return response()->json(generate_error("Unauthenticated"), 401);
+            return response()->json(generate_error("Unauthorized"), 401);
         }
 
         //$role = strtolower($role);
@@ -269,9 +269,9 @@ class UserController extends APIController
      *     ),
      *     @SWG\Response(
      *         response="401",
-     *         description="Unauthenticated",
+     *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
@@ -301,7 +301,7 @@ class UserController extends APIController
      */
     public function postTransfer($cid) {
         if (!\Auth::check()) {
-            return response()->json(generate_error("Unauthenticated"), 401);
+            return response()->json(generate_error("Unauthorized"), 401);
         }
         if (\Auth::user()->cid != $cid && !RoleHelper::isVATUSAStaff(\Auth::user()->cid)) {
             return response()->json(generate_error("Forbidden"), 403);
@@ -359,9 +359,9 @@ class UserController extends APIController
      *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
      *     @SWG\Response(
      *         response="401",
-     *         description="Unauthenticated",
+     *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
@@ -384,7 +384,7 @@ class UserController extends APIController
      * )
      */
     public function getTransferChecklist($cid) {
-        if (!request()->has("apikey") && !\Auth::check()) return response()->json(generate_error("Unauthenticated"), 401);
+        if (!request()->has("apikey") && !\Auth::check()) return response()->json(generate_error("Unauthorized"), 401);
         if (request()->has("apikey") || (\Auth::check() &&
             (
                 \Auth::user()->cid == $cid ||
@@ -415,9 +415,9 @@ class UserController extends APIController
      *     @SWG\Parameter(name="position", in="formData", type="string", description="Position sat during exam, required for C1 and below"),
      *     @SWG\Response(
      *         response="401",
-     *         description="Unauthenticated",
+     *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
@@ -458,7 +458,7 @@ class UserController extends APIController
      * )
      */
     public function postRating($cid) {
-        if (!\Auth::check()) return response()->api(generate_error("Unauthenticated"), 401);
+        if (!\Auth::check()) return response()->api(generate_error("Unauthorized"), 401);
         $user = User::find($cid);
         if (!$user) return response()->api(generate_error("Not found"), 404);
         $rating = request()->input("rating", null);
@@ -529,9 +529,9 @@ class UserController extends APIController
      *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
      *     @SWG\Response(
      *         response="401",
-     *         description="Unauthenticated",
+     *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
@@ -558,7 +558,7 @@ class UserController extends APIController
      */
     public function getRatingHistory($cid) {
         if (!User::find($cid)) { return response()->json(generate_error("Not found"), 404); }
-        if (!request()->has("apikey") && !\Auth::check()) return response()->json(generate_error("Unauthenticated"), 401);
+        if (!request()->has("apikey") && !\Auth::check()) return response()->json(generate_error("Unauthorized"), 401);
         if (!request()->has("apikey") && !(\Auth::check() &&
                 (
                     \Auth::user()->cid == $cid ||
@@ -589,9 +589,9 @@ class UserController extends APIController
      *     @SWG\Parameter(name="entry", in="formData", required=true, type="string", description="Entry to log"),
      *     @SWG\Response(
      *         response="401",
-     *         description="Unauthenticated",
+     *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
@@ -618,7 +618,7 @@ class UserController extends APIController
      */
     public function getActionLog($cid) {
         if (!User::find($cid)) { return response()->json(generate_error("Not found"), 404); }
-        if (!\Auth::check()) return response()->json(generate_error("Unauthenticated"), 401);
+        if (!\Auth::check()) return response()->json(generate_error("Unauthorized"), 401);
         if (!(\Auth::check() &&
             (
                 \Auth::user()->cid == $cid ||
@@ -655,9 +655,9 @@ class UserController extends APIController
      *     ),
      *     @SWG\Response(
      *         response="401",
-     *         description="Unauthenticated",
+     *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
@@ -676,7 +676,7 @@ class UserController extends APIController
     public function postActionLog($cid) {
         $entry = request()->input("entry", null);
         if (!$entry) return response()->json(generate_error("Malformed request"), 400);
-        if (!\Auth::check()) return response()->json(generate_error("Unauthenticated"), 401);
+        if (!\Auth::check()) return response()->json(generate_error("Unauthorized"), 401);
         if (!RoleHelper::isVATUSAStaff(\Auth::user()->cid) && !RoleHelper::has(\Auth::user()->cid, \Auth::user()->facility, ["ATM","DATM"])) {
             return response()->json(generate_error("Forbidden"), 403);
         }
@@ -828,9 +828,9 @@ class UserController extends APIController
      *     @SWG\Parameter(name="chapterId", in="query", type="integer", description="Mark progress of specific Chapter ID"),
      *     @SWG\Response(
      *         response="401",
-     *         description="Unauthenticated",
+     *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
@@ -877,9 +877,9 @@ class UserController extends APIController
      *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
      *     @SWG\Response(
      *         response="401",
-     *         description="Unauthenticated",
+     *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
