@@ -20,6 +20,12 @@ class AuthController extends APIController
      *     tags={"auth"},
      *     security={"session"},
      *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     *     @SWG\Response(
      *         response=200,
      *         description="Return JSON Token.",
      *         @SWG\Schema(
@@ -30,6 +36,7 @@ class AuthController extends APIController
      * )
      */
     public function getToken(Request $request) {
+        if (!\Auth::check()) return response()->unauthenticated();
         $token = \Auth::guard('jwt')->login(\Auth::user());
         return response()->json([
             'token' => $token,
@@ -47,6 +54,12 @@ class AuthController extends APIController
      *     tags={"auth"},
      *     security={"jwt","session"},
      *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     *     @SWG\Response(
      *         response=200,
      *         description="Return JSON Token.",
      *         @SWG\Schema(
@@ -57,9 +70,7 @@ class AuthController extends APIController
      * )
      */
     public function getRefreshToken() {
-        if (!\Auth::check()) {
-            return response()->json(generate_error("not_logged_in", true), 401);
-        }
+        if (!\Auth::check()) return response()->unauthenticated();
         $token = \Auth::guard('jwt')->refresh();
         return response()->json([
             'token' => $token
@@ -77,6 +88,12 @@ class AuthController extends APIController
      *     tags={"auth"},
      *     security={"jwt","session"},
      *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     *     @SWG\Response(
      *         response=200,
      *         description="Return User object",
      *         @SWG\Schema(
@@ -86,6 +103,7 @@ class AuthController extends APIController
      * )
      */
     public function getUserInfo() {
+        if (!\Auth::check()) return response()->unauthenticated();
         return response()->json(\Auth::user());
     }
 }
