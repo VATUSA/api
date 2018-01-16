@@ -26,11 +26,11 @@ class ResponseServiceProvider extends ServiceProvider
             return response()->api(generate_error("Not found"), 404);
         });
 
-        $factory->macro('malformed', function() use ($factory) {
+        $factory->macro('forbidden', function() use ($factory) {
             return response()->api(generate_error("Forbidden"), 403);
         });
 
-        $factory->macro('malformed', function() use ($factory) {
+        $factory->macro('unauthenticated', function() use ($factory) {
             return response()->api(generate_error("Unauthorized"), 401);
         });
 

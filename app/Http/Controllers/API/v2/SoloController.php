@@ -73,9 +73,9 @@ class SoloController extends APIController
      *     ),
      *     @SWG\Response(
      *         response="401",
-     *         description="Unauthenticated",
+     *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
@@ -98,7 +98,7 @@ class SoloController extends APIController
     public function postSolo(Request $request) {
         if (!$request->has("apikey")) {
             if (!\Auth::check()) {
-                return response()->api(generate_error("Unauthenticated"), 401);
+                return response()->api(generate_error("Unauthorized"), 401);
             }
             if (!RoleHelper::isFacilityStaff() &&
                 !RoleHelper::isVATUSAStaff() &&
@@ -149,9 +149,9 @@ class SoloController extends APIController
      *     @SWG\Parameter(name="position", in="formData", type="string", required=true, description="Position ID (XYZ_APP, ZZZ_CTR)"),
      *     @SWG\Response(
      *         response="401",
-     *         description="Unauthenticated",
+     *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
@@ -170,7 +170,7 @@ class SoloController extends APIController
     public function deleteSolo() {
         if (!$request->has("apikey")) {
             if (!\Auth::check()) {
-                return response()->api(generate_error("Unauthenticated"), 401);
+                return response()->api(generate_error("Unauthorized"), 401);
             }
             if (!RoleHelper::isFacilityStaff() &&
                 !RoleHelper::isVATUSAStaff() &&
