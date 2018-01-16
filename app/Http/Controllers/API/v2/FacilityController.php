@@ -153,9 +153,9 @@ class FacilityController extends APIController
      *     @SWG\Parameter(name="ulsDevReturn", in="formData", type="string", description="Set new ULS developmental return point, role restricted [ATM, DATM, WM]"),
      *     @SWG\Response(
      *         response="401",
-     *         description="Unauthenticated",
+     *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
@@ -313,9 +313,9 @@ class FacilityController extends APIController
      *     @SWG\Parameter(name="templateName", in="path", description="Name of template (welcome, examassigned, examfailed, exampassed)", required=true, type="string"),
      *     @SWG\Response(
      *         response="401",
-     *         description="Unauthenticated",
+     *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
@@ -341,7 +341,7 @@ class FacilityController extends APIController
     public function getEmailTemplate(Request $request, $id, $templateName)
     {
         if (!\Auth::check() && !$request->has("apikey")) {
-            return response()->api(generate_error("Unauthenticated"), 401);
+            return response()->api(generate_error("Unauthorized"), 401);
         }
         if (\Auth::check() && (!RoleHelper::isSeniorStaff(\Auth::user()->cid, $id, true)
             && !RoleHelper::isVATUSAStaff())
@@ -390,9 +390,9 @@ class FacilityController extends APIController
      *     @SWG\Parameter(name="body", in="formData", description="Text of template", required=true, type="string"),
      *     @SWG\Response(
      *         response="401",
-     *         description="Unauthenticated",
+     *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
@@ -422,7 +422,7 @@ class FacilityController extends APIController
     function postEmailTemplate(Request $request, $id, $templateName)
     {
         if (!\Auth::check()) {
-            return response()->api(generate_error("Unauthenticated"), 401);
+            return response()->api(generate_error("Unauthorized"), 401);
         }
         if (!RoleHelper::isSeniorStaff(\Auth::user()->cid, $id, true)
             && !RoleHelper::isVATUSAStaff()
@@ -522,9 +522,9 @@ class FacilityController extends APIController
      *     ),
      *     @SWG\Response(
      *         response="401",
-     *         description="Unauthenticated",
+     *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
@@ -641,7 +641,7 @@ class FacilityController extends APIController
         }
 
         if (!$request->has("apikey") && !\Auth::check()) {
-            return response()->api(generate_error("Unauthenticated"), 401);
+            return response()->api(generate_error("Unauthorized"), 401);
         }
 
         if (!$request->has("apikey")
@@ -731,7 +731,7 @@ class FacilityController extends APIController
         }
 
         if (!\Auth::check()) {
-            return response()->api(generate_error("Unauthenticated"), 401);
+            return response()->api(generate_error("Unauthorized"), 401);
         }
 
         if (!RoleHelper::isSeniorStaff(\Auth::user()->cid, $facility->id, false)

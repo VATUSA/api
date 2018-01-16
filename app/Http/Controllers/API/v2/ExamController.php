@@ -459,9 +459,9 @@ class ExamController extends APIController
      *     @SWG\Parameter(name="active", in="formData", type="integer", description="Is exam active? (numeric representation of bool 1 = active, 0 = not active)"),
      *     @SWG\Response(
      *         response="401",
-     *         description="Unauthenticated",
+     *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
@@ -488,7 +488,7 @@ class ExamController extends APIController
      */
     public function putExam(Request $request, string $id) {
         if (!\Auth::check()) {
-            return response()->api(generate_error("Unauthenticated"), 401);
+            return response()->api(generate_error("Unauthorized"), 401);
         }
         $return = []; $error = [];
         $exam = Exam::find($id);
@@ -563,9 +563,9 @@ class ExamController extends APIController
      *     @SWG\Parameter(name="choice4", in="formData", type="string", description="Distractor #3 (only for type=multiple)"),
      *     @SWG\Response(
      *         response="401",
-     *         description="Unauthenticated",
+     *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
@@ -584,7 +584,7 @@ class ExamController extends APIController
      */
     public function postExamQuestion(Request $request, $examid) {
         if (!\Auth::check()) {
-            return response()->api(generate_error("Unauthenticated"), 401);
+            return response()->api(generate_error("Unauthorized"), 401);
         }
         $exam = Exam::find($examid);
         if (!$exam) {
@@ -634,9 +634,9 @@ class ExamController extends APIController
      *     @SWG\Parameter(name="choice4", in="formData", type="string", description="Distractor #3 (only for type=multiple)"),
      *     @SWG\Response(
      *         response="401",
-     *         description="Unauthenticated",
+     *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
@@ -656,7 +656,7 @@ class ExamController extends APIController
     public function putExamQuestion(Request $request, $examid, $questionid)
     {
         if (!\Auth::check()) {
-            return response()->api(generate_error("Unauthenticated"), 401);
+            return response()->api(generate_error("Unauthorized"), 401);
         }
         $exam = Exam::find($examid);
         if (!$exam) {
@@ -713,9 +713,9 @@ class ExamController extends APIController
      *     @SWG\Parameter(name="expire", in="formData", type="integer", description="Days until expiration, 7 default"),
      *     @SWG\Response(
      *         response="401",
-     *         description="Unauthenticated",
+     *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
@@ -740,7 +740,7 @@ class ExamController extends APIController
      */
     public function postExamAssign(Request $request, $examid, $cid) {
         if (!\Auth::check()) {
-            return response()->api(generate_error("Unauthenticated"), 401);
+            return response()->api(generate_error("Unauthorized"), 401);
         }
         if (!RoleHelper::isSeniorStaff() &&
             !RoleHelper::isInstructor() &&
@@ -806,9 +806,9 @@ class ExamController extends APIController
      *     @SWG\Parameter(name="cid", in="path", type="integer", description="CERT ID"),
      *     @SWG\Response(
      *         response="401",
-     *         description="Unauthenticated",
+     *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
@@ -828,7 +828,7 @@ class ExamController extends APIController
     public function deleteExamAssignment(Request $request, $examid, $cid)
     {
         if (!\Auth::check()) {
-            return response()->api(generate_error("Unauthenticated"), 401);
+            return response()->api(generate_error("Unauthorized"), 401);
         }
         if (!RoleHelper::isSeniorStaff()
             && !RoleHelper::isInstructor()
