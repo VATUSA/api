@@ -73,6 +73,15 @@ Route::group(['middleware' => 'semiprivate'], function() {
 });
 
 /******************************************************************************************
+ * /infastructure
+ * Infastructure commands
+ */
+Route::group(['middleware' => ['auth:web,jwt','private']], function() {
+    Route::get('deploy', 'InfastructureController@deploy');
+    Route::post('deploy', 'InfastructureController@deploy');
+});
+
+/******************************************************************************************
  * /solo
  * Statistics functions
  */
