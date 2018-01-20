@@ -13,7 +13,6 @@
         "fideloper/proxy": "~3.3",
         "laravel/framework": "5.5.*",
         "laravel/tinker": "~1.0",
-        "laravelcollective/remote": "5.5.*",
         "phpseclib/phpseclib": "2.0",
         "predis/predis": "^1.1",
         "tymon/jwt-auth": "^1.0",
