@@ -29,7 +29,8 @@ RUN	addgroup -S application && adduser -SG application application && \
 		php7-fpm \
 		php7 \
 		nginx \
-		supervisor && \
+		supervisor \
+		openssh-client && \
 	sed -i "s|;*daemonize\s*=\s*yes|daemonize = no|g" /etc/php7/php-fpm.conf && \
 	sed -i "s|;*listen\s*=\s*127.0.0.1:9000|listen = 9000|g" /etc/php7/php-fpm.d/www.conf && \
 	sed -i "s|;*listen\s*=\s*/||g" /etc/php7/php-fpm.d/www.conf && \
