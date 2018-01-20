@@ -181,6 +181,9 @@ class RoleHelper {
         if (!$user) {
             return false;
         }
+        if (static::has($cid, "ZHQ", "US6") || static::has($cid, "ZHQ", "US12")) {
+            return true;
+        }
         if (Role::where("facility", "ZHQ")->where("cid", $cid)->where("role","USWT")->count() >= 1) {
             return true;
         }

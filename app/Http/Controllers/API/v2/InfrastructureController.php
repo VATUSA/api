@@ -7,18 +7,18 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Tymon\JWTAuth\Exceptions\JWTException;
 
-class InfastructureController extends APIController
+class InfrastructureController extends APIController
 {
     /**
      * @param Request $request
      * @return array|\Illuminate\Http\JsonResponse|string
      *
      * @SWG\Get(
-     *     path="/infastructure/deploy",
+     *     path="/infrastructure/deploy",
      *     summary="(DONE) Deploy Stack. CORS Restricted",
      *     description="(DONE) Deploy Stack. CORS Restricted",
      *     produces={"application/json"},
-     *     tags={"infastructure"},
+     *     tags={"infrastructure"},
      *     security={"session","jwt"},
      *     @SWG\Response(
      *         response="401",
@@ -39,11 +39,11 @@ class InfastructureController extends APIController
      *     )
      * )
      * @SWG\Post(
-     *     path="/infastructure/deploy",
+     *     path="/infrastructure/deploy",
      *     summary="(DONE) Deploy Stack. CORS Restricted",
      *     description="(DONE) Deploy Stack. CORS Restricted",
      *     produces={"application/json"},
-     *     tags={"infastructure"},
+     *     tags={"infrastructure"},
      *     security={"session","jwt"},
      *     @SWG\Response(
      *         response="401",
@@ -68,7 +68,8 @@ class InfastructureController extends APIController
         if (!\Auth::check()) return response()->unauthenticated();
         if (!RoleHelper::isWebTeam()) return response()->forbidden();
 
-        system("ssh " . env('SSH_CONNECTION_STRING') . " -i " . env('SSH_KEY_FILE'));
-        return response()->ok();
+        $msg = null;
+        exec("ssh " . env('SSH_CONNECTION_STRING') . " -i " . env('SSH_KEY_FILE'), $msg);
+        return response()->ok(['return' => $msg]);
     }
 }
