@@ -9,6 +9,9 @@ chown application:application /www/.env
 mkdir /www/storage/logs
 chown application:application /www/storage/logs
 
+chown application:application /run/secrets/*.key
+chmod 600 /run/secrets/*.key
+
 if [ "$WWW_ENV" == "prod" ]; then
   echo "*    *    *     *     *    cd /www && php artisan schedule:run" >> /etc/crontabs/application
   echo "*    *    *     *     *    cd /www && php artisan vatsim:flights" >> /etc/crontabs/application
