@@ -210,8 +210,8 @@ class User extends Model implements AuthenticatableContract, JWTSubject
      */
     public function removeFromFacility($by = "Automated", $msg = "None provided", $newfac = "ZAE") {
         $facility = $this->facility;
-        $region = $this->facility->region;
-        $facname = $this->facility->name;
+        $region = $this->fac->facility()->region;
+        $facname = $this->facility()->first()->name;
 
         if ($facility != "ZAE") {
             EmailHelper::sendEmail(
