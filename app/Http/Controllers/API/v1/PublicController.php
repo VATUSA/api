@@ -20,7 +20,7 @@ class PublicController
     public function getConnectionTest(Request $request, $apikey) {
         $data =[];
         $data['status'] = 'OK';
-        $data['ip'] = $request->ip();
+        $data['ip'] = $_SERVER['HTTP_X_FORWARDED_FOR'];
         if ($request->has('test')) {
             $data['debug'] = 1;
         } else {
