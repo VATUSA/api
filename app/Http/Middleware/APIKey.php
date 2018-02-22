@@ -26,7 +26,7 @@ class APIKey
             if (Facility::where('apikey', $apikey)->where('ip', $ip)->count() < 1 &&
                 Facility::where('api_sandbox_key', $apikey)->where('api_sandbox_ip', $ip)->count() < 1) {
                 \Log::warning("API Unauthorized request from $apikey and $ip");
-                return response()->json(generate_error("Unauthorized", true), 401);
+                return response()->unauthenticated(["ip" => $ip], 401);
             }
 
             if (Facility::where('api_sandbox_key', $apikey)->where('api_sandbox_ip', $ip)->count() >= 1) {
@@ -48,7 +48,7 @@ class APIKey
         } else {
             $user = AuthHelper::getAuthUser();
             if (!($user instanceof User)) {
-                return response()->json(generate_error("Unauthorized", true), 401);
+                return response()->unauthenticated(["ip" => $ip], 401);
             }
         }
 
