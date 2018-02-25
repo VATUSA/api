@@ -36,14 +36,13 @@ class PrivateCORS
             )
             ) {
                 if (!isset($_SERVER['HTTP_ORIGIN'])
-                    || !preg_match(
+                    || (
+                        !preg_match(
                         "~^(http|https)://[^/]+\.vatusa\.net(:\d{2,4})~i",
-                        $_SERVER['HTTP_ORIGIN']
-                    )
-                    || !preg_match(
+                        $_SERVER['HTTP_ORIGIN'])
+                        && !preg_match(
                         "~^(http|https)://[^/]+\.vatusa\.devel(:\d{2,4})~i",
-                        $_SERVER['HTTP_ORIGIN']
-
+                        $_SERVER['HTTP_ORIGIN'])
                     )
                 ) {
                     abort(400, "Malformed origin " . $_SERVER['HTTP_ORIGIN']);
