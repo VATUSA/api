@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API\v2;
 
 use App\Action;
+use App\EmailAccounts;
 use App\Helpers\EmailHelper;
 use App\Helpers\RoleHelper;
 use App\Role;
@@ -73,6 +74,19 @@ class EmailController extends APIController
                 }
                 $response[] = $temp;
             }
+        }
+        $return = EmailAccounts::where("cid", \Auth::user()->cid)->get();
+        foreach($return as $row) {
+            $domain = $row->fac->hosted_email_domain;
+            if (!$domain) continue;
+            $temp = [
+                "type" => EmailHelper::getType(strtolower($row->username . "@" . $domain)),
+                "email" => strtolower($row->username . "@" . $domain)
+            ];
+            if ($temp['type'] === EmailHelper::$email_forward) {
+                $temp['destination'] = implode(",", EmailHelper::forwardDestination($temp["email"]));
+            }
+            $response[] = $temp;
         }
         return response()->json($response);
     }
