@@ -48,6 +48,7 @@ INSERT INTO `facilities` (`id`,`name`,`url`,`region`,`atm`,`datm`,`ta`,`ec`,`fe`
 INSERT INTO `facilities` (`id`,`name`,`url`,`region`,`atm`,`datm`,`ta`,`ec`,`fe`,`wm`,`uls_return`,`uls_devreturn`,`uls_secret`,`uls_jwk`,`active`,`apikey`,`ip`,`api_sandbox_key`,`api_sandbox_ip`,`apiv2_jwk`,`welcome_text`,`ace`) VALUES ('ZZI','Inactive Member','',0,0,0,0,0,0,0,'','','','',0,'llllllll3333','127.0.0.1','ljjgh3j57tjg','','','',0);
 INSERT INTO `facilities` (`id`,`name`,`url`,`region`,`atm`,`datm`,`ta`,`ec`,`fe`,`wm`,`uls_return`,`uls_devreturn`,`uls_secret`,`uls_jwk`,`active`,`apikey`,`ip`,`api_sandbox_key`,`api_sandbox_ip`,`apiv2_jwk`,`welcome_text`,`ace`) VALUES ('ZZN','Non-Member','',0,0,0,0,0,0,0,'','','','',0,'llllllll3333','127.0.0.1','ljjgh3j57tjg','','','',0);
 INSERT INTO `facilities` (`id`,`name`,`url`,`region`,`atm`,`datm`,`ta`,`ec`,`fe`,`wm`,`uls_return`,`uls_devreturn`,`uls_secret`,`uls_jwk`,`active`,`apikey`,`ip`,`api_sandbox_key`,`api_sandbox_ip`,`apiv2_jwk`,`welcome_text`,`ace`) VALUES ('ZZV','External Visitor','',0,0,0,0,0,0,0,'','','','',0,'llllllll3333','127.0.0.1','ljjgh3j57tjg','','','',0);
+UPDATE `facilities` SET `hosted_email_domain`='ztlartcc.org' WHERE `id`='ZTL';
 /*!40000 ALTER TABLE `facilities` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
