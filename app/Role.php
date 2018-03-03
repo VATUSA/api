@@ -26,4 +26,8 @@ class Role extends Model
     public function setUpdatedAtAttribute($value) {
         // to Disable updated_at
     }
+
+    public function fac() {
+        return $this->hasOne("App\Facility", "id", "facility");
+    }
 }
