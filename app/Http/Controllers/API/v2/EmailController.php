@@ -426,7 +426,7 @@ class EmailController extends APIController
 
         $account = EmailAccounts::where("username", $username)->where("facility", $fac->id)->first();
         if (!$account) {
-            //EmailHelper::addEmail($username . "@" . $fac->hosted_email_doman, str_random()); // Make them reset
+            EmailHelper::addEmail($username . "@" . $fac->hosted_email_doman, str_random()); // Make them reset
             $account = new EmailAccounts();
             $account->username = $username;
             $account->facility = $fac->id;
@@ -487,7 +487,7 @@ class EmailController extends APIController
         if (!filter_var($username . "@" . $fac->hosted_email_domain, FILTER_VALIDATE_EMAIL))
             return response()->malformed();
 
-        //EmailHelper::deleteEmail($username . "@" . $fac->hosted_email_domain);
+        EmailHelper::deleteEmail($username . "@" . $fac->hosted_email_domain);
 
         $account = EmailAccounts::where("username", $username)->where("facility", $fac->id)->delete();
 
