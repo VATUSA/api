@@ -426,7 +426,7 @@ class EmailController extends APIController
 
         $account = EmailAccounts::where("username", $username)->where("facility", $fac->id)->first();
         if (!$account) {
-            EmailHelper::addEmail($username . "@" . $fac->hosted_email_doman, str_random()); // Make them reset
+            EmailHelper::addEmail($username . "@" . $fac->hosted_email_domain, str_random()); // Make them reset
             $account = new EmailAccounts();
             $account->username = $username;
             $account->facility = $fac->id;
