@@ -18,20 +18,24 @@ use Jose\Component\Signature\Serializer\JSONFlattenedSerializer;
 class ResponseServiceProvider extends ServiceProvider
 {
     public function boot(ResponseFactory $factory) {
-        $factory->macro('malformed', function() use ($factory) {
-            return response()->api(generate_error("Malformed request"), 400);
+        $factory->macro('malformed', function($data = []) use ($factory) {
+            return response()->api(array_merge(generate_error("Malformed request"), $data), 400);
         });
 
-        $factory->macro('notfound', function() use ($factory) {
-            return response()->api(generate_error("Not found"), 404);
+        $factory->macro('conflict', function($data = []) use ($factory) {
+            return response()->api(array_merge(generate_error("Not found"), $data), 409);
         });
 
-        $factory->macro('forbidden', function() use ($factory) {
-            return response()->api(generate_error("Forbidden"), 403);
+        $factory->macro('notfound', function($data = []) use ($factory) {
+            return response()->api(array_merge(generate_error("Not found"), $data), 404);
         });
 
-        $factory->macro('unauthenticated', function() use ($factory) {
-            return response()->api(generate_error("Unauthorized"), 401);
+        $factory->macro('forbidden', function($data = []) use ($factory) {
+            return response()->api(array_merge(generate_error("Forbidden"), $data), 403);
+        });
+
+        $factory->macro('unauthenticated', function($data = []) use ($factory) {
+            return response()->api(array_merge(generate_error("Unauthorized"), $data), 401);
         });
 
         $factory->macro('ok', function ($data = []) use ($factory) {
