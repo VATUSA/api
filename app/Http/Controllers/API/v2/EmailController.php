@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\v2;
 
 use App\Action;
 use App\EmailAccounts;
+use App\Facility;
 use App\Helpers\EmailHelper;
 use App\Helpers\RoleHelper;
 use App\Role;
@@ -18,12 +19,18 @@ class EmailController extends APIController
     /**
      * @SWG\Get(
      *     path="/email",
-     *     summary="(DONE) Get info of VATUSA email address assigned for user. CORS Restricted",
-     *     description="(DONE) Get info of VATUSA email address assigned for user. CORS Restricted",
+     *     summary="(DONE) Get info of VATUSA email address assigned for user. CORS Restricted Requires JWT or Session Cookie",
+     *     description="(DONE) Get info of VATUSA email address assigned for user. CORS Restricted Requires JWT or Session Cookie",
      *     produces={"application/json"},
      *     tags={"email"},
      *     security={"jwt","session"},
      *     @SWG\Parameter(description="JWT Token", in="header", name="bearer", required=true, type="string"),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthenticated",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *     ),
      *     @SWG\Response(
      *         response="200",
      *         description="OK",
@@ -46,6 +53,8 @@ class EmailController extends APIController
      * )
      */
     public function getIndex() {
+        if (!\Auth::check()) return response()->unauthenticated();
+
         $response = [];
         $return = Role::where('cid', \Auth::user()->cid)->get();
         foreach ($return as $row) {
@@ -97,8 +106,8 @@ class EmailController extends APIController
      *
      * @SWG\Get(
      *     path="/email/(address)",
-     *     summary="(DONE) Get info of VATUSA email address. CORS Restricted",
-     *     description="(DONE) Get info of VATUSA email address. CORS Restricted",
+     *     summary="(DONE) Get info of VATUSA email address. CORS Restricted Requires JWT or Session Cookie",
+     *     description="(DONE) Get info of VATUSA email address. CORS Restricted Requires JWT or Session Cookie",
      *     produces={"application/json"},
      *     tags={"email"},
      *     security={"jwt","session"},
@@ -109,6 +118,12 @@ class EmailController extends APIController
      *         description="Bad request",
      *         @SWG\Schema(ref="#/definitions/error"),
      *         examples={{"application/json":{"status"="error","msg"="Missing required field"}},{"application/json":{"status"="error","msg"="Password too weak"}}},
+     *     ),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthenticated",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
@@ -138,6 +153,10 @@ class EmailController extends APIController
      * )
      */
     public function getEmail($address) {
+        if (!\Auth::check()) {
+            return response()->unauthenticated();
+        }
+
         if (!filter_var($address, FILTER_VALIDATE_EMAIL)) {
             return response()->json(generate_error("Malformed request"), 400);
         }
@@ -160,8 +179,8 @@ class EmailController extends APIController
     /**
      * @SWG\Put(
      *     path="/email",
-     *     summary="(DONE) Modify email account. CORS Restricted",
-     *     description="(DONE) Modify email account. Static forwards may only be modified by the ATM, DATM or WM. CORS Restricted",
+     *     summary="(DONE) Modify email account. CORS Restricted Requires JWT or Session Cookie",
+     *     description="(DONE) Modify email account. Static forwards may only be modified by the ATM, DATM or WM. CORS Restricted Requires JWT or Session Cookie",
      *     produces={"application/json"},
      *     tags={"email"},
      *     security={"jwt","session"},
@@ -175,6 +194,12 @@ class EmailController extends APIController
      *         description="Bad request",
      *         @SWG\Schema(ref="#/definitions/error"),
      *         examples={{"application/json":{"status"="error","msg"="Missing required field"}},{"application/json":{"status"="error","msg"="Password too weak"}}},
+     *     ),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthenticated",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
      *     ),
      *     @SWG\Response(
      *         response="403",
@@ -203,6 +228,8 @@ class EmailController extends APIController
      * )
      */
     public function putIndex(Request $request) {
+        if (!\Auth::check()) return response()->unauthenticated;
+
         $email = $request->input("email", null);
         if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return response()->json(generate_error("Missing required field", true), 400);
@@ -278,5 +305,192 @@ class EmailController extends APIController
             EmailHelper::chgEmailConfig($email, EmailHelper::$config_user, $destination);
         }
         return response()->json(["status" => "OK"]);
+    }
+    /**
+     * @SWG\Get(
+     *     path="/email/hosted",
+     *     summary="(DONE) Get VATUSA hosted email accounts. CORS Restricted",
+     *     description="(DONE) Get VATUSA hosted email accounts. CORS Restricted (JWT+SESSION)",
+     *     produces={"application/json"},
+     *     tags={"email"},
+     *     security={"jwt","session"},
+     *     @SWG\Parameter(description="JWT Token", in="header", name="bearer", required=true, type="string"),
+     *     @SWG\Parameter(description="Facility IATA ID", in="query", name="facility", type="string"),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthenticated",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="404",
+     *         description="Not Found",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Not Found"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Prop(
+     *                 name="emails",
+     *                 type="array",
+     *                 @SWG\Items(
+     *                     ref="#/definitions/EmailAccounts"
+     *                 ),
+     *             ),
+     *         ),
+     *     )
+     * )
+     */
+    public function getHosted(Request $request) {
+        if (!\Auth::check()) return response()->unauthenicated();
+
+        if (!$request->has("facility")) return response()->malformed();
+
+        $fac = Facility::find($request->input("facility"));
+        if (!$fac) return response()->notfound();
+
+        if (!RoleHelper::isVATUSAStaff() && !RoleHelper::isSeniorStaff(\Auth::user()->cid, $fac->id) && !RoleHelper::has(\Auth::user()->cid, $fac->id, "WM"))
+            return response()->forbidden();
+
+        if ($fac->hosted_email_domain == "") return response()->forbidden();
+
+        $return = EmailAccounts::where("facility", $fac->id)->orderBy("username")->get()->toArray();
+
+        return response()->ok(["emails" => $return]);
+    }
+    /**
+     * @SWG\Put(
+     *     path="/email/hosted/{fac}/{username}",
+     *     summary="(DONE) Modify VATUSA hosted email account. CORS Restricted",
+     *     description="(DONE) Modify VATUSA hosted email account. CORS Restricted (JWT+SESSION)",
+     *     produces={"application/json"},
+     *     tags={"email"},
+     *     security={"jwt","session"},
+     *     @SWG\Parameter(description="JWT Token", in="header", name="bearer", required=true, type="string"),
+     *     @SWG\Parameter(description="Email username", in="query", name="username", required=true, type="string"),
+     *     @SWG\Parameter(description="Facility IATA ID", in="query", name="facility", type="string"),
+     *     @SWG\Parameter(description="Owning CID", in="query", name="cid", type="integer"),
+     *     @SWG\Response(
+     *         response="400",
+     *         description="Bad request",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={{"application/json":{"status"="error","msg"="Missing required field"}},{"application/json":{"status"="error","msg"="Password too weak"}}},
+     *     ),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthenticated",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(ref="#/definitions/OK"),
+     *         examples={"application/json":{"status"="OK"}}
+     *     )
+     * )
+     */
+    public function postHosted(Request $request, $facility = null, $username = null) {
+        if (!\Auth::check()) return response()->unauthenicated();
+
+        if (!$request->has("cid")) return response()->malformed();
+
+        $fac = Facility::find($facility);
+        if (!$fac) return response()->notfound();
+
+        if (!RoleHelper::isVATUSAStaff() && !RoleHelper::isSeniorStaff(\Auth::user()->cid, $fac->id) && !RoleHelper::has(\Auth::user()->cid, $fac->id, "WM"))
+            return response()->forbidden();
+
+        $user = User::find($request->input("cid"));
+        if (!$user) return response()->notfound();
+
+        if ($fac->hosted_email_domain == "") return response()->forbidden();
+
+        if (!filter_var($username . "@" . $fac->hosted_email_domain, FILTER_VALIDATE_EMAIL))
+            return response()->malformed(1234);
+
+        $account = EmailAccounts::where("username", $username)->where("facility", $fac->id)->first();
+        if (!$account) {
+            //EmailHelper::addEmail($username . "@" . $fac->hosted_email_doman, str_random()); // Make them reset
+            $account = new EmailAccounts();
+            $account->username = $username;
+            $account->facility = $fac->id;
+        }
+        $account->cid = $request->input("cid");
+        $account->save();
+
+        return response()->ok();
+    }
+    /**
+     * @SWG\Delete(
+     *     path="/email/hosted/{fac}/{username}",
+     *     summary="(DONE) Delete VATUSA hosted email account. CORS Restricted Requires JWT or Session Cookie",
+     *     description="(DONE) Delete VATUSA hosted email account. CORS Restricted Requires JWT or Session Cookie",
+     *     produces={"application/json"},
+     *     tags={"email"},
+     *     security={"jwt","session"},
+     *     @SWG\Parameter(description="JWT Token", in="header", name="bearer", required=true, type="string"),
+     *     @SWG\Parameter(description="Email username", in="query", name="username", required=true, type="string"),
+     *     @SWG\Parameter(description="Facility IATA ID", in="query", name="facility", type="string"),
+     *     @SWG\Response(
+     *         response="400",
+     *         description="Bad request",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={{"application/json":{"status"="error","msg"="Missing required field"}},{"application/json":{"status"="error","msg"="Password too weak"}}},
+     *     ),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthenticated",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(ref="#/definitions/OK"),
+     *         examples={"application/json":{"status"="OK"}}
+     *     )
+     * )
+     */
+    public function deleteHosted(Request $request, $facility, $username) {
+        if (!\Auth::check()) return response()->unauthenicated();
+
+        $fac = Facility::find($facility);
+        if (!$fac) return response()->notfound();
+
+        if (!RoleHelper::isVATUSAStaff() && !RoleHelper::isSeniorStaff(\Auth::user()->cid, $fac->id) && !RoleHelper::has(\Auth::user()->cid, $fac->id, "WM"))
+            return response()->forbidden();
+
+        if ($fac->hosted_email_domain == "") return response()->forbidden();
+
+        if (!filter_var($username . "@" . $fac->hosted_email_domain, FILTER_VALIDATE_EMAIL))
+            return response()->malformed();
+
+        //EmailHelper::deleteEmail($username . "@" . $fac->hosted_email_domain);
+
+        $account = EmailAccounts::where("username", $username)->where("facility", $fac->id)->delete();
+
+        return response()->ok();
     }
 }

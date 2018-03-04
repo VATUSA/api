@@ -23,6 +23,10 @@ Route::group(['middleware' => ['private','auth:jwt,web'], 'prefix' => '/auth'], 
  * Email functions
  */
 Route::group(['middleware' => ['private', 'auth:web,jwt'], 'prefix' => '/email'], function () {
+    Route::get('hosted', 'EmailController@getHosted');
+    Route::post('hosted/{facility}/{username}', 'EmailController@postHosted');
+    Route::delete('hosted/{facility}/{username}', 'EmailController@deleteHosted');
+
     Route::get('/', 'EmailController@getIndex');
     Route::get('/{address}', 'EmailController@getEmail');
     Route::put('/', 'EmailController@putIndex');
