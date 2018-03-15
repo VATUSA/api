@@ -41,6 +41,7 @@ use \App\Http\Controllers\Controller as BaseController;
  *     @SWG\Tag(name="solo",description="Solo Certification handling"),
  *     @SWG\Tag(name="stats",description="Division statistics"),
  *     @SWG\Tag(name="support",description="Support Center"),
+ *     @SWG\Tag(name="survey", description="Survey"),
  *     @SWG\Tag(name="tmu", description="Traffic Management Unit"),
  *     @SWG\Tag(name="user",description="User account management actions"),
  * )
