@@ -2,9 +2,23 @@
 
 namespace App;
 
-use Illuminate\Database\Eloquent\Model;
 use Ramsey\Uuid\Uuid;
 
+/**
+ * Class SurveyQuestion
+ * @package App
+ *
+ * @SWG\Definition(
+ *     type="object",
+ *     @SWG\Property(property="id", type="integer"),
+ *     @SWG\Property(property="survey_id", type="integer"),
+ *     @SWG\Property(property="facility", type="string", description="Facility user was in when assigned"),
+ *     @SWG\Property(property="rating", type="integer", description="Rating when assigned"),
+ *     @SWG\Property(property="completed", type="integer", description="Integer form of boolean"),
+ *     @SWG\Property(property="created_at", type="string", description="Date added to database"),
+ *     @SWG\Property(property="updated_at", type="string"),
+ * )
+ */
 class SurveyAssignment extends Model
 {
     public $incrementing = false;
@@ -15,6 +29,10 @@ class SurveyAssignment extends Model
         static::creating(function($model) {
             $model->{$model->getKeyName()} = $model->generateNewId();
         });
+    }
+
+    public function survey() {
+        return $this->hasOne("App\Survey", "id", "survey_id");
     }
 
     public function generateNewId() {
