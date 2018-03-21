@@ -339,8 +339,8 @@ class EmailController extends APIController
      *         description="OK",
      *         @SWG\Schema(
      *             type="object",
-     *             @SWG\Prop(
-     *                 name="emails",
+     *             @SWG\Property(
+     *                 property="emails",
      *                 type="array",
      *                 @SWG\Items(
      *                     ref="#/definitions/EmailAccounts"
