@@ -19,5 +19,7 @@ namespace App;
  */
 class SurveyQuestion extends Model
 {
-    //
+    public function getDataAttribute($value) {
+        return json_decode($value);
+    }
 }
