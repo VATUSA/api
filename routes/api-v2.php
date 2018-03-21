@@ -128,6 +128,17 @@ Route::group(['prefix' => '/support'], function() {
 });
 
 /******************************************************************************************
+ * /survey
+ * Survey functions
+ */
+
+Route::group(['prefix' => '/survey'], function() {
+    Route::get('/{id}', 'SurveyController@getSurvey');
+    Route::post('/{id}', 'SurveyController@postSurvey');
+    Route::post('/{id}/assign/{cid}', 'SurveyController@postSurveyAssign');
+});
+
+/******************************************************************************************
  * /users
  * User functions
  */

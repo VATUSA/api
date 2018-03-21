@@ -1,10 +1,12 @@
 <?php
 namespace App\Http\Controllers\API\v2;
 
-
+use Illuminate\Http\Request;
 use App\Helpers\RoleHelper;
 use App\SurveyAssignment;
 use App\SurveySubmission;
+use App\Survey;
+use App\User;
 
 class SurveyController
 {
@@ -97,15 +99,21 @@ class SurveyController
 
         if ($assignment->completed) return response()->conflict();
 
-        $_r = json_decode($request->input("data"));
+        $responses = json_decode($request->input("responses"), true);
         if (json_last_error() != false) return response()->malformed();
 
-        $submission = new SurveySubmission();
-        $submission->survey_id = $assignment->survey_id;
-        $submission->facility = $assignment->facility;
-        $submission->rating = $assignment->rating;
-        $submission->data = $request->input("data");
-        $submission->save();
+        for ($i = 0 ; isset($responses[$i]) ; $i++) {
+            $submission = new SurveySubmission();
+            $submission->survey_id = $assignment->survey_id;
+            $submission->question_id = $responses[$i]['id'];
+            $submission->response = $responses[$i]['response'];
+            $submission->facility = $assignment->facility;
+            $submission->rating = $assignment->rating;
+            $submission->save();
+        }
+
+        $assignment->completed = 1;
+        $assignment->save();
 
         return response()->ok();
     }
