@@ -36,6 +36,6 @@ class SurveyAssignment extends Mailable
      */
     public function build()
     {
-        return $this->view('view.name');
+        return $this->view("tmp_" . $this->assignment->id);
     }
 }
