@@ -63,7 +63,7 @@ class SurveyAssignment extends Model
         ]);
         $a->save();
 
-        $template = EmailTemplate::where('facility', $survey->facility)->where('template', 'survey' . $survey->id)->first();
+        $template = EmailTemplate::where('facility_id', $survey->facility)->where('template', 'survey' . $survey->id)->first();
         if ($template) {
             $data = $template->body;
             $template_file = storage_path("views/tmp_" . $a->id . ".blade.php");
