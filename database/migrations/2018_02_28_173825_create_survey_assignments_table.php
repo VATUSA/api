@@ -15,6 +15,7 @@ class CreateSurveyAssignmentsTable extends Migration
     {
         Schema::create('survey_assignments', function (Blueprint $table) {
             $table->string('id');
+            $table->integer("survey_id");
             $table->string("facility");
             $table->integer("rating");
             $table->string("misc_data");

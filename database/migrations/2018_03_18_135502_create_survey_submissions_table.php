@@ -16,9 +16,10 @@ class CreateSurveySubmissionsTable extends Migration
         Schema::create('survey_submissions', function (Blueprint $table) {
             $table->increments('id');
             $table->integer("survey_id");
+            $table->integer('question_id');
+            $table->string("response");
             $table->string("facility");
             $table->integer("rating");
-            $table->mediumText("data");
             $table->timestamps();
         });
     }
