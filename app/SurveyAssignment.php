@@ -76,4 +76,8 @@ class SurveyAssignment extends Model
         }
         return $a;
     }
+
+    public function getRatingAttribute() {
+        return json_decode($this->data, true)['rating'];
+    }
 }
