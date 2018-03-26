@@ -19,6 +19,25 @@ Route::group(['middleware' => ['private','auth:jwt,web'], 'prefix' => '/auth'], 
 });
 
 /******************************************************************************************
+ * /cbt
+ * CBT Functions
+ */
+Route::group(['middleware' => ['private'], 'prefix' => '/cbt'], function() {
+    Route::get('/', 'CBTController@getBlocks');
+    Route::get('/{id}', 'CBTController@getChapters')->where("id","[0-9]+");
+    Route::group(['middleware' => ['auth:web,jwt']], function() {
+        Route::post('/', 'CBTController@postBlock');
+        Route::put('/{blockId}','CBTController@putBlock');
+        Route::delete('/{blockId}', 'CBTController@deleteBlock');
+
+        Route::post('/{blockId}', 'CBTController@postChapter')->where("blockId", "[0-9]+");
+        Route::put('/{blockId}/{chapterId}', 'CBTController@putChapter');
+        Route::delete('/{blockId}/{chapterId}', 'CBTController@deleteChapter');
+
+    });
+});
+
+/******************************************************************************************
  * /email
  * Email functions
  */
