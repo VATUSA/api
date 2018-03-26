@@ -167,7 +167,7 @@ class SoloController extends APIController
      *     )
      * ),
      */
-    public function deleteSolo() {
+    public function deleteSolo(Request $request) {
         if (!$request->has("apikey")) {
             if (!\Auth::check()) {
                 return response()->api(generate_error("Unauthorized"), 401);
