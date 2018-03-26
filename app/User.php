@@ -246,6 +246,10 @@ class User extends Model implements AuthenticatableContract, JWTSubject
 
         log_action($this->id, "Removed from $facility by $by: $msg");
 
+        if ($this->rating >= RatingHelper::shortToInt("OBS") && env('EXIT_SURVEY', null) == 1 && $facility != "ZAE" && $newfac == "ZAE") {
+            SurveyAssignment::assign(Survey::find(env('EXIT_SURVEY_ID')), $this);
+        }
+
         $this->facility_join = \DB::raw("NOW()");
         $this->facility = $newfac;
         $this->save();
@@ -259,9 +263,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         $t->actiontext = $msg;
         $t->save();
 
-        if ($this->rating >= RatingHelper::shortToInt("OBS") && env('EXIT_SURVEY', null) == 1 && $facility != "ZAE" && $newfac == "ZAE") {
-            SurveyAssignment::assign(Survey::find(env('EXIT_SURVEY_ID')), $this);
-        }
+
 
         if ($this->rating >= RatingHelper::shortToInt("I1"))
             SMFHelper::createPost(7262, 82, "User Removal: " . $this->fullname() . " (" . RatingHelper::intToShort($this->rating) . ") from " . $facility, "User " . $this->fullname() . " (" . $this->cid . "/" . RatingHelper::intToShort($this->rating) . ") was removed from $facility and holds a higher rating.  Please check for demotion requirements.  [url=https://www.vatusa.net/mgt/controller/" . $this->cid . "]Member Management[/url]");
