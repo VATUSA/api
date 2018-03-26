@@ -2,6 +2,20 @@
 
 namespace App;
 
+/**
+ * Class TrainingBlock
+ * @package App
+ *
+ * @SWG\Definition(
+ *     type="object",
+ *     @SWG\Property(property="id", type="integer"),
+ *     @SWG\Property(property="facility", type="string"),
+ *     @SWG\Property(property="order", type="integer"),
+ *     @SWG\Property(property="name", type="string"),
+ *     @SWG\Property(property="level", type="string [Valid options: ALL, S1, S2, S3, C1, I1, Staff, Senior Staff]"),
+ *     @SWG\Property(property="visible", type="integer"),
+ * )
+ */
 class TrainingBlock extends Model
 {
     /**
@@ -25,5 +39,10 @@ class TrainingBlock extends Model
         }
 
         return true;
+    }
+
+    public function deleteBlock() {
+        $this->chapters()->deleteChapter();
+        $this->delete();
     }
 }
