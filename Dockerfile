@@ -27,6 +27,7 @@ RUN	addgroup -S application && adduser -SG application application && \
 		php7-ctype \
 		php7-mbstring \
 		php7-fpm \
+		php7-xml \
 		php7 \
 		nginx \
 		supervisor \
