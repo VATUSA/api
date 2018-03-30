@@ -142,7 +142,10 @@ class BucketController extends APIController
                             'Prefix' => '',
                         ],
                         'Expiration' => [
-                            'Days' => 730,
+                            'Days' => 729,
+                        ],
+                        'NoncurrentVersionExpiration' => [
+                            'Days' => 1,
                         ],
                         'ID' => 'glacier',
                         'Status' => 'Enabled',
