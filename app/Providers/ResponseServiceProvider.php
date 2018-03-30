@@ -23,7 +23,7 @@ class ResponseServiceProvider extends ServiceProvider
         });
 
         $factory->macro('conflict', function($data = []) use ($factory) {
-            return response()->api(array_merge(generate_error("Not found"), $data), 409);
+            return response()->api(array_merge(generate_error("Conflict"), $data), 409);
         });
 
         $factory->macro('notfound', function($data = []) use ($factory) {
