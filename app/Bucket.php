@@ -29,12 +29,16 @@ class Bucket extends Model
      */
     public function log(int $cid, string $ip, string $entry) {
         $log = new Bucketlog();
-        $log->bucketid = $this->id;
+        $log->bucket_id = $this->id;
         $log->facility = $this->facility;
         $log->cid = $cid;
         $log->ip = $ip;
         $log->log = $entry;
         $log->save();
         return $log;
+    }
+
+    public function arn() {
+        return "arn:aws:s3:::$this->name";
     }
 }
