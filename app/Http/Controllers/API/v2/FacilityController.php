@@ -504,6 +504,8 @@ class FacilityController extends APIController
      *
      * @return \Illuminate\Http\JsonResponse
      *
+     * @TODO Fix to properly parse formdata/input
+     *
      * @SWG\Delete(
      *     path="/facility/{id}/roster/{cid}",
      *     summary="(DONE) Delete member from facility roster. JWT or Session Cookie required",
@@ -555,7 +557,7 @@ class FacilityController extends APIController
             );
         }
 
-        if (!RoleHelper::isSeniorStaff(\Auth::user()->cid, $id, false)) {
+        if (!RoleHelper::isVATUSAStaff() && !RoleHelper::isSeniorStaff(\Auth::user()->cid, $id, false)) {
             return response()->api(generate_error("Forbidden"), 403);
         }
 
