@@ -129,7 +129,6 @@ class BucketController extends APIController
                 'LocationConstraint' => 'us-west-2'
             ]
         ]);
-        \Log::info("Create Bucket " . json_encode($result));
         // Rule:
         // - After 30 days, transition to glacier [cold storage]
         // - After 730 days (2 years), delete object
@@ -159,7 +158,6 @@ class BucketController extends APIController
                 ]
             ]
         ]);
-        \Log::info("Lifecycle " . json_encode($result));
 
         $bucket = new Bucket();
         $bucket->facility = $facility;
@@ -170,7 +168,6 @@ class BucketController extends APIController
         $user_result = $iam->createUser([
             'UserName' => "backups_$facility"
         ]);
-        \Log::info("Create User " . json_encode($user_result));
         $policy = '{
   "Version": "2012-10-17",
   "Statement": [
@@ -194,16 +191,13 @@ class BucketController extends APIController
             'PolicyName' => "backups_$facility",
             'PolicyDocument' => $policy
         ]);
-        \Log::info("Create policy " . $policy_result);
         $result = $iam->attachUserPolicy([
             'UserName' => "backups_$facility",
             'PolicyArn' => $policy_result['Policy']['Arn']
         ]);
-        \Log::info("Attach user policy " . json_encode($result));
         $access_result = $iam->createAccessKey([
             'UserName' => "backups_$facility"
         ]);
-        \Log::info("Create access key " . json_encode($access_result));
         $bucket->access_key = $access_result['AccessKey']['AccessKeyId'];
         $bucket->save();
         $bucket->log(\Auth::user()->cid,
