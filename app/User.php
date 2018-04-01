@@ -3,12 +3,13 @@
 use App\Helpers\EmailHelper;
 use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
-use Illuminate\Support\Carbon;
+use App\Transfer;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use Carbon\Carbon;
 
 /**
  * Class User
@@ -250,7 +251,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             SurveyAssignment::assign(Survey::find(env('EXIT_SURVEY_ID')), $this);
         }
 
-        $this->facility_join = \DB::raw("NOW()");
+        $this->facility_join = Carbon::now();
         $this->facility = $newfac;
         $this->save();
 
@@ -275,7 +276,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         $oldfac = Facility::find($oldfac);
 
         $this->facility = $facility->id;
-        $this->facility_join = \DB::raw("NOW()");
+        $this->facility_join = Carbon::now();
         $this->save();
 
         if ($this->rating >= RatingHelper::shortToInt("I1") && $this->rating < RatingHelper::shortToInt("SUP")) {
