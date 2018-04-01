@@ -19,6 +19,15 @@ Route::group(['middleware' => ['private','auth:jwt,web'], 'prefix' => '/auth'], 
 });
 
 /******************************************************************************************
+ * /bucket
+ * AWS S3/IAM Bucket Management
+ */
+Route::group(['middleware' => ['private', 'auth:jwt,web'], 'prefix' => '/bucket'], function() {
+    Route::get('/{facility}', 'BucketController@getBucket')->where('facility', '[A-Z]{3}');
+    Route::post('/{facility}', 'BucketController@postBucket')->where('facility', '[A-Z]{3}');
+});
+
+/******************************************************************************************
  * /cbt
  * CBT Functions
  */
