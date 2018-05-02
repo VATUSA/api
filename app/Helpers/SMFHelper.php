@@ -60,7 +60,14 @@ class SMFHelper
         if (!$user) return;
 
         if ($user->rating == RatingHelper::shortToInt("ADM")) {
-            static::setGroups($cid, static::findGroup("VATSIM Staff")); return;
+            if (!RoleHelper::isVATUSAStaff($cid, true)) {
+                static::setGroups($cid, static::findGroup("VATSIM Staff"));
+                return;
+            } else {
+                static::setGroups($cid, static::findGroup("VATSIM Staff"), static::findGroup("VATUSA Staff"));
+                return;
+            }
+
         }
 
         if (RoleHelper::isSeniorStaff($user->cid, $user->facility))
