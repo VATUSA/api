@@ -247,8 +247,11 @@ class User extends Model implements AuthenticatableContract, JWTSubject
 
         log_action($this->cid, "Removed from $facility by $by: $msg");
 
-        if ($this->rating >= RatingHelper::shortToInt("OBS") && env('EXIT_SURVEY', null) == 1 && $facility != "ZAE" && $newfac == "ZAE") {
-            SurveyAssignment::assign(Survey::find(env('EXIT_SURVEY_ID')), $this);
+        if ($this->rating == RatingHelper::shortToInt("OBS") &&
+            env('EXIT_SURVEY', null) != null &&
+            !in_array($facility, ["ZZN","ZAE","ZHQ"]) &&
+            $newfac == "ZAE") {
+            SurveyAssignment::assign(Survey::find(env('EXIT_SURVEY_ID')), $this, ['region' => $region]);
         }
 
         $this->facility_join = Carbon::now();
