@@ -16,17 +16,17 @@ class SurveyAssignment extends Mailable
     public $user;
     public $survey;
     public $assignment;
+    public $misc;
 
     /**
      * Create a new message instance.
-     *
-     * @return void
      */
-    public function __construct(User $user, Survey $survey, \App\SurveyAssignment $assignment)
+    public function __construct(User $user, Survey $survey, \App\SurveyAssignment $assignment, array $misc = [])
     {
         $this->user = $user;
         $this->survey = $survey;
         $this->assignment = $assignment;
+        $this->misc = $misc;
     }
 
     /**
