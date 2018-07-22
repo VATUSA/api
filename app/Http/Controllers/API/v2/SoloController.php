@@ -112,6 +112,11 @@ class SoloController extends APIController
             return response()->api(generate_error("Malformed request"), 400);
         }
 
+        $cid = $request->input("cid");
+        if(!User::where("cid", $cid)->count()) {
+            return response()->api(generate_error("Invalid controller"), 400);
+        }
+
         $position = $request->input("position");
         if (!preg_match("/^([A-Z0-9]{2,3})_(APP|CTR)$/", $request->input("position"))) {
             return response()->api(generate_error("Malformed position"), 400);
@@ -127,11 +132,10 @@ class SoloController extends APIController
         }
 
         if (!isTest()) {
-            $solo = new SoloCert();
-            $solo->cid = $cid;
-            $solo->position = $position;
-            $solo->expires = $exp;
-            $solo->save();
+            SoloCert::updateOrCreate(
+                ['cid' => $cid, 'position' => $position],
+                ['expires' => $exp]
+            );
         }
 
         return response()->api(['status' => 'OK']);
