@@ -16,19 +16,19 @@ use \App\Http\Controllers\Controller as BaseController;
  *         version="2.0",
  *         title="VATUSA API",
  *         description="VATUSA APIv2 Documentation.
-            Authentication methods are: <ul>
-            <li> JSON Web Tokens (issued by VATUSA for VATUSA services only)</li>
-            <li> Session Cookies (issued by VATUSA for VATUSA services only)</li>
-            <li> API Keys (issued to facilities for facility use only)</li></ul>
-            <p>API methods that do not have a security method attached to it do not require a security check.</p>
-            <p>Facilities that have a APIv2 JWK defined in facility settings will have the data encapisulated in a
-            signed package.  For more information, please see the IT section of the VATUSA forums.</p>",
+ *           Authentication methods are: <ul>
+ *          <li> JSON Web Tokens (issued by VATUSA for VATUSA services only)</li>
+ *           <li> Session Cookies (issued by VATUSA for VATUSA services only)</li>
+ *           <li> API Keys (issued to facilities for facility use only)</li></ul>
+ *           <p>API methods that do not have a security method attached to it do not require a security check.</p>
+ *           <p>Facilities that have a APIv2 JWK defined in facility settings will have the data encapisulated in a
+ *           signed package.  For more information, please see the IT section of the VATUSA forums.</p>",
  *         x={
  *           "logo": {
  *             "url": "https://www.vatusa.net/img/logo-light.png",
  *           },
  *         },
- *         @SWG\Contact(name="Daniel Hawton", url="https://www.danielhawton.com"),
+ *         @SWG\Contact(name="Blake Nahin", url="https://www.vatusa.net"),
  *     ),
  *     @SWG\Tag(name="auth",description="[Live] Internal Authentication handling commands for use by VATUSA Web Systems to translate Laravel Sessions into JSON Web Tokens"),
  *     @SWG\Tag(name="cbt",description="Handle Computer Based Training actions"),
