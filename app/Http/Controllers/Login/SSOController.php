@@ -60,7 +60,10 @@ class SSOController extends Controller
         /* Lots to check here ... but this is our multi-point redirect */
         if ($request->has('home')) {
             $request->session()->put('return', env('SSO_RETURN_HOME'));
-        } elseif ($request->has('homedev')) {
+        } elseif ($request->has('agreed')) {
+            $request->session()->put('return', env('SSO_RETURN_AGREED'));
+            $request->session()->put('fromAgreed', true);
+        } elseif($request->has('homedev')) {
             $request->session()->put('return', env('SSO_RETURN_HOMEDEV'));
         } elseif ($request->has('forums')) {
             $request->session()->put('return', env('SSO_RETURN_FORUMS'));
