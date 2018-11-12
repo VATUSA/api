@@ -29,7 +29,7 @@ class UserController extends APIController
      * @SWG\Get(
      *     path="/user/(cid)",
      *     summary="(DONE) Get data about user",
-     *     description="(DONE) Get data about user, email field will be null if API Key not specified or staff role not assigned",
+     *     description="(DONE) Get user's information. Email field will be null if API Key not specified or staff role not assigned. Broadcast opt in status will be null if API key is not specified.",
      *     produces={"application/json"},
      *     tags={"user"},
      *     @SWG\Parameter(name="cid",in="path",required=true,type="string",description="Cert ID"),
@@ -52,8 +52,11 @@ class UserController extends APIController
             return response()->api(generate_error("Not found"), 404);
         }
         $data = $user->toArray();
-        if (!$request->has("apikey") && !(\Auth::check() && RoleHelper::isFacilityStaff(\Auth::user()->cid, \Auth::user()->facility))) {
-            $data['email'] = null;
+        if (!$request->has("apikey")) {
+            $data['broadcast_emailOptedIn'] = null;
+            if (!(\Auth::check() && RoleHelper::isFacilityStaff(\Auth::user()->cid, \Auth::user()->facility))) {
+                $data['email'] = null;
+            }
         }
 
         return response()->api($data);
