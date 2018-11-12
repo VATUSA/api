@@ -37,6 +37,9 @@ class SSOController extends Controller
 
     /**
      * @param Request $request
+     *
+     * @return bool|\Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector|mixed|void
+     * @throws \App\Classes\OAuth\SSOException
      */
     public function getIndex(Request $request) {
         if (env('APP_ENV', 'prod') != 'dev') {
