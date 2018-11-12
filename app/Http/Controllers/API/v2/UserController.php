@@ -28,8 +28,8 @@ class UserController extends APIController
     /**
      * @SWG\Get(
      *     path="/user/(cid)",
-     *     summary="(DONE) Get data about user, email will be null if API Key not specified or staff role not assigned",
-     *     description="(DONE) Get data about user",
+     *     summary="(DONE) Get data about user",
+     *     description="(DONE) Get data about user, email field will be null if API Key not specified or staff role not assigned",
      *     produces={"application/json"},
      *     tags={"user"},
      *     @SWG\Parameter(name="cid",in="path",required=true,type="string",description="Cert ID"),
