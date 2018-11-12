@@ -373,8 +373,8 @@ class ExamController extends APIController
      *
      * @SWG\Get(
      *     path="/exams/{examid}",
-     *     summary="(DONE) Generates list of exams.",
-     *     description="(DONE) Generates list of exams.",
+     *     summary="(DONE) Get exam details",
+     *     description="(DONE) Get exam details by ID",
      *     produces={"application/json"},
      *     tags={"exam"},
      *     @SWG\Parameter(name="examid", in="path", type="string", required=true, description="Get exam details of id"),
