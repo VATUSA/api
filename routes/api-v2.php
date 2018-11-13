@@ -170,7 +170,7 @@ Route::group(['prefix' => '/survey'], function() {
  * /users
  * User functions
  */
-Route::group(['prefix' => '/users'], function() {
+Route::group(['prefix' => '/user'], function() {
     Route::get('/{cid}', 'UserController@getIndex')->where('cid', '[0-9]+');
 
     Route::get('/roles/{facility}/{role}', 'UserController@getRoleUsers')->where(['facility' => '[A-Za-z]{3}', 'role' => '[A-Za-z0-9]+']);

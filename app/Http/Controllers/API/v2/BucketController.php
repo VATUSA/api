@@ -45,7 +45,7 @@ class BucketController extends APIController
      *         description="Return JSON Token.",
      *         @SWG\Schema(
      *             type="object",
-     *             @SWG\Property(property="bucket", type="object", ref="#/definitions/Bucket"),
+     *             @SWG\Property(ref="#/definitions/Bucket"),
      *        )
      *     )
      * )
@@ -104,7 +104,7 @@ class BucketController extends APIController
      *         description="Return JSON Token.",
      *         @SWG\Schema(
      *             type="object",
-     *             @SWG\Property(property="bucket", type="object", ref="#/definitions/Bucket"),
+     *             @SWG\Property(ref="#/definitions/Bucket"),
      *        )
      *     )
      * )
