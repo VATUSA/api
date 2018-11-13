@@ -64,7 +64,7 @@ class SSOController extends Controller
         if ($request->has('home')) {
             $request->session()->put('return', env('SSO_RETURN_HOME'));
         } elseif ($request->has('agreed')) {
-            $request->session()->put('return', env('SSO_RETURN_AGREED'));
+            $request->session()->put('return', env('SSO_RETURN_AGREED', 'https://www.vatusa.net/my/profile'));
             $request->session()->put('fromAgreed', true);
         } elseif($request->has('homedev')) {
             $request->session()->put('return', env('SSO_RETURN_HOMEDEV'));
