@@ -28,8 +28,8 @@ class UserController extends APIController
     /**
      * @SWG\Get(
      *     path="/user/(cid)",
-     *     summary="(DONE) Get data about user, email will be null if API Key not specified or staff role not assigned",
-     *     description="(DONE) Get data about user",
+     *     summary="(DONE) Get data about user",
+     *     description="(DONE) Get user's information. Email field will be null if API Key not specified or if authenticated user is not a staff member. Broadcast opt in status will be null if API key is not specified.",
      *     produces={"application/json"},
      *     tags={"user"},
      *     @SWG\Parameter(name="cid",in="path",required=true,type="string",description="Cert ID"),
@@ -52,8 +52,11 @@ class UserController extends APIController
             return response()->api(generate_error("Not found"), 404);
         }
         $data = $user->toArray();
-        if (!$request->has("apikey") && !(\Auth::check() && RoleHelper::isFacilityStaff(\Auth::user()->cid, \Auth::user()->facility))) {
-            $data['email'] = null;
+        if (!AuthHelper::validApiKeyv2($request->input('apikey', null))) {
+            $data['flag_broadcastOptedIn'] = null;
+            if (!(\Auth::check() && RoleHelper::isFacilityStaff(\Auth::user()->cid, \Auth::user()->facility))) {
+                $data['email'] = null;
+            }
         }
 
         return response()->api($data);
@@ -384,8 +387,9 @@ class UserController extends APIController
      * )
      */
     public function getTransferChecklist($cid) {
-        if (!request()->has("apikey") && !\Auth::check()) return response()->json(generate_error("Unauthorized"), 401);
-        if (request()->has("apikey") || (\Auth::check() &&
+        $hasValidApiKey = AuthHelper::validApiKeyv2(request()->input('apikey', null));
+        if (!$hasValidApiKey && !\Auth::check()) return response()->json(generate_error("Unauthorized"), 401);
+        if ($hasValidApiKey || (\Auth::check() &&
             (
                 \Auth::user()->cid == $cid ||
                 RoleHelper::isVATUSAStaff(\Auth::user()->cid) ||
@@ -557,9 +561,10 @@ class UserController extends APIController
      * )
      */
     public function getRatingHistory($cid) {
+        $hasValidApiKey = AuthHelper::validApiKeyv2(request()->input('apikey', null));
         if (!User::find($cid)) { return response()->json(generate_error("Not found"), 404); }
-        if (!request()->has("apikey") && !\Auth::check()) return response()->json(generate_error("Unauthorized"), 401);
-        if (!request()->has("apikey") && !(\Auth::check() &&
+        if (!$hasValidApiKey && !\Auth::check()) return response()->json(generate_error("Unauthorized"), 401);
+        if (!$hasValidApiKey && !(\Auth::check() &&
                 (
                     \Auth::user()->cid == $cid ||
                     RoleHelper::isVATUSAStaff(\Auth::user()->cid) ||
@@ -847,7 +852,8 @@ class UserController extends APIController
      * )
      */
     public function putCBTProgress($cid, $blockId, $chapterId) {
-        if (!\Auth::check() && !request()->has("apikey")) {
+        $apikey = AuthHelper::validApiKeyv2(request()->input('apikey', null));
+        if (!\Auth::check() && !$apikey) {
             return response()->json(generate_error("Unautheicated"), 401);
         }
 
@@ -901,11 +907,12 @@ class UserController extends APIController
      * )
      */
     public function getExamHistory($cid) {
-        if (!\Auth::check() && !request()->has("apikey")) {
+        $hasValidApiKey = AuthHelper::validApiKeyv2(request()->input('apikey', null));
+        if (!\Auth::check() && !$hasValidApiKey) {
             return response()->json(generate_error("Unautheicated"), 401);
         }
 
-        if (!request()->has("apikey") && $cid != \Auth::user()->cid && !RoleHelper::isVATUSAStaff() && !RoleHelper::isFacilityStaff() && !RoleHelper::isInstrcutor(\Auth::user()->cid)) {
+        if (!$hasValidApiKey && $cid != \Auth::user()->cid && !RoleHelper::isVATUSAStaff() && !RoleHelper::isFacilityStaff() && !RoleHelper::isInstrcutor(\Auth::user()->cid)) {
             return response()->json(generate_error("Forbidden"), 403);
         }
 
