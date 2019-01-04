@@ -30,38 +30,44 @@ class UserController extends APIController
      *     path="/user/(cid)",
      *     summary="(DONE) Get data about user",
      *     description="(DONE) Get user's information. Email field requires authentication as senior staff member.
-           Broadcast opt-in status requires API key. Prevent Staff Assignment field requires authentication
+           Broadcast opt-in status requires API key or staff member authentication. Prevent Staff Assignment field requires authentication
            as senior staff.",
      *     produces={"application/json"}, tags={"user"},
-     *     @SWG\Parameter(name="cid",in="path",required=true,type="string",description="Cert ID"),
-     *     @SWG\Response(
+     * @SWG\Parameter(name="cid",in="path",required=true,type="string",description="Cert ID"),
+     * @SWG\Response(
      *         response="404",
      *         description="Not found",
      *         @SWG\Schema(ref="#/definitions/error"),
      *         examples={"application/json":{"status"="error","msg"="Not found"}},
      *     ),
-     *     @SWG\Response(
+     * @SWG\Response(
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(ref="#/definitions/User")
      *     )
      * )
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param                          $cid
+     *
+     * @return array|string
      */
     public function getIndex(Request $request, $cid)
     {
         $user = User::find($cid);
+        $isFacStaff = \Auth::check() && RoleHelper::isFacilityStaff(\Auth::user()->cid, \Auth::user()->facility);
+        $isSeniorStaff = \Auth::check() && RoleHelper::isSeniorStaff(\Auth::user()->cid, \Auth::user()->facility);
+
         if (!$user) {
             return response()->api(generate_error("Not found"), 404);
         }
         $data = $user->toArray();
-        if (!AuthHelper::validApiKeyv2($request->input('apikey', null))) {
+
+        if (!AuthHelper::validApiKeyv2($request->input('apikey', null)) && !$isFacStaff) {
             //API Key Required
             $data['flag_broadcastOptedIn'] = null;
         }
-        if (!(\Auth::check() && RoleHelper::isFacilityStaff(\Auth::user()->cid, \Auth::user()->facility))) {
-            //Facility Staff Only
-        }
-        if (!(\Auth::check() && RoleHelper::isSeniorStaff(\Auth::user()->cid, \Auth::user()->facility))) {
+        if (!$isSeniorStaff) {
             //Senior Staff Only
             $data['flag_preventStaffAssign'] = null;
             $data['email'] = null;
