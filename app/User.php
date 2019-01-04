@@ -28,6 +28,7 @@ use Carbon\Carbon;
  *     @SWG\Property(property="flag_needbasic", type="integer", description="1 needs basic exam"),
  *     @SWG\Property(property="flag_xferOverride", type="integer", description="Has approved transfer override"),
  *     @SWG\Property(property="flag_broadcastOptedIn", type="integer", description="Has opted in to receiving broadcast emails"),
+ *     @SWG\Property(property="flag_preventStaffAssign", type="integer", description="Ineligible for staff role assignment"),
  *     @SWG\Property(property="facility_join", type="string", description="Date joined facility (YYYY-mm-dd hh:mm:ss)"),
  *     @SWG\Property(property="promotion_eligible", type="boolean", description="Is member eligible for promotion?"),
  *     @SWG\Property(property="transfer_eligible", type="boolean", description="Is member is eligible for transfer?"),

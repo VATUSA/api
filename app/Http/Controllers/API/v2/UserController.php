@@ -29,9 +29,10 @@ class UserController extends APIController
      * @SWG\Get(
      *     path="/user/(cid)",
      *     summary="(DONE) Get data about user",
-     *     description="(DONE) Get user's information. Email field will be null if API Key not specified or if authenticated user is not a staff member. Broadcast opt in status will be null if API key is not specified.",
-     *     produces={"application/json"},
-     *     tags={"user"},
+     *     description="(DONE) Get user's information. Email field requires authentication as staff member.
+           Broadcast opt-in status requires API key. Prevent Staff Assignment field requires authentication
+           as senior staff.",
+     *     produces={"application/json"}, tags={"user"},
      *     @SWG\Parameter(name="cid",in="path",required=true,type="string",description="Cert ID"),
      *     @SWG\Response(
      *         response="404",
@@ -46,17 +47,24 @@ class UserController extends APIController
      *     )
      * )
      */
-    public function getIndex(Request $request, $cid) {
+    public function getIndex(Request $request, $cid)
+    {
         $user = User::find($cid);
         if (!$user) {
             return response()->api(generate_error("Not found"), 404);
         }
         $data = $user->toArray();
         if (!AuthHelper::validApiKeyv2($request->input('apikey', null))) {
+            //API Key Required
             $data['flag_broadcastOptedIn'] = null;
-            if (!(\Auth::check() && RoleHelper::isFacilityStaff(\Auth::user()->cid, \Auth::user()->facility))) {
-                $data['email'] = null;
-            }
+        }
+        if (!(\Auth::check() && RoleHelper::isFacilityStaff(\Auth::user()->cid, \Auth::user()->facility))) {
+            //Facility Staff Only
+        }
+        if (!(\Auth::check() && RoleHelper::isSeniorStaff(\Auth::user()->cid, \Auth::user()->facility))) {
+            //Senior Staff Only
+            $data['flag_preventStaffAssign'] = null;
+            $data['email'] = null;
         }
 
         return response()->api($data);
@@ -65,6 +73,7 @@ class UserController extends APIController
     /**
      * @param string $facility
      * @param string $role
+     *
      * @return array|string
      *
      * @SWG\Get(
@@ -90,27 +99,30 @@ class UserController extends APIController
      *     )
      * ),
      */
-    public function getRoleUsers($facility, $role) {
+    public function getRoleUsers($facility, $role)
+    {
         $roles = Role::where('facility', $facility)->where('role', $role)->get();
         $return = [];
         foreach ($roles as $role) {
             $return[] = ['cid' => $role->cid, 'lname' => $role->user->lname, 'fname' => $role->user->fname];
         }
+
         return response()->api($return);
     }
+
     /**
-     * @param int $cid
+     * @param int    $cid
      * @param string $facility
      * @param string $role
+     *
      * @return array|string
      *
      * @SWG\Post(
      *     path="/user/(cid)/roles/(facility)/(role)",
      *     summary="(DONE) Assign new role. Requires JWT or Session Cookie",
-     *     description="(DONE) Assign new role. Requires JWT or Session Cookie (required role: for FE, EC, WM roles: ATM, DATM, for MTR roles: TA, for all other roles: VATUSA STAFF)",
-     *     produces={"application/json"},
-     *     tags={"user","role"},
-     *     security={"jwt","session"},
+     *     description="(DONE) Assign new role. Requires JWT or Session Cookie (required role: for FE, EC, WM roles:
+     *     ATM, DATM, for MTR roles: TA, for all other roles: VATUSA STAFF)", produces={"application/json"},
+     *     tags={"user","role"}, security={"jwt","session"},
      *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
      *     @SWG\Parameter(name="facility", in="path", required=true, type="string", description="Facility IATA ID"),
      *     @SWG\Parameter(name="role", in="path", required=true, type="string", description="Role"),
@@ -134,7 +146,8 @@ class UserController extends APIController
      *     )
      * )
      */
-    public function postRole($cid, $facility, $role) {
+    public function postRole($cid, $facility, $role)
+    {
         if (!\Auth::check()) {
             return response()->json(generate_error("Unauthorized"), 401);
         }
@@ -148,7 +161,7 @@ class UserController extends APIController
             return response()->api(generate_error("Forbidden"), 403);
         }
 
-        if (in_array($role, ['ATM','DATM','TA','EC','FE','WM'])) {
+        if (in_array($role, ['ATM', 'DATM', 'TA', 'EC', 'FE', 'WM'])) {
             if (Role::where("facility", $facility->id)->where("role", $role)->count() == 0) {
                 if (!EmailHelper::isStaticForward("$facility-$role@vatusa.net")) {
                     // New person, setup the forward
@@ -170,16 +183,16 @@ class UserController extends APIController
 
         return response()->api(['status' => 'OK']);
     }
+
     /**
      * @return array|string
      *
      * @SWG\Delete(
      *     path="/user/(cid)/roles/(facility)/(role)",
      *     summary="(DONE) Delete role. Requires JWT or Session Cookie",
-     *     description="(DONE) Delete role. Requires JWT or Session Cookie (required role: for FE, EC, WM roles: ATM, DATM, for MTR roles: TA, for all other roles: VATUSA STAFF)",
-     *     produces={"application/json"},
-     *     tags={"user", "role"},
-     *     security={"jwt","session"},
+     *     description="(DONE) Delete role. Requires JWT or Session Cookie (required role: for FE, EC, WM roles: ATM,
+     *     DATM, for MTR roles: TA, for all other roles: VATUSA STAFF)", produces={"application/json"}, tags={"user",
+     *     "role"}, security={"jwt","session"},
      *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
      *     @SWG\Parameter(name="facility", in="path", required=true, type="string", description="Facility IATA ID"),
      *     @SWG\Parameter(name="role", in="path", required=true, type="string", description="Role"),
@@ -209,7 +222,8 @@ class UserController extends APIController
      *     )
      * )
      */
-    public function deleteRole($cid, $facility, $role) {
+    public function deleteRole($cid, $facility, $role)
+    {
         if (!\Auth::check()) {
             return response()->json(generate_error("Unauthorized"), 401);
         }
@@ -231,7 +245,7 @@ class UserController extends APIController
 
         Role::where('facility', $facility)->where('role', $role)->where('cid', $cid)->delete();
 
-        if (in_array($role, ['atm','datm','ta','ec','fe','wm'])) {
+        if (in_array($role, ['atm', 'datm', 'ta', 'ec', 'fe', 'wm'])) {
             if (Role::where('facility', $facility)->where('role', $role)->count() === 0) {
                 if (!EmailHelper::isStaticForward("$facility-$role@vatusa.net")) {
                     EmailHelper::deleteForward("$facility-$role@vatusa.net");
@@ -251,19 +265,20 @@ class UserController extends APIController
 
         return response()->api(['status' => 'OK']);
     }
+
     /**
      * @return array|string
      *
      * @SWG\Post(
      *     path="/user/(cid)/transfer",
      *     summary="(DONE) Submit transfer request. CORS Restricted Requires JWT or Session Cookie",
-     *     description="(DONE) Submit transfer request. CORS Restricted Requires JWT or Session Cookie (self or VATUSA staff)",
-     *     produces={"application/json"},
-     *     tags={"user","transfer"},
-     *     security={"jwt","session"},
+     *     description="(DONE) Submit transfer request. CORS Restricted Requires JWT or Session Cookie (self or VATUSA
+     *     staff)", produces={"application/json"}, tags={"user","transfer"}, security={"jwt","session"},
      *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
-     *     @SWG\Parameter(name="facility", in="formData", required=true, type="string", description="Facility IATA ID"),
-     *     @SWG\Parameter(name="reason", in="formData", required=true, type="string", description="Reason for transfer request"),
+     *     @SWG\Parameter(name="facility", in="formData", required=true, type="string", description="Facility IATA
+     *                                     ID"),
+     *     @SWG\Parameter(name="reason", in="formData", required=true, type="string", description="Reason for transfer
+     *                                   request"),
      *     @SWG\Response(
      *         response="400",
      *         description="Malformed request (missing field?)",
@@ -290,7 +305,8 @@ class UserController extends APIController
      *     ),
      *     @SWG\Response(
      *         response="409",
-     *         description="There was a conflict, usually meaning the user has a pending transfer request or is not eligible",
+     *         description="There was a conflict, usually meaning the user has a pending transfer request or is not
+     *         eligible",
      *         @SWG\Schema(ref="#/definitions/error"),
      *         examples={"application/json":{"status"="error","msg"="Conflict"}},
      *     ),
@@ -302,7 +318,8 @@ class UserController extends APIController
      *     )
      * )
      */
-    public function postTransfer($cid) {
+    public function postTransfer($cid)
+    {
         if (!\Auth::check()) {
             return response()->json(generate_error("Unauthorized"), 401);
         }
@@ -333,7 +350,9 @@ class UserController extends APIController
         $transfer->reason = $reason;
         $transfer->save();
 
-        if ($user->flag_xferoverride) $user->setTransferOverride(0);
+        if ($user->flag_xferoverride) {
+            $user->setTransferOverride(0);
+        }
 
         $emails = [];
         if ($transfer->to != "ZAE" && $transfers->to != "ZHQ") {
@@ -349,15 +368,15 @@ class UserController extends APIController
 
         return response()->json(['status' => 'OK']);
     }
+
     /**
      * @return array|string
      *
      * @SWG\Get(
      *     path="/user/(cid)/transfer/checklist",
      *     summary="(DONE) Get user's transfer checklist. Requires JWT, API Key, or Session Cookie",
-     *     description="(DONE) Get user's checklist. Requires JWT, API Key, or Session Cookie (required role [N/A for apikey]: ATM, DATM, WM)",
-     *     produces={"application/json"},
-     *     tags={"user","transfer"},
+     *     description="(DONE) Get user's checklist. Requires JWT, API Key, or Session Cookie (required role [N/A for
+     *     apikey]: ATM, DATM, WM)", produces={"application/json"}, tags={"user","transfer"},
      *     security={"jwt","session","apikey"},
      *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
      *     @SWG\Response(
@@ -386,37 +405,45 @@ class UserController extends APIController
      *     )
      * )
      */
-    public function getTransferChecklist($cid) {
+    public function getTransferChecklist($cid)
+    {
         $hasValidApiKey = AuthHelper::validApiKeyv2(request()->input('apikey', null));
-        if (!$hasValidApiKey && !\Auth::check()) return response()->json(generate_error("Unauthorized"), 401);
+        if (!$hasValidApiKey && !\Auth::check()) {
+            return response()->json(generate_error("Unauthorized"), 401);
+        }
         if ($hasValidApiKey || (\Auth::check() &&
-            (
-                \Auth::user()->cid == $cid ||
-                RoleHelper::isVATUSAStaff(\Auth::user()->cid) ||
-                RoleHelper::has(\Auth::user()->cid, \Auth::user()->facility, ["ATM","DATM","WM"])
-            )
-        )) {
+                (
+                    \Auth::user()->cid == $cid ||
+                    RoleHelper::isVATUSAStaff(\Auth::user()->cid) ||
+                    RoleHelper::has(\Auth::user()->cid, \Auth::user()->facility, ["ATM", "DATM", "WM"])
+                )
+            )) {
             $check = [];
             $overall = User::find($cid)->transferEligible($check);
+
             return response()->json(array_merge($check, ['overall' => $overall]));
         }
+
         return response()->json(generate_error("Forbidden"), 403);
     }
+
     /**
      * @return array|string
      *
      * @SWG\Post(
      *     path="/user/(cid)/rating",
      *     summary="(DONE) Submit rating change. Requires JWT or Session Cookie",
-     *     description="(DONE) Submit rating change. Requires JWT or Session Cookie (required role: ATM, DATM, TA, INS, VATUSA STAFF)",
-     *     produces={"application/json"},
-     *     tags={"user","rating"},
-     *     security={"jwt","session"},
+     *     description="(DONE) Submit rating change. Requires JWT or Session Cookie (required role: ATM, DATM, TA, INS,
+     *     VATUSA STAFF)", produces={"application/json"}, tags={"user","rating"}, security={"jwt","session"},
      *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
-     *     @SWG\Parameter(name="rating", in="formData", required=true, type="string", description="Rating to change rating to"),
-     *     @SWG\Parameter(name="examDate", in="formData", type="string", description="Date of exam (format, YYYY-MM-DD) required for C1 and below"),
-     *     @SWG\Parameter(name="examiner", in="formData", type="integer", description="CID of Examiner, if not provided or null will default to authenticated user, required for C1 and below"),
-     *     @SWG\Parameter(name="position", in="formData", type="string", description="Position sat during exam, required for C1 and below"),
+     *     @SWG\Parameter(name="rating", in="formData", required=true, type="string", description="Rating to change
+     *                                   rating to"),
+     *     @SWG\Parameter(name="examDate", in="formData", type="string", description="Date of exam (format, YYYY-MM-DD)
+     *                                     required for C1 and below"),
+     *     @SWG\Parameter(name="examiner", in="formData", type="integer", description="CID of Examiner, if not provided
+     *                                     or null will default to authenticated user, required for C1 and below"),
+     *     @SWG\Parameter(name="position", in="formData", type="string", description="Position sat during exam,
+     *                                     required for C1 and below"),
      *     @SWG\Response(
      *         response="401",
      *         description="Unauthorized",
@@ -461,18 +488,27 @@ class UserController extends APIController
      *     )
      * )
      */
-    public function postRating($cid) {
-        if (!\Auth::check()) return response()->api(generate_error("Unauthorized"), 401);
+    public function postRating($cid)
+    {
+        if (!\Auth::check()) {
+            return response()->api(generate_error("Unauthorized"), 401);
+        }
         $user = User::find($cid);
-        if (!$user) return response()->api(generate_error("Not found"), 404);
+        if (!$user) {
+            return response()->api(generate_error("Not found"), 404);
+        }
         $rating = request()->input("rating", null);
-        if (!$rating) return response()->api(generate_error("Malformed request"), 400);
+        if (!$rating) {
+            return response()->api(generate_error("Malformed request"), 400);
+        }
         //$cid = request()->input("cid");
         $examDate = request()->input("examDate", null); // Will be checked when appropriate
         $examiner = request()->input("examiner", null); // Will be checked when appropriate
         $position = request()->input("position", null); // Will be checked when appropriate
 
-        if (!is_numeric($rating)) { $rating = RatingHelper::shortToInt($rating); }
+        if (!is_numeric($rating)) {
+            $rating = RatingHelper::shortToInt($rating);
+        }
         if ($rating > RatingHelper::shortToInt("I3")) {
             // Do not process ratings above I3... ever
             return response()->api(generate_error("Malformed request"), 400);
@@ -487,15 +523,16 @@ class UserController extends APIController
 
             Promotion::process($cid, \Auth::user()->cid, $rating);
             $return = CERTHelper::changeRating($cid, $rating, true);
-            if ($return)
+            if ($return) {
                 return response()->api(["status" => "OK"]);
-            else
+            } else {
                 return response()->api(["status" => "Internal server error"], 500);
+            }
         }
 
         // OBS-C1 changes
         if (!RoleHelper::isVATUSAStaff() &&
-            !RoleHelper::has(\Auth::user()->cid, \Auth::user()->facility, ["ATM","DATM","TA"]) &&
+            !RoleHelper::has(\Auth::user()->cid, \Auth::user()->facility, ["ATM", "DATM", "TA"]) &&
             !RoleHelper::isInstructor(\Auth::user()->cid)) {
 
             return response()->api(generate_error("Forbidden" . json_encode(RoleHelper::isVATUSAStaff())), 403);
@@ -512,12 +549,14 @@ class UserController extends APIController
         if (!$user->promotionEligible()) {
             return response()->api(generate_error("Precondition failed"), 412);
         }
-        Promotion::process($user->cid, \Auth::user()->cid, $user->rating + 1, $user->rating, $examDate, $examiner, $position);
+        Promotion::process($user->cid, \Auth::user()->cid, $user->rating + 1, $user->rating, $examDate, $examiner,
+            $position);
         $return = CERTHelper::changeRating($cid, $rating, true);
-        if ($return)
+        if ($return) {
             return response()->api(["status" => "OK"]);
-        else
+        } else {
             return response()->api(["status" => "Internal server error"], 500);
+        }
     }
 
     /**
@@ -526,9 +565,8 @@ class UserController extends APIController
      * @SWG\Get(
      *     path="/user/(cid)/rating/history",
      *     summary="(DONE) Get user's rating history. Requires JWT, API Key or Session Cookie",
-     *     description="(DONE) Get user's rating history. Requires JWT, API Key or Session Cookie (required role: [N/A for API Key] ATM, DATM, TA, INS, VATUSA STAFF)",
-     *     produces={"application/json"},
-     *     tags={"user","rating"},
+     *     description="(DONE) Get user's rating history. Requires JWT, API Key or Session Cookie (required role: [N/A
+     *     for API Key] ATM, DATM, TA, INS, VATUSA STAFF)", produces={"application/json"}, tags={"user","rating"},
      *     security={"jwt","session","apikey"},
      *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
      *     @SWG\Response(
@@ -556,19 +594,25 @@ class UserController extends APIController
      *             type="array",
      *             @SWG\Items(ref="#/definitions/Promotion"),
      *         ),
-     *         examples={"application/json":{{"id": 9486,"cid": 876594,"grantor": 111111,"to": 8,"from": 10,"created_at": "2011-09-06T04:28:51+00:00","exam": "0000-00-00","examiner": 0,"position": ""}}},
+     *         examples={"application/json":{{"id": 9486,"cid": 876594,"grantor": 111111,"to": 8,"from":
+     *         10,"created_at": "2011-09-06T04:28:51+00:00","exam": "0000-00-00","examiner": 0,"position": ""}}},
      *     )
      * )
      */
-    public function getRatingHistory($cid) {
+    public function getRatingHistory($cid)
+    {
         $hasValidApiKey = AuthHelper::validApiKeyv2(request()->input('apikey', null));
-        if (!User::find($cid)) { return response()->json(generate_error("Not found"), 404); }
-        if (!$hasValidApiKey && !\Auth::check()) return response()->json(generate_error("Unauthorized"), 401);
+        if (!User::find($cid)) {
+            return response()->json(generate_error("Not found"), 404);
+        }
+        if (!$hasValidApiKey && !\Auth::check()) {
+            return response()->json(generate_error("Unauthorized"), 401);
+        }
         if (!$hasValidApiKey && !(\Auth::check() &&
                 (
                     \Auth::user()->cid == $cid ||
                     RoleHelper::isVATUSAStaff(\Auth::user()->cid) ||
-                    RoleHelper::has(\Auth::user()->cid, \Auth::user()->facility, ["ATM","DATM","WM"])
+                    RoleHelper::has(\Auth::user()->cid, \Auth::user()->facility, ["ATM", "DATM", "WM"])
                 )
             )) {
 
@@ -586,10 +630,8 @@ class UserController extends APIController
      * @SWG\Get(
      *     path="/user/(cid)/log",
      *     summary="(DONE) Get controller's action log. CORS Restricted Requires JWT or Session Cookie",
-     *     description="(DONE) Get controller's action log. CORS Restricted Requires JWT or Session Cookie (required role: ATM, DATM, VATUSA STAFF)",
-     *     produces={"application/json"},
-     *     tags={"user"},
-     *     security={"jwt","session"},
+     *     description="(DONE) Get controller's action log. CORS Restricted Requires JWT or Session Cookie (required
+     *     role: ATM, DATM, VATUSA STAFF)", produces={"application/json"}, tags={"user"}, security={"jwt","session"},
      *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
      *     @SWG\Parameter(name="entry", in="formData", required=true, type="string", description="Entry to log"),
      *     @SWG\Response(
@@ -617,18 +659,24 @@ class UserController extends APIController
      *             type="array",
      *             @SWG\Items(ref="#/definitions/Action"),
      *         ),
-     *         examples={"application/json":{{"id": 579572,"to": 1394143,"log": "Joined division, facility set to ZAE by CERTSync","created_at": "2017-06-01T00:02:09+00:00"}}}
+     *         examples={"application/json":{{"id": 579572,"to": 1394143,"log": "Joined division, facility set to ZAE
+     *         by CERTSync","created_at": "2017-06-01T00:02:09+00:00"}}}
      *     )
      * )
      */
-    public function getActionLog($cid) {
-        if (!User::find($cid)) { return response()->json(generate_error("Not found"), 404); }
-        if (!\Auth::check()) return response()->json(generate_error("Unauthorized"), 401);
+    public function getActionLog($cid)
+    {
+        if (!User::find($cid)) {
+            return response()->json(generate_error("Not found"), 404);
+        }
+        if (!\Auth::check()) {
+            return response()->json(generate_error("Unauthorized"), 401);
+        }
         if (!(\Auth::check() &&
             (
                 \Auth::user()->cid == $cid ||
                 RoleHelper::isVATUSAStaff(\Auth::user()->cid) ||
-                RoleHelper::has(\Auth::user()->cid, \Auth::user()->facility, ["ATM","DATM"])
+                RoleHelper::has(\Auth::user()->cid, \Auth::user()->facility, ["ATM", "DATM"])
             )
         )) {
 
@@ -646,9 +694,8 @@ class UserController extends APIController
      * @SWG\Post(
      *     path="/user/(cid)/log",
      *     summary="(DONE) Submit entry to controller's action log. CORS Restricted Requires JWT or Session Cookie",
-     *     description="(DONE) Submit entry to controller's action log. CORS Restricted Requires JWT or Session Cookie (required role: ATM, DATM, VATUSA STAFF)",
-     *     produces={"application/json"},
-     *     tags={"user"},
+     *     description="(DONE) Submit entry to controller's action log. CORS Restricted Requires JWT or Session Cookie
+     *     (required role: ATM, DATM, VATUSA STAFF)", produces={"application/json"}, tags={"user"},
      *     security={"jwt","session"},
      *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
      *     @SWG\Parameter(name="entry", in="formData", required=true, type="string", description="Entry to log"),
@@ -678,15 +725,22 @@ class UserController extends APIController
      *     )
      * )
      */
-    public function postActionLog($cid) {
+    public function postActionLog($cid)
+    {
         $entry = request()->input("entry", null);
-        if (!$entry) return response()->json(generate_error("Malformed request"), 400);
-        if (!\Auth::check()) return response()->json(generate_error("Unauthorized"), 401);
-        if (!RoleHelper::isVATUSAStaff(\Auth::user()->cid) && !RoleHelper::has(\Auth::user()->cid, \Auth::user()->facility, ["ATM","DATM"])) {
+        if (!$entry) {
+            return response()->json(generate_error("Malformed request"), 400);
+        }
+        if (!\Auth::check()) {
+            return response()->json(generate_error("Unauthorized"), 401);
+        }
+        if (!RoleHelper::isVATUSAStaff(\Auth::user()->cid) && !RoleHelper::has(\Auth::user()->cid,
+                \Auth::user()->facility, ["ATM", "DATM"])) {
             return response()->json(generate_error("Forbidden"), 403);
         }
 
         log_action($cid, $entry);
+
         return response()->json(['status' => 'OK']);
     }
 
@@ -696,9 +750,8 @@ class UserController extends APIController
      * @SWG\Get(
      *     path="/user/(cid)/transfer/history",
      *     summary="(DONE) Get user's transfer history. Requires JWT, API Key or Session Cookie",
-     *     description="(DONE) Get user's history. Requires JWT, API Key or Session Cookie (required role: [N/A for API Key] ATM, DATM, TA, WM, VATUSA STAFF)",
-     *     produces={"application/json"},
-     *     tags={"user","transfer"},
+     *     description="(DONE) Get user's history. Requires JWT, API Key or Session Cookie (required role: [N/A for API
+     *     Key] ATM, DATM, TA, WM, VATUSA STAFF)", produces={"application/json"}, tags={"user","transfer"},
      *     security={"jwt","session","apikey"},
      *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
      *     @SWG\Response(
@@ -722,22 +775,28 @@ class UserController extends APIController
      *                 ref="#/definitions/Transfer"
      *             )
      *         ),
-     *         examples={"application/json":{{"id":673608,"cid":1055319,"to":"ZAE","from":"ZNY","reason":"Removed for inactivity.","status":1,"actiontext":"Removed for inactivity.","actionby":0,"created_at":"2017-01-01T12:06:27+00:00","updated_at":"2017-01-01T12:06:27+00:00"}}},
+     *         examples={"application/json":{{"id":673608,"cid":1055319,"to":"ZAE","from":"ZNY","reason":"Removed for
+     *         inactivity.","status":1,"actiontext":"Removed for
+     *         inactivity.","actionby":0,"created_at":"2017-01-01T12:06:27+00:00","updated_at":"2017-01-01T12:06:27+00:00"}}},
      *     )
      * )
      */
-    public function getTransferHistory($cid) {
-        if (!User::find($cid)) { return response()->json(generate_error("Not found"), 404); }
+    public function getTransferHistory($cid)
+    {
+        if (!User::find($cid)) {
+            return response()->json(generate_error("Not found"), 404);
+        }
 
         if (!(\Auth::check() &&
             (
                 \Auth::user()->cid == $cid ||
                 RoleHelper::isVATUSAStaff(\Auth::user()->cid) ||
-                RoleHelper::has(\Auth::user()->cid, \Auth::user()->facility, ["ATM","DATM","TA","WM"])
+                RoleHelper::has(\Auth::user()->cid, \Auth::user()->facility, ["ATM", "DATM", "TA", "WM"])
             )
         )) {
 
             $transfers = Transfer::where('cid', $cid)->orderBy('created_at', 'desc')->get()->toArray();
+
             return response()->json($transfers);
         }
 
@@ -768,7 +827,8 @@ class UserController extends APIController
      *     )
      * )
      */
-    public function getCBTHistory($cid) {
+    public function getCBTHistory($cid)
+    {
         $data = TrainingProgress::where("cid", $cid)->get()->toArray();
 
         return response()->json($data);
@@ -784,7 +844,8 @@ class UserController extends APIController
      *     produces={"application/json"},
      *     tags={"user","cbt"},
      *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
-     *     @SWG\Parameter(name="blockId", in="query", type="integer", description="Mark progress of specific Block ID"),
+     *     @SWG\Parameter(name="blockId", in="query", type="integer", description="Mark progress of specific Block
+     *                                    ID"),
      *     @SWG\Response(
      *         response="200",
      *         description="OK",
@@ -795,23 +856,26 @@ class UserController extends APIController
      *                 @SWG\Property(property="chapterId", type="integer"),
      *                 @SWG\Property(property="chapterName", type="string"),
      *                 @SWG\Property(property="completed", type="boolean"),
-     *                 @SWG\Property(property="date", type="string", description="Null if not completed, otherwise date completed")
+     *                 @SWG\Property(property="date", type="string", description="Null if not completed, otherwise date
+     *                                                completed")
      *             )
      *         ),
-     *         examples={"application/json":{{"chapterId":97,"chapterName":"Basic ATC/S1 Orientation","completed":true,"date":"2017-04-07T19:25:44+00:00"}}}
+     *         examples={"application/json":{{"chapterId":97,"chapterName":"Basic ATC/S1
+     *         Orientation","completed":true,"date":"2017-04-07T19:25:44+00:00"}}}
      *     )
      * )
      */
-    public function getCBTProgress($cid, $blockId) {
+    public function getCBTProgress($cid, $blockId)
+    {
         $chapters = TrainingChapter::where('blockid', $blockId)->get();
         $data = [];
         foreach ($chapters as $chapter) {
             $tp = TrainingProgress::where('cid', $cid)->where('chapterid', $chapter->id)->first();
             $data[] = [
-                'chapterId' => $chapter->id,
+                'chapterId'   => $chapter->id,
                 'chapterName' => $chapter->name,
-                'completed' => (!$tp) ? false : true,
-                'date' => (!$tp) ? null : $tp->date
+                'completed'   => (!$tp) ? false : true,
+                'date'        => (!$tp) ? null : $tp->date
             ];
         }
 
@@ -824,13 +888,14 @@ class UserController extends APIController
      * @SWG\Put(
      *     path="/user/(cid)/cbt/progress/(blockId)/(chapterId)",
      *     summary="(DONE) Updates user's CBT history. Requires JWT, API Key or Session Cookie",
-     *     description="(DONE) Updates user's CBT history. Requires JWT, API Key or Session Cookie (must originate from user if not using API Key)",
-     *     produces={"application/json"},
-     *     tags={"user","cbt"},
+     *     description="(DONE) Updates user's CBT history. Requires JWT, API Key or Session Cookie (must originate from
+     *     user if not using API Key)", produces={"application/json"}, tags={"user","cbt"},
      *     security={"jwt","session","apikey"},
      *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
-     *     @SWG\Parameter(name="blockId", in="query", type="integer", description="Mark progress of specific Block ID"),
-     *     @SWG\Parameter(name="chapterId", in="query", type="integer", description="Mark progress of specific Chapter ID"),
+     *     @SWG\Parameter(name="blockId", in="query", type="integer", description="Mark progress of specific Block
+     *                                    ID"),
+     *     @SWG\Parameter(name="chapterId", in="query", type="integer", description="Mark progress of specific Chapter
+     *                                      ID"),
      *     @SWG\Response(
      *         response="401",
      *         description="Unauthorized",
@@ -851,7 +916,8 @@ class UserController extends APIController
      *     )
      * )
      */
-    public function putCBTProgress($cid, $blockId, $chapterId) {
+    public function putCBTProgress($cid, $blockId, $chapterId)
+    {
         $apikey = AuthHelper::validApiKeyv2(request()->input('apikey', null));
         if (!\Auth::check() && !$apikey) {
             return response()->json(generate_error("Unautheicated"), 401);
@@ -876,9 +942,8 @@ class UserController extends APIController
      * @SWG\Get(
      *     path="/user/(cid)/exam/history",
      *     summary="(DONE) Get user's exam history. Requires JWT, API Key or Session Cookie",
-     *     description="(DONE) Get user's exam history. Requires JWT, API Key or Session Cookie (required role: [N/A for API Key] ATM, DATM, TA, INS, VATUSA STAFF)",
-     *     produces={"application/json"},
-     *     tags={"user","exam"},
+     *     description="(DONE) Get user's exam history. Requires JWT, API Key or Session Cookie (required role: [N/A
+     *     for API Key] ATM, DATM, TA, INS, VATUSA STAFF)", produces={"application/json"}, tags={"user","exam"},
      *     security={"jwt","session","apikey"},
      *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
      *     @SWG\Response(
@@ -902,21 +967,24 @@ class UserController extends APIController
      *                 ref="#/definitions/ExamResults"
      *             )
      *         ),
-     *         examples={"application/json":{{"id":18307,"exam_id":7,"exam_name":"VATUSA - Basic ATC Quiz","cid":876594,"score":88,"passed":1,"date":"2009-09-14T04:17:37+00:00"}}},
+     *         examples={"application/json":{{"id":18307,"exam_id":7,"exam_name":"VATUSA - Basic ATC
+     *         Quiz","cid":876594,"score":88,"passed":1,"date":"2009-09-14T04:17:37+00:00"}}},
      *     )
      * )
      */
-    public function getExamHistory($cid) {
+    public function getExamHistory($cid)
+    {
         $hasValidApiKey = AuthHelper::validApiKeyv2(request()->input('apikey', null));
         if (!\Auth::check() && !$hasValidApiKey) {
-            return response()->json(generate_error("Unautheicated"), 401);
+            return response()->json(generate_error("Unauthenticated"), 401);
         }
 
         if (!$hasValidApiKey && $cid != \Auth::user()->cid && !RoleHelper::isVATUSAStaff() && !RoleHelper::isFacilityStaff() && !RoleHelper::isInstrcutor(\Auth::user()->cid)) {
             return response()->json(generate_error("Forbidden"), 403);
         }
 
-        $results = ExamResults::where('cid', $cid)->orderBy('date','desc')->get()->toArray();
+        $results = ExamResults::where('cid', $cid)->orderBy('date', 'desc')->get()->toArray();
+
         return response()->json($results);
     }
 }
