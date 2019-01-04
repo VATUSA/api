@@ -29,7 +29,7 @@ class UserController extends APIController
      * @SWG\Get(
      *     path="/user/(cid)",
      *     summary="(DONE) Get data about user",
-     *     description="(DONE) Get user's information. Email field requires authentication as staff member.
+     *     description="(DONE) Get user's information. Email field requires authentication as senior staff member.
            Broadcast opt-in status requires API key. Prevent Staff Assignment field requires authentication
            as senior staff.",
      *     produces={"application/json"}, tags={"user"},
