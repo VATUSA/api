@@ -14,9 +14,11 @@ before_install:
 script:
 - docker-compose build
 after_success:
-- if [ "$TRAVIS_BRANCH" == "master" ]; then docker tag vatusa/api vatusa/api:latest;
+- if [ "$TRAVIS_BRANCH" == "master" ] && [ -z "$TRAVIS_PULL_REQUEST_BRANCH" ]; 
+  then docker tag vatusa/api vatusa/api:latest;
   docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"; docker push vatusa/api:latest;
   fi
-- if [ "$TRAVIS_BRANCH" == "dev" ]; then docker tag vatusa/api vatusa/api:devel;
+- if [ "$TRAVIS_BRANCH" == "dev" ] && [ -z "$TRAVIS_PULL_REQUEST_BRANCH" ]; 
+  then docker tag vatusa/api vatusa/api:devel;
   docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"; docker push vatusa/api:devel;
   fi
