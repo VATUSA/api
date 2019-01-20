@@ -5,7 +5,6 @@ namespace App\Http\Controllers\API\v2;
 use App\Facility;
 use App\Helpers\RoleHelper;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 use App\Bucket;
 
 class BucketController extends APIController
@@ -16,8 +15,8 @@ class BucketController extends APIController
      *
      * [SWG]\Get(
      *     path="/bucket/(facility)",
-     *     summary="(DONE) Get bucket information. Requires JWT/Session Key",
-     *     description="(DONE) Get bucket information. Requires JWT/Session Key",
+     *     summary="Get bucket information. [Auth]",
+     *     description="Get bucket information. Requires JWT/Session Key.",
      *     produces={"application/json"},
      *     tags={"auth"},
      *     security={"session","jwt"},
@@ -69,8 +68,8 @@ class BucketController extends APIController
      *
      * [SWG]\Post(
      *     path="/bucket/(facility)",
-     *     summary="(DONE) Create bucket. Requires JWT/Session Key",
-     *     description="(DONE) Create bucket. Requires JWT/Session Key",
+     *     summary="Create bucket. Requires JWT/Session Key [Auth]",
+     *     description="Create bucket. Requires JWT/Session Key.",
      *     produces={"application/json"},
      *     tags={"auth"},
      *     security={"session","jwt"},

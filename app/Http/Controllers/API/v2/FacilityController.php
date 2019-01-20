@@ -9,7 +9,6 @@ use App\Helpers\RoleHelper;
 use App\Role;
 use App\Transfer;
 use App\User;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Facility;
 use Jose\Component\KeyManagement\JWKFactory;
@@ -26,8 +25,8 @@ class FacilityController extends APIController
      *
      * @SWG\Get(
      *     path="/facility",
-     *     summary="(DONE) Get list of VATUSA facilities",
-     *     description="(DONE) Get list of VATUSA facilities",
+     *     summary="Get list of VATUSA facilities.",
+     *     description="Get list of VATUSA facilities.",
      *     produces={"application/json"},
      *     tags={"facility"},
      *     @SWG\Response(
@@ -62,8 +61,8 @@ class FacilityController extends APIController
      *
      * @SWG\Get(
      *     path="/facility/{id}",
-     *     summary="(DONE) Get facility information",
-     *     description="(DONE) Get facility information",
+     *     summary="Get facility information.",
+     *     description="Get facility information.",
      *     produces={"application/json"},
      *     tags={"facility"},
      *     @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
@@ -89,13 +88,22 @@ class FacilityController extends APIController
      *             @SWG\Property(
      *                 property="stats",
      *                 type="object",
-     *                 @SWG\Property(property="controllers", type="integer", description="Number of controllers on facility roster"),
-     *                 @SWG\Property(property="pendingTransfers", type="integer", description="Number of pending transfers to facility"),
+     *                 @SWG\Property(property="controllers", type="integer", description="Number of controllers on
+                                                            facility roster"),
+     *                 @SWG\Property(property="pendingTransfers", type="integer", description="Number of pending
+                                                                 transfers to facility"),
      *             ),
      *         ),
      *         examples={
      *              "application/json":{
-     *                      {"id":"HCF","name":"Honolulu CF","url":"http:\/\/www.hcfartcc.net","role":{{"cid":1245046,"name":"Toby Rice","role":"MTR"},{"cid":1152158,"name":"Taylor Broad","role":"MTR"},{"cid":1147076,"name":"Dave Mayes","role":"ATM"},{"cid":1245046,"name":"Toby Rice","role":"DATM"},{"cid":1289149,"name":"Israel Reyes","role":"FE"},{"cid":1152158,"name":"Taylor Broad","role":"WM"}},"stats":{"controllers":19,"pendingTransfers":0}}
+     *                      {"id":"HCF","name":"Honolulu CF",
+                           "url":"http:\/\/www.hcfartcc.net","role":{{"cid":1245046,"name":"Toby Rice","role":"MTR"},
+                           {"cid":1152158,"name":"Taylor Broad","role":"MTR"},
+                           {"cid":1147076,"name":"Dave Mayes","role":"ATM"},
+                           {"cid":1245046,"name":"Toby Rice","role":"DATM"},
+                           {"cid":1289149,"name":"Israel Reyes","role":"FE"},
+                           {"cid":1152158,"name":"Taylor Broad","role":"WM"}},
+                           "stats":{"controllers":19,"pendingTransfers":0}}
      *              }
      *         }
      *     )
@@ -116,7 +124,7 @@ class FacilityController extends APIController
 
         $data = [
             'facility' => $facility->toArray(),
-            'role' => Role::where('facility', $facility->id)->get()->toArray(),
+            'role'     => Role::where('facility', $facility->id)->get()->toArray(),
         ];
         $data['stats']['controllers'] = User::where('facility', $id)->count();
         $data['stats']['pendingTransfers'] = Transfer::where('to', $id)->where(
@@ -138,19 +146,24 @@ class FacilityController extends APIController
      *
      * @SWG\Put(
      *     path="/facility/{id}",
-     *     summary="Update facility information. Requires JWT or Session Cookie",
-     *     description="Update facility information. Requires JWT or Session Cookie",
+     *     summary="Update facility information. [Auth]",
+     *     description="Update facility information. Requires JWT or Session Cookie. Must be ATM, DATM, or WM.",
      *     produces={"application/json"},
      *     tags={"facility"},
-     *     security={"json","session"},
+     *     security={"jwt","session"},
      *     @SWG\Parameter(name="id", in="path", description="Facility IATA ID", required=true, type="string"),
-     *     @SWG\Parameter(name="url", in="formData", description="Change facility URL, role restricted [ATM, DATM, WM]", type="string"),
-     *     @SWG\Parameter(name="url", in="formData", description="Request new JWK", type="string"),
-     *     @SWG\Parameter(name="apikey", in="formData", type="string", description="Request new API Key for facility, role restricted [ATM, DATM, WM]"),
-     *     @SWG\Parameter(name="apikeySandbox", in="formData", type="string", description="Request new Sandbox API Key for facility, role restricted [ATM, DATM, WM]"),
-     *     @SWG\Parameter(name="ulsSecret", in="formData", type="string", description="Request new ULS Secret, role restricted [ATM, DATM, WM]"),
-     *     @SWG\Parameter(name="ulsReturn", in="formData", type="string", description="Set new ULS return point, role restricted [ATM, DATM, WM]"),
-     *     @SWG\Parameter(name="ulsDevReturn", in="formData", type="string", description="Set new ULS developmental return point, role restricted [ATM, DATM, WM]"),
+     *     @SWG\Parameter(name="url", in="formData", description="Change facility URL", type="string"),
+     *     @SWG\Parameter(name="uls2jwk", in="formData", description="Request new ULS JWK", type="string"),
+     *     @SWG\Parameter(name="apiv2jwk", in="formData", description="Request new APIv2 JWK", type="string"),
+     *     @SWG\Parameter(name="apikey", in="formData", type="string", description="Request new API Key for facility"),
+     *     @SWG\Parameter(name="apikeySandbox", in="formData", type="string", description="Request new Sandbox API Key
+                                               for facility"),
+     *     @SWG\Parameter(name="ulsSecret", in="formData", type="string", description="Request new ULS Secret, role
+                                           restricted"),
+          @SWG\Parameter(name="ulsReturn", in="formData", type="string", description="Set new ULS return point, role
+                                           restricted"),
+     *     @SWG\Parameter(name="ulsDevReturn", in="formData", type="string", description="Set new ULS developmental
+                                              return point"),
      *     @SWG\Response(
      *         response="401",
      *         description="Unauthorized",
@@ -193,8 +206,7 @@ class FacilityController extends APIController
         }
 
         if (!RoleHelper::has(\Auth::user()->cid, $id, ["ATM", "DATM", "WM"])
-            && !RoleHelper::isVATUSAStaff(\Auth::user()->cid)
-        ) {
+            && !RoleHelper::isVATUSAStaff(\Auth::user()->cid)) {
             return response()->api(generate_error("Forbidden", true), 403);
         }
 
@@ -216,6 +228,7 @@ class FacilityController extends APIController
             );
             $facility->uls_jwk = encode_json($data);
             $facility->save();
+
             return response()->json($data);
         }
 
@@ -231,71 +244,35 @@ class FacilityController extends APIController
         }
 
         if ($request->has('apikey')) {
-            if (\Auth::check()
-                && RoleHelper::has(
-                    \Auth::user()->cid, $facility->id, ['ATM', 'DATM', 'WM']
-                )
-            ) {
-                $data['apikey'] = randomPassword(16);
-                $facility->apikey = $data['apikey'];
-                $facility->save();
-            } else {
-                return response()->api(generate_error("Forbidden"), 403);
-            }
+            $data['apikey'] = randomPassword(16);
+            $facility->apikey = $data['apikey'];
+            $facility->save();
         }
 
         if ($request->has('apikeySandbox')) {
-            if (\Auth::check()
-                && RoleHelper::has(
-                    \Auth::user()->cid, $facility->id, ['ATM', 'DATM', 'WM']
-                )
-            ) {
-                $data['apikeySandbox'] = randomPassword(16);
-                $facility->api_sandbox_key = $data['apikeySandbox'];
-                $facility->save();
-            } else {
-                return response()->api(generate_error("Forbidden"), 403);
-            }
+            $data['apikeySandbox'] = randomPassword(16);
+            $facility->api_sandbox_key = $data['apikeySandbox'];
+            $facility->save();
         }
 
         if ($request->has('ulsSecret')) {
-            if (\Auth::check()
-                && RoleHelper::has(
-                    \Auth::user()->cid, $facility->id, ['ATM', 'DATM', 'WM']
-                )
-            ) {
-                $data['ulsSecret'] = substr(hash('sha512', microtime()), -16);
-                $facility->uls_secret = $data['ulsSecret'];
-                $facility->save();
-            } else {
-                return response()->api(generate_error("Forbidden"), 403);
-            }
+            $data['ulsSecret'] = substr(hash('sha512', microtime()), -16);
+            $facility->uls_secret = $data['ulsSecret'];
+            $facility->save();
         }
 
-        if ($request->has('ulsReturn')) {
-            if (\Auth::check()
-                && RoleHelper::has(
-                    \Auth::user()->cid, $facility->id, ['ATM', 'DATM', 'WM']
-                )
-            ) {
-                $facility->uls_return = $request->input("ulsReturn");
-                $facility->save();
-            } else {
-                return response()->api(generate_error("Forbidden"), 403);
-            }
+        if ($request->has('ulsReturn') && filter_var(
+                $request->input("ulsReturn"), FILTER_VALIDATE_URL)
+        ) {
+            $facility->uls_return = $request->input("ulsReturn");
+            $facility->save();
         }
 
-        if ($request->has('ulsDevReturn')) {
-            if (\Auth::check()
-                && RoleHelper::has(
-                    \Auth::user()->cid, $facility->id, ['ATM', 'DATM', 'WM']
-                )
-            ) {
-                $facility->uls_devreturn = $request->input("ulsDevReturn");
-                $facility->save();
-            } else {
-                return response()->api(generate_error("Forbidden"), 403);
-            }
+        if ($request->has('ulsDevReturn') && filter_var(
+                $request->input("ulsDevReturn"), FILTER_VALIDATE_URL)
+        ) {
+            $facility->uls_devreturn = $request->input("ulsDevReturn");
+            $facility->save();
         }
 
         return response()->api(array_merge(['status' => 'OK'], $data));
@@ -305,31 +282,33 @@ class FacilityController extends APIController
      *
      * @SWG\Get(
      *     path="/facility/{id}/email/{templateName}",
-     *     summary="(DONE) Get facility's email template. Requires API Key, JWT or Session Cookie",
-     *     description="(DONE) Get facility's email template. Requires API Key, JWT or Session Cookie",
+     *     summary="Get facility's email template. [Key]",
+     *     description="Get facility's email template. Requires API Key, Session Cookie (ATM/DATM/TA), or JWT",
      *     produces={"application/json"},
      *     tags={"facility","email"},
      *     @SWG\Parameter(name="id", in="path", description="Facility IATA ID", required=true, type="string"),
-     *     @SWG\Parameter(name="templateName", in="path", description="Name of template (welcome, examassigned, examfailed, exampassed)", required=true, type="string"),
-     *     @SWG\Response(
+     *     @SWG\Parameter(name="templateName", in="path", description="Name of template (welcome, examassigned,
+                                                examfailed, exampassed)",
+     *                                          required=true, type="string"),
+     * @SWG\Response(
      *         response="401",
      *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
      *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     *     @SWG\Response(
+     * @SWG\Response(
      *         response="403",
      *         description="Forbidden",
      *         @SWG\Schema(ref="#/definitions/error"),
      *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     *     @SWG\Response(
+     * @SWG\Response(
      *         response="404",
      *         description="Not found",
      *         @SWG\Schema(ref="#/definitions/error"),
      *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
      *     ),
-     *     @SWG\Response(
+     * @SWG\Response(
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(
@@ -337,14 +316,19 @@ class FacilityController extends APIController
      *         ),
      *     )
      * )
+     * @param \Illuminate\Http\Request $request
+     * @param                          $id
+     * @param                          $templateName
+     *
+     * @return \Illuminate\Http\Response
      */
     public function getEmailTemplate(Request $request, $id, $templateName)
     {
-        if (!\Auth::check() && !$request->has("apikey")) {
+        if (!\Auth::check() && !AuthHelper::validApiKeyv2($request->input('apikey', null))) {
             return response()->api(generate_error("Unauthorized"), 401);
         }
         if (\Auth::check() && (!RoleHelper::isSeniorStaff(\Auth::user()->cid, $id, true)
-            && !RoleHelper::isVATUSAStaff())
+                && !RoleHelper::isVATUSAStaff())
         ) {
             return response()->api(generate_error("Forbidden"), 403);
         }
@@ -359,15 +343,39 @@ class FacilityController extends APIController
 
         $template = FacilityHelper::findEmailTemplate($id, $templateName);
 
-        switch($templateName) {
+        switch ($templateName) {
             case 'exampassed':
-                $template['variables'] = ['exam_name','instructor_name','correct','possible','score','student_name'];
+                $template['variables'] = [
+                    'exam_name',
+                    'instructor_name',
+                    'correct',
+                    'possible',
+                    'score',
+                    'student_name'
+                ];
                 break;
             case 'examfailed':
-                $template['variables'] = ['exam_name','instructor_name','correct','possible','score','student_name', 'reassign', 'reassign_date'];
+                $template['variables'] = [
+                    'exam_name',
+                    'instructor_name',
+                    'correct',
+                    'possible',
+                    'score',
+                    'student_name',
+                    'reassign',
+                    'reassign_date'
+                ];
                 break;
             case 'examassigned':
-                $template['variables'] = ['exam_name', 'instructor_name', 'student_name', 'end_date', 'cbt_required', 'cbt_facility', 'cbt_block'];
+                $template['variables'] = [
+                    'exam_name',
+                    'instructor_name',
+                    'student_name',
+                    'end_date',
+                    'cbt_required',
+                    'cbt_facility',
+                    'cbt_block'
+                ];
                 break;
             default:
                 $template['variables'] = null;
@@ -381,32 +389,33 @@ class FacilityController extends APIController
      *
      * @SWG\Post(
      *     path="/facility/{id}/email/{templateName}",
-     *     summary="(DONE) Modify facility's email template. Requires JWT or Session Cookie",
-     *     description="(DONE) Modify facility's email template. Requires JWT or Session Cookie",
+     *     summary="Modify facility's email template. [Auth]",
+     *     description="Modify facility's email template. Requires JWT or Session Cookie (ATM/DATM/TA)",
      *     produces={"application/json"},
      *     tags={"facility","email"},
      *     @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
-     *     @SWG\Parameter(name="templateName", in="path", description="Name of template (welcome, examassigned, examfailed, exampassed)", required=true, type="string"),
-     *     @SWG\Parameter(name="body", in="formData", description="Text of template", required=true, type="string"),
-     *     @SWG\Response(
+     *     @SWG\Parameter(name="templateName", in="path", description="Name of template (welcome, examassigned, examfailed, exampassed)",
+     *                      required=true, type="string"),
+     * @SWG\Parameter(name="body", in="formData", description="Text of template", required=true, type="string"),
+     * @SWG\Response(
      *         response="401",
      *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
      *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     *     @SWG\Response(
+     * @SWG\Response(
      *         response="403",
      *         description="Forbidden",
      *         @SWG\Schema(ref="#/definitions/error"),
      *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     *     @SWG\Response(
+     * @SWG\Response(
      *         response="404",
      *         description="Not found or not active",
      *         @SWG\Schema(ref="#/definitions/error"),
      *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
      *     ),
-     *     @SWG\Response(
+     * @SWG\Response(
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(
@@ -418,8 +427,13 @@ class FacilityController extends APIController
      *         examples={"application/json":{"status"="OK"}}
      *     )
      * )
+     * @param \Illuminate\Http\Request $request
+     * @param                          $id
+     * @param                          $templateName
+     *
+     * @return \Illuminate\Http\Response
      */
-    function postEmailTemplate(Request $request, $id, $templateName)
+    public function postEmailTemplate(Request $request, $id, $templateName)
     {
         if (!\Auth::check()) {
             return response()->api(generate_error("Unauthorized"), 401);
@@ -439,7 +453,8 @@ class FacilityController extends APIController
         }
 
         $template = FacilityHelper::findEmailTemplate($id, $templateName);
-        $template->body = preg_replace(array('/<(\?|\%)\=?(php)?/', '/(\%|\?)>/'), array('',''), $request->input("body"));
+        $template->body = preg_replace(array('/<(\?|\%)\=?(php)?/', '/(\%|\?)>/'), array('', ''),
+            $request->input("body"));
         $template->save();
 
         return response()->api(['status' => 'OK']);
@@ -453,18 +468,18 @@ class FacilityController extends APIController
      *
      * @SWG\Get(
      *     path="/facility/{id}/roster",
-     *     summary="(DONE) Get facility roster",
-     *     description="(DONE) Get facility staff.  If api key is not specified, email properties are defined for role ATM, DATM, TA, INS, WM, or VATUSA STAFF",
-     *     produces={"application/json"},
-     *     tags={"facility"},
-     *     @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
-     *     @SWG\Response(
+     *     summary="Get facility roster.",
+     *     description="Get facility staff. Email field requires authentication as senior staff.
+           Broadcast opt-in status requires API key or staff member authentication. Prevent Staff Assignment field requires
+           authentication as senior staff.", produces={"application/json"}, tags={"facility"},
+     * @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
+     * @SWG\Response(
      *         response="404",
      *         description="Not found or not active",
      *         @SWG\Schema(ref="#/definitions/error"),
      *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
      *     ),
-     *     @SWG\Response(
+     * @SWG\Response(
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(
@@ -483,78 +498,82 @@ class FacilityController extends APIController
             return response()->api(generate_error("Not found"), 404);
         }
         $roster = $facility->members->toArray();
-        if (!$request->has("apikey")
-            && !(\Auth::check()
-                && RoleHelper::isFacilityStaff(
-                    \Auth::user()->cid, \Auth::user()->facility
-                ))
-        ) {
-            $count = count($roster);
-            for ($i = 0; $i < $count; $i++) {
+        $count = count($roster);
+
+        $hasAPIKey = AuthHelper::validApiKeyv2($request->input('apikey', null));
+        $isFacStaff = \Auth::check() && RoleHelper::isFacilityStaff(\Auth::user()->cid, \Auth::user()->facility);
+        $isSeniorStaff = \Auth::check() && RoleHelper::isSeniorStaff(\Auth::user()->cid, \Auth::user()->facility);
+
+        for ($i = 0; $i < $count; $i++) {
+            if (!$hasAPIKey && !$isFacStaff) {
+                $roster[$i]['flag_broadcastOptedIn'] = null;
+            }
+            if (!$isSeniorStaff) {
+                //Senior Staff Only
+                $roster[$i]['flag_preventStaffAssign'] = null;
                 $roster[$i]['email'] = null;
             }
         }
-        return response()->json($roster);
-    }
 
-    /**
-     * @param \Illuminate\Http\Request $request
-     * @param string                   $id
-     * @param integer                  $cid
-     *
-     * @return \Illuminate\Http\JsonResponse
-     *
-     * @TODO Fix to properly parse formdata/input
-     *
-     * @SWG\Delete(
-     *     path="/facility/{id}/roster/{cid}",
-     *     summary="(DONE) Delete member from facility roster. JWT or Session Cookie required",
-     *     description="(DONE) Delete member from facility roster.  JWT or Session Cookie required (required role: ATM, DATM, VATUSA STAFF)",
-     *     produces={"application/json"},
-     *     tags={"facility"},
-     *     security={"jwt","session"},
-     *     @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
-     *     @SWG\Parameter(name="cid", in="query", description="CID of controller", required=true, type="integer"),
-     *     @SWG\Parameter(name="reason", in="formData", description="Reason for deletion", required=true, type="string"),
-     *     @SWG\Response(
-     *         response="400",
-     *         description="Malformed request, missing required parameter",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Malformed request"}},
-     *     ),
-     *     @SWG\Response(
-     *         response="401",
-     *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
-     *     ),
-     *     @SWG\Response(
-     *         response="403",
-     *         description="Forbidden -- needs to have role of ATM, DATM or VATUSA Division staff member",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","message"="Forbidden"}},
-     *     ),
-     *     @SWG\Response(
-     *         response="404",
-     *         description="Not found or not active",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
-     *     ),
-     *     @SWG\Response(
-     *         response="200",
-     *         description="OK",
-     *         @SWG\Schema(ref="#/definitions/OK"),
-     *         examples={"application/json":{"status"="OK"}}
-     *     )
-     * )
-     */
+        return response()->json($roster);
+}
+
+/**
+ * @param \Illuminate\Http\Request $request
+ * @param string                   $id
+ * @param integer                  $cid
+ *
+ * @return \Illuminate\Http\JsonResponse
+ *
+ * @SWG\Delete(
+ *     path="/facility/{id}/roster/{cid}",
+ *     summary="Delete member from facility roster. [Auth]",
+ *     description="Delete member from facility roster.  JWT or Session Cookie required (required role: ATM,
+       DATM, VATUSA STAFF)",
+ * produces={"application/json"},
+ * tags={"facility"},
+ * security={"jwt","session"},
+ * @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
+ * @SWG\Parameter(name="cid", in="query", description="CID of controller", required=true, type="integer"),
+ * @SWG\Parameter(name="reason", in="formData", description="Reason for deletion", required=true, type="string"),
+ * @SWG\Response(
+ *         response="400",
+ *         description="Malformed request, missing required parameter",
+ *         @SWG\Schema(ref="#/definitions/error"),
+ *         examples={"application/json":{"status"="error","msg"="Malformed request"}},
+ *     ),
+ * @SWG\Response(
+ *         response="401",
+ *         description="Unauthorized",
+ *         @SWG\Schema(ref="#/definitions/error"),
+ *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+ *     ),
+ * @SWG\Response(
+ *         response="403",
+ *         description="Forbidden -- needs to have role of ATM, DATM or VATUSA Division staff member",
+ *         @SWG\Schema(ref="#/definitions/error"),
+ *         examples={"application/json":{"status"="error","message"="Forbidden"}},
+ *     ),
+ * @SWG\Response(
+ *         response="404",
+ *         description="Not found or not active",
+ *         @SWG\Schema(ref="#/definitions/error"),
+ *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+ *     ),
+ * @SWG\Response(
+ *         response="200",
+ *         description="OK",
+ *         @SWG\Schema(ref="#/definitions/OK"),
+ *         examples={"application/json":{"status"="OK"}}
+ *     )
+ * )
+ */
     public function deleteRoster(Request $request, string $id, int $cid)
     {
         $facility = Facility::find($id);
         if (!$facility || !$facility->active) {
             return response()->api(
-                generate_error("Facility not found or not active"), 404
-            );
+                generate_error("Facility not found or not active"), 404);
         }
 
         if (!RoleHelper::isVATUSAStaff() && !RoleHelper::isSeniorStaff(\Auth::user()->cid, $id, false)) {
@@ -579,60 +598,62 @@ class FacilityController extends APIController
         return response()->api(["status" => "OK"]);
     }
 
-    /**
-     * @param \Illuminate\Http\Request $request
-     * @param string                   $id
-     *
-     * @return \Illuminate\Http\JsonResponse
-     *
-     * @SWG\Get(
-     *     path="/facility/{id}/transfers",
-     *     summary="(DONE) Get pending transfers. Requires JWT, API Key or Session Cookie",
-     *     description="(DONE) Get pending transfers. Requires JWT, API Key or Session Cookie",
-     *     produces={"application/json"},
-     *     tags={"facility"},
-     *     security={"jwt","session","apikey"},
-     *     @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
-     *     @SWG\Response(
-     *         response="400",
-     *         description="Malformed request, missing required parameter",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Malformed request"}},
-     *     ),
-     *     @SWG\Response(
-     *         response="403",
-     *         description="Forbidden -- needs to be a staff member, other than mentor",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","message"="Forbidden"}},
-     *     ),
-     *     @SWG\Response(
-     *         response="404",
-     *         description="Not found or not active",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
-     *     ),
-     *     @SWG\Response(
-     *         response="200",
-     *         description="OK",
-     *         @SWG\Schema(
-     *             type="object",
-     *             @SWG\Property(property="status", type="string"),
-     *             @SWG\Property(property="transfers", type="array",
-     *                 @SWG\Items(
-     *                     type="object",
-     *                     @SWG\Property(property="id", type="integer", description="Transfer ID"),
-     *                     @SWG\Property(property="cid", type="integer"),
-     *                     @SWG\Property(property="name", type="string"),
-     *                     @SWG\Property(property="rating", type="string", description="Short string rating (S1, S2)"),
-     *                     @SWG\Property(property="intRating", type="integer", description="Numeric rating (OBS = 1, etc)"),
-     *                     @SWG\Property(property="date", type="string", description="Date transfer submitted (YYYY-MM-DD)"),
-     *                 ),
-     *             ),
-     *         ),
-     *         examples={"application/json":{"status":"OK","transfers":{"id":991,"cid":876594,"name":"Daniel Hawton","rating":"C1","intRating":5,"date":"2017-11-18"}}}
+/**
+ * @param \Illuminate\Http\Request $request
+ * @param string                   $id
+ *
+ * @return \Illuminate\Http\JsonResponse
+ *
+ * @SWG\Get(
+ *     path="/facility/{id}/transfers",
+ *     summary="Get pending transfers. [Key]",
+ *     description="Get pending transfers. Requires API Key, Session Cookie, or JWT",
+ *     produces={"application/json"},
+ *     tags={"facility"},
+ *     security={"jwt","session","apikey"},
+ *     @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
+ *     @SWG\Response(
+ *         response="400",
+ *         description="Malformed request, missing required parameter",
+ *         @SWG\Schema(ref="#/definitions/error"),
+ *         examples={"application/json":{"status"="error","msg"="Malformed request"}},
+ *     ),
+ *     @SWG\Response(
+ *         response="403",
+ *         description="Forbidden -- needs to be a staff member, other than mentor",
+ *         @SWG\Schema(ref="#/definitions/error"),
+ *         examples={"application/json":{"status"="error","message"="Forbidden"}},
+ *     ),
+ *     @SWG\Response(
+ *         response="404",
+ *         description="Not found or not active",
+ *         @SWG\Schema(ref="#/definitions/error"),
+ *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+ *     ),
+ *     @SWG\Response(
+ *         response="200",
+ *         description="OK",
+ *         @SWG\Schema(
+ *             type="object",
+ *             @SWG\Property(property="status", type="string"),
+ *             @SWG\Property(property="transfers", type="array",
+ *                 @SWG\Items(
+ *                     type="object",
+ *                     @SWG\Property(property="id", type="integer", description="Transfer ID"),
+ *                     @SWG\Property(property="cid", type="integer"),
+ *                     @SWG\Property(property="name", type="string"),
+ *                     @SWG\Property(property="rating", type="string", description="Short string rating (S1, S2)"),
+ *                     @SWG\Property(property="intRating", type="integer", description="Numeric rating (OBS = 1, etc)"),
+ *                     @SWG\Property(property="date", type="string", description="Date transfer submitted
+ *                                                    (YYYY-MM-DD)"),
+ *                 ),
+ *             ),
+ *         ),
+ *         examples={"application/json":{"status":"OK","transfers":{"id":991,"cid":876594,"name":"Daniel
+              Hawton","rating":"C1","intRating":5,"date":"2017-11-18"}}}
      *     )
-     * )
-     */
+ * )
+ */
     public function getTransfers(Request $request, string $id)
     {
         $facility = Facility::find($id);
@@ -642,14 +663,12 @@ class FacilityController extends APIController
             );
         }
 
-        if (!$request->has("apikey") && !\Auth::check()) {
+        if (!AuthHelper::validApiKeyv2($request->input('apikey', null)) && !\Auth::check()) {
             return response()->api(generate_error("Unauthorized"), 401);
         }
 
-        if (!$request->has("apikey")
-            && !RoleHelper::isFacilityStaff(
-                \Auth::user()->cid, $id
-            )
+        if (!AuthHelper::validApiKeyv2($request->input('apikey', null))
+            && !RoleHelper::isFacilityStaff(\Auth::user()->cid, $id)
             && !RoleHelper::isVATUSAStaff(\Auth::user()->cid)
         ) {
             return response()->api(generate_error("Forbidden"), 403);
@@ -661,68 +680,67 @@ class FacilityController extends APIController
         $data = [];
         foreach ($transfers as $transfer) {
             $data[] = [
-                'id' => $transfer->id,
-                'cid' => $transfer->cid,
-                'name' => $transfer->user->fullname(),
-                'rating' => RatingHelper::intToShort($transfer->user->rating),
+                'id'        => $transfer->id,
+                'cid'       => $transfer->cid,
+                'name'      => $transfer->user->fullname(),
+                'rating'    => RatingHelper::intToShort($transfer->user->rating),
                 'intRating' => $transfer->user->rating,
-                'date' => $transfer->created_at->format('Y-m-d')
+                'date'      => $transfer->created_at->format('Y-m-d')
             ];
         }
 
         return response()->api(['status' => 'OK', 'transfers' => $data]);
     }
 
-    /**
-     * @param \Illuminate\Http\Request $request
-     * @param string                   $id
-     * @param int                      $transferId
-     *
-     * @return \Illuminate\Http\JsonResponse
-     *
-     * @SWG\Put(
-     *     path="/facility/{id}/transfers/{transferId}",
-     *     summary="Modify transfer request.  JWT or Session cookie required.",
-     *     description="Modify transfer request.  JWT or Session cookie required. (required role: self, ATM, DATM, VATUSA STAFF)",
-     *     produces={"application/json"},
-     *     tags={"facility"},
-     *     security={"jwt","session"},
-     *     @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
-     *     @SWG\Parameter(name="transferId", in="query", description="Transfer ID", type="integer", required=true),
-     *     @SWG\Parameter(name="action", in="formData", type="string", enum={"approve","reject","cancel"}, description="Action to take on transfer request. Valid values: approve, reject, cancel (for self requests only)"),
-     *     @SWG\Parameter(name="reason", in="formData", type="string", description="Reason for transfer request rejection [required for rejections or cancellations]"),
-     *     @SWG\Response(
-     *         response="400",
-     *         description="Malformed request, missing required parameter",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Malformed request"}},
-     *     ),
-     *     @SWG\Response(
-     *         response="403",
-     *         description="Forbidden -- needs to be a staff member, other than mentor",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","message"="Forbidden"}},
-     *     ),
-     *     @SWG\Response(
-     *         response="404",
-     *         description="Not found or not active",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
-     *     ),
-     *     @SWG\Response(
-     *         response="410",
-     *         description="Gone",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Transfer is not pending"}},
-     *     ),
-     *     @SWG\Response(
-     *         response="200",
-     *         description="OK",
-     *         @SWG\Schema(ref="#/definitions/OK"),
-     *         examples={"application/json":{"status"="OK"}}
-     *     )
-     * )
-     */
+/**
+ * @param \Illuminate\Http\Request $request
+ * @param string                   $id
+ * @param int                      $transferId
+ *
+ * @return \Illuminate\Http\JsonResponse
+ *
+ * @SWG\Put(
+ *     path="/facility/{id}/transfers/{transferId}",
+ *     summary="Modify transfer request.  [Auth]",
+ *     description="Modify transfer request.  JWT or Session cookie required. (required role: ATM, DATM,
+       VATUSA STAFF)", produces={"application/json"}, tags={"facility"}, security={"jwt","session"},
+ * @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
+ * @SWG\Parameter(name="transferId", in="query", description="Transfer ID", type="integer", required=true),
+ * @SWG\Parameter(name="action", in="formData", type="string", required=true, enum={"approve","reject"},
+ *                                   description="Action to take on transfer request. Valid values: approve,reject"),
+ * @SWG\Parameter(name="reason", in="formData", type="string", description="Reason for transfer request rejection [required for rejections]"),
+ * @SWG\Response(
+ *         response="400",
+ *         description="Malformed request, missing required parameter",
+ *         @SWG\Schema(ref="#/definitions/error"),
+ *         examples={"application/json":{"status"="error","msg"="Malformed request"}},
+ *     ),
+ * @SWG\Response(
+ *         response="403",
+ *         description="Forbidden -- needs to be a staff member, other than mentor",
+ *         @SWG\Schema(ref="#/definitions/error"),
+ *         examples={"application/json":{"status"="error","message"="Forbidden"}},
+ *     ),
+ * @SWG\Response(
+ *         response="404",
+ *         description="Not found or not active",
+ *         @SWG\Schema(ref="#/definitions/error"),
+ *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+ *     ),
+ * @SWG\Response(
+ *         response="410",
+ *         description="Gone",
+ *         @SWG\Schema(ref="#/definitions/error"),
+ *         examples={"application/json":{"status"="error","msg"="Transfer is not pending"}},
+ *     ),
+ * @SWG\Response(
+ *         response="200",
+ *         description="OK",
+ *         @SWG\Schema(ref="#/definitions/OK"),
+ *         examples={"application/json":{"status"="OK"}}
+ *     )
+ * )
+ */
     public function putTransfer(Request $request, string $id, int $transferId)
     {
         $facility = Facility::find($id);

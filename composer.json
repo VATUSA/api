@@ -23,6 +23,7 @@
         "web-token/jwt-signature": "^0.4.1"
     },
     "require-dev": {
+        "barryvdh/laravel-ide-helper": "^2.5",
         "filp/whoops": "~2.0",
         "fzaninotto/faker": "~1.4",
         "mockery/mockery": "0.9.*",

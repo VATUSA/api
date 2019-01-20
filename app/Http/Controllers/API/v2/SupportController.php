@@ -6,7 +6,6 @@ use App\Facility;
 use App\Helpers\RoleHelper;
 use App\KnowledgebaseQuestions;
 use App\Role;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\KnowledgebaseCategories;
 
@@ -20,8 +19,8 @@ class SupportController extends APIController
     /**
      * @SWG\Get(
      *     path="/support/kb",
-     *     summary="(DONE) Get knowledgebase list",
-     *     description="(DONE) Get knowledgebase list",
+     *     summary="Get knowledgebase list.",
+     *     description="Get knowledgebase list.",
      *     produces={"application/json"},
      *     tags={"support"},
      *     @SWG\Response(
@@ -35,6 +34,9 @@ class SupportController extends APIController
      *         ),
      *     )
      * ),
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function getKBs(Request $request) {
         return response()->ok(KnowledgebaseCategories::orderBy('name')->get()->toArray());
@@ -43,12 +45,12 @@ class SupportController extends APIController
     /**
      * @SWG\Post(
      *     path="/support/kb",
-     *     summary="(DONE) Create knowledgebase category. Requires JWT or Session Cookie",
-     *     description="(DONE) Creates knowledgebase category. Requires JWT or Session Cookie",
+     *     summary="Create knowledgebase category. [Auth]",
+     *     description="Creates knowledgebase category. Requires JWT or Session Cookie and VATUSA Staff role.",
      *     produces={"application/json"},
      *     tags={"support"},
      *     security={"jwt","session"},
-     *     @SWG\Parameter(in="formData", name="name", type="string", description="(DONE) Name of new category"),
+     *     @SWG\Parameter(in="formData", name="name", type="string", description="Name of new category"),
      *     @SWG\Response(
      *         response="400",
      *         description="Malformed request, check format of position, expDate",
@@ -75,6 +77,9 @@ class SupportController extends APIController
      *         ),
      *     )
      * )
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function postKB(Request $request) {
         if (!$request->has("name")) return response()->malformed();
@@ -91,13 +96,13 @@ class SupportController extends APIController
     /**
      * @SWG\Put(
      *     path="/support/kb/{id}",
-     *     summary="(DONE) Modify knowledgebase category. Requires JWT or Session Cookie",
-     *     description="(DONE) Modify knowledgebase category. Requires JWT or Session Cookie",
+     *     summary="Modify knowledgebase category. [Auth]",
+     *     description="Modify knowledgebase category. Requires JWT or Session Cookie and VATUSA Staff role.",
      *     produces={"application/json"},
      *     tags={"support"},
      *     security={"jwt","session"},
-     *     @SWG\Parameter(in="path", name="id", type="integer", description="(DONE) ID of Knowledgebase Category"),
-     *     @SWG\Parameter(in="formData", name="name", type="string", description="(DONE) New name of category"),
+     *     @SWG\Parameter(in="path", name="id", type="integer", description="ID of Knowledgebase Category"),
+     *     @SWG\Parameter(in="formData", name="name", type="string", description="New name of category"),
      *     @SWG\Response(
      *         response="400",
      *         description="Malformed request, check format of position, expDate",
@@ -148,12 +153,12 @@ class SupportController extends APIController
     /**
      * @SWG\Delete(
      *     path="/support/kb/{id}",
-     *     summary="(DONE) Delete knowledgebase category. Requires JWT or Session Cookie",
-     *     description="(DONE) Delete knowledgebase category. Requires JWT or Session Cookie",
+     *     summary="Delete knowledgebase category. [Auth]",
+     *     description="Delete knowledgebase category. Requires JWT or Session Cookie and VATUSA Staff role.",
      *     produces={"application/json"},
      *     tags={"support"},
      *     security={"jwt","session"},
-     *     @SWG\Parameter(in="path", name="id", type="integer", description="(DONE) ID of Knowledgebase Category"),
+     *     @SWG\Parameter(in="path", name="id", type="integer", description="ID of Knowledgebase Category"),
      *     @SWG\Response(
      *         response="400",
      *         description="Malformed request, check format of position, expDate",
@@ -186,6 +191,10 @@ class SupportController extends APIController
      *         ),
      *     )
      * )
+     * @param \Illuminate\Http\Request $request
+     * @param int                      $id
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function deleteKB(Request $request, int $id) {
         if (!$request->has("name")) return response()->malformed();
@@ -208,14 +217,14 @@ class SupportController extends APIController
     /**
      * @SWG\Post(
      *     path="/support/kb/{categoryId}",
-     *     summary="(DONE) Create knowledgebase question. Requires JWT or Session Cookie",
-     *     description="(DONE) Creates knowledgebase question. Requires JWT or Session Cookie",
+     *     summary="Create knowledgebase question. [Auth]",
+     *     description="Creates knowledgebase question. Requires JWT or Session Cookie and VATUSA Staff role.",
      *     produces={"application/json"},
      *     tags={"support"},
      *     security={"jwt","session"},
-     *     @SWG\Parameter(in="path", name="categoryId", type="integer", description="(DONE) ID of category"),
-     *     @SWG\Parameter(in="formData", name="question", type="string", description="(DONE) Question"),
-     *     @SWG\Parameter(in="formData", name="answer", type="string", description="(DONE) Answer"),
+     *     @SWG\Parameter(in="path", name="categoryId", type="integer", description="ID of category"),
+     *     @SWG\Parameter(in="formData", name="question", type="string", description="Question"),
+     *     @SWG\Parameter(in="formData", name="answer", type="string", description="Answer"),
      *     @SWG\Response(
      *         response="400",
      *         description="Malformed request, check format of position, expDate",
@@ -248,6 +257,10 @@ class SupportController extends APIController
      *         ),
      *     )
      * )
+     * @param \Illuminate\Http\Request $request
+     * @param                          $id
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function postKBQuestion(Request $request, $id) {
         if (!$request->has("name")) return response()->malformed();
@@ -272,17 +285,17 @@ class SupportController extends APIController
     /**
      * @SWG\Put(
      *     path="/support/kb/{categoryid}/{questionid}",
-     *     summary="(DONE) Modify knowledgebase question. Requires JWT or Session Cookie",
-     *     description="(DONE) Modify knowledgebase question. Requires JWT or Session Cookie",
+     *     summary="Modify knowledgebase question. [Auth]",
+     *     description="Modify knowledgebase question. Requires JWT or Session Cookie and VATUSA Staff Role",
      *     produces={"application/json"},
      *     tags={"support"},
      *     security={"jwt","session"},
-     *     @SWG\Parameter(in="path", name="categoryid", type="integer", description="(DONE) ID of Knowledgebase Category"),
-     *     @SWG\Parameter(in="path", name="questionid", type="integer", description="(DONE) ID of question"),
-     *     @SWG\Parameter(in="formData", name="question", type="string", description="(DONE) New question"),
-     *     @SWG\Parameter(in="formData", name="answer", type="string", description="(DONE) New answer"),
-     *     @SWG\Parameter(in="formData", name="category", type="integer", description="(DONE) Move to new category"),
-     *     @SWG\Parameter(in="formData", name="order", type="integer", description="(DONE) New order placement"),
+     *     @SWG\Parameter(in="path", name="categoryid", type="integer", description="ID of Knowledgebase Category"),
+     *     @SWG\Parameter(in="path", name="questionid", type="integer", description="ID of question"),
+     *     @SWG\Parameter(in="formData", name="question", type="string", description="New question"),
+     *     @SWG\Parameter(in="formData", name="answer", type="string", description="New answer"),
+     *     @SWG\Parameter(in="formData", name="category", type="integer", description="Move to new category"),
+     *     @SWG\Parameter(in="formData", name="order", type="integer", description="New order placement"),
      *     @SWG\Response(
      *         response="400",
      *         description="Malformed request, check format of position, expDate",
@@ -315,6 +328,11 @@ class SupportController extends APIController
      *         ),
      *     )
      * )
+     * @param \Illuminate\Http\Request $request
+     * @param int                      $cid
+     * @param int                      $qid
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function putKBQuestion(Request $request, int $cid, int $qid) {
         if (!$request->has("name")) return response()->malformed();
@@ -357,13 +375,13 @@ class SupportController extends APIController
     /**
      * @SWG\Delete(
      *     path="/support/kb/{categoryid}/{questionid}",
-     *     summary="(DONE) Delete knowledgebase question. Requires JWT or Session Cookie",
-     *     description="(DONE) Delete knowledgebase question. Requires JWT or Session Cookie",
+     *     summary="Delete knowledgebase question. [Auth]",
+     *     description="Delete knowledgebase question. Requires JWT or Session Cookie and VATUSA Staff role.",
      *     produces={"application/json"},
      *     tags={"support"},
      *     security={"jwt","session"},
-     *     @SWG\Parameter(in="path", name="categoryid", type="integer", description="(DONE) ID of Knowledgebase Category"),
-     *     @SWG\Parameter(in="path", name="questionid", type="integer", description="(DONE) ID of question"),
+     *     @SWG\Parameter(in="path", name="categoryid", type="integer", description="ID of Knowledgebase Category"),
+     *     @SWG\Parameter(in="path", name="questionid", type="integer", description="ID of question"),
      *     @SWG\Response(
      *         response="400",
      *         description="Malformed request, check format of position, expDate",
@@ -390,6 +408,11 @@ class SupportController extends APIController
      *         ),
      *     )
      * )
+     * @param \Illuminate\Http\Request $request
+     * @param int                      $categoryid
+     * @param int                      $questionid
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function deleteKBQuestion(Request $request, int $categoryid, int $questionid) {
         if (!$request->has("name")) return response()->malformed();
@@ -411,8 +434,8 @@ class SupportController extends APIController
     /**
      * @SWG\Get(
      *     path="/support/tickets/depts",
-     *     summary="(DONE) Get list of assignable departments",
-     *     description="(DONE) Get list of assignable departments",
+     *     summary="Get list of assignable departments.",
+     *     description="Get list of assignable departments.",
      *     produces={"application/json"},
      *     tags={"support"},
      *     @SWG\Response(
@@ -431,6 +454,9 @@ class SupportController extends APIController
      *         ),
      *     )
      * )
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function getTicketDepts(Request $request) {
         $depts = [
@@ -451,8 +477,8 @@ class SupportController extends APIController
     /**
      * @SWG\Get(
      *     path="/support/tickets/depts/{dept}/staff",
-     *     summary="(DONE) Get list of assignable staff members for {dept}",
-     *     description="(DONE) Get list of assignable staff members for {dept}",
+     *     summary="Get list of assignable staff members for department.",
+     *     description="Get list of assignable staff members for {dept}.",
      *     produces={"application/json"},
      *     tags={"support"},
      *     @SWG\Parameter(name="dept", type="string", description="ID for Dept", in="path"),
@@ -473,6 +499,10 @@ class SupportController extends APIController
      *         ),
      *     )
      * )
+     * @param \Illuminate\Http\Request $request
+     * @param string                   $dept
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function getTicketDeptStaff(Request $request, string $dept) {
         $fac = Facility::find($dept);

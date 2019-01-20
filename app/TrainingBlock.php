@@ -2,6 +2,8 @@
 
 namespace App;
 
+use League\Flysystem\Plugin\ForcedRename;
+
 /**
  * Class TrainingBlock
  * @package App
@@ -42,7 +44,7 @@ class TrainingBlock extends Model
     }
 
     public function deleteBlock() {
-        $this->chapters()->deleteChapter();
+        foreach($this->chapters() as $chapter) $chapter->deleteChapter();
         $this->delete();
     }
 }
