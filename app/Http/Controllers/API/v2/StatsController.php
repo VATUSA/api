@@ -3,15 +3,9 @@
 namespace App\Http\Controllers\API\v2;
 
 use App\Helpers\AuthHelper;
-use App\Helpers\EmailHelper;
-use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
-use App\Role;
-use App\Transfer;
-use App\User;
 use App\Exam;
 use App\ExamResults;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Facility;
 
@@ -25,13 +19,19 @@ class StatsController  extends APIController
      *
      * @SWG\Get(
      *     path="/stats/exams/(facility)",
-     *     summary="(DONE) Get statistics of exam results",
-     *     description="(DONE) Get statistics of exam results",
+     *     summary="Get statistics of exam results. [Key]",
+     *     description="Get statistics of exam results. Requires API Key or facility staff authentication.",
      *     produces={"application/json"},
      *     tags={"stats"},
      *     @SWG\Parameter(name="facility", in="path", type="string", description="Filter for facility IATA ID"),
      *     @SWG\Parameter(name="month", in="query", type="integer", description="Filter by month number, requires year"),
      *     @SWG\Parameter(name="year", in="query", type="integer", description="4 digit year to limit results by"),
+    *      @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
      *     @SWG\Response(
      *         response="200",
      *         description="OK",
@@ -49,8 +49,17 @@ class StatsController  extends APIController
      *         ),
      *     )
      * ),
+     * @param \Illuminate\Http\Request $request
+     * @param null                     $facility
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function getExams(Request $request, $facility = null) {
+        if (!AuthHelper::validApiKeyv2($request->input('apikey', null))
+            && !\Auth::check() && !RoleHelper::isFacilityStaff()) {
+            return response()->api(generate_error("Unauthorized"), 401);
+        }
+
         if ($request->has("month") && !$request->has("year")) {
             return response()->api(generate_error("Missing required field", true), 400);
         }
