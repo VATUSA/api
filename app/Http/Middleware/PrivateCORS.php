@@ -27,7 +27,7 @@ class PrivateCORS
                         $_SERVER['HTTP_ORIGIN']
                     )
                 ) {
-                    abort(400, "Malformed origin " . $_SERVER['HTTP_ORIGIN']);
+                    abort(400, "Malformed origin");
                 }
             }
         } else {
@@ -45,7 +45,7 @@ class PrivateCORS
                         $_SERVER['HTTP_ORIGIN'])
                     )
                 ) {
-                    abort(400, "Malformed origin " . $_SERVER['HTTP_ORIGIN']);
+                    abort(400, "Malformed origin");
                 }
             }
         }

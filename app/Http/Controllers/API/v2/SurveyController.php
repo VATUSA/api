@@ -13,8 +13,8 @@ class SurveyController
     /**
      * @SWG\Get(
      *     path="/survey/{id}",
-     *     summary="(DONE) Get survey questions (CORS Restricted)",
-     *     description="(DONE) Get survey questions (CORS Restricted)",
+     *     summary="Get survey questions. [Private]",
+     *     description="Get survey questions (CORS Restricted).",
      *     produces={"application/json"},
      *     tags={"survey"},
      *     @SWG\Parameter(description="Survey Assignment ID", in="path", name="id", required=true, type="string"),
@@ -41,6 +41,10 @@ class SurveyController
      *         ),
      *     )
      * )
+     * @param \Illuminate\Http\Request $request
+     * @param                          $id
+     *
+     * @return
      */
 
     public function getSurvey(Request $request, $id) {
@@ -59,8 +63,8 @@ class SurveyController
     /**
      * @SWG\Post(
      *     path="/survey/{id}",
-     *     summary="Submit survey (CORS Restricted)",
-     *     description="Submit survey (CORS Restricted)",
+     *     summary="Submit survey. [Private]",
+     *     description="Submit survey (CORS Restricted).",
      *     produces={"application/json"},
      *     tags={"survey"},
      *     @SWG\Parameter(description="Survey Assignment ID", in="path", name="id", required=true, type="string"),
@@ -91,6 +95,10 @@ class SurveyController
      *         ),
      *     )
      * )
+     * @param \Illuminate\Http\Request $request
+     * @param                          $id
+     *
+     * @return
      */
 
     public function postSurvey(Request $request, $id) {
@@ -121,8 +129,8 @@ class SurveyController
     /**
      * @SWG\Post(
      *     path="/survey/{id}/assign/{cid}",
-     *     summary="(DONE) Assign a survey to cid (CORS Restricted)",
-     *     description="(DONE) Assign a survey to cid (CORS Restricted)",
+     *     summary="Assign a survey to cid. [Private]",
+     *     description="Assign a survey to cid (CORS Restricted).",
      *     produces={"application/json"},
      *     tags={"survey"},
      *     @SWG\Parameter(description="Survey ID", in="path", name="id", required=true, type="integer"),
@@ -147,6 +155,12 @@ class SurveyController
      *         ),
      *     )
      * )
+     * @param \Illuminate\Http\Request $request
+     * @param                          $id
+     * @param                          $cid
+     *
+     * @return \Illuminate\Http\Response
+     * @throws \Exception
      */
     public function postSurveyAssign(Request $request, $id, $cid) {
         if (!\Auth::check()) return response()->unauthenticated();

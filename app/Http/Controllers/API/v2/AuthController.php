@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\API\v2;
 
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use Tymon\JWTAuth\Exceptions\JWTException;
 
 class AuthController extends APIController
 {
@@ -14,7 +12,7 @@ class AuthController extends APIController
      *
      * @SWG\Get(
      *     path="/auth/token",
-     *     summary="Get JWT. CORS Restricted",
+     *     summary="Get JWT. [Private]",
      *     description="Get JWT. CORS Restricted",
      *     produces={"application/json"},
      *     tags={"auth"},
@@ -48,7 +46,7 @@ class AuthController extends APIController
      *
      * @SWG\Get(
      *     path="/auth/token/refresh",
-     *     summary="Refresh JWT. CORS Restricted",
+     *     summary="Refresh JWT. [Private]",
      *     description="Refresh JWT. CORS Restricted",
      *     produces={"application/json"},
      *     tags={"auth"},
@@ -82,7 +80,7 @@ class AuthController extends APIController
      *
      * @SWG\Get(
      *     path="/auth/info",
-     *     summary="Get information about logged in user. CORS Restricted",
+     *     summary="Get information about logged in user. [Private]",
      *     description="Get user info. CORS Restricted",
      *     produces={"application/json"},
      *     tags={"auth"},
