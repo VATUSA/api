@@ -99,6 +99,7 @@ class ULSv2Controller extends Controller
         $token = $serializer->serialize($jws, 0);
 
         $request->session()->forget("fac");
+        $request->session()->forget("url");
 
         if ($redirect) {
             return redirect("$redirect?token=$token");
