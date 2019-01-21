@@ -110,6 +110,10 @@ Route::group(['middleware' => 'auth:web,jwt'], function () {
 Route::group(['middleware' => 'semiprivate'], function () {
     Route::get('facility/{id}/transfers', 'FacilityController@getTransfers')->where('id', '[A-Za-z]{3}');
     Route::get('facility/{id}/email/{templateName}', 'FacilityController@getemailTemplate');
+    Route::get('facility/{id}/ulsReturns', 'FacilityController@getUlsReturns');
+    Route::post('facility/{id}/ulsReturns', 'FacilityController@addUlsReturn');
+    Route::delete('facility/{id}/ulsReturns/{order}', 'FacilityController@removeUlsReturn');
+    Route::put('facility/{id}/ulsReturns/{order}', 'FacilityController@putUlsReturn');
 });
 
 /******************************************************************************************
