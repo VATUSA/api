@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Login;
 
 use App\Exceptions\FacilityNotFoundException;
+use App\Exceptions\ReturnPathNotFoundException;
 use App\Facility;
 use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
@@ -30,41 +31,48 @@ use Namshi\JOSE\Base64\Base64Encoder;
  */
 class ULSv2Controller extends Controller
 {
-    public function getLogin(Request $request) {
-        if (!$request->has('fac')) {
+    public function getLogin(Request $request)
+    {
+        $fac = $request->input('fac', null);
+
+        $url = $request->input('url', 1);
+        if ($request->has('dev') && !$request->has('url')) {
+            $url = 2;
+        }
+
+        if (!$fac || !filter_var($url, FILTER_VALIDATE_INT)) {
             abort(400, "Malformed request");
         }
 
-        $facility = Facility::find($request->get('fac'));
+        $fac = strtoupper($fac);
+        $facility = Facility::find($fac);
         if (!$facility || !$facility->active) {
             throw new FacilityNotFoundException("Invalid facility");
         }
-
-        if ($facility->uls_jwk == "" || ($facility->uls_return == "" && $facility->uls_devreturn)) {
-            abort(400, "Facility is not ready for ULSv2. Please contact the facility webmaster at " . strtolower($facility->id) . "-wm@vatusa.net");
+        if (!$facility->returnPaths()->where('order', $url)->exists()) {
+            throw new ReturnPathNotFoundException("Invalid return URL");
         }
 
-        session(['fac' => strtoupper($request->input('fac'))]);
-        if ($request->has('dev')) {
-            session(['dev' => true]);
+        if ($facility->uls_jwk == "") {
+            abort(400,
+                "Facility is not ready for ULSv2. Please contact the facility webmaster at " . strtolower($facility->id) . "-wm@vatusa.net");
         }
+
+        session(compact('fac', 'url'));
 
         return redirect(env('ULSv2_LOGIN'));
     }
 
-    public function getRedirect(Request $request) {
-        if (!$request->session()->has('fac')) {
+    public function getRedirect(Request $request)
+    {
+        $fac = $request->session()->has('fac') ? $request->session()->get('fac') : null;
+        $url = $request->session()->has('url') ? $request->session()->get('url') : null;
+        if (!$fac || !$url) {
             abort(400, "Malformed request");
         }
 
-        $facility = Facility::where("id", $request->session()->get("fac"))->first();
-        $redirect = null;
-        if ($request->session()->has("dev")) {
-            $request->session()->forget("dev");
-            $redirect = $facility->uls_devreturn;
-        } else {
-            $redirect = $facility->uls_return;
-        }
+        $facility = Facility::where("id", $fac)->first();
+        $redirect = ULSHelper::getReturnFromOrder($fac, $url);
         $facility_jwk = json_decode($facility->uls_jwk, true);
 
         if (!\Auth::check()) {
@@ -72,7 +80,9 @@ class ULSv2Controller extends Controller
         }
 
         $algorithmManager = AlgorithmManager::create([
-            new HS256(), new HS384(), new HS512()
+            new HS256(),
+            new HS384(),
+            new HS512()
         ]);
         $jwk = JWK::create(json_decode($facility->uls_jwk, true));
         $jsonConverter = new StandardConverter();
@@ -83,7 +93,8 @@ class ULSv2Controller extends Controller
 
         $data = ULSHelper::generatev2Token(\Auth::user(), $facility);
         $payload = $jsonConverter->encode($data);
-        $jws = $jwsBuilder->create()->withPayload($payload)->addSignature($jwk,['alg' => $facility_jwk['alg']])->build();
+        $jws = $jwsBuilder->create()->withPayload($payload)->addSignature($jwk,
+            ['alg' => $facility_jwk['alg']])->build();
         $serializer = new CompactSerializer($jsonConverter);
         $token = $serializer->serialize($jws, 0);
 
@@ -92,15 +103,17 @@ class ULSv2Controller extends Controller
         if ($redirect) {
             return redirect("$redirect?token=$token");
         } else {
-            abort(500,"Facility doesn't have a return URL configured");
+            abort(500, "Facility doesn't have a return URL configured");
         }
     }
 
     /**
      * @param Request $request
+     *
      * @return string
      */
-    public function getInfo(Request $request) {
+    public function getInfo(Request $request)
+    {
         if (!$request->has("token")) {
             return response()->json(['status' => 'Malformed request'], 400);
         }
@@ -116,6 +129,7 @@ class ULSv2Controller extends Controller
         $data = json_decode(\Base64Url\Base64Url::decode($token), true);
         if (!$data) {
             \Log::info("Got invalid token $token");
+
             return response()->json(generate_error("Invalid token"), 400);
         }
         $signature = $data['sig'];
@@ -132,19 +146,19 @@ class ULSv2Controller extends Controller
         $user = User::find($data['sub']);
         $facility = Facility::find($data['aud']);       // Assumption, but not much risk here, checked by our signature anyway
         $data = [
-            'cid' => $user->cid,
-            'lastname' => $user->lname,
+            'cid'       => $user->cid,
+            'lastname'  => $user->lname,
             'firstname' => $user->fname,
-            'email' => $user->email,
-            'rating' => RatingHelper::intToShort($user->rating),
+            'email'     => $user->email,
+            'rating'    => RatingHelper::intToShort($user->rating),
             'intRating' => $user->rating,
-            'facility' => [
-                'id' => $facility->id,
+            'facility'  => [
+                'id'   => $facility->id,
                 'name' => $facility->name
             ],
-            'roles' => []
+            'roles'     => []
         ];
-        foreach(Role::where('cid', $user->cid)->where('facility', $facility->id)->get() as $role) {
+        foreach (Role::where('cid', $user->cid)->where('facility', $facility->id)->get() as $role) {
             $data['roles'][] = $role->role;
         }
 

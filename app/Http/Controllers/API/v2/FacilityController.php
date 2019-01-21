@@ -949,7 +949,7 @@ class FacilityController extends APIController
         $url = $request->input('url', null);
 
         if (!$order) {
-            return response()->api(generate_error("Malformed request"), 400);
+            return response()->api(generate_error("Malformed request, missing order ID"), 400);
         }
 
 
@@ -960,7 +960,7 @@ class FacilityController extends APIController
         }
 
         if (!$url || !filter_var($url, FILTER_VALIDATE_URL)) {
-            return response()->api(generate_error("Malformed request"), 400);
+            return response()->api(generate_error("Malformed request, invalid URL"), 400);
         }
 
         $facility->returnPaths()->create([
@@ -1044,7 +1044,7 @@ class FacilityController extends APIController
         }
 
         if (!$order) {
-            return response()->api(generate_error("Malformed request"), 400);
+            return response()->api(generate_error("Malformed request, missing order ID"), 400);
         }
 
         if(!$facility->returnPaths()->where('order', $order)->exists()) {
