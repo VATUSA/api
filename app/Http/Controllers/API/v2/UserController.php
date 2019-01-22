@@ -67,11 +67,11 @@ class UserController extends APIController
         if (!AuthHelper::validApiKeyv2($request->input('apikey', null)) && !$isFacStaff) {
             //API Key Required
             $data['flag_broadcastOptedIn'] = null;
+            $data['email'] = null;
         }
         if (!$isSeniorStaff) {
             //Senior Staff Only
             $data['flag_preventStaffAssign'] = null;
-            $data['email'] = null;
         }
 
         return response()->api($data);

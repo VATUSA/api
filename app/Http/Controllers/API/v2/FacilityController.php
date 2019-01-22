@@ -501,7 +501,7 @@ class FacilityController extends APIController
         $roster = $facility->members->toArray();
         $count = count($roster);
 
-        $hasAPIKey = AuthHelper::validApiKeyv2($request->input('apikey', null));
+        $hasAPIKey = AuthHelper::validApiKeyv2($request->input('apikey', null), $id);
         $isFacStaff = \Auth::check() && RoleHelper::isFacilityStaff(\Auth::user()->cid, \Auth::user()->facility);
         $isSeniorStaff = \Auth::check() && RoleHelper::isSeniorStaff(\Auth::user()->cid, \Auth::user()->facility);
 
