@@ -508,11 +508,11 @@ class FacilityController extends APIController
         for ($i = 0; $i < $count; $i++) {
             if (!$hasAPIKey && !$isFacStaff) {
                 $roster[$i]['flag_broadcastOptedIn'] = null;
+                $roster[$i]['email'] = null;
             }
             if (!$isSeniorStaff) {
                 //Senior Staff Only
                 $roster[$i]['flag_preventStaffAssign'] = null;
-                $roster[$i]['email'] = null;
             }
         }
 
