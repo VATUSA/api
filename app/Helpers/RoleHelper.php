@@ -115,7 +115,9 @@ class RoleHelper {
      * @param bool $includeTA
      * @return bool
      */
-    public static function isSeniorStaff($cid, $facility, $includeTA = false) {
+    public static function isSeniorStaff($cid = null, $facility = null, $includeTA = false) {
+        if(!$cid) $cid = \Auth::user()->cid;
+        if(!$facility) $facility = \Auth::user()->facility;
         if (($includeTA && static::has($cid, $facility, ['ATM','DATM','TA'])) ||
             static::has($cid, $facility, ['ATM','DATM'])) {
 
@@ -125,7 +127,9 @@ class RoleHelper {
         return false;
     }
 
-    public static function isFacilityStaff($cid, $facility) {
+    public static function isFacilityStaff($cid = null, $facility = null) {
+        if(!$cid) $cid = \Auth::user()->cid;
+        if(!$facility) $facility = \Auth::user()->facility;
         if (static::has($cid, $facility, ['ATM','DATM','TA','WM','FE','EC'])) {
             return true;
         }
@@ -133,7 +137,8 @@ class RoleHelper {
         return false;
     }
 
-    public static function isInstructor($cid) {
+    public static function isInstructor($cid = null) {
+        if(!$cid) $cid = \Auth::user()->cid;
         $user = User::find($cid);
         if ($user->rating >= RatingHelper::shortToInt("I1")) {
             return true;

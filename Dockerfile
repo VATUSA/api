@@ -14,6 +14,7 @@ RUN	addgroup -S application && adduser -SG application application && \
 	echo "${TIMEZONE}" > /etc/timezone && \
 	apk add --update \
 		php7-pdo \
+		php7-fileinfo \
 		php7-pdo_mysql \
 		php7-curl \
 		php7-xml \

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\API\v2;
 
-use App\Action;
 use App\EmailAccounts;
 use App\Facility;
 use App\Helpers\EmailHelper;
@@ -10,17 +9,14 @@ use App\Helpers\RoleHelper;
 use App\Role;
 use App\User;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use App\Exam;
-use PharIo\Manifest\Email;
 
 class EmailController extends APIController
 {
     /**
      * @SWG\Get(
      *     path="/email",
-     *     summary="(DONE) Get info of VATUSA email address assigned for user. CORS Restricted Requires JWT or Session Cookie",
-     *     description="(DONE) Get info of VATUSA email address assigned for user. CORS Restricted Requires JWT or Session Cookie",
+     *     summary="Get info of VATUSA email address assigned for user. [Private]",
+     *     description="Get info of VATUSA email address assigned for user. CORS Restricted.",
      *     produces={"application/json"},
      *     tags={"email"},
      *     security={"jwt","session"},
@@ -106,8 +102,8 @@ class EmailController extends APIController
      *
      * @SWG\Get(
      *     path="/email/(address)",
-     *     summary="(DONE) Get info of VATUSA email address. CORS Restricted Requires JWT or Session Cookie",
-     *     description="(DONE) Get info of VATUSA email address. CORS Restricted Requires JWT or Session Cookie",
+     *     summary="Get info of VATUSA email address. [Private]",
+     *     description="Get info of VATUSA email address. CORS Restricted.",
      *     produces={"application/json"},
      *     tags={"email"},
      *     security={"jwt","session"},
@@ -179,8 +175,8 @@ class EmailController extends APIController
     /**
      * @SWG\Put(
      *     path="/email",
-     *     summary="(DONE) Modify email account. CORS Restricted Requires JWT or Session Cookie",
-     *     description="(DONE) Modify email account. Static forwards may only be modified by the ATM, DATM or WM. CORS Restricted Requires JWT or Session Cookie",
+     *     summary="Modify email account. [Private]",
+     *     description="Modify email account. Static forwards may only be modified by the ATM, DATM or WM. CORS Restricted.",
      *     produces={"application/json"},
      *     tags={"email"},
      *     security={"jwt","session"},
@@ -226,9 +222,12 @@ class EmailController extends APIController
      *         examples={"application/json":{"status"="OK"}}
      *     )
      * )
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function putIndex(Request $request) {
-        if (!\Auth::check()) return response()->unauthenticated;
+        if (!\Auth::check()) return response()->unauthenticated();
 
         $email = $request->input("email", null);
         if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -306,11 +305,12 @@ class EmailController extends APIController
         }
         return response()->json(["status" => "OK"]);
     }
+
     /**
      * @SWG\Get(
      *     path="/email/hosted",
-     *     summary="(DONE) Get VATUSA hosted email accounts. CORS Restricted",
-     *     description="(DONE) Get VATUSA hosted email accounts. CORS Restricted (JWT+SESSION)",
+     *     summary="Get VATUSA hosted email accounts.  [Private]",
+     *     description="Get VATUSA hosted email accounts. CORS Restricted.",
      *     produces={"application/json"},
      *     tags={"email"},
      *     security={"jwt","session"},
@@ -349,9 +349,12 @@ class EmailController extends APIController
      *         ),
      *     )
      * )
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\Response
      */
     public function getHosted(Request $request) {
-        if (!\Auth::check()) return response()->unauthenicated();
+        if (!\Auth::check()) return response()->unauthenticated();
 
         if (!$request->has("facility")) return response()->malformed();
 
@@ -367,11 +370,12 @@ class EmailController extends APIController
 
         return response()->ok(["emails" => $return]);
     }
+
     /**
      * @SWG\Put(
      *     path="/email/hosted/{fac}/{username}",
-     *     summary="(DONE) Modify VATUSA hosted email account. CORS Restricted",
-     *     description="(DONE) Modify VATUSA hosted email account. CORS Restricted (JWT+SESSION)",
+     *     summary="Modify VATUSA hosted email account. [Private]",
+     *     description="Modify VATUSA hosted email account. CORS Restricted.",
      *     produces={"application/json"},
      *     tags={"email"},
      *     security={"jwt","session"},
@@ -404,9 +408,14 @@ class EmailController extends APIController
      *         examples={"application/json":{"status"="OK"}}
      *     )
      * )
+     * @param \Illuminate\Http\Request $request
+     * @param null                     $facility
+     * @param null                     $username
+     *
+     * @return \Illuminate\Http\Response
      */
     public function postHosted(Request $request, $facility = null, $username = null) {
-        if (!\Auth::check()) return response()->unauthenicated();
+        if (!\Auth::check()) return response()->unauthenticated();
 
         if (!$request->has("cid")) return response()->malformed();
 
@@ -436,11 +445,12 @@ class EmailController extends APIController
 
         return response()->ok();
     }
+
     /**
      * @SWG\Delete(
      *     path="/email/hosted/{fac}/{username}",
-     *     summary="(DONE) Delete VATUSA hosted email account. CORS Restricted Requires JWT or Session Cookie",
-     *     description="(DONE) Delete VATUSA hosted email account. CORS Restricted Requires JWT or Session Cookie",
+     *     summary="Delete VATUSA hosted email account. [Private]",
+     *     description="Delete VATUSA hosted email account. CORS Restricted.",
      *     produces={"application/json"},
      *     tags={"email"},
      *     security={"jwt","session"},
@@ -472,9 +482,14 @@ class EmailController extends APIController
      *         examples={"application/json":{"status"="OK"}}
      *     )
      * )
+     * @param \Illuminate\Http\Request $request
+     * @param                          $facility
+     * @param                          $username
+     *
+     * @return \Illuminate\Http\Response
      */
     public function deleteHosted(Request $request, $facility, $username) {
-        if (!\Auth::check()) return response()->unauthenicated();
+        if (!\Auth::check()) return response()->unauthenticated();
 
         $fac = Facility::find($facility);
         if (!$fac) return response()->notfound();
