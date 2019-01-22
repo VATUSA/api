@@ -59,13 +59,13 @@ class SoloController extends APIController
      *     path="/solo",
      *     summary="Submit new solo certification. [Key]",
      *     description="Submit new solo certification. Requires API Key, JWT, or Session Cookie (required roles:
-           [N/A for API Key] ATM, DATM, TA, INS)", produces={"application/json"}, tags={"solo"},
+                     [N/A for API Key] ATM, DATM, TA, INS)", produces={"application/json"}, tags={"solo"},
      *     security={"apikey","jwt","session"},
      * @SWG\Parameter(name="cid", in="formData", type="integer", required=true, description="CERT ID"),
      * @SWG\Parameter(name="position", in="formData", type="string", required=true, description="Position ID
-     *                                     (XYZ_APP, ZZZ_CTR)"),
+                    (XYZ_APP, ZZZ_CTR)"),
      * @SWG\Parameter(name="expDate", in="formData", type="string", required=true, description="Date of expiration
-     *                                    (YYYY-MM-DD)"),
+                    (YYYY-MM-DD)"),
      * @SWG\Response(
      *         response="400",
      *         description="Malformed request, check format of position, expDate",
@@ -108,9 +108,9 @@ class SoloController extends APIController
             return response()->api(generate_error("Unauthorized"), 401);
         }
 
-        if (\Auth::check && (!RoleHelper::isFacilityStaff() &&
-                !RoleHelper::isVATUSAStaff() &&
-                !RoleHelper::isInstructor())) {
+        if (\Auth::check() && !(RoleHelper::isFacilityStaff() ||
+                RoleHelper::isVATUSAStaff() ||
+                RoleHelper::isInstructor())) {
             return response()->api(generate_error("Forbidden"), 403);
         }
 
