@@ -279,8 +279,10 @@ class ExamController extends APIController
      * @SWG\Get(
      *     path="/exam/request",
      *     summary="Generates and sends exam payload for VATUSA Exam Center based on queued exam for JWT auth'd user.
-           [Private]", description="Generates and sends exam payload for VATUSA Exam Center based on queued exam for
-     *     JWT auth'd user. CORS Restricted", produces={"application/json"}, tags={"exam"}, security={"jwt"},
+           [Private]",
+     *     description="Generates and sends exam payload for VATUSA Exam Center based on queued exam for
+            JWT auth'd user. CORS Restricted",
+     *     produces={"application/json"}, tags={"exam"}, security={"jwt"},
      *     @SWG\Parameter(description="JWT Token", in="header", name="bearer", required=true, type="string"),
      *     @SWG\Response(
      *         response="404",
@@ -297,7 +299,7 @@ class ExamController extends APIController
      *         response="200",
      *         description="Exam generated",
      *         @SWG\Schema(type="object", @SWG\Property(property="payload", type="string", description="base64 encoded
-     *                                    quiz payload, with signature appended"))
+                                          quiz payload, with signature appended"))
      *     )
      * )
      */
@@ -370,7 +372,7 @@ class ExamController extends APIController
      *     produces={"application/json"},
      *     tags={"exam"},
      *     @SWG\Parameter(name="facility", in="path", type="string", description="(OPTIONAL) Filter list by Facility
-     *                                     IATA ID"),
+                                           IATA ID"),
      *     @SWG\Response(
      *         response="200",
      *         description="OK",
@@ -381,7 +383,7 @@ class ExamController extends APIController
      *             ),
      *         ),
      *         examples={"application/json":{{"id":50,"facility_id":"ZAE","name":"VATUSA - S2 Rating (TWR) Controller
-     *         Exam","number":20,"is_active":1,"cbt_required":118,"retake_period":3,"passing_score":80,"answer_visibility":"all_passed"}}},
+               Exam","number":20,"is_active":1,"cbt_required":118,"retake_period":3,"passing_score":80,"answer_visibility":"all_passed"}}},
      *     )
      * )
      * @param \Illuminate\Http\Request $request
@@ -425,7 +427,7 @@ class ExamController extends APIController
      *             ref="#/definitions/Exam"
      *         ),
      *         examples={"application/json":{"id":50,"facility_id":"ZAE","name":"VATUSA - S2 Rating (TWR) Controller
-     *         Exam","number":20,"is_active":1,"cbt_required":118,"retake_period":3,"passing_score":80,"answer_visibility":"all_passed"}},
+               Exam","number":20,"is_active":1,"cbt_required":118,"retake_period":3,"passing_score":80,"answer_visibility":"all_passed"}},
      *     )
      * )
      * @param \Illuminate\Http\Request $request
@@ -468,7 +470,7 @@ class ExamController extends APIController
      *             ref="#/definitions/Exam"
      *         ),
      *         examples={"application/json":{{"id":1959,"exam_id":53,"question":"Green Bay is a Class __
-     *         airspace.","type":0,"answer":"Charlie","alt1":"Bravo","alt2":"Delta","alt3":"Foxtrot"}}},
+               airspace.","type":0,"answer":"Charlie","alt1":"Bravo","alt2":"Delta","alt3":"Foxtrot"}}},
      *     )
      * )
      *
@@ -505,18 +507,18 @@ class ExamController extends APIController
      *     produces={"application/json"},
      *     tags={"exam"},
      *     @SWG\Parameter(name="facility", in="path", type="string", required=true, description="Filter list by
-     *                                     Facility IATA ID"),
+                                           Facility IATA ID"),
      *     @SWG\Parameter(name="examid", in="path", type="integer", required=true, description="Exam ID"),
      *     @SWG\Parameter(name="name", in="formData", type="string", description="Exam name"),
      *     @SWG\Parameter(name="cbtRequired", in="formData", type="integer", description="ID of CBT Required"),
      *     @SWG\Parameter(name="passingScore", in="formData", type="integer", description="Passing Score Percentage *
-     *                                         100"),
+                                               100"),
      *     @SWG\Parameter(name="retakePeriod", in="formData", type="integer", description="Auto reassign on fail after
-     *                                         X days, 0 = no auto reassign, valid values: 1, 3, 5, 7, 14"),
+                                               X days, 0 = no auto reassign, valid values: 1, 3, 5, 7, 14"),
      *     @SWG\Parameter(name="numberQuestions", in="formData", type="integer", description="Number of questions to
-     *                                            ask, 0 = all"),
+                                                  ask, 0 = all"),
      *     @SWG\Parameter(name="active", in="formData", type="integer", description="Is exam active? (numeric
-     *                                   representation of bool 1 = active, 0 = not active)"),
+                                         representation of bool 1 = active, 0 = not active)"),
      *     @SWG\Response(
      *         response="401",
      *         description="Unauthorized",
@@ -622,18 +624,18 @@ class ExamController extends APIController
      *     produces={"application/json"},
      *     tags={"exam"},
      *     @SWG\Parameter(name="facility", in="path", type="string", required=true, description="Filter list by
-     *                                     Facility IATA ID"),
+                                           Facility IATA ID"),
      *     @SWG\Parameter(name="examid", in="path", type="integer", required=true, description="Exam ID"),
      *     @SWG\Parameter(name="question", in="formData", type="string", required=true, description="Question text"),
      *     @SWG\Parameter(name="type", in="formData", type="string", required=true, description="Type of question
-     *                                 (multiple|truefalse)"),
+                                       (multiple|truefalse)"),
      *     @SWG\Parameter(name="choice1", in="formData", type="string", required=true, description="Answer"),
      *     @SWG\Parameter(name="choice2", in="formData", type="string", description="Distractor #1 (only for
-     *                                    type=multiple)"),
+                                          type=multiple)"),
      *     @SWG\Parameter(name="choice3", in="formData", type="string", description="Distractor #2 (only for
-     *                                    type=multiple)"),
+                                          type=multiple)"),
      *     @SWG\Parameter(name="choice4", in="formData", type="string", description="Distractor #3 (only for
-     *                                    type=multiple)"),
+                                          type=multiple)"),
      *     @SWG\Response(
      *         response="401",
      *         description="Unauthorized",
@@ -707,14 +709,14 @@ class ExamController extends APIController
      *     @SWG\Parameter(name="questionid", in="path", type="integer", required=true, description="Question ID"),
      *     @SWG\Parameter(name="question", in="formData", type="string", required=true, description="Question text"),
      *     @SWG\Parameter(name="type", in="formData", type="string", required=true, description="Type of question
-     *                                 (multiple|truefalse)"),
+                                       (multiple|truefalse)"),
      *     @SWG\Parameter(name="choice1", in="formData", type="string", required=true, description="Answer"),
      *     @SWG\Parameter(name="choice2", in="formData", type="string", description="Distractor #1 (only for
-     *                                    type=multiple)"),
+                                          type=multiple)"),
      *     @SWG\Parameter(name="choice3", in="formData", type="string", description="Distractor #2 (only for
-     *                                    type=multiple)"),
+                                          type=multiple)"),
      *     @SWG\Parameter(name="choice4", in="formData", type="string", description="Distractor #3 (only for
-     *                                    type=multiple)"),
+                                          type=multiple)"),
      *     @SWG\Response(
      *         response="401",
      *         description="Unauthorized",
