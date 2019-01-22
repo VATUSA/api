@@ -80,7 +80,7 @@ Route::group(['middleware' => ['auth:web,jwt', 'private'], 'prefix' => '/exam'],
     Route::post('{id}/assign/{cid}', 'ExamController@postExamAssign');
     Route::delete('{id}/assign/{cid}', 'ExamController@deleteExamAssignment');
 });
-Route::group(['middleware' => ['private', 'auth:jwt'], 'prefix' => '/exam'], function () {
+Route::group(['middleware' => ['private', 'auth:jwt,web'], 'prefix' => '/exam'], function () {
     Route::post('queue/{id}', 'ExamController@postQueue');
     Route::get('request', 'ExamController@getRequest');
     Route::post('submit', 'ExamController@postSubmit');
