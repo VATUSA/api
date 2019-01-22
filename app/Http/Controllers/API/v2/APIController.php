@@ -52,7 +52,10 @@ use \App\Http\Controllers\Controller as BaseController;
  * )
  */
 class APIController extends BaseController {
-    //
+    public function __construct()
+    {
+        //Log
+    }
 }
 
 /**
