@@ -25,14 +25,14 @@ class ExamController extends APIController
      *
      * @return \Illuminate\Http\JsonResponse
      *
-     * [SWG]\Post(
+     * @SWG\Post(
      *     path="/exam/queue/{examId}",
      *     summary="Add exam to queue for the VATUSA Exam Center. [Private]",
      *     description="Sets the exam as the queued exam for VEC. CORS Restricted.",
      *     produces={"application/json"},
      *     tags={"exam"},
      *     security={"jwt","session"},
-     *     [SWG]\Parameter(
+     *     @SWG\Parameter(
      *         description="Exam ID to place in queue",
      *         in="path",
      *         name="examId",
@@ -40,11 +40,11 @@ class ExamController extends APIController
      *         type="integer",
      *         format="int64"
      *     ),
-     *     [SWG]\Parameter(description="JWT Token", in="header", name="bearer", required=true, type="string"),
-     *     [SWG]\Response(
+     *     @SWG\Parameter(description="JWT Token", in="header", name="bearer", required=true, type="string"),
+     *     @SWG\Response(
      *         response="404",
      *         description="Exam assignment not found",
-     *         [SWG]\Schema(
+     *         @SWG\Schema(
      *             ref="#/definitions/error"
      *         ),
      *         examples={
@@ -54,16 +54,16 @@ class ExamController extends APIController
      *             }
      *        },
      *     ),
-     *     [SWG]\Response(
+     *     @SWG\Response(
      *         response="403",
      *         description="Forbidden -- usually the exam assignment doesn't belong to the authenticated user",
-     *         [SWG]\Schema(ref="#/definitions/error"),
+     *         @SWG\Schema(ref="#/definitions/error"),
      *         examples={"application/json":{"status"="error","message"="Forbidden"}},
      *     ),
-     *     [SWG]\Response(
+     *     @SWG\Response(
      *         response="200",
      *         description="Exam has been queued",
-     *         [SWG]\Schema(ref="#/definitions/OK"),
+     *         @SWG\Schema(ref="#/definitions/OK"),
      *         examples={"application/json":{"status"="OK"}}
      *     )
      * )
@@ -276,16 +276,16 @@ class ExamController extends APIController
      *
      * @return \Illuminate\Http\JsonResponse
      *
-     * [SWG]\Get(
+     * @SWG\Get(
      *     path="/exam/request",
      *     summary="Generates and sends exam payload for VATUSA Exam Center based on queued exam for JWT auth'd user.
            [Private]", description="Generates and sends exam payload for VATUSA Exam Center based on queued exam for
      *     JWT auth'd user. CORS Restricted", produces={"application/json"}, tags={"exam"}, security={"jwt"},
-     *     [SWG]\Parameter(description="JWT Token", in="header", name="bearer", required=true, type="string"),
-     *     [SWG]\Response(
+     *     @SWG\Parameter(description="JWT Token", in="header", name="bearer", required=true, type="string"),
+     *     @SWG\Response(
      *         response="404",
      *         description="Queue/Exam Assignment not found",
-     *         [SWG]\Schema(
+     *         @SWG\Schema(
      *             ref="#/definitions/error"
      *         ),
      *         examples={
@@ -293,10 +293,10 @@ class ExamController extends APIController
      *             {"application/json":{"status"="error","message"="No matching exam assignment"}},
      *        },
      *     ),
-     *     [SWG]\Response(
+     *     @SWG\Response(
      *         response="200",
      *         description="Exam generated",
-     *         [SWG]\Schema(type="object", [SWG]\Property(property="payload", type="string", description="base64 encoded
+     *         @SWG\Schema(type="object", @SWG\Property(property="payload", type="string", description="base64 encoded
      *                                    quiz payload, with signature appended"))
      *     )
      * )
