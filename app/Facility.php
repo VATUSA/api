@@ -25,4 +25,8 @@ class Facility extends Model
     {
         return $this->hasMany('App\User','facility', 'id');
     }
+
+    public function returnPaths() {
+        return $this->hasMany(ReturnPaths::class);
+    }
 }

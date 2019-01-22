@@ -17,10 +17,15 @@ use \App\Http\Controllers\Controller as BaseController;
  *         title="VATUSA API",
  *         description="VATUSA APIv2 Documentation.
             Authentication methods are: <ul>
-           <li> JSON Web Tokens (issued by VATUSA for VATUSA services only)</li>
-            <li> Session Cookies (issued by VATUSA for VATUSA services only)</li>
-            <li> API Keys (issued to facilities for facility use only)</li></ul>
-            <p>API methods that do not have a security method attached to it do not require a security check.</p>
+            <li> JSON Web Tokens (Translated from Laravel session)</li>
+            <li> Session Cookies (Client-side credentials with ULS)</li>
+            <li> API Keys (Issued to facilities)</li></ul>
+            <p>Method security, if applicable, is indicated in brackets at the end of each endpoint title.</p>
+            <p>Security classification: <ul>
+                <li><strong>Private:</strong> CORS Restricted (Internal)</li>
+                <li><strong>Auth:</strong> Accepts Session Cookie or JWT</li>
+                <li><strong>Key:</strong> Accepts API Key, Session Cookie, or JWT</li>
+            </ul></p>
             <p>Facilities that have a APIv2 JWK defined in facility settings will have the data encapisulated in a
             signed package.  For more information, please see the IT section of the VATUSA forums.</p>",
  *         x={
@@ -30,19 +35,19 @@ use \App\Http\Controllers\Controller as BaseController;
  *         },
  *         @SWG\Contact(name="Blake Nahin", url="https://www.vatusa.net"),
  *     ),
- *     @SWG\Tag(name="auth",description="[Live] Internal Authentication handling commands for use by VATUSA Web Systems to translate Laravel Sessions into JSON Web Tokens"),
- *     @SWG\Tag(name="cbt",description="Handle Computer Based Training actions"),
- *     @SWG\Tag(name="email",description="Handle user email addresses for staff members"),
- *     @SWG\Tag(name="exam",description="[Partly live] Exam center actions"),
+ *     @SWG\Tag(name="auth",description="Internal authentication handling commands for use by VATUSA Web Systems to translate Laravel Sessions into JSON Web Tokens"),
+ *     @SWG\Tag(name="cbt",description="Computer Based Training actions"),
+ *     @SWG\Tag(name="email",description="User email addresses for staff members"),
+ *     @SWG\Tag(name="exam",description="Exam center actions"),
  *     @SWG\Tag(name="facility",description="Facility management actions"),
  *     @SWG\Tag(name="transfer",description="Transfer request submission and handling actions"),
- *     @SWG\Tag(name="rating",description="Rating change handling"),
+ *     @SWG\Tag(name="rating",description="Rating changes"),
  *     @SWG\Tag(name="role",description="Role handling"),
- *     @SWG\Tag(name="solo",description="Solo Certification handling"),
+ *     @SWG\Tag(name="solo",description="Solo certifications"),
  *     @SWG\Tag(name="stats",description="Division statistics"),
  *     @SWG\Tag(name="support",description="Support Center"),
- *     @SWG\Tag(name="survey", description="Survey"),
- *     @SWG\Tag(name="tmu", description="Traffic Management Unit"),
+ *     @SWG\Tag(name="survey", description="Survey management"),
+ *     @SWG\Tag(name="training", description="Centralized training notes - Coming soon."),
  *     @SWG\Tag(name="user",description="User account management actions"),
  * )
  */
@@ -56,7 +61,7 @@ class APIController extends BaseController {
  *   type="apiKey",
  *   in="header",
  *   name="JSON Web Token",
- *   description="JSON Web Token"
+ *   description="JSON Web Token translated from Laravel session"
  * )
  */
 /**
@@ -64,7 +69,7 @@ class APIController extends BaseController {
  *   securityDefinition="session",
  *   type="apiKey",
  *   in="header",
- *   name="Session Cookie"
+ *   name="Session Cookie (Authentication on main website)"
  * )
  */
 /**
@@ -73,7 +78,7 @@ class APIController extends BaseController {
  *     type="apiKey",
  *     in="query",
  *     name="apikey",
- *     description="API Key"
+ *     description="API Key issued to facilities and generated on Facility Management page"
  * )
  */
 
