@@ -1,11 +1,14 @@
 <?php
+
 namespace App\Helpers;
 
 use App\User;
 use App\Facility;
 
-class AuthHelper {
-    public static function validApiKey($ip, $key, $fac = null) {
+class AuthHelper
+{
+    public static function validApiKey($ip, $key, $fac = null)
+    {
         $facility = Facility::where("apikey", $key)->where("ip", $ip)->first();
         if ($facility || ($fac && $fac === $facility->id)) {
             return true;
@@ -18,7 +21,11 @@ class AuthHelper {
         return false;
     }
 
-    public static function validApiKeyv2($key, $fac = null) {
+    public static function validApiKeyv2($key, $fac = null)
+    {
+        if (is_null($key)) {
+            return false;
+        }
         $facility = Facility::where("apikey", $key)->first();
         if ($facility || ($fac && $fac === $facility->id)) {
             return true;
@@ -31,7 +38,8 @@ class AuthHelper {
         return false;
     }
 
-    public static function isSandboxKey($key, $fac = null) {
+    public static function isSandboxKey($key, $fac = null)
+    {
         $facility = Facility::where("api_sandbox_key", $key)->first();
         if ($facility || ($fac && $fac === $facility->id)) {
             return true;

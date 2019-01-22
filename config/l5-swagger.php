@@ -116,18 +116,18 @@ return [
         */
         'jwt'=>[
             'type'=>'basic',
-            'description'=>'JSON Web Token',
+            'description'=>'JSON Web Token translated from Laravel session',
             'name' => 'bearer',
             'in' => 'header'
         ],
         'session'=>[
             'type'=>'basic',
-            'description'=>'Session cookie',
+            'description'=>'Session cookie (Authentication on main website)',
             'name'=>'cookie'
         ],
         'apikey' => [
             'type' => 'apiKey',
-            'description' => 'Defined API Key',
+            'description' => 'API Key issued to facilities and generated on Facility Management page',
             'name' => 'apikey',
             'in' => 'query'
         ]
