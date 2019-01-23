@@ -186,7 +186,7 @@ class SoloController extends APIController
             return response()->api(generate_error("Unauthorized"), 401);
         }
 
-        if (\Auth::check && (!RoleHelper::isFacilityStaff() &&
+        if (\Auth::check() && (!RoleHelper::isFacilityStaff() &&
                 !RoleHelper::isVATUSAStaff() &&
                 !RoleHelper::isInstructor())) {
             return response()->api(generate_error("Forbidden"), 403);

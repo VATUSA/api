@@ -16,7 +16,8 @@ class Handler extends ExceptionHandler
      */
     protected $dontReport = [
         FacilityNotFoundException::class,
-        JWTTokenException::class,
+        ReturnPathNotFoundException::class,
+        //JWTTokenException::class,
         NotSecuredException::class
     ];
 
@@ -35,11 +36,17 @@ class Handler extends ExceptionHandler
      *
      * This is a great spot to send exceptions to Sentry, Bugsnag, etc.
      *
-     * @param  \Exception  $exception
+     * @param  \Exception $exception
+     *
      * @return void
+     * @throws \Exception
      */
     public function report(Exception $exception)
     {
+        if (app()->bound('sentry') && $this->shouldReport($exception)) {
+            app('sentry')->captureException($exception);
+        }
+
         parent::report($exception);
     }
 
