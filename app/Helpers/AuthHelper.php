@@ -26,12 +26,14 @@ class AuthHelper
         if (is_null($key)) {
             return false;
         }
+        $fac = strtoupper($fac);
+
         $facility = Facility::where("apikey", $key)->first();
-        if ($facility || ($fac && $fac === $facility->id)) {
+        if ((!$fac && $facility) || ($fac && $facility && $fac === $facility->id)) {
             return true;
         }
         $facility = Facility::where("api_sandbox_key", $key)->first();
-        if ($facility || ($fac && $fac === $facility->id)) {
+        if ((!$fac && $facility) || ($fac && $facility && $fac === $facility->id)) {
             return true;
         }
 
@@ -41,7 +43,7 @@ class AuthHelper
     public static function isSandboxKey($key, $fac = null)
     {
         $facility = Facility::where("api_sandbox_key", $key)->first();
-        if ($facility || ($fac && $fac === $facility->id)) {
+        if ((!$fac && $facility) || ($fac && $facility && $fac === $facility->id)) {
             return true;
         }
 
