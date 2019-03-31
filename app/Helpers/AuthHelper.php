@@ -28,12 +28,20 @@ class AuthHelper
         }
         $fac = strtoupper($fac);
 
-        $facility = Facility::where("apikey", $key)->first();
+        $facility = Facility::where("apikey", $key)
+            ->orWhere("api_sandbox_key", $key)->first();
         if ((!$fac && $facility) || ($fac && $facility && $fac === $facility->id)) {
             return true;
         }
-        $facility = Facility::where("api_sandbox_key", $key)->first();
-        if ((!$fac && $facility) || ($fac && $facility && $fac === $facility->id)) {
+        /** Inter-ARTCC Visiting Agreements - Allow Data Retrieval */
+        $exceptions = [
+            //Exception 1: ZTL-ZHU-ZJX
+            'ZTL' => ['ZHU', 'ZJX'],
+            'ZHU' => ['ZTL', 'ZJX'],
+            'ZJX' => ['ZHU', 'ZTL']
+        ];
+
+        if ($fac && $facility && in_array($fac, $exceptions[$facility->id] ?? [])) {
             return true;
         }
 
