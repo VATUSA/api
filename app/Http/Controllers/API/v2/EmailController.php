@@ -34,9 +34,11 @@ class EmailController extends APIController
      *             type="array",
      *             @SWG\Items(
      *                 type="object",
-     *                 @SWG\Property(property="type", type="string", description="Type of email (forward/full/static)"),
+     *                 @SWG\Property(property="type", type="string", description="Type of email
+     *                                                (forward/full/static)"),
      *                 @SWG\Property(property="email", type="string", description="Email address"),
-     *                 @SWG\Property(property="destination", type="string", description="Destination for email forwards")
+     *                 @SWG\Property(property="destination", type="string", description="Destination for email
+     *                                                       forwards")
      *             ),
      *         ),
      *         examples={
@@ -48,15 +50,18 @@ class EmailController extends APIController
      *     )
      * )
      */
-    public function getIndex() {
-        if (!\Auth::check()) return response()->unauthenticated();
+    public function getIndex()
+    {
+        if (!\Auth::check()) {
+            return response()->unauthenticated();
+        }
 
         $response = [];
         $return = Role::where('cid', \Auth::user()->cid)->get();
         foreach ($return as $row) {
             if ($row->facility === "ZHQ" && preg_match("/^US(\d+)$/", $row->role, $matches)) {
                 $temp = [
-                    "type" => EmailHelper::isStaticForward("vatusa" . $matches[1] . "@vatusa.net") ?
+                    "type"  => EmailHelper::isStaticForward("vatusa" . $matches[1] . "@vatusa.net") ?
                         EmailHelper::$email_static :
                         EmailHelper::getType("vatusa" . $matches[1] . "@vatusa.net"),
                     "email" => "vatusa" . $matches[1] . "@vatusa.net",
@@ -66,9 +71,10 @@ class EmailController extends APIController
                 }
                 $response[] = $temp;
             }
-            if ($row->facility !== "ZHQ" && $row->facility !== "ZAE" && in_array($row->role, ["ATM", "DATM", "TA", "EC", "FE", "WM"])) {
+            if ($row->facility !== "ZHQ" && $row->facility !== "ZAE" && in_array($row->role,
+                    ["ATM", "DATM", "TA", "EC", "FE", "WM"])) {
                 $temp = [
-                    "type" => EmailHelper::isStaticForward(strtolower($row->facility . "-" . $row->role . "@vatusa.net")) ?
+                    "type"  => EmailHelper::isStaticForward(strtolower($row->facility . "-" . $row->role . "@vatusa.net")) ?
                         EmailHelper::$email_static :
                         EmailHelper::getType(strtolower($row->facility . "-" . $row->role . "@vatusa.net")),
                     "email" => strtolower($row->facility . "-" . $row->role . "@vatusa.net"),
@@ -81,11 +87,13 @@ class EmailController extends APIController
             }
         }
         $return = EmailAccounts::where("cid", \Auth::user()->cid)->get();
-        foreach($return as $row) {
+        foreach ($return as $row) {
             $domain = $row->fac->hosted_email_domain;
-            if (!$domain) continue;
+            if (!$domain) {
+                continue;
+            }
             $temp = [
-                "type" => EmailHelper::getType(strtolower($row->username . "@" . $domain)),
+                "type"  => EmailHelper::getType(strtolower($row->username . "@" . $domain)),
                 "email" => strtolower($row->username . "@" . $domain)
             ];
             if ($temp['type'] === EmailHelper::$email_forward) {
@@ -93,11 +101,13 @@ class EmailController extends APIController
             }
             $response[] = $temp;
         }
+
         return response()->json($response);
     }
 
     /**
      * @param $address
+     *
      * @return string
      *
      * @SWG\Get(
@@ -113,7 +123,8 @@ class EmailController extends APIController
      *         response="400",
      *         description="Bad request",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","msg"="Missing required field"}},{"application/json":{"status"="error","msg"="Password too weak"}}},
+     *         examples={{"application/json":{"status"="error","msg"="Missing required
+     *         field"}},{"application/json":{"status"="error","msg"="Password too weak"}}},
      *     ),
      *     @SWG\Response(
      *         response="401",
@@ -134,9 +145,11 @@ class EmailController extends APIController
      *             type="array",
      *             @SWG\Items(
      *                 type="object",
-     *                 @SWG\Property(property="type", type="string", description="Type of email (forward/full/static)"),
+     *                 @SWG\Property(property="type", type="string", description="Type of email
+     *                                                (forward/full/static)"),
      *                 @SWG\Property(property="email", type="string", description="Email address"),
-     *                 @SWG\Property(property="destination", type="string", description="Destination for email forwards"),
+     *                 @SWG\Property(property="destination", type="string", description="Destination for email
+     *                                                       forwards"),
      *                 @SWG\Property(property="static", type="boolean", description="Is address static?")
      *             ),
      *         ),
@@ -148,7 +161,8 @@ class EmailController extends APIController
      *     )
      * )
      */
-    public function getEmail($address) {
+    public function getEmail($address)
+    {
         if (!\Auth::check()) {
             return response()->unauthenticated();
         }
@@ -161,7 +175,7 @@ class EmailController extends APIController
         }
 
         $response = [
-            'type' => EmailHelper::isStaticForward($address) ? EmailHelper::$email_static : EmailHelper::getType($address),
+            'type'  => EmailHelper::isStaticForward($address) ? EmailHelper::$email_static : EmailHelper::getType($address),
             'email' => $address
         ];
 
@@ -176,20 +190,20 @@ class EmailController extends APIController
      * @SWG\Put(
      *     path="/email",
      *     summary="Modify email account. [Private]",
-     *     description="Modify email account. Static forwards may only be modified by the ATM, DATM or WM. CORS Restricted.",
-     *     produces={"application/json"},
-     *     tags={"email"},
-     *     security={"jwt","session"},
+     *     description="Modify email account. Static forwards may only be modified by the ATM, DATM or WM. CORS
+     *     Restricted.", produces={"application/json"}, tags={"email"}, security={"jwt","session"},
      *     @SWG\Parameter(description="JWT Token", in="header", name="bearer", required=true, type="string"),
      *     @SWG\Parameter(description="Email Address", in="query", name="email", required=true, type="string"),
-     *     @SWG\Parameter(description="Set destination for forwarded address", in="query", name="destination", type="string"),
+     *     @SWG\Parameter(description="Set destination for forwarded address", in="query", name="destination",
+     *                                     type="string"),
      *     @SWG\Parameter(description="Password for full account", in="query", name="password", type="string"),
      *     @SWG\Parameter(description="Is static forward or not", in="query", name="static", type="boolean"),
      *     @SWG\Response(
      *         response="400",
      *         description="Bad request",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","msg"="Missing required field"}},{"application/json":{"status"="error","msg"="Password too weak"}}},
+     *         examples={{"application/json":{"status"="error","msg"="Missing required
+     *         field"}},{"application/json":{"status"="error","msg"="Password too weak"}}},
      *     ),
      *     @SWG\Response(
      *         response="401",
@@ -226,8 +240,11 @@ class EmailController extends APIController
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function putIndex(Request $request) {
-        if (!\Auth::check()) return response()->unauthenticated();
+    public function putIndex(Request $request)
+    {
+        if (!\Auth::check()) {
+            return response()->unauthenticated();
+        }
 
         $email = $request->input("email", null);
         if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -239,8 +256,8 @@ class EmailController extends APIController
         }
 
         if (EmailHelper::isStaticForward($email) &&
-            (!RoleHelper::has(\Auth::user()->cid, strtoupper(substr($email, 0, 3)), ['ATM','DATM','WM']) &&
-            !\Auth::user()->hasEmailAccess($email))) {
+            (!RoleHelper::has(\Auth::user()->cid, strtoupper(substr($email, 0, 3)), ['ATM', 'DATM', 'WM']) &&
+                !\Auth::user()->hasEmailAccess($email))) {
             return response()->json(generate_error("Forbidden static rules"), 403);
         }
 
@@ -258,51 +275,58 @@ class EmailController extends APIController
             return response()->json(generate_error("Ambiguous request", true), 409);
         }
 
-        // Now handle, *FULL ACCOUNT*
-        if ($password !== null) {
-            if (strlen($password) < 6) {
-                return response()->json(generate_error("Password too weak", true), 400);
+        if (!isTest()) {
+            // Now handle, *FULL ACCOUNT*
+            if ($password !== null) {
+                if (strlen($password) < 6) {
+                    return response()->json(generate_error("Password too weak", true), 400);
+                }
+                if (EmailHelper::getType($email) === EmailHelper::$email_full) {
+                    if (EmailHelper::setPasswordEmail($email, $password)) {
+                        return response()->json(["status" => "OK"]);
+                    } else {
+                        return response()->json(generate_error("Unknown error", true), 500);
+                    }
+                } else {
+                    if (!EmailHelper::deleteForward($email)) {
+                        \Log::critical("Error deleting forward for $email to change to full account");
+
+                        return response()->json(generate_error("Unknown error", true), 500);
+                    }
+                    if (!EmailHelper::addEmail($email, $password)) {
+                        \Log::critical("Error creating full account $email");
+
+                        return response()->json(generate_error("Unknown error", true), 500);
+                    }
+
+                    return response()->json(["status" => "OK"]);
+                }
+            }
+
+            // Now handle, *FORWARD*
+            if (!filter_var($destination, FILTER_VALIDATE_EMAIL)) {
+                return response()->json(generate_error("Missing required field", true), 400);
             }
             if (EmailHelper::getType($email) === EmailHelper::$email_full) {
-                if (EmailHelper::setPasswordEmail($email, $password)) {
-                    return response()->json(["status" => "OK"]);
-                } else {
-                    return response()->json(generate_error("Unknown error", true), 500);
-                }
-            } else {
-                if (!EmailHelper::deleteForward($email)) {
-                    \Log::critical("Error deleting forward for $email to change to full account");
-                    return response()->json(generate_error("Unknown error", true), 500);
-                }
-                if (!EmailHelper::addEmail($email, $password)) {
-                    \Log::critical("Error creating full account $email");
-                    return response()->json(generate_error("Unknown error", true), 500);
-                }
+                if (!EmailHelper::deleteEmail($email)) {
+                    \Log::critical("Error deleting full account $email to set to forward to $destination");
 
-                return response()->json(["status" => "OK"]);
+                    return response()->json(generate_error("Unknown error", true), 500);
+                }
             }
-        }
+            if (!EmailHelper::setForward($email, $destination)) {
+                \Log::critical("Error setting forward $email -> $destination");
 
-        // Now handle, *FORWARD*
-        if (!filter_var($destination, FILTER_VALIDATE_EMAIL)) {
-            return response()->json(generate_error("Missing required field", true), 400);
-        }
-        if (EmailHelper::getType($email) === EmailHelper::$email_full) {
-            if (!EmailHelper::deleteEmail($email)) {
-                \Log::critical("Error deleting full account $email to set to forward to $destination");
                 return response()->json(generate_error("Unknown error", true), 500);
             }
-        }
-        if (!EmailHelper::setForward($email, $destination)) {
-            \Log::critical("Error setting forward $email -> $destination");
-            return response()->json(generate_error("Unknown error", true), 500);
+
+            if ($request->input("static") == "true") {
+                EmailHelper::chgEmailConfig($email, EmailHelper::$config_static, $destination);
+            } else {
+                EmailHelper::chgEmailConfig($email, EmailHelper::$config_user, $destination);
+            }
         }
 
-        if ($request->input("static") == "true") {
-            EmailHelper::chgEmailConfig($email, EmailHelper::$config_static, $destination);
-        } else {
-            EmailHelper::chgEmailConfig($email, EmailHelper::$config_user, $destination);
-        }
         return response()->json(["status" => "OK"]);
     }
 
@@ -353,18 +377,29 @@ class EmailController extends APIController
      *
      * @return \Illuminate\Http\Response
      */
-    public function getHosted(Request $request) {
-        if (!\Auth::check()) return response()->unauthenticated();
+    public function getHosted(Request $request)
+    {
+        if (!\Auth::check()) {
+            return response()->unauthenticated();
+        }
 
-        if (!$request->has("facility")) return response()->malformed();
+        if (!$request->has("facility")) {
+            return response()->malformed();
+        }
 
         $fac = Facility::find($request->input("facility"));
-        if (!$fac) return response()->notfound();
+        if (!$fac) {
+            return response()->notfound();
+        }
 
-        if (!RoleHelper::isVATUSAStaff() && !RoleHelper::isSeniorStaff(\Auth::user()->cid, $fac->id) && !RoleHelper::has(\Auth::user()->cid, $fac->id, "WM"))
+        if (!RoleHelper::isVATUSAStaff() && !RoleHelper::isSeniorStaff(\Auth::user()->cid,
+                $fac->id) && !RoleHelper::has(\Auth::user()->cid, $fac->id, "WM")) {
             return response()->forbidden();
+        }
 
-        if ($fac->hosted_email_domain == "") return response()->forbidden();
+        if ($fac->hosted_email_domain == "") {
+            return response()->forbidden();
+        }
 
         $return = EmailAccounts::where("facility", $fac->id)->orderBy("username")->get()->toArray();
 
@@ -387,7 +422,8 @@ class EmailController extends APIController
      *         response="400",
      *         description="Bad request",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","msg"="Missing required field"}},{"application/json":{"status"="error","msg"="Password too weak"}}},
+     *         examples={{"application/json":{"status"="error","msg"="Missing required
+     *         field"}},{"application/json":{"status"="error","msg"="Password too weak"}}},
      *     ),
      *     @SWG\Response(
      *         response="401",
@@ -414,24 +450,38 @@ class EmailController extends APIController
      *
      * @return \Illuminate\Http\Response
      */
-    public function postHosted(Request $request, $facility = null, $username = null) {
-        if (!\Auth::check()) return response()->unauthenticated();
+    public function postHosted(Request $request, $facility = null, $username = null)
+    {
+        if (!\Auth::check()) {
+            return response()->unauthenticated();
+        }
 
-        if (!$request->has("cid")) return response()->malformed();
+        if (!$request->has("cid")) {
+            return response()->malformed();
+        }
 
         $fac = Facility::find($facility);
-        if (!$fac) return response()->notfound();
+        if (!$fac) {
+            return response()->notfound();
+        }
 
-        if (!RoleHelper::isVATUSAStaff() && !RoleHelper::isSeniorStaff(\Auth::user()->cid, $fac->id) && !RoleHelper::has(\Auth::user()->cid, $fac->id, "WM"))
+        if (!RoleHelper::isVATUSAStaff() && !RoleHelper::isSeniorStaff(\Auth::user()->cid,
+                $fac->id) && !RoleHelper::has(\Auth::user()->cid, $fac->id, "WM")) {
             return response()->forbidden();
+        }
 
         $user = User::find($request->input("cid"));
-        if (!$user) return response()->notfound();
+        if (!$user) {
+            return response()->notfound();
+        }
 
-        if ($fac->hosted_email_domain == "") return response()->forbidden();
+        if ($fac->hosted_email_domain == "") {
+            return response()->forbidden();
+        }
 
-        if (!filter_var($username . "@" . $fac->hosted_email_domain, FILTER_VALIDATE_EMAIL))
+        if (!filter_var($username . "@" . $fac->hosted_email_domain, FILTER_VALIDATE_EMAIL)) {
             return response()->malformed(1234);
+        }
 
         $account = EmailAccounts::where("username", $username)->where("facility", $fac->id)->first();
         if (!$account) {
@@ -441,7 +491,9 @@ class EmailController extends APIController
             $account->facility = $fac->id;
         }
         $account->cid = $request->input("cid");
-        $account->save();
+        if (!isTest()) {
+            $account->save();
+        }
 
         return response()->ok();
     }
@@ -461,7 +513,8 @@ class EmailController extends APIController
      *         response="400",
      *         description="Bad request",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","msg"="Missing required field"}},{"application/json":{"status"="error","msg"="Password too weak"}}},
+     *         examples={{"application/json":{"status"="error","msg"="Missing required
+     *         field"}},{"application/json":{"status"="error","msg"="Password too weak"}}},
      *     ),
      *     @SWG\Response(
      *         response="401",
@@ -488,23 +541,34 @@ class EmailController extends APIController
      *
      * @return \Illuminate\Http\Response
      */
-    public function deleteHosted(Request $request, $facility, $username) {
-        if (!\Auth::check()) return response()->unauthenticated();
+    public function deleteHosted(Request $request, $facility, $username)
+    {
+        if (!\Auth::check()) {
+            return response()->unauthenticated();
+        }
 
         $fac = Facility::find($facility);
-        if (!$fac) return response()->notfound();
+        if (!$fac) {
+            return response()->notfound();
+        }
 
-        if (!RoleHelper::isVATUSAStaff() && !RoleHelper::isSeniorStaff(\Auth::user()->cid, $fac->id) && !RoleHelper::has(\Auth::user()->cid, $fac->id, "WM"))
+        if (!RoleHelper::isVATUSAStaff() && !RoleHelper::isSeniorStaff(\Auth::user()->cid,
+                $fac->id) && !RoleHelper::has(\Auth::user()->cid, $fac->id, "WM")) {
             return response()->forbidden();
+        }
 
-        if ($fac->hosted_email_domain == "") return response()->forbidden();
+        if ($fac->hosted_email_domain == "") {
+            return response()->forbidden();
+        }
 
-        if (!filter_var($username . "@" . $fac->hosted_email_domain, FILTER_VALIDATE_EMAIL))
+        if (!filter_var($username . "@" . $fac->hosted_email_domain, FILTER_VALIDATE_EMAIL)) {
             return response()->malformed();
+        }
 
-        EmailHelper::deleteEmail($username . "@" . $fac->hosted_email_domain);
-
-        $account = EmailAccounts::where("username", $username)->where("facility", $fac->id)->delete();
+        if (!isTest()) {
+            EmailHelper::deleteEmail($username . "@" . $fac->hosted_email_domain);
+            $account = EmailAccounts::where("username", $username)->where("facility", $fac->id)->delete();
+        }
 
         return response()->ok();
     }
