@@ -58,7 +58,9 @@ function log_action($cid, $msg) {
  */
 function isTest(Request $request = null) {
     if (!$request) { $request = request(); }
-    if ($request->has('test')) {
+    if ($request->has('test') ||
+        \App\Helpers\AuthHelper::isSandboxKey($request->input('apikey',
+        null))) {
         return true;
     }
 
