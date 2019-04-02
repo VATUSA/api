@@ -233,7 +233,7 @@ class EmailController extends APIController
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(ref="#/definitions/OK"),
-     *         examples={"application/json":{"status"="OK"}}
+     *         examples={"application/json":{"status"="OK",testing=false}}
      *     )
      * )
      * @param \Illuminate\Http\Request $request
@@ -441,7 +441,7 @@ class EmailController extends APIController
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(ref="#/definitions/OK"),
-     *         examples={"application/json":{"status"="OK"}}
+     *         examples={"application/json":{"status"="OK",testing=false}}
      *     )
      * )
      * @param \Illuminate\Http\Request $request
@@ -532,7 +532,7 @@ class EmailController extends APIController
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(ref="#/definitions/OK"),
-     *         examples={"application/json":{"status"="OK"}}
+     *         examples={"application/json":{"status"="OK",testing=false}}
      *     )
      * )
      * @param \Illuminate\Http\Request $request
