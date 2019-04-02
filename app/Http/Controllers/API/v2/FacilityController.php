@@ -193,7 +193,7 @@ class FacilityController extends APIController
      *             @SWG\Property(property="apikeySandbox",type="string"),
      *             @SWG\Property(property="ulsSecret", type="string"),
      *         ),
-     *         examples={"application/json":{"status"="OK"}}
+     *         examples={"application/json":{"status"="OK", "testing"=false}}
      *     )
      * )
      */
@@ -426,7 +426,7 @@ class FacilityController extends APIController
      *             @SWG\Property(property="template",type="string"),
      *             @SWG\Property(property="body",type="string"),
      *         ),
-     *         examples={"application/json":{"status"="OK"}}
+     *         examples={"application/json":{"status"="OK", "testing"=false}}
      *     )
      * )
      * @param \Illuminate\Http\Request $request
@@ -568,7 +568,7 @@ class FacilityController extends APIController
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(ref="#/definitions/OK"),
-     *         examples={"application/json":{"status"="OK"}}
+     *         examples={"application/json":{"status"="OK", "testing"=false}}
      *     )
      * )
      */
@@ -746,7 +746,7 @@ class FacilityController extends APIController
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(ref="#/definitions/OK"),
-     *         examples={"application/json":{"status"="OK"}}
+     *         examples={"application/json":{"status"="OK", "testing"=false}}
      *     )
      * )
      */
