@@ -193,7 +193,7 @@ class FacilityController extends APIController
      *             @SWG\Property(property="apikeySandbox",type="string"),
      *             @SWG\Property(property="ulsSecret", type="string"),
      *         ),
-     *         examples={"application/json":{"status"="OK"}}
+     *         examples={"application/json":{"status"="OK", "testing"=false}}
      *     )
      * )
      */
@@ -212,68 +212,69 @@ class FacilityController extends APIController
         }
 
         $data = [];
+        if (!isTest()) {
+            if ($request->has("url")
+                && filter_var(
+                    $request->input("url"), FILTER_VALIDATE_URL
+                )
+            ) {
+                $facility->url = $request->input("url");
+                $facility->save();
+            }
 
-        if ($request->has("url")
-            && filter_var(
-                $request->input("url"), FILTER_VALIDATE_URL
-            )
-        ) {
-            $facility->url = $request->input("url");
-            $facility->save();
-        }
+            if ($request->has("uls2jwk")) {
+                $data = JWKFactory::createOctKey(
+                    env('ULSV2_SIZE', 512),
+                    ['alg' => env('ULSV2_ALG', 'HS256'), 'use' => 'sig']
+                );
+                $facility->uls_jwk = encode_json($data);
+                $facility->save();
 
-        if ($request->has("uls2jwk")) {
-            $data = JWKFactory::createOctKey(
-                env('ULSV2_SIZE', 512),
-                ['alg' => env('ULSV2_ALG', 'HS256'), 'use' => 'sig']
-            );
-            $facility->uls_jwk = encode_json($data);
-            $facility->save();
+                return response()->json($data);
+            }
 
-            return response()->json($data);
-        }
+            if ($request->has("apiv2jwk")) {
+                $data = JWKFactory::createOctKey(
+                    env('APIV2_SIZE', 1024),
+                    ['alg' => env('APIV2_ALG', 'HS256'), 'use' => 'sig']
+                );
+                $facility->apiv2_jwk = encode_json($data);
+                $facility->save();
 
-        if ($request->has("apiv2jwk")) {
-            $data = JWKFactory::createOctKey(
-                env('APIV2_SIZE', 1024),
-                ['alg' => env('APIV2_ALG', 'HS256'), 'use' => 'sig']
-            );
-            $facility->apiv2_jwk = encode_json($data);
-            $facility->save();
+                return response()->json($data);
+            }
 
-            return response()->json($data);
-        }
+            if ($request->has('apikey')) {
+                $data['apikey'] = randomPassword(16);
+                $facility->apikey = $data['apikey'];
+                $facility->save();
+            }
 
-        if ($request->has('apikey')) {
-            $data['apikey'] = randomPassword(16);
-            $facility->apikey = $data['apikey'];
-            $facility->save();
-        }
+            if ($request->has('apikeySandbox')) {
+                $data['apikeySandbox'] = randomPassword(16);
+                $facility->api_sandbox_key = $data['apikeySandbox'];
+                $facility->save();
+            }
 
-        if ($request->has('apikeySandbox')) {
-            $data['apikeySandbox'] = randomPassword(16);
-            $facility->api_sandbox_key = $data['apikeySandbox'];
-            $facility->save();
-        }
+            if ($request->has('ulsSecret')) {
+                $data['ulsSecret'] = substr(hash('sha512', microtime()), -16);
+                $facility->uls_secret = $data['ulsSecret'];
+                $facility->save();
+            }
 
-        if ($request->has('ulsSecret')) {
-            $data['ulsSecret'] = substr(hash('sha512', microtime()), -16);
-            $facility->uls_secret = $data['ulsSecret'];
-            $facility->save();
-        }
+            if ($request->has('ulsReturn') && filter_var(
+                    $request->input("ulsReturn"), FILTER_VALIDATE_URL)
+            ) {
+                $facility->uls_return = $request->input("ulsReturn");
+                $facility->save();
+            }
 
-        if ($request->has('ulsReturn') && filter_var(
-                $request->input("ulsReturn"), FILTER_VALIDATE_URL)
-        ) {
-            $facility->uls_return = $request->input("ulsReturn");
-            $facility->save();
-        }
-
-        if ($request->has('ulsDevReturn') && filter_var(
-                $request->input("ulsDevReturn"), FILTER_VALIDATE_URL)
-        ) {
-            $facility->uls_devreturn = $request->input("ulsDevReturn");
-            $facility->save();
+            if ($request->has('ulsDevReturn') && filter_var(
+                    $request->input("ulsDevReturn"), FILTER_VALIDATE_URL)
+            ) {
+                $facility->uls_devreturn = $request->input("ulsDevReturn");
+                $facility->save();
+            }
         }
 
         return response()->api(array_merge(['status' => 'OK'], $data));
@@ -425,7 +426,7 @@ class FacilityController extends APIController
      *             @SWG\Property(property="template",type="string"),
      *             @SWG\Property(property="body",type="string"),
      *         ),
-     *         examples={"application/json":{"status"="OK"}}
+     *         examples={"application/json":{"status"="OK", "testing"=false}}
      *     )
      * )
      * @param \Illuminate\Http\Request $request
@@ -453,10 +454,12 @@ class FacilityController extends APIController
             return response()->api(generate_error("Not Found"), 404);
         }
 
-        $template = FacilityHelper::findEmailTemplate($id, $templateName);
-        $template->body = preg_replace(array('/<(\?|\%)\=?(php)?/', '/(\%|\?)>/'), array('', ''),
-            $request->input("body"));
-        $template->save();
+        if (!isTest()) {
+            $template = FacilityHelper::findEmailTemplate($id, $templateName);
+            $template->body = preg_replace(array('/<(\?|\%)\=?(php)?/', '/(\%|\?)>/'), array('', ''),
+                $request->input("body"));
+            $template->save();
+        }
 
         return response()->api(['status' => 'OK']);
     }
@@ -565,7 +568,7 @@ class FacilityController extends APIController
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(ref="#/definitions/OK"),
-     *         examples={"application/json":{"status"="OK"}}
+     *         examples={"application/json":{"status"="OK", "testing"=false}}
      *     )
      * )
      */
@@ -592,9 +595,11 @@ class FacilityController extends APIController
             return response()->api(generate_error("Malformed request"), 400);
         }
 
-        $user->removeFromFacility(
-            \Auth::user()->cid, $request->input("reason")
-        );
+        if (!isTest()) {
+            $user->removeFromFacility(
+                \Auth::user()->cid, $request->input("reason")
+            );
+        }
 
         return response()->api(["status" => "OK"]);
     }
@@ -741,7 +746,7 @@ class FacilityController extends APIController
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(ref="#/definitions/OK"),
-     *         examples={"application/json":{"status"="OK"}}
+     *         examples={"application/json":{"status"="OK", "testing"=false}}
      *     )
      * )
      */
@@ -787,14 +792,15 @@ class FacilityController extends APIController
                     "reason"
                 ))
         ) {
-
             return response()->api(generate_error("Malformed request"), 400);
         }
 
-        if ($request->input("action") === "accept") {
-            $transfer->accept(\Auth::user()->cid);
-        } else {
-            $transfer->reject(\Auth::user()->cid, $request->input("reason"));
+        if (!isTest()) {
+            if ($request->input("action") === "accept") {
+                $transfer->accept(\Auth::user()->cid);
+            } else {
+                $transfer->reject(\Auth::user()->cid, $request->input("reason"));
+            }
         }
 
         return response()->api(['status' => "OK"]);
@@ -842,7 +848,8 @@ class FacilityController extends APIController
      *                     type="object",
      *                 @SWG\Property(property="id", type="integer", description="Path DB ID"),
      *                     @SWG\Property(property="order", type="integer", description="ID used in ULS query"),
-     *                     @SWG\Property(property="facility_id", type="string", description="Facility assocaited with path"),
+     *                     @SWG\Property(property="facility_id", type="string", description="Facility assocaited with
+     *                                                           path"),
      *                     @SWG\Property(property="url", type="string", description="Return URL")
      *                 ),
      *             ),
@@ -934,7 +941,8 @@ class FacilityController extends APIController
                 generate_error("Facility not found or not active"), 404
             );
         }
-        if (!AuthHelper::validApiKeyv2($request->input('apikey', null), $id) && !\Auth::check()) {
+        if (!AuthHelper::validApiKeyv2($request->input('apikey', null), $id)
+            && !\Auth::check()) {
             return response()->api(generate_error("Unauthorized"), 401);
         }
 
@@ -953,7 +961,7 @@ class FacilityController extends APIController
         }
 
 
-        if($facility->returnPaths()->where('order', $order)->exists()) {
+        if ($facility->returnPaths()->where('order', $order)->exists()) {
             //Add to end
             $order = $facility->returnPaths()
                     ->orderBy('order', 'DESC')->pluck('order')->first() + 1;
@@ -963,10 +971,12 @@ class FacilityController extends APIController
             return response()->api(generate_error("Malformed request, invalid URL"), 400);
         }
 
-        $facility->returnPaths()->create([
-            'order' => $order,
-            'url' => $url
-        ]);
+        if (!isTest()) {
+            $facility->returnPaths()->create([
+                'order' => $order,
+                'url'   => $url
+            ]);
+        }
 
         return response()->api(['status' => 'OK']);
     }
@@ -1047,16 +1057,18 @@ class FacilityController extends APIController
             return response()->api(generate_error("Malformed request, missing order ID"), 400);
         }
 
-        if(!$facility->returnPaths()->where('order', $order)->exists()) {
+        if (!$facility->returnPaths()->where('order', $order)->exists()) {
             return response()->api(generate_error("Return path not found"), 404);
         }
 
-        $facility->returnPaths()->where('order', $order)->delete();
+        if (!isTest()) {
+            $facility->returnPaths()->where('order', $order)->delete();
 
-        //Shift order IDs down
-        foreach($facility->returnPaths()->where('order', '>', $order)->get() as $path) {
-            $path->order--;
-            $path->save();
+            //Shift order IDs down
+            foreach ($facility->returnPaths()->where('order', '>', $order)->get() as $path) {
+                $path->order--;
+                $path->save();
+            }
         }
 
         return response()->api(['status' => 'OK']);
@@ -1141,7 +1153,7 @@ class FacilityController extends APIController
             return response()->api(generate_error("Malformed request, missing order ID"), 400);
         }
 
-        if(!$facility->returnPaths()->where('order', $order)->exists()) {
+        if (!$facility->returnPaths()->where('order', $order)->exists()) {
             return response()->api(generate_error("Return path not found"), 404);
         }
 
@@ -1149,12 +1161,14 @@ class FacilityController extends APIController
             return response()->api(generate_error("Malformed request, invalid URL"), 400);
         }
 
-        $path = ReturnPaths::where([
-            'facility_id' => $id,
-            'order' => $order,
-        ])->first();
-        $path->url = $url;
-        $path->save();
+        if (!isTest()) {
+            $path = ReturnPaths::where([
+                'facility_id' => $id,
+                'order'       => $order,
+            ])->first();
+            $path->url = $url;
+            $path->save();
+        }
 
         return response()->api(['status' => 'OK']);
     }
