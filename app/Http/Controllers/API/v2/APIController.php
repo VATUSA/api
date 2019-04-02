@@ -27,7 +27,9 @@ use \App\Http\Controllers\Controller as BaseController;
                 <li><strong>Key:</strong> Accepts API Key, Session Cookie, or JWT</li>
             </ul></p>
             <p>Facilities that have a APIv2 JWK defined in facility settings will have the data encapisulated in a
-            signed package.  For more information, please see the IT section of the VATUSA forums.</p>",
+            signed package.  For more information, please see the IT section of the VATUSA forums.</p>
+            <p>To prevent database changes in a development environment, you can either use your API sandbox key
+             or pass the <strong>?test</strong> query parameter with the call. ",
  *         x={
  *           "logo": {
  *             "url": "https://www.vatusa.net/img/logo-light.png",
@@ -104,6 +106,11 @@ class APIController extends BaseController {
  *         property="exception",
  *         type="string"
  *     ),
+ *     @SWG\Property(
+ *         property="testing",
+ *         type="boolean",
+ *         example="false",
+ *     ),
  * ),
  * @SWG\Definition(
  *     definition="OK",
@@ -112,6 +119,11 @@ class APIController extends BaseController {
  *         property="status",
  *         type="string",
  *         example="OK",
+ *     ),
+ *     @SWG\Property(
+ *         property="testing",
+ *         type="boolean",
+ *         example="false",
  *     ),
  * ),
  * @SWG\Definition(
