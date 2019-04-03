@@ -949,11 +949,10 @@ class ExamController extends APIController
         if (!$exam) {
             return response()->api(generate_error("Not found"), 404);
         }
-
+        if (!ExamAssignment::hasAssignment($cid, $examid)) {
+            return response()->api(generate_error("Conflict"), 409);
+        }
         if (!isTest()) {
-            if (!ExamAssignment::hasAssignment($cid, $examid)) {
-                return response()->api(generate_error("Conflict"), 409);
-            }
             ExamAssignment::where('cid', $cid)->where('exam_id', $examid)->delete();
             ExamReassignment::where('cid', $cid)->where('exam_id', $examid)->delete();
             log_action($cid, "Exam (" . $exam->facility_id . ") " . $exam->name .
