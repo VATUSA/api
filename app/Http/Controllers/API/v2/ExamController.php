@@ -64,7 +64,7 @@ class ExamController extends APIController
      *         response="200",
      *         description="Exam has been queued",
      *         @SWG\Schema(ref="#/definitions/OK"),
-     *         examples={"application/json":{"status"="OK",testing=false}}
+     *         examples={"application/json":{"status"="OK","testing"=false}}
      *     )
      * )
      *
