@@ -174,7 +174,7 @@ class SoloController extends APIController
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(ref="#/definitions/OK"),
-     *         examples={"application/json":{"status"="OK",testing=false}}
+     *         examples={"application/json":{"status"="OK","testing"=false}}
      *     )
      * ),
      *
