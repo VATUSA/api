@@ -16,3 +16,6 @@ data.*.csv
 app/Console/Commands/TransferEmails.php
 app/Console/Commands/test.php
 .DS_Store
+_ide_helper.php
+_ide_helper_models.php
+.phpstorm.meta.php
