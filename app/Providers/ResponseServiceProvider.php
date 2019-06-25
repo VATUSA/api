@@ -71,7 +71,12 @@ class ResponseServiceProvider extends ServiceProvider
                     new HS512(),
                 ]);
 
-                $jwk = JWK::create(json_decode($facility->apiv2_jwk, true));
+                $facjwk = $facility->apiv2_jwk;
+                if (isTest() && $facility->apiv2_jwk_dev) {
+                    $facjwk = $facility->apiv2_jwk_dev;
+                }
+
+                $jwk = JWK::create(json_decode($facjwk, true));
 
                 $jsonConverter = new StandardConverter();
 
@@ -82,7 +87,7 @@ class ResponseServiceProvider extends ServiceProvider
 
                 $payload = $jsonConverter->encode(array_merge(['testing' => isTest(), $data]));
                 $jws = $jwsBuilder->create()->withPayload($payload)->addSignature($jwk,
-                    ['alg' => json_decode($facility->apiv2_jwk, true)['alg']])->build();
+                    ['alg' => json_decode($facjwk, true)['alg']])->build();
                 $serializer = new JSONFlattenedSerializer($jsonConverter);
 
                 return $factory->make($serializer->serialize($jws, 0), $status,

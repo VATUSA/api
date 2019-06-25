@@ -156,6 +156,7 @@ class FacilityController extends APIController
      *     @SWG\Parameter(name="url", in="formData", description="Change facility URL", type="string"),
      *     @SWG\Parameter(name="uls2jwk", in="formData", description="Request new ULS JWK", type="string"),
      *     @SWG\Parameter(name="apiv2jwk", in="formData", description="Request new APIv2 JWK", type="string"),
+     *     @SWG\Parameter(name="jwkdev", in="formData", description="Request new testing JWK", type="boolean"),
      *     @SWG\Parameter(name="apikey", in="formData", type="string", description="Request new API Key for facility"),
      *     @SWG\Parameter(name="apikeySandbox", in="formData", type="string", description="Request new Sandbox API Key
     for facility"),
@@ -222,12 +223,16 @@ class FacilityController extends APIController
                 $facility->save();
             }
 
+            $jwkdev = $request->input('jwkdev', false);
+
             if ($request->has("uls2jwk")) {
                 $data = JWKFactory::createOctKey(
                     env('ULSV2_SIZE', 512),
                     ['alg' => env('ULSV2_ALG', 'HS256'), 'use' => 'sig']
                 );
-                $facility->uls_jwk = encode_json($data);
+                if(!$jwkdev)
+                    $facility->uls_jwk = encode_json($data);
+                else $facility->uls_jwk_dev = encode_json($data);
                 $facility->save();
 
                 return response()->json($data);
@@ -238,7 +243,9 @@ class FacilityController extends APIController
                     env('APIV2_SIZE', 1024),
                     ['alg' => env('APIV2_ALG', 'HS256'), 'use' => 'sig']
                 );
-                $facility->apiv2_jwk = encode_json($data);
+                if(!$jwkdev)
+                    $facility->apiv2_jwk = encode_json($data);
+                else $facility->apiv2_jwk_dev = encode_json($data);
                 $facility->save();
 
                 return response()->json($data);
