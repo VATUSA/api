@@ -55,7 +55,9 @@ class ResponseServiceProvider extends ServiceProvider
             } else {
                 if (isset($_SERVER['HTTP_ORIGIN'])) {
                     $domain = extract_domain(parse_url($_SERVER['HTTP_ORIGIN'], PHP_URL_HOST));
-                    $facility = Facility::where('url', 'LIKE', "%$domain%")->first();
+                    $facility = Facility::where('url', 'LIKE', "%$domain%")
+                        ->orWhere('url_dev', 'LIKE',
+                            "%$domain%")->first();
                     if ($facility) {
                         $showsig = true;
                         $fjwk = $facility->apiv2_jwk;

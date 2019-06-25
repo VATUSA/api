@@ -154,6 +154,7 @@ class FacilityController extends APIController
      *     security={"jwt","session"},
      *     @SWG\Parameter(name="id", in="path", description="Facility IATA ID", required=true, type="string"),
      *     @SWG\Parameter(name="url", in="formData", description="Change facility URL", type="string"),
+     *     @SWG\Parameter(name="url_dev", in="formData", description="Change facility Dev URL", type="string"),
      *     @SWG\Parameter(name="uls2jwk", in="formData", description="Request new ULS JWK", type="string"),
      *     @SWG\Parameter(name="apiv2jwk", in="formData", description="Request new APIv2 JWK", type="string"),
      *     @SWG\Parameter(name="jwkdev", in="formData", description="Request new testing JWK", type="boolean"),
@@ -220,6 +221,14 @@ class FacilityController extends APIController
                 )
             ) {
                 $facility->url = $request->input("url");
+                $facility->save();
+            }
+            if ($request->has("url_dev")
+                && filter_var(
+                    $request->input("url_dev"), FILTER_VALIDATE_URL
+                )
+            ) {
+                $facility->url_dev = $request->input("url_dev");
                 $facility->save();
             }
 
