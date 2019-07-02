@@ -1,6 +1,7 @@
 <?php
 
 use Faker\Generator as Faker;
+use Illuminate\Support\Carbon;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,12 +15,19 @@ use Faker\Generator as Faker;
 */
 
 $factory->define(App\User::class, function (Faker $faker) {
-    static $password;
-
     return [
-        'name' => $faker->name,
+        'cid' => 999,
+        'fname' => 'Test',
+        'lname' => 'User',
         'email' => $faker->unique()->safeEmail,
-        'password' => $password ?: $password = bcrypt('secret'),
-        'remember_token' => str_random(10),
+        'facility' => 'ZAE',
+        'rating' => $faker->numberBetween(1, 5),
+        'flag_needbasic' => 0,
+        'flag_xferOverride' => 0,
+        'flag_homecontroller' => 1,
+        'facility_join' => Carbon::now(),
+        'certupdate' => 1,
+        'flag_broadcastOptedIn' => 1,
+        'flag_preventStaffAssign' => 0
     ];
 });
