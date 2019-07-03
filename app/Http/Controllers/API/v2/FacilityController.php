@@ -215,46 +215,58 @@ class FacilityController extends APIController
 
         $data = [];
         if (!isTest()) {
-            if ($request->has("url")
-                && filter_var(
-                    $request->input("url"), FILTER_VALIDATE_URL
-                )
-            ) {
+            if ($request->has("url") && filter_var($request->input("url"), FILTER_VALIDATE_URL)) {
                 $facility->url = $request->input("url");
                 $facility->save();
             }
-            if ($request->has("url_dev")
-                && filter_var(
-                    $request->input("url_dev"), FILTER_VALIDATE_URL
-                )
-            ) {
-                $facility->url_dev = $request->input("url_dev");
-                $facility->save();
-            }
 
+            if ($request->has("url_dev")) {
+                if ($request->input("url_dev") == $facility->url) {
+                    return response()->api(generate_error("Development URL cannot be the same as the live URL", true),
+                        409);
+                }
+                if (filter_var($request->input("url_dev"), FILTER_VALIDATE_URL)) {
+                    $facility->url_dev = $request->input("url_dev");
+                    $facility->save();
+                }
+            }
             $jwkdev = $request->input('jwkdev', false);
 
-            if ($request->has("uls2jwk")) {
-                $data = JWKFactory::createOctKey(
-                    env('ULSV2_SIZE', 512),
-                    ['alg' => env('ULSV2_ALG', 'HS256'), 'use' => 'sig']
-                );
-                if(!$jwkdev)
+            if ($request->has("ulsV2jwk")) {
+                if ($request->input('ulsV2jwk') != 'X') {
+                    $data = JWKFactory::createOctKey(
+                        env('ULSV2_SIZE', 512),
+                        ['alg' => env('ULSV2_ALG', 'HS256'), 'use' => 'sig']
+                    );
+                } else {
+                    $data = "";
+                }
+
+                if (!$jwkdev) {
                     $facility->uls_jwk = encode_json($data);
-                else $facility->uls_jwk_dev = encode_json($data);
+                } else {
+                    $facility->uls_jwk_dev = $data == "" ? $data : encode_json($data);
+                }
                 $facility->save();
 
                 return response()->json($data);
             }
 
-            if ($request->has("apiv2jwk")) {
-                $data = JWKFactory::createOctKey(
-                    env('APIV2_SIZE', 1024),
-                    ['alg' => env('APIV2_ALG', 'HS256'), 'use' => 'sig']
-                );
-                if(!$jwkdev)
+            if ($request->has("apiV2jwk")) {
+                if ($request->input('apiV2jwk') != 'X') {
+                    $data = JWKFactory::createOctKey(
+                        env('APIV2_SIZE', 1024),
+                        ['alg' => env('APIV2_ALG', 'HS256'), 'use' => 'sig']
+                    );
+                } else {
+                    $data = "";
+                }
+
+                if (!$jwkdev) {
                     $facility->apiv2_jwk = encode_json($data);
-                else $facility->apiv2_jwk_dev = encode_json($data);
+                } else {
+                    $facility->apiv2_jwk_dev = $data == "" ? $data : encode_json($data);
+                }
                 $facility->save();
 
                 return response()->json($data);
