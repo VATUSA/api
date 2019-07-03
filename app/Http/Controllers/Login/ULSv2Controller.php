@@ -54,6 +54,8 @@ class ULSv2Controller extends Controller
             throw new ReturnPathNotFoundException("Invalid return URL");
         }
 
+        if($test && $facility->uls_jwk_dev == "")
+            abort(400, "Sandbox JWK has not been generated.");
         if ($facility->uls_jwk == "" || ($test && $facility->uls_jwk_dev == "")) {
             abort(400,
                 "Facility is not ready for ULSv2. Please contact the facility webmaster at " . strtolower($facility->id) . "-wm@vatusa.net");
