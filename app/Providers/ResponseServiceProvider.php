@@ -74,8 +74,13 @@ class ResponseServiceProvider extends ServiceProvider
                 ]);
 
                 $facjwk = $facility->apiv2_jwk;
-                if (isTest() && $facility->apiv2_jwk_dev) {
-                    $facjwk = $facility->apiv2_jwk_dev;
+                if (isTest()) {
+                    if ($facility->apiv2_jwk_dev) {
+                        $facjwk = $facility->apiv2_jwk_dev;
+                    } else {
+                        return $factory->make(encode_json(array_merge($data, $sig, ['testing' => isTest()])), $status,
+                            array_merge($headers, ['Content-Type' => 'application/json']));
+                    }
                 }
 
                 $jwk = JWK::create(json_decode($facjwk, true));
