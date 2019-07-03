@@ -29,7 +29,8 @@ use \App\Http\Controllers\Controller as BaseController;
             <p>Facilities that have a APIv2 JWK defined in facility settings will have the data encapisulated in a
             signed package.  For more information, please see the IT section of the VATUSA forums.</p>
             <p>To prevent database changes in a development environment, you can either use your API sandbox key
-             or pass the <strong>?test</strong> query parameter with the call. ",
+             or pass the <strong>?test</strong> query parameter with the call. Whether or not <strong>?test</strong> is present,
+             if both Sandbox JWK and Dev URL are configured, and the domains match, the response will be formatted according to JSON Web Signature, RFC 7515. </p>",
  *         x={
  *           "logo": {
  *             "url": "https://www.vatusa.net/img/logo-light.png",
