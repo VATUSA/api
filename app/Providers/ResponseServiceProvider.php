@@ -74,7 +74,7 @@ class ResponseServiceProvider extends ServiceProvider
                 ]);
 
                 $facjwk = $facility->apiv2_jwk;
-                if (isTest()) {
+                if (isset($domain) && $domain == $facility->url_dev) {
                     if ($facility->apiv2_jwk_dev) {
                         $facjwk = $facility->apiv2_jwk_dev;
                     } else {
