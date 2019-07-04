@@ -154,7 +154,7 @@ class FacilityController extends APIController
      *     security={"jwt","session"},
      *     @SWG\Parameter(name="id", in="path", description="Facility IATA ID", required=true, type="string"),
      *     @SWG\Parameter(name="url", in="formData", description="Change facility URL", type="string"),
-     *     @SWG\Parameter(name="url_dev", in="formData", description="Change facility Dev URL", type="string"),
+     *     @SWG\Parameter(name="url_dev", in="formData", description="Change facility Dev URL(s)", type="string"),
      *     @SWG\Parameter(name="uls2jwk", in="formData", description="Request new ULS JWK", type="string"),
      *     @SWG\Parameter(name="apiv2jwk", in="formData", description="Request new APIv2 JWK", type="string"),
      *     @SWG\Parameter(name="jwkdev", in="formData", description="Request new testing JWK", type="boolean"),
@@ -215,21 +215,34 @@ class FacilityController extends APIController
 
         $data = [];
         if (!isTest()) {
-            if ($request->has("url") && filter_var($request->input("url"), FILTER_VALIDATE_URL)) {
-                $facility->url = $request->input("url");
-                $facility->save();
+            if ($request->has("url")) {
+                if (filter_var(trim($request->input("url")),
+                        FILTER_VALIDATE_URL) && !str_contains($request->input('url'), 'vatusa')) {
+                    $facility->url = trim($request->input("url"));
+                    $facility->save();
+                } else {
+                    return response()->api(generate_error("Invalid Facility URL",
+                        true),
+                        409);
+                }
             }
 
             if ($request->has("url_dev")) {
-                if ($request->input("url_dev") == $facility->url) {
-                    return response()->api(generate_error("Development URL cannot be the same as the live URL", true),
-                        409);
+                foreach (array_map('trim', explode(",", $request->input("url_dev"))) as $devurl) {
+                    if ($devurl == $facility->url) {
+                        return response()->api(generate_error("Development URL cannot be the same as the live URL",
+                            true),
+                            409);
+                    }
+                    if (!filter_var($devurl, FILTER_VALIDATE_URL) || str_contains($devurl, 'vatusa')) {
+                        return response()->api(generate_error("Invalid Development URL(s)", true),
+                            409);
+                    }
                 }
-                if (filter_var($request->input("url_dev"), FILTER_VALIDATE_URL)) {
-                    $facility->url_dev = $request->input("url_dev");
-                    $facility->save();
-                }
+                $facility->url_dev = $request->input("url_dev");
+                $facility->save();
             }
+
             $jwkdev = $request->input('jwkdev', false);
 
             if ($request->has("ulsV2jwk")) {
@@ -352,8 +365,12 @@ class FacilityController extends APIController
      *
      * @return \Illuminate\Http\Response
      */
-    public function getEmailTemplate(Request $request, $id, $templateName)
-    {
+    public
+    function getEmailTemplate(
+        Request $request,
+        $id,
+        $templateName
+    ) {
         if (!\Auth::check() && !AuthHelper::validApiKeyv2($request->input('apikey', null))) {
             return response()->api(generate_error("Unauthorized"), 401);
         }
@@ -463,8 +480,12 @@ class FacilityController extends APIController
      *
      * @return \Illuminate\Http\Response
      */
-    public function postEmailTemplate(Request $request, $id, $templateName)
-    {
+    public
+    function postEmailTemplate(
+        Request $request,
+        $id,
+        $templateName
+    ) {
         if (!\Auth::check()) {
             return response()->api(generate_error("Unauthorized"), 401);
         }
@@ -523,8 +544,11 @@ class FacilityController extends APIController
      *     )
      * )
      */
-    public function getRoster(Request $request, $id)
-    {
+    public
+    function getRoster(
+        Request $request,
+        $id
+    ) {
         $facility = Facility::find($id);
         if (!$facility || $facility->active != 1) {
             return response()->api(generate_error("Not found"), 404);
@@ -600,8 +624,12 @@ class FacilityController extends APIController
      *     )
      * )
      */
-    public function deleteRoster(Request $request, string $id, int $cid)
-    {
+    public
+    function deleteRoster(
+        Request $request,
+        string $id,
+        int $cid
+    ) {
         $facility = Facility::find($id);
         if (!$facility || !$facility->active) {
             return response()->api(
@@ -689,8 +717,11 @@ class FacilityController extends APIController
      *     )
      * )
      */
-    public function getTransfers(Request $request, string $id)
-    {
+    public
+    function getTransfers(
+        Request $request,
+        string $id
+    ) {
         $facility = Facility::find($id);
         if (!$facility || !$facility->active) {
             return response()->api(
@@ -778,8 +809,12 @@ class FacilityController extends APIController
      *     )
      * )
      */
-    public function putTransfer(Request $request, string $id, int $transferId)
-    {
+    public
+    function putTransfer(
+        Request $request,
+        string $id,
+        int $transferId
+    ) {
         $facility = Facility::find($id);
         if (!$facility || !$facility->active) {
             return response()->api(
@@ -886,8 +921,11 @@ class FacilityController extends APIController
      *     )
      * )
      */
-    public function getUlsReturns(Request $request, string $id)
-    {
+    public
+    function getUlsReturns(
+        Request $request,
+        string $id
+    ) {
         $facility = Facility::find($id);
         if (!$facility || !$facility->active) {
             return response()->api(
@@ -961,8 +999,11 @@ class FacilityController extends APIController
      *   )
      * )
      */
-    public function addUlsReturn(Request $request, string $id)
-    {
+    public
+    function addUlsReturn(
+        Request $request,
+        string $id
+    ) {
         $facility = Facility::find($id);
         if (!$facility || !$facility->active) {
             return response()->api(
@@ -1062,8 +1103,12 @@ class FacilityController extends APIController
      *   )
      * )
      */
-    public function removeUlsReturn(Request $request, string $id, int $order)
-    {
+    public
+    function removeUlsReturn(
+        Request $request,
+        string $id,
+        int $order
+    ) {
         $facility = Facility::find($id);
         if (!$facility || !$facility->active) {
             return response()->api(
@@ -1156,8 +1201,12 @@ class FacilityController extends APIController
      *   )
      * )
      */
-    public function putUlsReturn(Request $request, string $id, int $order)
-    {
+    public
+    function putUlsReturn(
+        Request $request,
+        string $id,
+        int $order
+    ) {
         $facility = Facility::find($id);
         if (!$facility || !$facility->active) {
             return response()->api(
