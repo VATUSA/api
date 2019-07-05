@@ -13,7 +13,7 @@ use \App\Http\Controllers\Controller as BaseController;
  *     host="api.vatusa.net",
  *     schemes={"https"},
  *     @SWG\Info(
- *         version="2.0",
+ *         version="2.0.1",
  *         title="VATUSA API",
  *         description="VATUSA APIv2 Documentation.
             Authentication methods are: <ul>
@@ -26,7 +26,7 @@ use \App\Http\Controllers\Controller as BaseController;
                 <li><strong>Auth:</strong> Accepts Session Cookie or JWT</li>
                 <li><strong>Key:</strong> Accepts API Key, Session Cookie, or JWT</li>
             </ul></p>
-            <p>Facilities that have a APIv2 JWK defined in facility settings will have the data encapisulated in a
+            <p>Facilities that have a APIv2 JWK defined in facility settings will have the data encapsulated in a
             signed package.  For more information, please see the IT section of the VATUSA forums.</p>
             <p>To prevent database changes in a development environment, you can either use your API sandbox key
              or pass the <strong>?test</strong> query parameter with the call. Whether or not <strong>?test</strong> is present,
