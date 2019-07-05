@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Helpers\FacilityHelper;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Request;
@@ -53,7 +54,7 @@ class ResponseServiceProvider extends ServiceProvider
                     $fjwk = $facility->apiv2_jwk;
                     if (isset($_SERVER['HTTP_ORIGIN'])) {
                         $domain = extract_domain(parse_url($_SERVER['HTTP_ORIGIN'], PHP_URL_HOST));
-                        if (in_array($domain, array_map('trim', explode(',', $facility->url_dev)))) {
+                        if (in_array($domain, FacilityHelper::getDevURLs($facility))) {
                             $fjwk = $facility->apiv2_jwk_dev;
                         }
                     }
@@ -66,7 +67,7 @@ class ResponseServiceProvider extends ServiceProvider
                             "%$domain%")->first();
                     if ($facility) {
                         $showsig = true;
-                        if (in_array($domain, array_map('trim', explode(',', $facility->url_dev)))) {
+                        if (in_array($domain, FacilityHelper::getDevURLs($facility))) {
                             $fjwk = $facility->apiv2_jwk_dev;
                         } else {
                             $fjwk = $facility->apiv2_jwk;
