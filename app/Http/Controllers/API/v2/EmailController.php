@@ -102,7 +102,7 @@ class EmailController extends APIController
             $response[] = $temp;
         }
 
-        return response()->json($response);
+        return response()->api($response);
     }
 
     /**
@@ -168,10 +168,10 @@ class EmailController extends APIController
         }
 
         if (!filter_var($address, FILTER_VALIDATE_EMAIL)) {
-            return response()->json(generate_error("Malformed request"), 400);
+            return response()->api(generate_error("Malformed request"), 400);
         }
         if (!\Auth::user()->hasEmailAccess($address)) {
-            return response()->json(generate_error("Forbidden"), 403);
+            return response()->api(generate_error("Forbidden"), 403);
         }
 
         $response = [
@@ -183,7 +183,7 @@ class EmailController extends APIController
             $response['destination'] = implode(",", EmailHelper::forwardDestination($address));
         }
 
-        return response()->json($response);
+        return response()->api($response);
     }
 
     /**
@@ -248,17 +248,17 @@ class EmailController extends APIController
 
         $email = $request->input("email", null);
         if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            return response()->json(generate_error("Missing required field", true), 400);
+            return response()->api(generate_error("Missing required field", true), 400);
         }
 
         if (!\Auth::user()->hasEmailAccess($email)) {
-            return response()->json(generate_error("Forbidden", true), 403);
+            return response()->api(generate_error("Forbidden", true), 403);
         }
 
         if (EmailHelper::isStaticForward($email) &&
             (!RoleHelper::has(\Auth::user()->cid, strtoupper(substr($email, 0, 3)), ['ATM', 'DATM', 'WM']) &&
                 !\Auth::user()->hasEmailAccess($email))) {
-            return response()->json(generate_error("Forbidden static rules"), 403);
+            return response()->api(generate_error("Forbidden static rules"), 403);
         }
 
         /* Now determine which course of action:
@@ -268,56 +268,56 @@ class EmailController extends APIController
         $password = $request->input("password", null);
         $destination = $request->input("destination", null);
         if (!$password && !$destination) {
-            return response()->json(generate_error("Missing required field", true), 400);
+            return response()->api(generate_error("Missing required field", true), 400);
         }
         // We cannot determine full or forward if both are set, causing ambiguous information
         if ($password !== null && $destination !== null) {
-            return response()->json(generate_error("Ambiguous request", true), 409);
+            return response()->api(generate_error("Ambiguous request", true), 409);
         }
 
         if (!isTest()) {
             // Now handle, *FULL ACCOUNT*
             if ($password !== null) {
                 if (strlen($password) < 6) {
-                    return response()->json(generate_error("Password too weak", true), 400);
+                    return response()->api(generate_error("Password too weak", true), 400);
                 }
                 if (EmailHelper::getType($email) === EmailHelper::$email_full) {
                     if (EmailHelper::setPasswordEmail($email, $password)) {
-                        return response()->json(["status" => "OK"]);
+                        return response()->ok();
                     } else {
-                        return response()->json(generate_error("Unknown error", true), 500);
+                        return response()->api(generate_error("Unknown error", true), 500);
                     }
                 } else {
                     if (!EmailHelper::deleteForward($email)) {
                         \Log::critical("Error deleting forward for $email to change to full account");
 
-                        return response()->json(generate_error("Unknown error", true), 500);
+                        return response()->api(generate_error("Unknown error", true), 500);
                     }
                     if (!EmailHelper::addEmail($email, $password)) {
                         \Log::critical("Error creating full account $email");
 
-                        return response()->json(generate_error("Unknown error", true), 500);
+                        return response()->api(generate_error("Unknown error", true), 500);
                     }
 
-                    return response()->json(["status" => "OK"]);
+                    return response()->ok();
                 }
             }
 
             // Now handle, *FORWARD*
             if (!filter_var($destination, FILTER_VALIDATE_EMAIL)) {
-                return response()->json(generate_error("Missing required field", true), 400);
+                return response()->api(generate_error("Missing required field", true), 400);
             }
             if (EmailHelper::getType($email) === EmailHelper::$email_full) {
                 if (!EmailHelper::deleteEmail($email)) {
                     \Log::critical("Error deleting full account $email to set to forward to $destination");
 
-                    return response()->json(generate_error("Unknown error", true), 500);
+                    return response()->api(generate_error("Unknown error", true), 500);
                 }
             }
             if (!EmailHelper::setForward($email, $destination)) {
                 \Log::critical("Error setting forward $email -> $destination");
 
-                return response()->json(generate_error("Unknown error", true), 500);
+                return response()->api(generate_error("Unknown error", true), 500);
             }
 
             if ($request->input("static") == "true") {
@@ -327,7 +327,7 @@ class EmailController extends APIController
             }
         }
 
-        return response()->json(["status" => "OK"]);
+        return response()->ok();
     }
 
     /**

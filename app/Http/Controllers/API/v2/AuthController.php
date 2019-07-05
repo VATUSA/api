@@ -36,7 +36,7 @@ class AuthController extends APIController
     public function getToken(Request $request) {
         if (!\Auth::check()) return response()->unauthenticated();
         $token = \Auth::guard('jwt')->login(\Auth::user());
-        return response()->json([
+        return response()->api([
             'token' => $token,
         ]);
     }
@@ -70,7 +70,7 @@ class AuthController extends APIController
     public function getRefreshToken() {
         if (!\Auth::check()) return response()->unauthenticated();
         $token = \Auth::guard('jwt')->refresh();
-        return response()->json([
+        return response()->api([
             'token' => $token
         ]);
     }
@@ -102,6 +102,6 @@ class AuthController extends APIController
      */
     public function getUserInfo() {
         if (!\Auth::check()) return response()->unauthenticated();
-        return response()->json(\Auth::user());
+        return response()->api(\Auth::user());
     }
 }

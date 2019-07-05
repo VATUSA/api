@@ -134,7 +134,7 @@ class SoloController extends APIController
         }
 
         if (Carbon::createFromFormat('Y-m-d', $exp)->diffInDays() > 30) {
-            return response()->json(generate_error("Invalid date"), 400);
+            return response()->api(generate_error("Invalid date"), 400);
         }
 
         if (!isTest()) {
@@ -144,7 +144,7 @@ class SoloController extends APIController
             );
         }
 
-        return response()->api(['status' => 'OK']);
+        return response()->ok();
     }
 
     /**
@@ -157,7 +157,7 @@ class SoloController extends APIController
      *     security={"apikey","jwt","session"},
      * @SWG\Parameter(name="cid", in="formData", type="integer", required=true, description="CERT ID"),
      * @SWG\Parameter(name="position", in="formData", type="string", required=true, description="Position ID (XYZ_APP,
-     *                                     ZZZ_CTR)"),
+                                           ZZZ_CTR)"),
      * @SWG\Response(
      *         response="401",
      *         description="Unauthorized",
@@ -181,6 +181,7 @@ class SoloController extends APIController
      * @param \Illuminate\Http\Request $request
      *
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function deleteSolo(Request $request)
     {
@@ -201,6 +202,6 @@ class SoloController extends APIController
                 ->delete();
         }
 
-        return response()->api(["status" => "OK"]);
+        return response()->ok();
     }
 }
