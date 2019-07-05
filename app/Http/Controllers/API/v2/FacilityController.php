@@ -225,10 +225,19 @@ class FacilityController extends APIController
                         true),
                         409);
                 }
+                if ($facility->url_dev) {
+                    foreach (FacilityHelper::getDevURLs($facility) as $devurl) {
+                        if ($devurl == $facility->url) {
+                            return response()->api(generate_error("Development URL cannot be the same as the live URL",
+                                true),
+                                409);
+                        }
+                    }
+                }
             }
 
             if ($request->has("url_dev")) {
-                foreach (array_map('trim', explode(",", $request->input("url_dev"))) as $devurl) {
+                foreach (FacilityHelper::urlListToArray($request->input("url_dev")) as $devurl) {
                     if ($devurl == $facility->url) {
                         return response()->api(generate_error("Development URL cannot be the same as the live URL",
                             true),
@@ -243,6 +252,7 @@ class FacilityController extends APIController
                 $facility->save();
             }
 
+            //Boolean - development JWK
             $jwkdev = $request->input('jwkdev', false);
 
             if ($request->has("ulsV2jwk")) {
@@ -303,16 +313,12 @@ class FacilityController extends APIController
                 $facility->save();
             }
 
-            if ($request->has('ulsReturn') && filter_var(
-                    $request->input("ulsReturn"), FILTER_VALIDATE_URL)
-            ) {
+            if ($request->has('ulsReturn') && filter_var($request->input("ulsReturn"), FILTER_VALIDATE_URL)) {
                 $facility->uls_return = $request->input("ulsReturn");
                 $facility->save();
             }
 
-            if ($request->has('ulsDevReturn') && filter_var(
-                    $request->input("ulsDevReturn"), FILTER_VALIDATE_URL)
-            ) {
+            if ($request->has('ulsDevReturn') && filter_var($request->input("ulsDevReturn"), FILTER_VALIDATE_URL)) {
                 $facility->uls_devreturn = $request->input("ulsDevReturn");
                 $facility->save();
             }
