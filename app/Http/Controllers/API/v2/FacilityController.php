@@ -52,7 +52,7 @@ class FacilityController extends APIController
     {
         $data = Facility::where("active", 1)->get()->toArray();
 
-        return response()->json($data);
+        return response()->ok($data);
     }
 
     /**
@@ -272,7 +272,7 @@ class FacilityController extends APIController
                 }
                 $facility->save();
 
-                return response()->json($data);
+                //return response()->ok($data);
             }
 
             if ($request->has("apiV2jwk")) {
@@ -292,7 +292,7 @@ class FacilityController extends APIController
                 }
                 $facility->save();
 
-                return response()->json($data);
+                //return response()->api($data);
             }
 
             if ($request->has('apikey')) {
@@ -324,7 +324,7 @@ class FacilityController extends APIController
             }
         }
 
-        return response()->api(array_merge(['status' => 'OK'], $data));
+        return response()->ok($data);
     }
 
     /**
@@ -516,7 +516,7 @@ class FacilityController extends APIController
             $template->save();
         }
 
-        return response()->api(['status' => 'OK']);
+        return response()->ok();
     }
 
     /**
@@ -577,7 +577,7 @@ class FacilityController extends APIController
             }
         }
 
-        return response()->json($roster);
+        return response()->api($roster);
     }
 
     /**
@@ -663,7 +663,7 @@ class FacilityController extends APIController
             );
         }
 
-        return response()->api(["status" => "OK"]);
+        return response()->ok();
     }
 
     /**
@@ -712,9 +712,9 @@ class FacilityController extends APIController
      *                     @SWG\Property(property="name", type="string"),
      *                     @SWG\Property(property="rating", type="string", description="Short string rating (S1, S2)"),
      *                     @SWG\Property(property="intRating", type="integer", description="Numeric rating (OBS = 1,
-     *                                                         etc)"),
+                                                               etc)"),
      *                     @SWG\Property(property="date", type="string", description="Date transfer submitted
-     *                                                    (YYYY-MM-DD)"),
+                                                          (YYYY-MM-DD)"),
      *                 ),
      *             ),
      *         ),
@@ -761,7 +761,7 @@ class FacilityController extends APIController
             ];
         }
 
-        return response()->api(['status' => 'OK', 'transfers' => $data]);
+        return response()->ok(['transfers' => $data]);
     }
 
     /**
@@ -780,9 +780,9 @@ class FacilityController extends APIController
      * @SWG\Parameter(name="transferId", in="query", description="Transfer ID", type="integer", required=true),
      * @SWG\Parameter(name="action", in="formData", type="string", required=true, enum={"approve","reject"},
      *                                   description="Action to take on transfer request. Valid values:
-     *                                   approve,reject"),
+                                         approve,reject"),
      * @SWG\Parameter(name="reason", in="formData", type="string", description="Reason for transfer request rejection
-     *                               [required for rejections]"),
+                                    [required for rejections]"),
      * @SWG\Response(
      *         response="400",
      *         description="Malformed request, missing required parameter",
@@ -872,7 +872,7 @@ class FacilityController extends APIController
             }
         }
 
-        return response()->api(['status' => "OK"]);
+        return response()->ok();
     }
 
     /**
@@ -918,7 +918,7 @@ class FacilityController extends APIController
      *                 @SWG\Property(property="id", type="integer", description="Path DB ID"),
      *                     @SWG\Property(property="order", type="integer", description="ID used in ULS query"),
      *                     @SWG\Property(property="facility_id", type="string", description="Facility assocaited with
-     *                                                           path"),
+                                                                 path"),
      *                     @SWG\Property(property="url", type="string", description="Return URL")
      *                 ),
      *             ),
@@ -949,7 +949,7 @@ class FacilityController extends APIController
             return response()->api(generate_error("Forbidden"), 403);
         }
 
-        return response()->api(['status' => 'OK', 'paths' => $facility->returnPaths]);
+        return response()->ok(['paths' => $facility->returnPaths]);
     }
 
     /**
@@ -1053,7 +1053,7 @@ class FacilityController extends APIController
             ]);
         }
 
-        return response()->api(['status' => 'OK']);
+        return response()->ok();
     }
 
     /**
@@ -1150,7 +1150,7 @@ class FacilityController extends APIController
             }
         }
 
-        return response()->api(['status' => 'OK']);
+        return response()->ok();
     }
 
 
@@ -1253,6 +1253,6 @@ class FacilityController extends APIController
             $path->save();
         }
 
-        return response()->api(['status' => 'OK']);
+        return response()->ok();
     }
 }
