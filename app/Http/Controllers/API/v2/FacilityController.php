@@ -324,7 +324,7 @@ class FacilityController extends APIController
             }
         }
 
-        return response()->ok($data);
+        return response()->ok([$data]);
     }
 
     /**
