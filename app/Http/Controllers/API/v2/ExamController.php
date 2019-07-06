@@ -73,15 +73,15 @@ class ExamController extends APIController
     {
         $ea = ExamAssignment::find($examId);
         if (!$ea) {
-            return response()->json(generate_error("Not Found", true), 404);
+            return response()->api(generate_error("Not Found", true), 404);
         }
 
         if ($ea->cid != \Auth::user()->cid) {
-            return response()->json(generate_error("Forbidden", true), 403);
+            return response()->api(generate_error("Forbidden", true), 403);
         }
 
         if (!$ea->exam->CBTComplete(\Auth::user())) {
-            return response()->json([
+            return response()->api([
                 "msg"         => "CBTs are not complete",
                 "cbt"         => $ea->exam->CBT->name,
                 "cbtFacility" => $ea->exam->CBT->facility
@@ -92,7 +92,7 @@ class ExamController extends APIController
             \Cache::put('exam.queue.' . $ea->cid, $examId, 60);
         }
 
-        return response()->json(['status' => 'OK']);
+        return response()->ok();
     }
 
 
@@ -142,12 +142,13 @@ class ExamController extends APIController
      *         examples={{"application/json":{"results"="Not Passed"}},{"application/json":{"results"="Passed"}}},
      *     )
      * )
+     * @throws \Exception
      */
     public function postSubmit(Request $request)
     {
         // Make sure all is there
         if (!$request->has('payload') || !$request->has('answers')) {
-            return response()->json(generate_error('Missing data', true), 400);
+            return response()->api(generate_error('Missing data', true), 400);
         }
 
         // Replace ALL spaces with +'s in payload
@@ -158,7 +159,7 @@ class ExamController extends APIController
         $payloads = explode(".", $payload);
         if (hash('sha256',
                 env('EXAM_SECRET') . '$' . \Auth::user()->cid . '$' . base64_decode($payloads[0])) != $payloads[1]) {
-            return response()->json(generate_error("Signature doesn't match payload", true), 400);
+            return response()->api(generate_error("Signature doesn't match payload", true), 400);
         }
 
         $answers = json_decode(base64_decode($request->input('answers')), true);
@@ -167,7 +168,7 @@ class ExamController extends APIController
         // Verify assignment
         $assign = ExamAssignment::where('cid', \Auth::user()->cid)->where('exam_id', $questions['id'])->first();
         if (!$assign) {
-            return response()->json(generate_error("Not found", true), 404);
+            return response()->api(generate_error("Not found", true), 404);
         }
 
         $correct = 0;
@@ -250,7 +251,7 @@ class ExamController extends APIController
                 \Auth::user()->save();
             }
 
-            return response()->json(['results' => "Passed."]);
+            return response()->api(['results' => "Passed."]);
         } else {
             if ($exam->retake_period > 0) {
                 $reassign = new ExamReassignment();
@@ -270,7 +271,7 @@ class ExamController extends APIController
             }
             EmailHelper::sendEmailFacilityTemplate($to, "Exam Not Passed", $fac, "examfailed", $data);
 
-            return response()->json(['results' => "Not Passed."]);
+            return response()->api(['results' => "Not Passed."]);
         }
     }
 
@@ -309,16 +310,16 @@ class ExamController extends APIController
     public function getRequest(Request $request)
     {
         if (!\Cache::has('exam.queue.' . \Auth::user()->cid)) {
-            return response()->json(generate_error("No exam queued", true), 404);
+            return response()->api(generate_error("No exam queued", true), 404);
         }
         $assign = ExamAssignment::find(\Cache::get('exam.queue.' . \Auth::user()->cid));
         if (!$assign) {
-            return response()->json(generate_error("No matching exam assignment", true), 404);
+            return response()->api(generate_error("No matching exam assignment", true), 404);
         }
         $exam = Exam::find($assign->exam_id);
 
         if (!$exam->CBTComplete(\Auth::user())) {
-            return response()->json([
+            return response()->api([
                 "msg"         => "CBTs are not complete",
                 "cbt"         => $exam->CBT->name,
                 "cbtFacility" => $exam->CBT->facility
@@ -362,7 +363,7 @@ class ExamController extends APIController
         $json = json_encode($json, JSON_HEX_APOS | JSON_NUMERIC_CHECK);
         $sig = hash('sha256', env('EXAM_SECRET') . '$' . \Auth::user()->cid . '$' . $json);
 
-        return response()->json([
+        return response()->api([
             'payload' => base64_encode($json) . "." . $sig
         ]);
     }
@@ -932,6 +933,7 @@ class ExamController extends APIController
      * @param                          $cid
      *
      * @return \Illuminate\Http\Response
+     * @throws \Exception
      */
     public function deleteExamAssignment(Request $request, $examid, $cid)
     {

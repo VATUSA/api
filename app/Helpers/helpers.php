@@ -5,7 +5,7 @@ use App\Action;
 /**
  * Generate standardized JSON output
  *
- * @param array $data
+ * @param mixed $data
  * @return string
  */
 function encode_json($data) {
