@@ -217,9 +217,12 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     }
 
     /**
+     * Remove from Facility
      * @param string $by
      * @param string $msg
      * @param string $newfac
+     *
+     * @throws \Exception
      */
     public function removeFromFacility($by = "Automated", $msg = "None provided", $newfac = "ZAE") {
         $facility = $this->facility;

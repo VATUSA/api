@@ -156,7 +156,7 @@ class UserController extends APIController
     public function postRole($cid, $facility, $role)
     {
         if (!\Auth::check()) {
-            return response()->json(generate_error("Unauthorized"), 401);
+            return response()->api(generate_error("Unauthorized"), 401);
         }
 
         $facility = Facility::find($facility);
@@ -192,7 +192,7 @@ class UserController extends APIController
             log_action($cid, "Assigned to role $role for $facility->id by " . \Auth::user()->fullname());
         }
 
-        return response()->api(['status' => 'OK']);
+        return response()->ok();
     }
 
     /**
@@ -236,11 +236,12 @@ class UserController extends APIController
      *         examples={"application/json":{"status"="OK","testing"=false}}
      *     )
      * )
+     * @throws \Exception
      */
     public function deleteRole($cid, $facility, $role)
     {
         if (!\Auth::check()) {
-            return response()->json(generate_error("Unauthorized"), 401);
+            return response()->api(generate_error("Unauthorized"), 401);
         }
 
         $role = strtoupper($role);
@@ -280,7 +281,7 @@ class UserController extends APIController
             log_action($cid, "Removed from role $role for $fac->id by " . \Auth::user()->fullname());
         }
 
-        return response()->api(['status' => 'OK']);
+        return response()->ok();
     }
 
     /**
@@ -340,26 +341,26 @@ class UserController extends APIController
     public function postTransfer($cid)
     {
         if (!\Auth::check()) {
-            return response()->json(generate_error("Unauthorized"), 401);
+            return response()->api(generate_error("Unauthorized"), 401);
         }
         if (\Auth::user()->cid != $cid && !RoleHelper::isVATUSAStaff(\Auth::user()->cid)) {
-            return response()->json(generate_error("Forbidden"), 403);
+            return response()->api(generate_error("Forbidden"), 403);
         }
         $user = User::find($cid);
         if (!$user) {
-            return response()->json(generate_error("Not found"), 404);
+            return response()->api(generate_error("Not found"), 404);
         }
         if (!$user->transferEligible()) {
-            return response()->json(generate_error("Conflict"), 409);
+            return response()->api(generate_error("Conflict"), 409);
         }
 
         $facility = request()->get("facility", null);
         $reason = request()->get("reason", null);
         if (!$facility || !Facility::find()) {
-            return response()->json(generate_error("Not found"), 404);
+            return response()->api(generate_error("Not found"), 404);
         }
         if (strlen($reason) < 3) {
-            return response()->json(generate_error("Malformed request"), 400);
+            return response()->api(generate_error("Malformed request"), 400);
         }
 
         if (!isTest()) {
@@ -387,7 +388,7 @@ class UserController extends APIController
             \Mail::to($emails)->send(new \App\Mail\TransferRequested($transfer));
         }
 
-        return response()->json(['status' => 'OK']);
+        return response()->ok();
     }
 
     /**
@@ -432,7 +433,7 @@ class UserController extends APIController
     {
         $hasValidApiKey = AuthHelper::validApiKeyv2(request()->input('apikey', null));
         if (!$hasValidApiKey && !\Auth::check()) {
-            return response()->json(generate_error("Unauthorized"), 401);
+            return response()->api(generate_error("Unauthorized"), 401);
         }
         if ($hasValidApiKey || (\Auth::check() &&
                 (
@@ -444,10 +445,10 @@ class UserController extends APIController
             $check = [];
             $overall = User::find($cid)->transferEligible($check);
 
-            return response()->json(array_merge($check, ['overall' => $overall]));
+            return response()->api(array_merge($check, ['overall' => $overall]));
         }
 
-        return response()->json(generate_error("Forbidden"), 403);
+        return response()->api(generate_error("Forbidden"), 403);
     }
 
     /**
@@ -585,14 +586,14 @@ class UserController extends APIController
         }
 
         if (isTest()) {
-            return response()->api(["status" => "OK"]);
+            return response()->ok();
         }
 
         Promotion::process($user->cid, \Auth::user()->cid, $user->rating + 1, $user->rating, $examDate, $examiner,
             $position);
         $return = CERTHelper::changeRating($cid, $rating, true);
         if ($return) {
-            return response()->api(["status" => "OK"]);
+            return response()->ok();
         } else {
             return response()->api(["status" => "Internal server error"], 500);
         }
@@ -644,10 +645,10 @@ class UserController extends APIController
     {
         $hasValidApiKey = AuthHelper::validApiKeyv2(request()->input('apikey', null));
         if (!User::find($cid)) {
-            return response()->json(generate_error("Not found"), 404);
+            return response()->api(generate_error("Not found"), 404);
         }
         if (!$hasValidApiKey && !\Auth::check()) {
-            return response()->json(generate_error("Unauthorized"), 401);
+            return response()->api(generate_error("Unauthorized"), 401);
         }
         if (!$hasValidApiKey && !(\Auth::check() &&
                 (
@@ -710,22 +711,22 @@ class UserController extends APIController
     public function getActionLog($cid)
     {
         if (!User::find($cid)) {
-            return response()->json(generate_error("Not found"), 404);
+            return response()->api(generate_error("Not found"), 404);
         }
         if (!\Auth::check()) {
-            return response()->json(generate_error("Unauthorized"), 401);
+            return response()->api(generate_error("Unauthorized"), 401);
         }
         if (\Auth::user()->cid == $cid ||
             RoleHelper::isVATUSAStaff(\Auth::user()->cid) ||
             RoleHelper::has(\Auth::user()->cid, \Auth::user()->facility, ["ATM", "DATM"])
         ) {
 
-            return response()->json(generate_error("Forbidden"), 403);
+            return response()->api(generate_error("Forbidden"), 403);
         }
 
         $logs = Action::where("to", $cid)->get()->toArray();
 
-        return response()->json($logs);
+        return response()->api($logs);
     }
 
     /**
@@ -771,19 +772,19 @@ class UserController extends APIController
     {
         $entry = request()->input("entry", null);
         if (!$entry) {
-            return response()->json(generate_error("Malformed request"), 400);
+            return response()->api(generate_error("Malformed request"), 400);
         }
         if (!\Auth::check()) {
-            return response()->json(generate_error("Unauthorized"), 401);
+            return response()->api(generate_error("Unauthorized"), 401);
         }
         if (!RoleHelper::isVATUSAStaff(\Auth::user()->cid) && !RoleHelper::has(\Auth::user()->cid,
                 \Auth::user()->facility, ["ATM", "DATM"])) {
-            return response()->json(generate_error("Forbidden"), 403);
+            return response()->api(generate_error("Forbidden"), 403);
         }
 
         log_action($cid, $entry);
 
-        return response()->json(['status' => 'OK']);
+        return response()->ok();
     }
 
     /**
@@ -837,10 +838,10 @@ class UserController extends APIController
         $hasValidApiKey = AuthHelper::validApiKeyv2(request()->input('apikey', null));
 
         if (!User::find($cid)) {
-            return response()->json(generate_error("Not found"), 404);
+            return response()->api(generate_error("Not found"), 404);
         }
         if (!$hasValidApiKey && !\Auth::check()) {
-            return response()->json(generate_error("Unauthorized"), 401);
+            return response()->api(generate_error("Unauthorized"), 401);
         }
 
         if (!$hasValidApiKey && !(\Auth::check() &&
@@ -850,12 +851,12 @@ class UserController extends APIController
                     RoleHelper::has(\Auth::user()->cid, \Auth::user()->facility, ["ATM", "DATM", "TA", "WM"])
                 )
             )) {
-            return response()->json(generate_error("Forbidden"), 403);
+            return response()->api(generate_error("Forbidden"), 403);
         }
 
         $transfers = Transfer::where('cid', $cid)->orderBy('created_at', 'desc')->get()->toArray();
 
-        return response()->json($transfers);
+        return response()->api($transfers);
     }
 
     /**
@@ -897,11 +898,11 @@ class UserController extends APIController
                     RoleHelper::has(\Auth::user()->cid, \Auth::user()->facility, ["ATM", "DATM", "TA", "WM"])
                 )
             )) {
-            return response()->json(generate_error("Unauthorized"), 401);
+            return response()->api(generate_error("Unauthorized"), 401);
         }
         $data = TrainingProgress::where("cid", $cid)->get()->toArray();
 
-        return response()->json($data);
+        return response()->api($data);
     }
 
     /**
@@ -952,7 +953,7 @@ class UserController extends APIController
                     RoleHelper::has(\Auth::user()->cid, \Auth::user()->facility, ["ATM", "DATM", "TA", "WM"])
                 )
             )) {
-            return response()->json(generate_error("Unauthorized"), 401);
+            return response()->api(generate_error("Unauthorized"), 401);
         }
 
         $chapters = TrainingChapter::where('blockid', $blockId)->get();
@@ -967,7 +968,7 @@ class UserController extends APIController
             ];
         }
 
-        return response()->json($data);
+        return response()->api($data);
     }
 
     /**
@@ -1009,11 +1010,11 @@ class UserController extends APIController
     {
         $apikey = AuthHelper::validApiKeyv2(request()->input('apikey', null));
         if (!\Auth::check() && !$apikey) {
-            return response()->json(generate_error("Unauthorized"), 401);
+            return response()->api(generate_error("Unauthorized"), 401);
         }
 
         if (!$apikey && \Auth::user()->cid != $cid) {
-            return response()->json(generate_error("Forbidden"), 403);
+            return response()->api(generate_error("Forbidden"), 403);
         }
 
         if (!isTest()) {
@@ -1024,7 +1025,7 @@ class UserController extends APIController
             $tp->save();
         }
 
-        return response()->api(['status' => 'OK']);
+        return response()->ok();
     }
 
     /**
@@ -1069,18 +1070,18 @@ class UserController extends APIController
     {
         $hasValidApiKey = AuthHelper::validApiKeyv2(request()->input('apikey', null));
         if (!\Auth::check() && !$hasValidApiKey) {
-            return response()->json(generate_error("Unauthenticated"), 401);
+            return response()->api(generate_error("Unauthenticated"), 401);
         }
 
         if (!$hasValidApiKey && $cid != \Auth::user()->cid &&
             !RoleHelper::isVATUSAStaff() &&
             !RoleHelper::isFacilityStaff() &&
             !RoleHelper::isInstructor()) {
-            return response()->json(generate_error("Forbidden"), 403);
+            return response()->api(generate_error("Forbidden"), 403);
         }
 
         $results = ExamResults::where('cid', $cid)->orderBy('date', 'desc')->get()->toArray();
 
-        return response()->json($results);
+        return response()->api($results);
     }
 }

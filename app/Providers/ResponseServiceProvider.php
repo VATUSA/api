@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Helpers\FacilityHelper;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Request;
@@ -49,29 +50,40 @@ class ResponseServiceProvider extends ServiceProvider
             if (Request::filled("f")) {
                 $facility = Facility::find(Request::input("f"));
                 if ($facility) {
-                    $fjwk = $facility->apiv2_jwk;
                     $showsig = true;
+                    $fjwk = $facility->apiv2_jwk;
+                    if (isset($_SERVER['HTTP_ORIGIN'])) {
+                        $domain = extract_domain(parse_url($_SERVER['HTTP_ORIGIN'], PHP_URL_HOST));
+                        if (in_array($domain, FacilityHelper::getDevURLs($facility))) {
+                            $fjwk = $facility->apiv2_jwk_dev;
+                        }
+                    }
                 }
             } else {
                 if (isset($_SERVER['HTTP_ORIGIN'])) {
                     $domain = extract_domain(parse_url($_SERVER['HTTP_ORIGIN'], PHP_URL_HOST));
-                    $facility = Facility::where('url', 'LIKE', "%$domain%")->first();
+                    $facility = Facility::where('url', 'LIKE', "%$domain%")
+                        ->orWhere('url_dev', 'LIKE',
+                            "%$domain%")->first();
                     if ($facility) {
                         $showsig = true;
-                        $fjwk = $facility->apiv2_jwk;
+                        if (in_array($domain, FacilityHelper::getDevURLs($facility))) {
+                            $fjwk = $facility->apiv2_jwk_dev;
+                        } else {
+                            $fjwk = $facility->apiv2_jwk;
+                        }
                     }
                 }
             }
 
             $sig = [];
-            if ($showsig && $fjwk != null) {
+            if ($showsig && !is_null($fjwk) && $fjwk != "") {
                 $algorithmManager = AlgorithmManager::create([
                     new HS256(),
                     new HS384(),
                     new HS512(),
                 ]);
-
-                $jwk = JWK::create(json_decode($facility->apiv2_jwk, true));
+                $jwk = JWK::create(json_decode($fjwk, true));
 
                 $jsonConverter = new StandardConverter();
 
@@ -82,7 +94,7 @@ class ResponseServiceProvider extends ServiceProvider
 
                 $payload = $jsonConverter->encode(array_merge(['testing' => isTest(), $data]));
                 $jws = $jwsBuilder->create()->withPayload($payload)->addSignature($jwk,
-                    ['alg' => json_decode($facility->apiv2_jwk, true)['alg']])->build();
+                    ['alg' => json_decode($fjwk, true)['alg']])->build();
                 $serializer = new JSONFlattenedSerializer($jsonConverter);
 
                 return $factory->make($serializer->serialize($jws, 0), $status,

@@ -34,6 +34,7 @@ class ULSv2Controller extends Controller
     public function getLogin(Request $request)
     {
         $fac = $request->input('fac', null);
+        $test = $request->has('test');
 
         $url = $request->input('url', 1);
         if ($request->has('dev') && !$request->has('url')) {
@@ -53,29 +54,34 @@ class ULSv2Controller extends Controller
             throw new ReturnPathNotFoundException("Invalid return URL");
         }
 
-        if ($facility->uls_jwk == "") {
+        if($test && $facility->uls_jwk_dev == "")
+            abort(400, "Sandbox JWK has not been generated.");
+        if ($facility->uls_jwk == "" || ($test && $facility->uls_jwk_dev == "")) {
             abort(400,
                 "Facility is not ready for ULSv2. Please contact the facility webmaster at " . strtolower($facility->id) . "-wm@vatusa.net");
         }
 
-        session(compact('fac', 'url'));
+        session(compact('fac', 'url', 'test'));
 
-        return redirect(env('ULSv2_LOGIN'));
+        return redirect(env(!$test ? 'ULSv2_LOGIN' : 'SSO_RETURN_ULSv2'));
+        //Testing: return test user using dev JWK key
     }
 
     public function getRedirect(Request $request)
     {
         $fac = $request->session()->has('fac') ? $request->session()->get('fac') : null;
         $url = $request->session()->has('url') ? $request->session()->get('url') : null;
+        $test = $request->session()->has('test') ? $request->session()->get('test') : null;
+
         if (!$fac || !$url) {
             abort(400, "Malformed request");
         }
 
         $facility = Facility::where("id", $fac)->first();
         $redirect = ULSHelper::getReturnFromOrder($fac, $url);
-        $facility_jwk = json_decode($facility->uls_jwk, true);
+        $facility_jwk = json_decode(!$test ? $facility->uls_jwk : $facility->uls_jwk_dev, true);
 
-        if (!\Auth::check()) {
+        if (!$test && !\Auth::check()) {
             return redirect("$redirect?cancel");
         }
 
@@ -84,14 +90,15 @@ class ULSv2Controller extends Controller
             new HS384(),
             new HS512()
         ]);
-        $jwk = JWK::create(json_decode($facility->uls_jwk, true));
+        $jwk = JWK::create($facility_jwk);
         $jsonConverter = new StandardConverter();
         $jwsBuilder = new JWSBuilder(
             $jsonConverter,
             $algorithmManager
         );
 
-        $data = ULSHelper::generatev2Token(\Auth::user(), $facility);
+        $data = ULSHelper::generatev2Token(!$test ? \Auth::user() : factory(User::class)->make(['facility' => $facility->id]),
+            $facility);
         $payload = $jsonConverter->encode($data);
         $jws = $jwsBuilder->create()->withPayload($payload)->addSignature($jwk,
             ['alg' => $facility_jwk['alg']])->build();
@@ -100,6 +107,7 @@ class ULSv2Controller extends Controller
 
         $request->session()->forget("fac");
         $request->session()->forget("url");
+        $request->session()->forget("test");
 
         if ($redirect) {
             return redirect("$redirect?token=$token");
@@ -146,6 +154,9 @@ class ULSv2Controller extends Controller
 
         $user = User::find($data['sub']);
         $facility = Facility::find($data['aud']);       // Assumption, but not much risk here, checked by our signature anyway
+        if ($data['sub'] == 999) {
+            $user = factory(User::class)->make(['facility' => $facility->id]);
+        }
         $data = [
             'cid'       => $user->cid,
             'lastname'  => $user->lname,
