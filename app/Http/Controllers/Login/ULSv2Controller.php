@@ -97,7 +97,7 @@ class ULSv2Controller extends Controller
             $algorithmManager
         );
 
-        $data = ULSHelper::generatev2Token(!$test ? \Auth::user() : factory(User::class)->make(['facility' => $facility->id]),
+        $data = ULSHelper::generatev2Token(!$test ? \Auth::user() : factory(User::class)->make(['facility' => "ZXX"]),
             $facility);
         $payload = $jsonConverter->encode($data);
         $jws = $jwsBuilder->create()->withPayload($payload)->addSignature($jwk,
@@ -155,7 +155,7 @@ class ULSv2Controller extends Controller
         $user = User::find($data['sub']);
         $facility = Facility::find($data['aud']);       // Assumption, but not much risk here, checked by our signature anyway
         if ($data['sub'] == 999) {
-            $user = factory(User::class)->make(['facility' => $facility->id]);
+            $user = factory(User::class)->make(['facility' => "ZXX"]);
         }
         $data = [
             'cid'       => $user->cid,
