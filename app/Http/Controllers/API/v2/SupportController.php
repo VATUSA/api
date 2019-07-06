@@ -163,7 +163,8 @@ class SupportController extends APIController
      *         response="400",
      *         description="Malformed request, check format of position, expDate",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","message"="Invalid position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
+     *         examples={{"application/json":{"status"="error","message"="Invalid
+     *         position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
      *     ),
      *     @SWG\Response(
      *         response="401",
@@ -195,6 +196,7 @@ class SupportController extends APIController
      * @param int                      $id
      *
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function deleteKB(Request $request, int $id) {
         if (!$request->has("name")) return response()->malformed();
@@ -386,7 +388,8 @@ class SupportController extends APIController
      *         response="400",
      *         description="Malformed request, check format of position, expDate",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","message"="Invalid position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
+     *         examples={{"application/json":{"status"="error","message"="Invalid
+               position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
      *     ),
      *     @SWG\Response(
      *         response="401",
@@ -413,6 +416,7 @@ class SupportController extends APIController
      * @param int                      $questionid
      *
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function deleteKBQuestion(Request $request, int $categoryid, int $questionid) {
         if (!$request->has("name")) return response()->malformed();
