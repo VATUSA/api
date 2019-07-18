@@ -8,6 +8,8 @@ use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
 use App\ReturnPaths;
 use App\Role;
+use App\TMUFacility;
+use App\TMUNotice;
 use App\Transfer;
 use App\User;
 use Illuminate\Http\Request;
@@ -131,6 +133,11 @@ class FacilityController extends APIController
         $data['stats']['pendingTransfers'] = Transfer::where('to', $id)->where(
             'status', Transfer::$pending
         )->count();
+
+        $data['notices'] = [];
+        foreach (TMUFacility::where('id', $id)->orWhere('parent', $id)->get() as $tmu) {
+            $data['notices'][] = $tmu->tmuNotices()->get()->toArray();
+        }
 
         $json = encode_json($data);
 
@@ -712,9 +719,9 @@ class FacilityController extends APIController
      *                     @SWG\Property(property="name", type="string"),
      *                     @SWG\Property(property="rating", type="string", description="Short string rating (S1, S2)"),
      *                     @SWG\Property(property="intRating", type="integer", description="Numeric rating (OBS = 1,
-                                                               etc)"),
+    etc)"),
      *                     @SWG\Property(property="date", type="string", description="Date transfer submitted
-                                                          (YYYY-MM-DD)"),
+    (YYYY-MM-DD)"),
      *                 ),
      *             ),
      *         ),
@@ -780,9 +787,9 @@ class FacilityController extends APIController
      * @SWG\Parameter(name="transferId", in="query", description="Transfer ID", type="integer", required=true),
      * @SWG\Parameter(name="action", in="formData", type="string", required=true, enum={"approve","reject"},
      *                                   description="Action to take on transfer request. Valid values:
-                                         approve,reject"),
+    approve,reject"),
      * @SWG\Parameter(name="reason", in="formData", type="string", description="Reason for transfer request rejection
-                                    [required for rejections]"),
+    [required for rejections]"),
      * @SWG\Response(
      *         response="400",
      *         description="Malformed request, missing required parameter",
@@ -918,7 +925,7 @@ class FacilityController extends APIController
      *                 @SWG\Property(property="id", type="integer", description="Path DB ID"),
      *                     @SWG\Property(property="order", type="integer", description="ID used in ULS query"),
      *                     @SWG\Property(property="facility_id", type="string", description="Facility assocaited with
-                                                                 path"),
+    path"),
      *                     @SWG\Property(property="url", type="string", description="Return URL")
      *                 ),
      *             ),
