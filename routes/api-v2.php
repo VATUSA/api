@@ -133,7 +133,7 @@ Route::group(['prefix' => '/infrastructure', 'middleware' => ['auth:web,jwt', 'p
 
 Route::group(['prefix' => '/solo'], function () {
     Route::get('/', 'SoloController@getIndex');
-    Route::group(['middleware' => 'semiprivate'], function() {
+    Route::group(['middleware' => 'semiprivate'], function () {
         Route::post('/', 'SoloController@postSolo');
         Route::delete('/', 'SoloController@deleteSolo');
     });
@@ -233,5 +233,18 @@ Route::group(['prefix' => '/user'], function () {
 
         Route::get('/{cid}/log', 'UserController@getActionLog')->where('cid', '[0-9]+');
         Route::post('/{cid}/log', 'UserController@postActionLog')->where('cid', '[0-9]+');
+    });
+});
+
+/******************************************************************************************
+ * /tmu
+ * TMU functions
+ */
+Route::group(['prefix' => '/tmu'], function () {
+    Route::group(['prefix' => '/notices'], function () {
+        Route::get('{tmufacid?}', 'TMUController@getNotices');
+        Route::delete('{noticeId}', 'TMUController@removeNotice');
+        Route::put('{noticeId}', 'TMUController@editNotice');
+        Route::post('/', 'TMUController@addNotice');
     });
 });
