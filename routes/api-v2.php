@@ -243,8 +243,10 @@ Route::group(['prefix' => '/user'], function () {
 Route::group(['prefix' => '/tmu'], function () {
     Route::group(['prefix' => '/notices'], function () {
         Route::get('{tmufacid?}', 'TMUController@getNotices');
-        Route::delete('{noticeId}', 'TMUController@removeNotice');
-        Route::put('{noticeId}', 'TMUController@editNotice');
-        Route::post('/', 'TMUController@addNotice');
+        Route::group(['middleware' => 'semiprivate'], function() {
+            Route::delete('{noticeId}', 'TMUController@removeNotice');
+            Route::put('{noticeId}', 'TMUController@editNotice');
+            Route::post('/', 'TMUController@addNotice');
+        });
     });
 });
