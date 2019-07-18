@@ -51,7 +51,7 @@ class TMUController extends APIController
             return response()->api(generate_error("Malformed request, invalid expire date format (Y-m-d H:i:s)"), 400);
         }
 
-        if (!$cExpDate->isPast()) {
+        if ($cExpDate->isPast()) {
             return response()->api(generate_error("Malformed request, expire date cannot be in the past"), 400);
         }
 
@@ -64,7 +64,7 @@ class TMUController extends APIController
             $notice->message = $message;
             $notice->priority = $priority;
             $notice->expire_date = $expdate;
-            $facility->tmuNotices()->save($notice);
+            $tmuFac->tmuNotices()->save($notice);
         }
 
         return response()->ok();
@@ -74,11 +74,11 @@ class TMUController extends APIController
     {
         $facility = $request->input('facility', null);
         $expdate = $request->input('expire_date', null);
-        $priority = $request->input('priority', 1); //default: standard priority
+        $priority = $request->input('priority', null);
         $message = $request->input('message', null);
 
         $notice = TMUNotice::find($noticeId);
-        if (!$notice->exists()) {
+        if (!$notice) {
             return response()->api(generate_error("TMU Notice does not exist."), 400);
         }
 
@@ -95,7 +95,7 @@ class TMUController extends APIController
 
         if ($facility) {
             $tmuFac = TMUFacility::find($facility);
-            if (!$tmuFac->exists()) {
+            if (!$tmuFac) {
                 return response()->api(generate_error("TMU facility does not exist"), 404);
             }
             $fac = $tmuFac->parent ? $tmuFac->parent : $tmuFac->id; //ZXX
@@ -120,7 +120,7 @@ class TMUController extends APIController
                     400);
             }
 
-            if (!$cExpDate->isPast()) {
+            if ($cExpDate->isPast()) {
                 return response()->api(generate_error("Malformed request, expire date cannot be in the past"), 400);
             }
 
@@ -148,7 +148,7 @@ class TMUController extends APIController
     public function removeNotice(Request $request, int $noticeId)
     {
         $notice = TMUNotice::find($noticeId);
-        if (!$notice->exists()) {
+        if (!$notice) {
             return response()->api(generate_error("TMU Notice does not exist."), 400);
         }
 
@@ -167,7 +167,7 @@ class TMUController extends APIController
             $notice->delete();
         }
 
-        return reponse()->ok();
+        return response()->ok();
     }
 
     public function getNotices(Request $request, string $tmufacid = null)
@@ -175,7 +175,7 @@ class TMUController extends APIController
         //TODO:: in FacilityController, get all notices for facility itself
         if ($tmufacid) {
             $tmuFac = TMUFacility::find($tmufacid);
-            if (!$tmuFac->exists()) {
+            if (!$tmuFac) {
                 return response()->api(generate_error("TMU Facility does not exist."), 400);
             }
             $notices = $tmuFac->tmuNotices()->get()->toArray();
