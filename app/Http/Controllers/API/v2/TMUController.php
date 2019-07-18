@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API\v2;
 
 use App\Helpers\AuthHelper;
+use App\Helpers\RoleHelper;
 use App\TMUFacility;
 use App\TMUNotice;
 use DateTime;
@@ -17,6 +18,51 @@ use Illuminate\Http\Request;
  */
 class TMUController extends APIController
 {
+    /**
+     * @SWG\Post(
+     *     path="/tmu/notices",
+     *     summary="Add new TMU Notice. [Key]",
+     *     description="Add new TMU Notice. Requires API Key, JWT, or Session Cookie (required roles:
+    [N/A for API Key] ATM, DATM, TA, EC, INS)", produces={"application/json"}, tags={"solo"},
+     *     security={"apikey","jwt","session"},
+     *     produces={"application/json"}, tags={"tmu"},
+     * @SWG\Parameter(name="tmu_facility_id",type="string",description="TMU Map ID",in="formData",required=true),
+     * @SWG\Parameter(name="priority",type="string",description="Priority of notice
+    (0: Low, 1: Standard, 2: Urgent)",in="formData",required=true),
+     * @SWG\Parameter(name="message",type="string",description="Notice content",in="formData",required=true),
+     * @SWG\Parameter(name="expire_date",type="string",description="Expiration time (YYYY-MM-DD
+     *                                                                         H:i:s)",in="formData",required=true),
+     * @SWG\Response(
+     *         response="400",
+     *         description="Malformed request",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *     ),
+     * @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     * @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     * @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(property="status", type="string"),
+     *         ),
+     *         examples={"application/json":{"status"="OK"}}
+     *     )
+     * ),
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function addNotice(Request $request)
     {
         $facility = $request->input('facility', null); ///TMU Map Facility ID
@@ -38,6 +84,11 @@ class TMUController extends APIController
         if (Auth::check()) {
             if (Auth::user()->facility != $fac) {
                 return response()->api(generate_error("Forbidden. Cannot add notice for another ARTCC's TMU."), 403);
+            }
+            if (!(RoleHelper::isFacilityStaff() ||
+                RoleHelper::isVATUSAStaff() ||
+                RoleHelper::isInstructor())) {
+                return response()->api(generate_error("Forbidden."), 403);
             }
         } else {
             if (!AuthHelper::validApiKeyv2($request->input('apikey', null), $fac)) {
@@ -70,6 +121,52 @@ class TMUController extends APIController
         return response()->ok();
     }
 
+    /**
+     * @SWG\Put(
+     *     path="/tmu/notices/(id)",
+     *     summary="Edit TMU Notice. [Key]",
+     *     description="Edit TMU Notice. Requires API Key, JWT, or Session Cookie (required roles:
+    [N/A for API Key] ATM, DATM, TA, EC, INS)", produces={"application/json"}, tags={"solo"},
+     *     security={"apikey","jwt","session"},
+     *     produces={"application/json"}, tags={"tmu"},
+     * @SWG\Parameter(name="id",type="integer",description="TMU Notice ID",in="path",required=true),
+     * @SWG\Parameter(name="tmu_facility_id",type="string",description="TMU Map ID",in="formData"),
+     * @SWG\Parameter(name="priority",type="string",description="Priority of notice
+    (0: Low, 1: Standard, 2: Urgent)",in="formData"),
+     * @SWG\Parameter(name="message",type="string",description="Notice content",in="formData"),
+     * @SWG\Parameter(name="expire_date",type="string",description="Expiration time (YYYY-MM-DD H:i:s)",in="formData"),
+     * @SWG\Response(
+     *         response="400",
+     *         description="Malformed request",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *     ),
+     * @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     * @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     * @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(property="status", type="string"),
+     *         ),
+     *         examples={"application/json":{"status"="OK"}}
+     *     )
+     * ),
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param int $noticeId
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function editNotice(Request $request, int $noticeId)
     {
         $facility = $request->input('facility', null);
@@ -86,6 +183,11 @@ class TMUController extends APIController
         if (Auth::check()) {
             if (Auth::user()->facility != $fac) {
                 return response()->api(generate_error("Forbidden. Cannot edit another ARTCC's TMU."), 403);
+            }
+            if (!(RoleHelper::isFacilityStaff() ||
+                RoleHelper::isVATUSAStaff() ||
+                RoleHelper::isInstructor())) {
+                return response()->api(generate_error("Forbidden."), 403);
             }
         } else {
             if (!AuthHelper::validApiKeyv2($request->input('apikey', null), $fac)) {
@@ -145,6 +247,41 @@ class TMUController extends APIController
         return response()->ok();
     }
 
+    /**
+     * @SWG\Delete(
+     *     path="/tmu/notices/(id)",
+     *     summary="Delete TMU Notice. [Key]",
+     *     description="Delete solo certification. Requires API Key, JWT, or Session cookie (required roles: [N/A
+    for API Key] ATM, DATM, TA, EC, INS)",
+     *     produces={"application/json"}, tags={"tmu"},
+     *     security={"apikey","jwt","session"},
+     * @SWG\Parameter(name="id", in="path", type="integer", required=true, description="TMU Notice ID"),
+     * @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     * @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     * @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(ref="#/definitions/OK"),
+     *         examples={"application/json":{"status"="OK","testing"=false}}
+     *     )
+     * ),
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @param int                      $noticeId
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function removeNotice(Request $request, int $noticeId)
     {
         $notice = TMUNotice::find($noticeId);
@@ -156,6 +293,11 @@ class TMUController extends APIController
         if (Auth::check()) {
             if (Auth::user()->facility != $fac) {
                 return response()->api(generate_error("Forbidden. Cannot delete another ARTCC's TMU notice."), 403);
+            }
+            if (!(RoleHelper::isFacilityStaff() ||
+                RoleHelper::isVATUSAStaff() ||
+                RoleHelper::isInstructor())) {
+                return response()->api(generate_error("Forbidden."), 403);
             }
         } else {
             if (!AuthHelper::validApiKeyv2($request->input('apikey', null), $fac)) {
@@ -170,6 +312,37 @@ class TMUController extends APIController
         return response()->ok();
     }
 
+    /**
+     * @SWG\Get(
+     *     path="/tmu/notices/(tmufacid?)",
+     *     summary="Get list of TMU Notices.",
+     *     description="Get list of TMU Notices for either all of VATUSA or for the specified TMU Map ID.",
+     *     produces={"application/json"},
+     *     tags={"tmu"},
+     *     @SWG\Parameter(name="tmufacid", in="path", type="string", description="TMU Map ID (optional)",
+     *                                     required=false),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="array",
+     *             @SWG\Items(
+     *                 type="object",
+     *                 @SWG\Property(property="id",type="integer",description="TMU Notice ID"),
+     *                 @SWG\Property(property="tmu_facility_id",type="string",description="TMU Map ID"),
+     *                 @SWG\Property(property="priority",type="string",description="Priority of notice
+     *                                                                                       (0:Low,1:Standard,2:Urgent)"),
+     *                 @SWG\Property(property="message",type="string",description="Notice content"),
+     *                 @SWG\Property(property="expire_date", type="string", description="Expiration time (YYYY-MM-DD
+     *                                                       H:i:s)"),
+     *             ),
+     *         ),
+     *     )
+     * ),
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getNotices(Request $request, string $tmufacid = null)
     {
         //TODO:: in FacilityController, get all notices for facility itself
