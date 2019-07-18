@@ -106,8 +106,9 @@ class FacilityController extends APIController
     {"cid":1245046,"name":"Toby Rice","role":"DATM"},
     {"cid":1289149,"name":"Israel Reyes","role":"FE"},
     {"cid":1152158,"name":"Taylor Broad","role":"WM"}},
-    "stats":{"controllers":19,"pendingTransfers":0}}
-     *              }
+    "stats":{"controllers":19,"pendingTransfers":0},
+    "notices":{"D01":{{"id":4,"tmu_facility_id":"D01","priority":2,"message":"Ground hold in effect until 2300Z.",
+    "expire_date":"2019-08-01 00:00:00","created_at":"2019-07-18 08:04:36","updated_at":"2019-07-18 08:04:36"}}}}}
      *         }
      *     )
      * )
@@ -136,7 +137,9 @@ class FacilityController extends APIController
 
         $data['notices'] = [];
         foreach (TMUFacility::where('id', $id)->orWhere('parent', $id)->get() as $tmu) {
-            $data['notices'][] = $tmu->tmuNotices()->get()->toArray();
+            if ($tmu->tmuNotices()->count()) {
+                $data['notices'][$tmu->id] = $tmu->tmuNotices()->get()->toArray();
+            }
         }
 
         $json = encode_json($data);
