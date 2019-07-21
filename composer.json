@@ -13,6 +13,7 @@
         "dhawton/l5-swagger-redoc": "^5.5.4",
         "doctrine/dbal": "^2.5",
         "fideloper/proxy": "~3.3",
+        "fzaninotto/faker": "~1.4",
         "guzzlehttp/psr7": "^1.5",
         "laravel/framework": "5.5.*",
         "laravel/tinker": "~1.0",
@@ -20,12 +21,11 @@
         "phpseclib/phpseclib": "2.0",
         "predis/predis": "^1.1",
         "ramsey/uuid": "^3.7",
-        "sentry/sentry-laravel": "1.0.0-beta2",
+        "sentry/sentry-laravel": "1.1.0",
         "tymon/jwt-auth": "^1.0",
         "web-token/jwt-core": "^0.4.1",
         "web-token/jwt-key-mgmt": "^0.4.1",
-        "web-token/jwt-signature": "^0.4.1",
-        "fzaninotto/faker": "~1.4"
+        "web-token/jwt-signature": "^0.4.1"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^2.6",
