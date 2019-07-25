@@ -263,7 +263,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         $this->facility = $newfac;
         $this->save();
 
-        $t = new Transfers();
+        $t = new Transfer();
         $t->cid = $this->cid;
         $t->to = $newfac;
         $t->from = $facility;
