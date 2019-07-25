@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use App\Classes\OAuth\SSOException;
 use Exception;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Auth\AuthenticationException;
@@ -18,7 +19,8 @@ class Handler extends ExceptionHandler
         FacilityNotFoundException::class,
         ReturnPathNotFoundException::class,
         //JWTTokenException::class,
-        NotSecuredException::class
+        NotSecuredException::class,
+        SSOException::class
     ];
 
     /**
