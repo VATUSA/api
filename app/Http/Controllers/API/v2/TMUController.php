@@ -6,7 +6,6 @@ use App\Helpers\AuthHelper;
 use App\Helpers\RoleHelper;
 use App\TMUFacility;
 use App\TMUNotice;
-use DateTime;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
@@ -341,11 +340,12 @@ class TMUController extends APIController
      * ),
      * @param \Illuminate\Http\Request $request
      *
+     * @param string|null              $tmufacid
+     *
      * @return \Illuminate\Http\JsonResponse
      */
     public function getNotices(Request $request, string $tmufacid = null)
     {
-        //TODO:: in FacilityController, get all notices for facility itself
         if ($tmufacid) {
             $tmuFac = TMUFacility::find($tmufacid);
             if (!$tmuFac) {
