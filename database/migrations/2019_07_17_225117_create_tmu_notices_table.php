@@ -18,7 +18,8 @@ class CreateTmuNoticesTable extends Migration
             $table->string('tmu_facility_id');
             $table->smallInteger('priority'); // 0 => Low; 1 => Standard; 2 => Urgent
             $table->string('message');
-            $table->dateTime('expire_date');
+            $table->dateTime('start_date');
+            $table->dateTime('expire_date')->nullable();
             $table->timestamps();
         });
     }
