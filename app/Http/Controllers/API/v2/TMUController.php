@@ -32,7 +32,7 @@ class TMUController extends APIController
      * @SWG\Parameter(name="start_date",type="string",description="Effective date (YYYY-MM-DD
      *                                                                         H:i:s)",in="formData",required=true),
      * @SWG\Parameter(name="expire_date",type="string",description="Expiration date (YYYY-MM-DD
-     *                                                                         H:i:s)",in="formData",required=true),
+     *                                                                         H:i:s)",in="formData"),
      * @SWG\Response(
      *         response="400",
      *         description="Malformed request",
@@ -68,8 +68,8 @@ class TMUController extends APIController
     public function addNotice(Request $request)
     {
         $facility = $request->input('facility', null); ///TMU Map Facility ID
-        $expdate = $request->input('expire_date', null);
         $startdate = $request->input('start_date', null);
+        $expdate = $request->input('expire_date', null);
         $priority = $request->input('priority', 1); //Default: standard priority
         $message = $request->input('message', null);
 
@@ -97,6 +97,11 @@ class TMUController extends APIController
             if (!AuthHelper::validApiKeyv2($request->input('apikey', null), $fac)) {
                 return response()->api(generate_error("Forbidden. Cannot add notice for another ARTCC's TMU."), 403);
             }
+        }
+
+        if (!$expdate) {
+            $cExpDate = Carbon::now()->addYears(5);
+            $expdate = $cExpDate->format('Y-m-d H:i');
         }
 
         try {
@@ -150,7 +155,7 @@ class TMUController extends APIController
      * @SWG\Parameter(name="priority",type="string",description="Priority of notice
     (0: Low, 1: Standard, 2: Urgent)",in="formData"),
      * @SWG\Parameter(name="message",type="string",description="Notice content",in="formData"),
-     * @SWG\Parameter(name="expire_date",type="string",description="Expiration time (YYYY-MM-DD H:i:s)",in="formData"),
+     * @SWG\Parameter(name="expire_date",type="string",description="Expiration time (YYYY-MM-DD H:i:s) - "none" for no expiration",in="formData"),
      * @SWG\Response(
      *         response="400",
      *         description="Malformed request",
@@ -186,8 +191,8 @@ class TMUController extends APIController
     public function editNotice(Request $request, int $noticeId)
     {
         $facility = $request->input('facility', null);
-        $expdate = $request->input('expire_date', null);
         $startdate = $request->input('start_date', null);
+        $expdate = $request->input('expire_date', null);
         $priority = $request->input('priority', null);
         $message = $request->input('message', null);
 
@@ -231,7 +236,11 @@ class TMUController extends APIController
             $notice->tmuFacility()->associate($tmuFac);
         }
 
-        if ($expdate) {
+        if($expdate == "none") {
+            $cExpDate = Carbon::now()->addYears(5);
+            $expdate = $cExpDate->format('Y-m-d H:i');
+        }
+        else if ($expdate) {
             try {
                 $cExpDate = Carbon::createFromFormat('Y-m-d H:i:s', $expdate);
             } catch (InvalidArgumentException $e) {
@@ -261,11 +270,11 @@ class TMUController extends APIController
                 return response()->api(generate_error("Malformed request, invalid start date format (Y-m-d H:i:s)"),
                     400);
             }
-            if ($cStartDate->eq($expdate ? $expdate : $notice->expire_date)) {
+            if ($cStartDate->eq($expdate && $expdate != "none" ? $expdate : $notice->expire_date)) {
                 return response()->api(generate_error("Malformed request, expire date cannot be the same as start date."),
                     400);
             }
-            if ($cStartDate->isAfter($expdate ? $expdate : $notice->expire_date)) {
+            if ($cStartDate->isAfter($expdate && $expdate != "none" ? $expdate : $notice->expire_date)) {
                 return response()->api(generate_error("Malformed request, start date cannot be after expire date."),
                     400);
             }
