@@ -136,7 +136,7 @@ class TMUController extends APIController
             }
         }
 
-        if (!in_array(intval($priority), [0, 1, 2])) {
+        if (!in_array(intval($priority), [1, 2, 3])) {
             return response()->api(generate_error("Malformed request, priority must be 0, 1, or 2"), 400);
         }
 
@@ -294,7 +294,7 @@ class TMUController extends APIController
         }
 
         if ($priority) {
-            if (!in_array(intval($priority), [0, 1, 2])) {
+            if (!in_array(intval($priority), [1, 2, 3])) {
                 return response()->api(generate_error("Malformed request, priority must be 0, 1, or 2"), 400);
             }
             $notice->priority = $priority;

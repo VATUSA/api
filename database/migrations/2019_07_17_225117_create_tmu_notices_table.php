@@ -16,7 +16,7 @@ class CreateTmuNoticesTable extends Migration
         Schema::create('tmu_notices', function (Blueprint $table) {
             $table->increments('id');
             $table->string('tmu_facility_id');
-            $table->smallInteger('priority'); // 0 => Low; 1 => Standard; 2 => Urgent
+            $table->smallInteger('priority'); // 1 => Low; 2 => Standard; 3 => Urgent
             $table->string('message');
             $table->dateTime('start_date');
             $table->dateTime('expire_date')->nullable();
