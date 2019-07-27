@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\v2;
 
 use App\Helpers\AuthHelper;
 use App\Helpers\RoleHelper;
+use App\Role;
 use App\TMUFacility;
 use App\TMUNotice;
 use Illuminate\Support\Carbon;
@@ -30,7 +31,7 @@ class TMUController extends APIController
     (0: Low, 1: Standard, 2: Urgent)",in="formData",required=true),
      * @SWG\Parameter(name="message",type="string",description="Notice content",in="formData",required=true),
      * @SWG\Parameter(name="start_date",type="string",description="Effective date (YYYY-MM-DD
-     *                                                                         H:i:s)",in="formData",required=true),
+     *                                                                         H:i:s)",in="formData"),
      * @SWG\Parameter(name="expire_date",type="string",description="Expiration date (YYYY-MM-DD
      *                                                                         H:i:s)",in="formData"),
      * @SWG\Response(
@@ -74,7 +75,7 @@ class TMUController extends APIController
         $message = $request->input('message', null);
 
 
-        if (!$facility || !$expdate || !$message) {
+        if (!$facility || !$message) {
             return response()->api(generate_error("Malformed request, missing fields"), 400);
         }
 
@@ -85,7 +86,7 @@ class TMUController extends APIController
 
         $fac = $tmuFac->parent ? $tmuFac->parent : $tmuFac->id; //ZXX
         if (Auth::check()) {
-            if (Auth::user()->facility != $fac) {
+            if (!RoleHelper::isVATUSAStaff() && Auth::user()->facility != $fac) {
                 return response()->api(generate_error("Forbidden. Cannot add notice for another ARTCC's TMU."), 403);
             }
             if (!(RoleHelper::isFacilityStaff() ||
@@ -99,31 +100,40 @@ class TMUController extends APIController
             }
         }
 
-        if (!$expdate) {
-            $cExpDate = Carbon::now()->addYears(5);
-            $expdate = $cExpDate->format('Y-m-d H:i');
+        if ($startdate) {
+            try {
+                $cStartDate = Carbon::createFromFormat('Y-m-d H:i:s', $startdate);
+            } catch (InvalidArgumentException $e) {
+                return response()->api(generate_error("Malformed request, invalid start date format (Y-m-d H:i:s)."),
+                    400);
+            }
+            if ($cStartDate->isPast()) {
+                return response()->api(generate_error("Malformed request, start date cannot be in the past."), 400);
+            }
+        } else {
+            $cStartDate = Carbon::now();
+            $startdate = $cStartDate->format('Y-m-d H:i:s');
         }
 
-        try {
-            $cExpDate = Carbon::createFromFormat('Y-m-d H:i:s', $expdate);
-        } catch (InvalidArgumentException $e) {
-            return response()->api(generate_error("Malformed request, invalid expire date format (Y-m-d H:i:s)"), 400);
-        }
-        try {
-            $cStartDate = Carbon::createFromFormat('Y-m-d H:i:s', $startdate);
-        } catch (InvalidArgumentException $e) {
-            return response()->api(generate_error("Malformed request, invalid start date format (Y-m-d H:i:s)."), 400);
-        }
+        if ($expdate) {
+            try {
+                $cExpDate = Carbon::createFromFormat('Y-m-d H:i:s', $expdate);
+            } catch (InvalidArgumentException $e) {
+                return response()->api(generate_error("Malformed request, invalid expire date format (Y-m-d H:i:s)"),
+                    400);
+            }
 
-        if ($cExpDate->isPast()) {
-            return response()->api(generate_error("Malformed request, expire date cannot be in the past."), 400);
-        }
-        if ($cExpDate->eq($cStartDate)) {
-            return response()->api(generate_error("Malformed request, expire date cannot be the same as start date."),
-                400);
-        }
-        if ($cExpDate->isBefore($cStartDate)) {
-            return response()->api(generate_error("Malformed request, expire date cannot be before start date."), 400);
+            if ($cExpDate->isPast()) {
+                return response()->api(generate_error("Malformed request, expire date cannot be in the past."), 400);
+            }
+            if ($cExpDate->eq($cStartDate)) {
+                return response()->api(generate_error("Malformed request, expire date cannot be the same as start date."),
+                    400);
+            }
+            if ($cExpDate < $cStartDate) {
+                return response()->api(generate_error("Malformed request, expire date cannot be before start date."),
+                    400);
+            }
         }
 
         if (!in_array(intval($priority), [0, 1, 2])) {
@@ -155,7 +165,8 @@ class TMUController extends APIController
      * @SWG\Parameter(name="priority",type="string",description="Priority of notice
     (0: Low, 1: Standard, 2: Urgent)",in="formData"),
      * @SWG\Parameter(name="message",type="string",description="Notice content",in="formData"),
-     * @SWG\Parameter(name="expire_date",type="string",description="Expiration time (YYYY-MM-DD H:i:s) - "none" for no expiration",in="formData"),
+     * @SWG\Parameter(name="expire_date",type="string",description="Expiration time (YYYY-MM-DD H:i:s) - "none" for no
+     *                                                                         expiration",in="formData"),
      * @SWG\Response(
      *         response="400",
      *         description="Malformed request",
@@ -203,7 +214,7 @@ class TMUController extends APIController
 
         $fac = $notice->tmuFacility->parent ? $notice->tmuFacility->parent : $notice->tmuFacility->id; //ZXX
         if (Auth::check()) {
-            if (Auth::user()->facility != $fac) {
+            if (!RoleHelper::isVATUSAStaff() && Auth::user()->facility != $fac) {
                 return response()->api(generate_error("Forbidden. Cannot edit another ARTCC's TMU."), 403);
             }
             if (!(RoleHelper::isFacilityStaff() ||
@@ -224,7 +235,7 @@ class TMUController extends APIController
             }
             $fac = $tmuFac->parent ? $tmuFac->parent : $tmuFac->id; //ZXX
             if (Auth::check()) {
-                if (Auth::user()->facility != $fac) {
+                if (!RoleHelper::isVATUSAStaff() && Auth::user()->facility != $fac) {
                     return response()->api(generate_error("Forbidden. Cannot assign to another ARTCC's TMU."), 403);
                 }
             } else {
@@ -236,31 +247,33 @@ class TMUController extends APIController
             $notice->tmuFacility()->associate($tmuFac);
         }
 
-        if($expdate == "none") {
-            $cExpDate = Carbon::now()->addYears(5);
-            $expdate = $cExpDate->format('Y-m-d H:i');
-        }
-        else if ($expdate) {
-            try {
-                $cExpDate = Carbon::createFromFormat('Y-m-d H:i:s', $expdate);
-            } catch (InvalidArgumentException $e) {
-                return response()->api(generate_error("Malformed request, invalid expire date format (Y-m-d H:i:s)"),
-                    400);
-            }
+        if ($expdate == "none") {
+            $expdate = null;
+            $notice->expire_date = null;
+        } else {
+            if ($expdate) {
+                try {
+                    $cExpDate = Carbon::createFromFormat('Y-m-d H:i:s', $expdate);
+                } catch (InvalidArgumentException $e) {
+                    return response()->api(generate_error("Malformed request, invalid expire date format (Y-m-d H:i:s)"),
+                        400);
+                }
 
-            if ($cExpDate->isPast()) {
-                return response()->api(generate_error("Malformed request, expire date cannot be in the past."), 400);
-            }
-            if ($cExpDate->eq($startdate ? $startdate : $notice->start_date)) {
-                return response()->api(generate_error("Malformed request, expire date cannot be the same as start date."),
-                    400);
-            }
-            if ($cExpDate->isBefore($startdate ? $startdate : $notice->start_date)) {
-                return response()->api(generate_error("Malformed request, expire date cannot be before start date."),
-                    400);
-            }
+                if ($cExpDate->isPast()) {
+                    return response()->api(generate_error("Malformed request, expire date cannot be in the past."),
+                        400);
+                }
+                if ($cExpDate == $startdate ? $startdate : $notice->start_date) {
+                    return response()->api(generate_error("Malformed request, expire date cannot be the same as start date."),
+                        400);
+                }
+                if ($cExpDate < $startdate ? $startdate : $notice->start_date) {
+                    return response()->api(generate_error("Malformed request, expire date cannot be before start date."),
+                        400);
+                }
 
-            $notice->expire_date = $expdate;
+                $notice->expire_date = $expdate;
+            }
         }
 
         if ($startdate) {
@@ -270,11 +283,11 @@ class TMUController extends APIController
                 return response()->api(generate_error("Malformed request, invalid start date format (Y-m-d H:i:s)"),
                     400);
             }
-            if ($cStartDate->eq($expdate && $expdate != "none" ? $expdate : $notice->expire_date)) {
+            if ($expdate != "none" && $cStartDate == $expdate ? $expdate : $notice->expire_date) {
                 return response()->api(generate_error("Malformed request, expire date cannot be the same as start date."),
                     400);
             }
-            if ($cStartDate->isAfter($expdate && $expdate != "none" ? $expdate : $notice->expire_date)) {
+            if ($expdate != "none" && $cStartDate > $expdate ? $expdate : $notice->expire_date) {
                 return response()->api(generate_error("Malformed request, start date cannot be after expire date."),
                     400);
             }
@@ -342,7 +355,7 @@ class TMUController extends APIController
 
         $fac = $notice->tmuFacility->parent ? $notice->tmuFacility->parent : $notice->tmuFacility->id; //ZXX
         if (Auth::check()) {
-            if (Auth::user()->facility != $fac) {
+            if (!RoleHelper::isVATUSAStaff() && Auth::user()->facility != $fac) {
                 return response()->api(generate_error("Forbidden. Cannot delete another ARTCC's TMU notice."), 403);
             }
             if (!(RoleHelper::isFacilityStaff() ||
