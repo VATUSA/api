@@ -29,7 +29,9 @@ class TMUController extends APIController
      * @SWG\Parameter(name="priority",type="string",description="Priority of notice
     (0: Low, 1: Standard, 2: Urgent)",in="formData",required=true),
      * @SWG\Parameter(name="message",type="string",description="Notice content",in="formData",required=true),
-     * @SWG\Parameter(name="expire_date",type="string",description="Expiration time (YYYY-MM-DD
+     * @SWG\Parameter(name="start_date",type="string",description="Effective date (YYYY-MM-DD
+     *                                                                         H:i:s)",in="formData",required=true),
+     * @SWG\Parameter(name="expire_date",type="string",description="Expiration date (YYYY-MM-DD
      *                                                                         H:i:s)",in="formData",required=true),
      * @SWG\Response(
      *         response="400",
@@ -60,12 +62,14 @@ class TMUController extends APIController
      * ),
      *
      * @param \Illuminate\Http\Request $request
+     *
      * @return \Illuminate\Http\JsonResponse
      */
     public function addNotice(Request $request)
     {
         $facility = $request->input('facility', null); ///TMU Map Facility ID
         $expdate = $request->input('expire_date', null);
+        $startdate = $request->input('start_date', null);
         $priority = $request->input('priority', 1); //Default: standard priority
         $message = $request->input('message', null);
 
@@ -100,9 +104,21 @@ class TMUController extends APIController
         } catch (InvalidArgumentException $e) {
             return response()->api(generate_error("Malformed request, invalid expire date format (Y-m-d H:i:s)"), 400);
         }
+        try {
+            $cStartDate = Carbon::createFromFormat('Y-m-d H:i:s', $startdate);
+        } catch (InvalidArgumentException $e) {
+            return response()->api(generate_error("Malformed request, invalid start date format (Y-m-d H:i:s)."), 400);
+        }
 
         if ($cExpDate->isPast()) {
-            return response()->api(generate_error("Malformed request, expire date cannot be in the past"), 400);
+            return response()->api(generate_error("Malformed request, expire date cannot be in the past."), 400);
+        }
+        if ($cExpDate->eq($cStartDate)) {
+            return response()->api(generate_error("Malformed request, expire date cannot be the same as start date."),
+                400);
+        }
+        if ($cExpDate->isBefore($cStartDate)) {
+            return response()->api(generate_error("Malformed request, expire date cannot be before start date."), 400);
         }
 
         if (!in_array(intval($priority), [0, 1, 2])) {
@@ -113,6 +129,7 @@ class TMUController extends APIController
             $notice = new TMUNotice;
             $notice->message = $message;
             $notice->priority = $priority;
+            $notice->start_date = $startdate;
             $notice->expire_date = $expdate;
             $tmuFac->tmuNotices()->save($notice);
         }
@@ -170,6 +187,7 @@ class TMUController extends APIController
     {
         $facility = $request->input('facility', null);
         $expdate = $request->input('expire_date', null);
+        $startdate = $request->input('start_date', null);
         $priority = $request->input('priority', null);
         $message = $request->input('message', null);
 
@@ -222,10 +240,35 @@ class TMUController extends APIController
             }
 
             if ($cExpDate->isPast()) {
-                return response()->api(generate_error("Malformed request, expire date cannot be in the past"), 400);
+                return response()->api(generate_error("Malformed request, expire date cannot be in the past."), 400);
+            }
+            if ($cExpDate->eq($startdate ? $startdate : $notice->start_date)) {
+                return response()->api(generate_error("Malformed request, expire date cannot be the same as start date."),
+                    400);
+            }
+            if ($cExpDate->isBefore($startdate ? $startdate : $notice->start_date)) {
+                return response()->api(generate_error("Malformed request, expire date cannot be before start date."),
+                    400);
             }
 
             $notice->expire_date = $expdate;
+        }
+
+        if ($startdate) {
+            try {
+                $cStartDate = Carbon::createFromFormat('Y-m-d H:i:s', $startdate);
+            } catch (InvalidArgumentException $e) {
+                return response()->api(generate_error("Malformed request, invalid start date format (Y-m-d H:i:s)"),
+                    400);
+            }
+            if ($cStartDate->eq($expdate ? $expdate : $notice->expire_date)) {
+                return response()->api(generate_error("Malformed request, expire date cannot be the same as start date."),
+                    400);
+            }
+            if ($cStartDate->isAfter($expdate ? $expdate : $notice->expire_date)) {
+                return response()->api(generate_error("Malformed request, start date cannot be after expire date."),
+                    400);
+            }
         }
 
         if ($priority) {
@@ -333,6 +376,8 @@ class TMUController extends APIController
      *                                                                                       (0:Low,1:Standard,2:Urgent)"),
      *                 @SWG\Property(property="message",type="string",description="Notice content"),
      *                 @SWG\Property(property="expire_date", type="string", description="Expiration time (YYYY-MM-DD
+     *                                                       H:i:s)"),
+     *                 @SWG\Property(property="start_date", type="string", description="Expiration time (YYYY-MM-DD
      *                                                       H:i:s)"),
      *             ),
      *         ),
