@@ -165,8 +165,8 @@ class TMUController extends APIController
      * @SWG\Parameter(name="priority",type="string",description="Priority of notice
     (0: Low, 1: Standard, 2: Urgent)",in="formData"),
      * @SWG\Parameter(name="message",type="string",description="Notice content",in="formData"),
-     * @SWG\Parameter(name="expire_date",type="string",description="Expiration time (YYYY-MM-DD H:i:s) - "none" for no
-     *                                                                         expiration",in="formData"),
+     * @SWG\Parameter(name="expire_date",type="string",description="Expiration time (YYYY-MM-DD H:i:s) - 'none' for no
+                                                                               expiration",in="formData"),
      * @SWG\Response(
      *         response="400",
      *         description="Malformed request",
