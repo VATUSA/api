@@ -709,10 +709,13 @@ class FacilityController extends APIController
      *                     type="object",
      *                     @SWG\Property(property="id", type="integer", description="Transfer ID"),
      *                     @SWG\Property(property="cid", type="integer"),
-     *                     @SWG\Property(property="name", type="string"),
+     *                     @SWG\Property(property="fname", type="string"),
+     *                     @SWG\Property(property="lname", type="string"),
+     *                     @SWG\Property(property="email", type="string"),
      *                     @SWG\Property(property="rating", type="string", description="Short string rating (S1, S2)"),
      *                     @SWG\Property(property="intRating", type="integer", description="Numeric rating (OBS = 1,
                                                                etc)"),
+     *                     @SWG\Property(property="from", type="string", description="Facility user is transferring from"),
      *                     @SWG\Property(property="date", type="string", description="Date transfer submitted
                                                           (YYYY-MM-DD)"),
      *                 ),
@@ -754,9 +757,12 @@ class FacilityController extends APIController
             $data[] = [
                 'id'        => $transfer->id,
                 'cid'       => $transfer->cid,
-                'name'      => $transfer->user->fullname(),
+                'fname'     => $transfer->user->fname,
+                'lname'     => $transfer->user->lname,
+                'email'     => $transfer->user->email,
                 'rating'    => RatingHelper::intToShort($transfer->user->rating),
                 'intRating' => $transfer->user->rating,
+                'from'      => $transfer->fromFac->name,
                 'date'      => $transfer->created_at->format('Y-m-d')
             ];
         }
