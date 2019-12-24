@@ -69,8 +69,8 @@ class TMUController extends APIController
     public function addNotice(Request $request)
     {
         $facility = $request->input('facility', null); ///TMU Map Facility ID
-        $startdate = $request->input('start_date', null);
-        $expdate = $request->input('expire_date', null);
+        $startdate = urldecode($request->input('start_date', null));
+        $expdate = urldecode($request->input('expire_date', null));
         $priority = $request->input('priority', 1); //Default: standard priority
         $message = $request->input('message', null);
 
@@ -102,24 +102,24 @@ class TMUController extends APIController
 
         if ($startdate) {
             try {
-                $cStartDate = Carbon::createFromFormat('Y-m-d H:i:s', $startdate);
+                $cStartDate = Carbon::createFromFormat('Y-m-d H:i', $startdate);
             } catch (InvalidArgumentException $e) {
-                return response()->api(generate_error("Malformed request, invalid start date format (Y-m-d H:i:s)."),
+                return response()->api(generate_error("Malformed request, invalid start date format (Y-m-d H:i)."),
                     400);
             }
             if ($cStartDate->isPast()) {
-                return response()->api(generate_error("Malformed request, start date cannot be in the past."), 400);
+                //return response()->api(generate_error("Malformed request, start date cannot be in the past."), 400);
             }
         } else {
-            $cStartDate = Carbon::now();
+            $cStartDate = Carbon::now('utc');
             $startdate = $cStartDate->format('Y-m-d H:i:s');
         }
 
         if ($expdate) {
             try {
-                $cExpDate = Carbon::createFromFormat('Y-m-d H:i:s', $expdate);
+                $cExpDate = Carbon::createFromFormat('Y-m-d H:i', $expdate);
             } catch (InvalidArgumentException $e) {
-                return response()->api(generate_error("Malformed request, invalid expire date format (Y-m-d H:i:s)"),
+                return response()->api(generate_error("Malformed request, invalid expire date format (Y-m-d H:i)"),
                     400);
             }
 
@@ -134,7 +134,7 @@ class TMUController extends APIController
                 return response()->api(generate_error("Malformed request, expire date cannot be before start date."),
                     400);
             }
-        }
+        } else $expdate = null;
 
         if (!in_array(intval($priority), [1, 2, 3])) {
             return response()->api(generate_error("Malformed request, priority must be 0, 1, or 2"), 400);
