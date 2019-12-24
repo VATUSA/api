@@ -23,7 +23,7 @@ class TMUController extends APIController
      *     path="/tmu/notices",
      *     summary="Add new TMU Notice. [Key]",
      *     description="Add new TMU Notice. Requires API Key, JWT, or Session Cookie (required roles:
-    [N/A for API Key] ATM, DATM, TA, EC, INS)", produces={"application/json"}, tags={"solo"},
+    [N/A for API Key] ATM, DATM, TA, EC, INS)", produces={"application/json"}, tags={"tmu"},
      *     security={"apikey","jwt","session"},
      *     produces={"application/json"}, tags={"tmu"},
      * @SWG\Parameter(name="tmu_facility_id",type="string",description="TMU Map ID",in="formData",required=true),
@@ -72,7 +72,7 @@ class TMUController extends APIController
         $startdate = urldecode($request->input('start_date', null));
         $expdate = urldecode($request->input('expire_date', null));
         $priority = $request->input('priority', 1); //Default: standard priority
-        $message = $request->input('message', null);
+        $message = strip_tags($request->input('message', null), "<em><strong><u>");
 
 
         if (!$facility || !$message) {
@@ -107,9 +107,6 @@ class TMUController extends APIController
                 return response()->api(generate_error("Malformed request, invalid start date format (Y-m-d H:i)."),
                     400);
             }
-            if ($cStartDate->isPast()) {
-                //return response()->api(generate_error("Malformed request, start date cannot be in the past."), 400);
-            }
         } else {
             $cStartDate = Carbon::now('utc');
             $startdate = $cStartDate->format('Y-m-d H:i:s');
@@ -137,7 +134,7 @@ class TMUController extends APIController
         } else $expdate = null;
 
         if (!in_array(intval($priority), [1, 2, 3])) {
-            return response()->api(generate_error("Malformed request, priority must be 0, 1, or 2"), 400);
+            return response()->api(generate_error("Malformed request, priority must be 1, 2, or 3"), 400);
         }
 
         if (!isTest()) {
@@ -157,13 +154,13 @@ class TMUController extends APIController
      *     path="/tmu/notices/(id)",
      *     summary="Edit TMU Notice. [Key]",
      *     description="Edit TMU Notice. Requires API Key, JWT, or Session Cookie (required roles:
-    [N/A for API Key] ATM, DATM, TA, EC, INS)", produces={"application/json"}, tags={"solo"},
+    [N/A for API Key] ATM, DATM, TA, EC, INS)", produces={"application/json"}, tags={"tmu"},
      *     security={"apikey","jwt","session"},
      *     produces={"application/json"}, tags={"tmu"},
      * @SWG\Parameter(name="id",type="integer",description="TMU Notice ID",in="path",required=true),
      * @SWG\Parameter(name="tmu_facility_id",type="string",description="TMU Map ID",in="formData"),
      * @SWG\Parameter(name="priority",type="string",description="Priority of notice
-    (0: Low, 1: Standard, 2: Urgent)",in="formData"),
+    (1: Low, 2: Standard, 3: Urgent)",in="formData"),
      * @SWG\Parameter(name="message",type="string",description="Notice content",in="formData"),
      * @SWG\Parameter(name="expire_date",type="string",description="Expiration time (YYYY-MM-DD H:i:s) - 'none' for no
                                                                                expiration",in="formData"),
@@ -202,10 +199,10 @@ class TMUController extends APIController
     public function editNotice(Request $request, int $noticeId)
     {
         $facility = $request->input('facility', null);
-        $startdate = $request->input('start_date', null);
-        $expdate = $request->input('expire_date', null);
-        $priority = $request->input('priority', null);
-        $message = $request->input('message', null);
+        $startdate = urldecode($request->input('start_date', null));
+        $expdate = urldecode($request->input('expire_date', null));
+        $priority = $request->input('priority', 1); //Default: standard priority
+        $message = strip_tags($request->input('message', null), "<em><strong><u>");
 
         $notice = TMUNotice::find($noticeId);
         if (!$notice) {
@@ -215,7 +212,7 @@ class TMUController extends APIController
         $fac = $notice->tmuFacility->parent ? $notice->tmuFacility->parent : $notice->tmuFacility->id; //ZXX
         if (Auth::check()) {
             if (!RoleHelper::isVATUSAStaff() && Auth::user()->facility != $fac) {
-                return response()->api(generate_error("Forbidden. Cannot edit another ARTCC's TMU."), 403);
+                return response()->api(generate_error("Forbidden. Cannot edit another ARTCC's TMU Notice."), 403);
             }
             if (!(RoleHelper::isFacilityStaff() ||
                 RoleHelper::isVATUSAStaff() ||
@@ -224,7 +221,7 @@ class TMUController extends APIController
             }
         } else {
             if (!AuthHelper::validApiKeyv2($request->input('apikey', null), $fac)) {
-                return response()->api(generate_error("Forbidden. Cannot edit another ARTCC's TMU."), 403);
+                return response()->api(generate_error("Forbidden. Cannot edit another ARTCC's TMU Notice."), 403);
             }
         }
 
@@ -236,11 +233,11 @@ class TMUController extends APIController
             $fac = $tmuFac->parent ? $tmuFac->parent : $tmuFac->id; //ZXX
             if (Auth::check()) {
                 if (!RoleHelper::isVATUSAStaff() && Auth::user()->facility != $fac) {
-                    return response()->api(generate_error("Forbidden. Cannot assign to another ARTCC's TMU."), 403);
+                    return response()->api(generate_error("Forbidden. Cannot assign to another ARTCC's TMU Facility."), 403);
                 }
             } else {
                 if (!AuthHelper::validApiKeyv2($request->input('apikey', null), $fac)) {
-                    return response()->api(generate_error("Forbidden. Cannot assign to another ARTCC's TMU."), 403);
+                    return response()->api(generate_error("Forbidden. Cannot assign to another ARTCC's TMU Facility."), 403);
                 }
             }
 
@@ -253,7 +250,7 @@ class TMUController extends APIController
         } else {
             if ($expdate) {
                 try {
-                    $cExpDate = Carbon::createFromFormat('Y-m-d H:i:s', $expdate);
+                    $cExpDate = Carbon::createFromFormat('Y-m-d H:i', $expdate);
                 } catch (InvalidArgumentException $e) {
                     return response()->api(generate_error("Malformed request, invalid expire date format (Y-m-d H:i:s)"),
                         400);
@@ -278,9 +275,9 @@ class TMUController extends APIController
 
         if ($startdate) {
             try {
-                $cStartDate = Carbon::createFromFormat('Y-m-d H:i:s', $startdate);
+                $cStartDate = Carbon::createFromFormat('Y-m-d H:i', $startdate);
             } catch (InvalidArgumentException $e) {
-                return response()->api(generate_error("Malformed request, invalid start date format (Y-m-d H:i:s)"),
+                return response()->api(generate_error("Malformed request, invalid start date format (Y-m-d H:i)"),
                     400);
             }
             if ($expdate != "none" && $cStartDate == $expdate ? $expdate : $notice->expire_date) {
@@ -291,11 +288,13 @@ class TMUController extends APIController
                 return response()->api(generate_error("Malformed request, start date cannot be after expire date."),
                     400);
             }
+
+            $notice->start_date = $startdate;
         }
 
         if ($priority) {
             if (!in_array(intval($priority), [1, 2, 3])) {
-                return response()->api(generate_error("Malformed request, priority must be 0, 1, or 2"), 400);
+                return response()->api(generate_error("Malformed request, priority must be 1, 2, or 3"), 400);
             }
             $notice->priority = $priority;
         }
