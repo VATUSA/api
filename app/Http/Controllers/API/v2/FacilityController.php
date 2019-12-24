@@ -718,8 +718,20 @@ class FacilityController extends APIController
      *                 @SWG\Items(
      *                     type="object",
      *                     @SWG\Property(property="id", type="integer", description="Transfer ID"),
-     *                     @SWG\Property(property="cid", type="integer"),
-     *                     @SWG\Property(property="name", type="string"),
+     *                     @SWG\Property(property="cid", type="integer", description="VATSIM ID"),
+     *                     @SWG\Property(property="fname", type="string", description="First name"),
+     *                     @SWG\Property(property="lname", type="string", description="Last name"),
+     *                     @SWG\Property(property="email", type="string", description="Email, if authenticated as staff
+                                                           member and/or api key is present."),
+     *                     @SWG\Property(property="reason", type="string", description="Transfer reason; must be authenticated as senior staff."),
+     *                     @SWG\Property(property="fromFac", type="array",
+     *                         @SWG\Items(
+     *                             type="object",
+     *                             @SWG\Property(property="id", type="integer", description="Facility ID (ex. ZSE)"),
+     *                             @SWG\Property(property="name", type="integer", description="Facility Name (ex.
+                                                                  Seattle ARTCC)")
+     *                         )
+     *                     ),
      *                     @SWG\Property(property="rating", type="string", description="Short string rating (S1, S2)"),
      *                     @SWG\Property(property="intRating", type="integer", description="Numeric rating (OBS = 1,
     etc)"),
@@ -728,8 +740,9 @@ class FacilityController extends APIController
      *                 ),
      *             ),
      *         ),
-     *         examples={"application/json":{"status":"OK","transfers":{"id":991,"cid":876594,"name":"Daniel
-              Hawton","rating":"C1","intRating":5,"date":"2017-11-18"}}}
+     *         examples={"application/json":{"status":"OK","transfers":{"id":5606,"cid":1275302,"fname":"Blake",
+               "lname":"Nahin","email":null,"reason":"Only one class B? Too easy. I want something harder, like ZTL.",
+               "rating":"C1","intRating":5,"date":"2014-12-19","fromFac":{"id":"ZSE","name":"Seattle ARTCC"}}}}
      *     )
      * )
      */
@@ -764,7 +777,16 @@ class FacilityController extends APIController
             $data[] = [
                 'id'        => $transfer->id,
                 'cid'       => $transfer->cid,
-                'name'      => $transfer->user->fullname(),
+                'fname'     => $transfer->user->fname,
+                'lname'     => $transfer->user->lname,
+                'email'     => (AuthHelper::validApiKeyv2($request->input('apikey',
+                        null)) || (\Auth::check() && RoleHelper::isFacilityStaff(\Auth::user()->cid)))
+                    ? $transfer->user->email : null,
+                'reason' => (\Auth::check() && RoleHelper::isSeniorStaff(\Auth::user()->cid)) ? $transfer->reason : null,
+                'fromFac' => [
+                    'id' => $transfer->from,
+                    'name' => $transfer->fromFac->name
+                ],
                 'rating'    => RatingHelper::intToShort($transfer->user->rating),
                 'intRating' => $transfer->user->rating,
                 'date'      => $transfer->created_at->format('Y-m-d')
@@ -922,7 +944,7 @@ class FacilityController extends APIController
      *         @SWG\Schema(
      *             type="object",
      *             @SWG\Property(property="status", type="string"),
-     *             @SWG\Property(property="transfers", type="array",
+     *             @SWG\Property(property="paths", type="array",
      *                 @SWG\Items(
      *                     type="object",
      *                 @SWG\Property(property="id", type="integer", description="Path DB ID"),

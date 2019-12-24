@@ -30,9 +30,8 @@ class UserController extends APIController
      * @SWG\Get(
      *     path="/user/(cid)",
      *     summary="Get user's information.",
-     *     description="Get user's information. Email field requires authentication as senior staff member.
-    Broadcast opt-in status requires API key or staff member authentication. Prevent Staff Assignment field requires authentication
-    as senior staff.",
+     *     description="Get user's information. Email field and broadcast opt-in status require authentication as staff member or API key.
+      Prevent staff assigment flag requires authentication as senior staff.",
      *     produces={"application/json"}, tags={"user"},
      * @SWG\Parameter(name="cid",in="path",required=true,type="string",description="Cert ID"),
      * @SWG\Response(
