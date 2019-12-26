@@ -162,20 +162,20 @@ class SoloController extends APIController
     for API Key] ATM, DATM, TA, INS). Pass the DB ID, returned from the POST endpoint.",
      *     produces={"application/json"}, tags={"solo"},
      *     security={"apikey","jwt","session"},
-     * @SWG\Parameter(name="id", in="formData", type="integer", required=true, description="DB ID")
-     * @SWG\Response(
+     *     @SWG\Parameter(name="id", in="formData", type="integer", required=true, description="DB ID"),
+     *     @SWG\Response(
      *         response="401",
      *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
      *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     *     @SWG\Response(
      *         response="403",
      *         description="Forbidden",
      *         @SWG\Schema(ref="#/definitions/error"),
      *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     *     @SWG\Response(
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(ref="#/definitions/OK"),
