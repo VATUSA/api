@@ -18,6 +18,57 @@ use Illuminate\Http\Request;
  */
 class TMUController extends APIController
 {
+
+    /**
+     * @SWG\Get(
+     *     path="/tmu/notices/(tmufacid?)",
+     *     summary="Get list of TMU Notices.",
+     *     description="Get list of TMU Notices for either all of VATUSA or for the specified TMU Map ID.",
+     *     produces={"application/json"},
+     *     tags={"tmu"},
+     *     @SWG\Parameter(name="tmufacid", in="path", type="string", description="TMU Map ID (optional)",
+     *                                     required=false),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="array",
+     *             @SWG\Items(type="object",
+     *                 @SWG\Property(property="id",type="integer",description="TMU Notice ID"),
+     *                 @SWG\Property(property="tmu_facility_id",type="string",description="TMU Map ID"),
+     *                 @SWG\Property(property="priority",type="string",description="Priority of notice
+     *                                                                               (0:Low,1:Standard,2:Urgent)"),
+     *                 @SWG\Property(property="message",type="string",description="Notice content"),
+     *                 @SWG\Property(property="expire_date", type="string", description="Expiration time (YYYY-MM-DD
+     *                                                                                            H:i:s)"),
+     *                 @SWG\Property(property="start_date", type="string", description="Expiration time (YYYY-MM-DD
+     *                                                                                            H:i:s)")
+     *                   )
+     *                )
+     *             ),
+     *         ),
+     *     )
+     * ),
+     * @param \Illuminate\Http\Request $request
+     *
+     * @param string|null              $tmufacid
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getNotices(Request $request, string $tmufacid = null)
+    {
+        if ($tmufacid) {
+            $tmuFac = TMUFacility::find($tmufacid);
+            if (!$tmuFac) {
+                return response()->api(generate_error("TMU Facility does not exist."), 400);
+            }
+            $notices = $tmuFac->tmuNotices()->get()->toArray();
+        } else {
+            $notices = TMUNotice::all()->toArray();
+        }
+
+        return response()->api($notices);
+    }
     /**
      * @SWG\Post(
      *     path="/tmu/notices",
@@ -373,59 +424,5 @@ class TMUController extends APIController
         }
 
         return response()->ok();
-    }
-
-    /**
-     * @SWG\Get(
-     *     path="/tmu/notices/(tmufacid?)",
-     *     summary="Get list of TMU Notices.",
-     *     description="Get list of TMU Notices for either all of VATUSA or for the specified TMU Map ID.",
-     *     produces={"application/json"},
-     *     tags={"tmu"},
-     *     @SWG\Parameter(name="tmufacid", in="path", type="string", description="TMU Map ID (optional)",
-     *                                     required=false),
-     *     @SWG\Response(
-     *         response="200",
-     *         description="OK",
-     *         @SWG\Schema(
-     *             type="array",
-     *             @SWG\Items(
-     *                 type="object",
-     *                 @SWG\Property(property="notices",type="array",
-     *                     @SWG\Items(type="object",
-     *                         @SWG\Property(property="id",type="integer",description="TMU Notice ID"),
-     *                         @SWG\Property(property="tmu_facility_id",type="string",description="TMU Map ID"),
-     *                         @SWG\Property(property="priority",type="string",description="Priority of notice
-     *                                                                                       (0:Low,1:Standard,2:Urgent)"),
-     *                         @SWG\Property(property="message",type="string",description="Notice content"),
-     *                         @SWG\Property(property="expire_date", type="string", description="Expiration time (YYYY-MM-DD
-     *                                                                                            H:i:s)"),
-     *                         @SWG\Property(property="start_date", type="string", description="Expiration time (YYYY-MM-DD
-     *                                                                                            H:i:s)")
-     *                   )
-     *                )
-     *             ),
-     *         ),
-     *     )
-     * ),
-     * @param \Illuminate\Http\Request $request
-     *
-     * @param string|null              $tmufacid
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function getNotices(Request $request, string $tmufacid = null)
-    {
-        if ($tmufacid) {
-            $tmuFac = TMUFacility::find($tmufacid);
-            if (!$tmuFac) {
-                return response()->api(generate_error("TMU Facility does not exist."), 400);
-            }
-            $notices = $tmuFac->tmuNotices()->get()->toArray();
-        } else {
-            $notices = TMUNotice::all()->toArray();
-        }
-
-        return response()->api(["notices" => $notices]);
     }
 }

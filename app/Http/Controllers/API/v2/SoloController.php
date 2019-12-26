@@ -129,11 +129,14 @@ class SoloController extends APIController
         }
 
         $exp = $request->input("expDate", null);
-        if (!$exp || !preg_match("/^\d{4}-\d{2}-\d{2}/", $exp)) {
-            return generate_error("Malformed or missing field", false);
+        try {
+            $cExp = \Illuminate\Support\Carbon::createFromFormat('Y-m-d', $exp);
+        } catch (InvalidArgumentException $e) {
+            return response()->api(generate_error("Malformed request, invalid expire date format (Y-m-d)."),
+                400);
         }
 
-        if (Carbon::createFromFormat('Y-m-d', $exp)->diffInDays() > 30) {
+        if ($cExp->diffInDays() > 30) {
             return response()->api(generate_error("Invalid date"), 400);
         }
 
