@@ -137,17 +137,17 @@ class SoloController extends APIController
         }
 
         if ($cExp->diffInDays() > 30) {
-            return response()->api(generate_error("Invalid date"), 400);
+            return response()->api(generate_error("Invalid expiration date, must be in at most 30 days"), 400);
         }
 
         if (!isTest()) {
-            SoloCert::updateOrCreate(
+            $id = SoloCert::updateOrCreate(
                 ['cid' => $cid, 'position' => $position],
                 ['expires' => $exp]
-            );
+            )->id;
         }
 
-        return response()->ok();
+        return response()->ok(['id' => $id ?? 0]);
     }
 
     /**
@@ -155,12 +155,10 @@ class SoloController extends APIController
      *     path="/solo",
      *     summary="Delete solo certification. [Key]",
      *     description="Delete solo certification. Requires API Key, JWT, or Session cookie (required roles: [N/A
-    for API Key] ATM, DATM, TA, INS)",
+    for API Key] ATM, DATM, TA, INS). Pass the DB ID, returned from the POST endpoint.",
      *     produces={"application/json"}, tags={"solo"},
      *     security={"apikey","jwt","session"},
-     * @SWG\Parameter(name="cid", in="formData", type="integer", required=true, description="CERT ID"),
-     * @SWG\Parameter(name="position", in="formData", type="string", required=true, description="Position ID (XYZ_APP,
-                                           ZZZ_CTR)"),
+     * @SWG\Parameter(name="id", in="formData", type="integer", required=true, description="DB ID")
      * @SWG\Response(
      *         response="401",
      *         description="Unauthorized",
@@ -199,10 +197,13 @@ class SoloController extends APIController
             return response()->api(generate_error("Forbidden"), 403);
         }
 
+        $id = $request->input("id", null);
+        if (!$id) {
+            return response()->api(generate_error("No solo cert found with the ID provided."), 404);
+        }
+
         if (!isTest()) {
-            SoloCert::where('cid', $request->input("cid"))
-                ->where("position", $request->input("position"))
-                ->delete();
+            SoloCert::find($id)->delete();
         }
 
         return response()->ok();
