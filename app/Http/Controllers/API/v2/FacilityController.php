@@ -123,12 +123,12 @@ class FacilityController extends APIController
         }
 
         if (\Cache::has("facility.$id.info")) {
-            return \Cache::get("facility.$id.info");
+            return response()->api(json_decode(\Cache::get("facility.$id.info"),true));
         }
 
-        $data = [
-            'facility' => $facility->toArray(),
-            'role'     => Role::where('facility', $facility->id)->get()->toArray(),
+        $data['facility'] = [
+            'info' => $facility->toArray(),
+            'roles'     => Role::where('facility', $facility->id)->get()->toArray(),
         ];
         $data['stats']['controllers'] = User::where('facility', $id)->count();
         $data['stats']['pendingTransfers'] = Transfer::where('to', $id)->where(
@@ -141,12 +141,9 @@ class FacilityController extends APIController
                 $data['notices'][$tmu->id] = $tmu->tmuNotices()->get()->toArray();
             }
         }
+        \Cache::put("facility.$id.info", encode_json($data), 60);
 
-        $json = encode_json($data);
-
-        \Cache::put("facility.$id.info", $json, 60);
-
-        return $json;
+        return response()->api($data);
     }
 
     /**
@@ -334,7 +331,7 @@ class FacilityController extends APIController
             }
         }
 
-        return response()->ok([$data]);
+        return response()->ok($data);
     }
 
     /**
