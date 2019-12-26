@@ -115,17 +115,17 @@ class SoloController extends APIController
         }
 
         if (!$request->has("cid") || !$request->has("position") || !$request->has("expDate")) {
-            return response()->api(generate_error("Malformed request"), 400);
+            return response()->api(generate_error("Malformed request."), 400);
         }
 
         $cid = $request->input("cid");
         if (!User::where("cid", $cid)->count()) {
-            return response()->api(generate_error("Invalid controller"), 400);
+            return response()->api(generate_error("Invalid controller."), 400);
         }
 
-        $position = $request->input("position");
+        $position = strtoupper($request->input("position"));
         if (!preg_match("/^([A-Z0-9]{2,3})_(TWR|APP|CTR)$/", $request->input("position"))) {
-            return response()->api(generate_error("Malformed position"), 400);
+            return response()->api(generate_error("Malformed position."), 400);
         }
 
         $exp = $request->input("expDate", null);
@@ -137,7 +137,11 @@ class SoloController extends APIController
         }
 
         if ($cExp->diffInDays() > 30) {
-            return response()->api(generate_error("Invalid expiration date, must be in at most 30 days"), 400);
+            return response()->api(generate_error("Invalid expiration date, must be in at most 30 days."), 400);
+        }
+
+        if($cExp->isPast()) {
+            return response()->api(generate_error("Invalid expiration date, cannot be in the past."), 400);
         }
 
         if (!isTest()) {
@@ -202,8 +206,13 @@ class SoloController extends APIController
             return response()->api(generate_error("No solo cert found with the ID provided."), 404);
         }
 
+        $solo = SoloCert::find($id);
+        if(!$solo) {
+            return response()->api(generate_error("No solo cert found with the ID provided."), 404);
+        }
+
         if (!isTest()) {
-            SoloCert::find($id)->delete();
+            $solo->delete();
         }
 
         return response()->ok();
