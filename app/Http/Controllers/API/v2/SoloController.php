@@ -140,18 +140,18 @@ class SoloController extends APIController
             return response()->api(generate_error("Invalid expiration date, must be in at most 30 days."), 400);
         }
 
-        if($cExp->isPast()) {
+        if ($cExp->isPast()) {
             return response()->api(generate_error("Invalid expiration date, cannot be in the past."), 400);
         }
 
         if (!isTest()) {
-            $id = SoloCert::updateOrCreate(
+            SoloCert::updateOrCreate(
                 ['cid' => $cid, 'position' => $position],
                 ['expires' => $exp]
-            )->id;
+            );
         }
 
-        return response()->ok(['id' => $id ?? 0]);
+        return response()->ok();
     }
 
     /**
@@ -159,23 +159,25 @@ class SoloController extends APIController
      *     path="/solo",
      *     summary="Delete solo certification. [Key]",
      *     description="Delete solo certification. Requires API Key, JWT, or Session cookie (required roles: [N/A
-    for API Key] ATM, DATM, TA, INS). Pass the DB ID, returned from the POST endpoint.",
+    for API Key] ATM, DATM, TA, INS)",
      *     produces={"application/json"}, tags={"solo"},
      *     security={"apikey","jwt","session"},
-     *     @SWG\Parameter(name="id", in="formData", type="integer", required=true, description="DB ID"),
-     *     @SWG\Response(
+     * @SWG\Parameter(name="cid", in="formData", type="integer", required=true, description="Vatsim ID"),
+     * @SWG\Parameter(name="position", in="formData", type="string", required=true, description="Position ID (XYZ_APP,
+    ZZZ_CTR)"),
+     * @SWG\Response(
      *         response="401",
      *         description="Unauthorized",
      *         @SWG\Schema(ref="#/definitions/error"),
      *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     *     @SWG\Response(
+     * @SWG\Response(
      *         response="403",
      *         description="Forbidden",
      *         @SWG\Schema(ref="#/definitions/error"),
      *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     *     @SWG\Response(
+     * @SWG\Response(
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(ref="#/definitions/OK"),
@@ -201,18 +203,10 @@ class SoloController extends APIController
             return response()->api(generate_error("Forbidden"), 403);
         }
 
-        $id = $request->input("id", null);
-        if (!$id) {
-            return response()->api(generate_error("No solo cert found with the ID provided."), 404);
-        }
-
-        $solo = SoloCert::find($id);
-        if(!$solo) {
-            return response()->api(generate_error("No solo cert found with the ID provided."), 404);
-        }
-
         if (!isTest()) {
-            $solo->delete();
+            SoloCert::where('cid', $request->input("cid", null))
+                ->where("position", strtoupper($request->input("position", null)))
+                ->delete();
         }
 
         return response()->ok();
