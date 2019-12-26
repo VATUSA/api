@@ -241,6 +241,7 @@ Route::group(['prefix' => '/user'], function () {
  * TMU functions
  */
 Route::group(['prefix' => '/tmu'], function () {
+    Route::get('notice/{notice}', 'TMUController@getNotice');
     Route::group(['prefix' => '/notices'], function () {
         Route::get('{tmufacid?}', 'TMUController@getNotices');
         Route::group(['middleware' => 'semiprivate'], function() {

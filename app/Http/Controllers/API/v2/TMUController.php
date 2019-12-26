@@ -39,10 +39,11 @@ class TMUController extends APIController
      *                 @SWG\Property(property="priority",type="string",description="Priority of notice
      *                                                                               (0:Low,1:Standard,2:Urgent)"),
      *                 @SWG\Property(property="message",type="string",description="Notice content"),
-     *                 @SWG\Property(property="expire_date", type="string", description="Expiration time in Zulu (YYYY-MM-DD
-                                                                                                  H:i:s)"),
+     *                 @SWG\Property(property="expire_date", type="string", description="Expiration time in Zulu
+     *                                                       (YYYY-MM-DD
+    H:i:s)"),
      *                 @SWG\Property(property="start_date", type="string", description="Start time in Zulu (YYYY-MM-DD
-                                                                                                  H:i:s)")
+    H:i:s)")
      *                   )
      *                )
      *             ),
@@ -69,6 +70,49 @@ class TMUController extends APIController
 
         return response()->api($notices);
     }
+
+    /**
+     * @SWG\Get(
+     *     path="/tmu/notice/{id}",
+     *     summary="Get TMU notice info.",
+     *     description="Get information for a specific TMU.",
+     *     produces={"application/json"},
+     *     tags={"tmu"},
+     *     @SWG\Parameter(name="tmufacid", in="path", type="string", description="TMU ID",
+     *                                     required=true),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="array",
+     *             @SWG\Items(type="object",
+     *                 @SWG\Property(property="id",type="integer",description="TMU Notice ID"),
+     *                 @SWG\Property(property="tmu_facility_id",type="string",description="TMU Map ID"),
+     *                 @SWG\Property(property="priority",type="string",description="Priority of notice
+     *                                                                               (0:Low,1:Standard,2:Urgent)"),
+     *                 @SWG\Property(property="message",type="string",description="Notice content"),
+     *                 @SWG\Property(property="expire_date", type="string", description="Expiration time in Zulu
+     *                                                       (YYYY-MM-DD
+    H:i:s)"),
+     *                 @SWG\Property(property="start_date", type="string", description="Start time in Zulu (YYYY-MM-DD
+    H:i:s)")
+     *                   )
+     *                )
+     *             ),
+     *         ),
+     *     )
+     * ),
+     * @param \Illuminate\Http\Request $request
+     *
+     * @param \App\TMUNotice           $notice
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getNotice(Request $request, TMUNotice $notice)
+    {
+        return response()->api($notice->toArray());
+    }
+
     /**
      * @SWG\Post(
      *     path="/tmu/notices",
@@ -182,7 +226,9 @@ class TMUController extends APIController
                 return response()->api(generate_error("Malformed request, expire date cannot be before start date."),
                     400);
             }
-        } else $expdate = null;
+        } else {
+            $expdate = null;
+        }
 
         if (!in_array(intval($priority), [1, 2, 3])) {
             return response()->api(generate_error("Malformed request, priority must be 1, 2, or 3"), 400);
@@ -214,7 +260,7 @@ class TMUController extends APIController
     (1: Low, 2: Standard, 3: Urgent)",in="formData"),
      * @SWG\Parameter(name="message",type="string",description="Notice content",in="formData"),
      * @SWG\Parameter(name="expire_date",type="string",description="Expiration time (YYYY-MM-DD H:i:s) - 'none' for no
-                                                                               expiration",in="formData"),
+    expiration",in="formData"),
      * @SWG\Response(
      *         response="400",
      *         description="Malformed request",
@@ -284,11 +330,13 @@ class TMUController extends APIController
             $fac = $tmuFac->parent ? $tmuFac->parent : $tmuFac->id; //ZXX
             if (Auth::check()) {
                 if (!RoleHelper::isVATUSAStaff() && Auth::user()->facility != $fac) {
-                    return response()->api(generate_error("Forbidden. Cannot assign to another ARTCC's TMU Facility."), 403);
+                    return response()->api(generate_error("Forbidden. Cannot assign to another ARTCC's TMU Facility."),
+                        403);
                 }
             } else {
                 if (!AuthHelper::validApiKeyv2($request->input('apikey', null), $fac)) {
-                    return response()->api(generate_error("Forbidden. Cannot assign to another ARTCC's TMU Facility."), 403);
+                    return response()->api(generate_error("Forbidden. Cannot assign to another ARTCC's TMU Facility."),
+                        403);
                 }
             }
 
