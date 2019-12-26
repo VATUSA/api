@@ -39,10 +39,10 @@ class TMUController extends APIController
      *                 @SWG\Property(property="priority",type="string",description="Priority of notice
      *                                                                               (0:Low,1:Standard,2:Urgent)"),
      *                 @SWG\Property(property="message",type="string",description="Notice content"),
-     *                 @SWG\Property(property="expire_date", type="string", description="Expiration time (YYYY-MM-DD
-     *                                                                                            H:i:s)"),
-     *                 @SWG\Property(property="start_date", type="string", description="Expiration time (YYYY-MM-DD
-     *                                                                                            H:i:s)")
+     *                 @SWG\Property(property="expire_date", type="string", description="Expiration time in Zulu (YYYY-MM-DD
+                                                                                                  H:i:s)"),
+     *                 @SWG\Property(property="start_date", type="string", description="Start time in Zulu (YYYY-MM-DD
+                                                                                                  H:i:s)")
      *                   )
      *                )
      *             ),
