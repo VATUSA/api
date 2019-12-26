@@ -391,15 +391,19 @@ class TMUController extends APIController
      *             type="array",
      *             @SWG\Items(
      *                 type="object",
-     *                 @SWG\Property(property="id",type="integer",description="TMU Notice ID"),
-     *                 @SWG\Property(property="tmu_facility_id",type="string",description="TMU Map ID"),
-     *                 @SWG\Property(property="priority",type="string",description="Priority of notice
+     *                 @SWG\Property(property="notices",type="array",
+     *                     @SWG\Items(type="object",
+     *                         @SWG\Property(property="id",type="integer",description="TMU Notice ID"),
+     *                         @SWG\Property(property="tmu_facility_id",type="string",description="TMU Map ID"),
+     *                         @SWG\Property(property="priority",type="string",description="Priority of notice
      *                                                                                       (0:Low,1:Standard,2:Urgent)"),
-     *                 @SWG\Property(property="message",type="string",description="Notice content"),
-     *                 @SWG\Property(property="expire_date", type="string", description="Expiration time (YYYY-MM-DD
-     *                                                       H:i:s)"),
-     *                 @SWG\Property(property="start_date", type="string", description="Expiration time (YYYY-MM-DD
-     *                                                       H:i:s)"),
+     *                         @SWG\Property(property="message",type="string",description="Notice content"),
+     *                         @SWG\Property(property="expire_date", type="string", description="Expiration time (YYYY-MM-DD
+     *                                                                                            H:i:s)"),
+     *                         @SWG\Property(property="start_date", type="string", description="Expiration time (YYYY-MM-DD
+     *                                                                                            H:i:s)")
+     *                   )
+     *                )
      *             ),
      *         ),
      *     )
