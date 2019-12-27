@@ -6,9 +6,11 @@ use App\Action;
  * Generate standardized JSON output
  *
  * @param mixed $data
+ *
  * @return string
  */
-function encode_json($data) {
+function encode_json($data)
+{
     return json_encode($data, JSON_NUMERIC_CHECK);
 }
 
@@ -16,27 +18,32 @@ function encode_json($data) {
  * Just to keep sane naming
  *
  * @param $data
+ *
  * @return mixed
  */
-function decode_json($data) {
+function decode_json($data)
+{
     return json_decode($data);
 }
 
 /**
  * @param string $msg
- * @param bool $asArray
+ * @param bool   $asArray
+ *
  * @return string|array
  */
-function generate_error($msg, $asArray = true) {
+function generate_error($msg, $asArray = true)
+{
     if ($asArray) {
         return [
             'status' => 'error',
-            'msg' => $msg
+            'msg'    => $msg
         ];
     }
+
     return encode_json([
         'status' => 'error',
-        'msg' => $msg
+        'msg'    => $msg
     ]);
 }
 
@@ -44,7 +51,8 @@ function generate_error($msg, $asArray = true) {
  * @param $cid
  * @param $msg
  */
-function log_action($cid, $msg) {
+function log_action($cid, $msg)
+{
     $log = new Action();
     $log->from = 0;
     $log->to = $cid;
@@ -54,13 +62,16 @@ function log_action($cid, $msg) {
 
 /**
  * @param Request $request
+ *
  * @return bool
  */
-function isTest(Request $request = null) {
-    if (!$request) { $request = request(); }
+function isTest(Request $request = null)
+{
+    if (!$request) {
+        $request = request();
+    }
     if ($request->has('test') ||
-        \App\Helpers\AuthHelper::isSandboxKey($request->input('apikey',
-        null))) {
+        \App\Helpers\AuthHelper::isSandboxKey($request->input('apikey', null))) {
         return true;
     }
 
@@ -69,6 +80,7 @@ function isTest(Request $request = null) {
 
 /**
  * @param int $length 24
+ *
  * @return string
  */
 function randomPassword($length = 24)
@@ -80,6 +92,7 @@ function randomPassword($length = 24)
         $n = rand(0, $alphaLength);
         $pass[] = $alphabet[$n];
     }
+
     return implode($pass);
 }
 
@@ -87,25 +100,25 @@ function randomPassword($length = 24)
  * @param $data_array
  * @param $xml
  */
-function arrayToXml($data_array, &$xml) {
-    foreach($data_array as $key => $value) {
-        if(is_array($value)) {
-            if(!is_numeric($key)){
+function arrayToXml($data_array, &$xml)
+{
+    foreach ($data_array as $key => $value) {
+        if (is_array($value)) {
+            if (!is_numeric($key)) {
                 $subnode = $xml->addChild("$key");
                 arrayToXml($value, $subnode);
-            }
-            else{
+            } else {
                 $subnode = $xml->addChild("item$key");
                 arrayToXml($value, $subnode);
             }
-        }
-        else {
-            $xml->addChild("$key",htmlspecialchars("$value"));
+        } else {
+            $xml->addChild("$key", htmlspecialchars("$value"));
         }
     }
 }
 
-function extract_domain($domain) {
+function extract_domain($domain)
+{
     if (preg_match("/(?P<domain>[a-z0-9][a-z0-9\-]{1,63}\.[a-z\.]{2,6})$/i", $domain, $matches)) {
         return $matches['domain'];
     } else {

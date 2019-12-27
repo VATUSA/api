@@ -115,26 +115,33 @@ class SoloController extends APIController
         }
 
         if (!$request->has("cid") || !$request->has("position") || !$request->has("expDate")) {
-            return response()->api(generate_error("Malformed request"), 400);
+            return response()->api(generate_error("Malformed request."), 400);
         }
 
         $cid = $request->input("cid");
         if (!User::where("cid", $cid)->count()) {
-            return response()->api(generate_error("Invalid controller"), 400);
+            return response()->api(generate_error("Invalid controller."), 400);
         }
 
-        $position = $request->input("position");
+        $position = strtoupper($request->input("position"));
         if (!preg_match("/^([A-Z0-9]{2,3})_(TWR|APP|CTR)$/", $request->input("position"))) {
-            return response()->api(generate_error("Malformed position"), 400);
+            return response()->api(generate_error("Malformed position."), 400);
         }
 
         $exp = $request->input("expDate", null);
-        if (!$exp || !preg_match("/^\d{4}-\d{2}-\d{2}/", $exp)) {
-            return generate_error("Malformed or missing field", false);
+        try {
+            $cExp = \Illuminate\Support\Carbon::createFromFormat('Y-m-d', $exp);
+        } catch (InvalidArgumentException $e) {
+            return response()->api(generate_error("Malformed request, invalid expire date format (Y-m-d)."),
+                400);
         }
 
-        if (Carbon::createFromFormat('Y-m-d', $exp)->diffInDays() > 30) {
-            return response()->api(generate_error("Invalid date"), 400);
+        if ($cExp->diffInDays() > 30) {
+            return response()->api(generate_error("Invalid expiration date, must be in at most 30 days."), 400);
+        }
+
+        if ($cExp->isPast()) {
+            return response()->api(generate_error("Invalid expiration date, cannot be in the past."), 400);
         }
 
         if (!isTest()) {
@@ -155,9 +162,9 @@ class SoloController extends APIController
     for API Key] ATM, DATM, TA, INS)",
      *     produces={"application/json"}, tags={"solo"},
      *     security={"apikey","jwt","session"},
-     * @SWG\Parameter(name="cid", in="formData", type="integer", required=true, description="CERT ID"),
+     * @SWG\Parameter(name="cid", in="formData", type="integer", required=true, description="Vatsim ID"),
      * @SWG\Parameter(name="position", in="formData", type="string", required=true, description="Position ID (XYZ_APP,
-                                           ZZZ_CTR)"),
+    ZZZ_CTR)"),
      * @SWG\Response(
      *         response="401",
      *         description="Unauthorized",
@@ -197,8 +204,8 @@ class SoloController extends APIController
         }
 
         if (!isTest()) {
-            SoloCert::where('cid', $request->input("cid"))
-                ->where("position", $request->input("position"))
+            SoloCert::where('cid', $request->input("cid", null))
+                ->where("position", strtoupper($request->input("position", null)))
                 ->delete();
         }
 
