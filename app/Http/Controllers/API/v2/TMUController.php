@@ -181,8 +181,7 @@ class TMUController extends APIController
                 return response()->api(generate_error("Forbidden. Cannot add notice for another ARTCC's TMU."), 403);
             }
             if (!(RoleHelper::isFacilityStaff() ||
-                RoleHelper::isVATUSAStaff() ||
-                RoleHelper::isInstructor())) {
+                RoleHelper::isInstructor() || RoleHelper::isMentor())) {
                 return response()->api(generate_error("Forbidden."), 403);
             }
         } else {
@@ -337,8 +336,7 @@ class TMUController extends APIController
                 return response()->api(generate_error("Forbidden. Cannot edit notice for another ARTCC's TMU."), 403);
             }
             if (!(RoleHelper::isFacilityStaff() ||
-                RoleHelper::isVATUSAStaff() ||
-                RoleHelper::isInstructor())) {
+                RoleHelper::isInstructor() || RoleHelper::isMentor())) {
                 return response()->api(generate_error("Forbidden."), 403);
             }
         } else {
@@ -450,8 +448,7 @@ class TMUController extends APIController
                 return response()->api(generate_error("Forbidden. Cannot delete another ARTCC's TMU notice."), 403);
             }
             if (!(RoleHelper::isFacilityStaff() ||
-                RoleHelper::isVATUSAStaff() ||
-                RoleHelper::isInstructor())) {
+                RoleHelper::isInstructor() || RoleHelper::isMentor())) {
                 return response()->api(generate_error("Forbidden."), 403);
             }
         } else {
