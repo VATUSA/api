@@ -1,9 +1,11 @@
-VATUSA API
+# VATUSA API
+This repository is the API of the VATUSA website, and is the subdomain api.vatusa.net. It works in parallel to vatusa/current.
+
 
 Middleware notes:
 -----
-- auth:jwt,web - only for authenticated sessions, no CORS checks
-- Private - CORS check for only vatusa related websites, does not authenticate
-- SemiPrivate - Authenticates and if no authentication, does apikey check
-- Public - for readability only, to be phased out
-- APIKey - legacy for v1, only checks API Key in URL path
+- auth:jwt,web - Session authentication only. Does not include CORS checks.
+- Private - Only for internal calls to the API. Includes CORS checks.
+- SemiPrivate - Attempts both session authentication and API Key check.
+- Public - For readability only, to be phased out.
+- APIKey - Legacy for v1, only checks API Key in URL path.

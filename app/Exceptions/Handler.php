@@ -38,7 +38,7 @@ class Handler extends ExceptionHandler
      *
      * This is a great spot to send exceptions to Sentry, Bugsnag, etc.
      *
-     * @param  \Exception $exception
+     * @param \Exception $exception
      *
      * @return void
      * @throws \Exception
@@ -55,8 +55,9 @@ class Handler extends ExceptionHandler
     /**
      * Render an exception into an HTTP response.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Exception  $exception
+     * @param \Illuminate\Http\Request $request
+     * @param \Exception               $exception
+     *
      * @return \Illuminate\Http\Response
      */
     public function render($request, Exception $exception)
@@ -72,9 +73,13 @@ class Handler extends ExceptionHandler
         } else {
             $status = 500;
         }
+        if (method_exists($exception, 'getSeverity') && $exception->getSeverity() == E_USER_DEPRECATED) {
+            return false;
+        }
+
         return response()->json([
-            'status' => 'error',
-            'msg' => $exception->getMessage(),
+            'status'    => 'error',
+            'msg'       => $exception->getMessage(),
             'exception' => get_class($exception)
         ], $status);
         //return parent::render($request, $exception);
@@ -84,13 +89,15 @@ class Handler extends ExceptionHandler
      * Override the unauthenicated method to return JSON and in our format.
      *
      * @param \Illuminate\Http\Request $request
-     * @param AuthenticationException $exception
+     * @param AuthenticationException  $exception
+     *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function unauthenticated($request, \Illuminate\Auth\AuthenticationException $exception) {
+    public function unauthenticated($request, \Illuminate\Auth\AuthenticationException $exception)
+    {
         return response()->json([
             'status' => 'error',
-            'msg' => 'Unauthenticated'
+            'msg'    => 'Unauthenticated'
         ], 401);
     }
 }

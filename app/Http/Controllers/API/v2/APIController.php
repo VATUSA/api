@@ -52,6 +52,7 @@ use \App\Http\Controllers\Controller as BaseController;
  *     @SWG\Tag(name="survey", description="Survey management"),
  *     @SWG\Tag(name="training", description="Centralized training notes - Coming soon."),
  *     @SWG\Tag(name="user",description="User account management actions"),
+ *     @SWG\Tag(name="tmu",description="Traffic Management Unit - Notices (NTOS)"),
  * )
  */
 class APIController extends BaseController {
