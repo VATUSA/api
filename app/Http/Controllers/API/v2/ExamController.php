@@ -802,7 +802,7 @@ class ExamController extends APIController
      *     path="/exam/(id)/assign/(cid)",
      *     summary="Assign exam. [Auth]",
      *     description="Assign exam to specified controller. Requires JWT or Session Cookie. Must be instructor, senior
-     *     staff or VATUSA staff.", tags={"user","exam"}, produces={"application/json"},
+           staff or VATUSA staff.", tags={"user","exam"}, produces={"application/json"},
      *     @SWG\Parameter(name="id", in="path", type="integer", description="Exam ID"),
      *     @SWG\Parameter(name="cid", in="path", type="integer", description="VATSIM ID"),
      *     @SWG\Parameter(name="expire", in="formData", type="integer", description="Days until expiration, 7
