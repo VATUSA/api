@@ -8,6 +8,8 @@ use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
 use App\ReturnPaths;
 use App\Role;
+use App\TMUFacility;
+use App\TMUNotice;
 use App\Transfer;
 use App\User;
 use Illuminate\Http\Request;
@@ -104,8 +106,9 @@ class FacilityController extends APIController
     {"cid":1245046,"name":"Toby Rice","role":"DATM"},
     {"cid":1289149,"name":"Israel Reyes","role":"FE"},
     {"cid":1152158,"name":"Taylor Broad","role":"WM"}},
-    "stats":{"controllers":19,"pendingTransfers":0}}
-     *              }
+    "stats":{"controllers":19,"pendingTransfers":0},
+    "notices":{"D01":{{"id":4,"tmu_facility_id":"D01","priority":2,"message":"Ground hold in effect until 2300Z.",
+    "expire_date":"2019-08-01 00:00:00","created_at":"2019-07-18 08:04:36","updated_at":"2019-07-18 08:04:36"}}}}}
      *         }
      *     )
      * )
@@ -120,23 +123,27 @@ class FacilityController extends APIController
         }
 
         if (\Cache::has("facility.$id.info")) {
-            return \Cache::get("facility.$id.info");
+            return response()->api(json_decode(\Cache::get("facility.$id.info"),true));
         }
 
-        $data = [
-            'facility' => $facility->toArray(),
-            'role'     => Role::where('facility', $facility->id)->get()->toArray(),
+        $data['facility'] = [
+            'info' => $facility->toArray(),
+            'roles'     => Role::where('facility', $facility->id)->get()->toArray(),
         ];
         $data['stats']['controllers'] = User::where('facility', $id)->count();
         $data['stats']['pendingTransfers'] = Transfer::where('to', $id)->where(
             'status', Transfer::$pending
         )->count();
 
-        $json = encode_json($data);
+        $data['notices'] = [];
+        foreach (TMUFacility::where('id', $id)->orWhere('parent', $id)->get() as $tmu) {
+            if ($tmu->tmuNotices()->count()) {
+                $data['notices'][$tmu->id] = $tmu->tmuNotices()->get()->toArray();
+            }
+        }
+        \Cache::put("facility.$id.info", encode_json($data), 60);
 
-        \Cache::put("facility.$id.info", $json, 60);
-
-        return $json;
+        return response()->api($data);
     }
 
     /**
@@ -324,7 +331,7 @@ class FacilityController extends APIController
             }
         }
 
-        return response()->ok([$data]);
+        return response()->ok($data);
     }
 
     /**
@@ -708,18 +715,31 @@ class FacilityController extends APIController
      *                 @SWG\Items(
      *                     type="object",
      *                     @SWG\Property(property="id", type="integer", description="Transfer ID"),
-     *                     @SWG\Property(property="cid", type="integer"),
-     *                     @SWG\Property(property="name", type="string"),
+     *                     @SWG\Property(property="cid", type="integer", description="VATSIM ID"),
+     *                     @SWG\Property(property="fname", type="string", description="First name"),
+     *                     @SWG\Property(property="lname", type="string", description="Last name"),
+     *                     @SWG\Property(property="email", type="string", description="Email, if authenticated as staff
+                                                           member and/or api key is present."),
+     *                     @SWG\Property(property="reason", type="string", description="Transfer reason; must be authenticated as senior staff."),
+     *                     @SWG\Property(property="fromFac", type="array",
+     *                         @SWG\Items(
+     *                             type="object",
+     *                             @SWG\Property(property="id", type="integer", description="Facility ID (ex. ZSE)"),
+     *                             @SWG\Property(property="name", type="integer", description="Facility Name (ex.
+                                                                  Seattle ARTCC)")
+     *                         )
+     *                     ),
      *                     @SWG\Property(property="rating", type="string", description="Short string rating (S1, S2)"),
      *                     @SWG\Property(property="intRating", type="integer", description="Numeric rating (OBS = 1,
-                                                               etc)"),
+    etc)"),
      *                     @SWG\Property(property="date", type="string", description="Date transfer submitted
-                                                          (YYYY-MM-DD)"),
+    (YYYY-MM-DD)"),
      *                 ),
      *             ),
      *         ),
-     *         examples={"application/json":{"status":"OK","transfers":{"id":991,"cid":876594,"name":"Daniel
-              Hawton","rating":"C1","intRating":5,"date":"2017-11-18"}}}
+     *         examples={"application/json":{"status":"OK","transfers":{"id":5606,"cid":1275302,"fname":"Blake",
+               "lname":"Nahin","email":null,"reason":"Only one class B? Too easy. I want something harder, like ZTL.",
+               "rating":"C1","intRating":5,"date":"2014-12-19","fromFac":{"id":"ZSE","name":"Seattle ARTCC"}}}}
      *     )
      * )
      */
@@ -754,7 +774,16 @@ class FacilityController extends APIController
             $data[] = [
                 'id'        => $transfer->id,
                 'cid'       => $transfer->cid,
-                'name'      => $transfer->user->fullname(),
+                'fname'     => $transfer->user->fname,
+                'lname'     => $transfer->user->lname,
+                'email'     => (AuthHelper::validApiKeyv2($request->input('apikey',
+                        null)) || (\Auth::check() && RoleHelper::isFacilityStaff(\Auth::user()->cid)))
+                    ? $transfer->user->email : null,
+                'reason' => (\Auth::check() && RoleHelper::isSeniorStaff(\Auth::user()->cid)) ? $transfer->reason : null,
+                'fromFac' => [
+                    'id' => $transfer->from,
+                    'name' => $transfer->fromFac->name
+                ],
                 'rating'    => RatingHelper::intToShort($transfer->user->rating),
                 'intRating' => $transfer->user->rating,
                 'date'      => $transfer->created_at->format('Y-m-d')
@@ -780,9 +809,9 @@ class FacilityController extends APIController
      * @SWG\Parameter(name="transferId", in="query", description="Transfer ID", type="integer", required=true),
      * @SWG\Parameter(name="action", in="formData", type="string", required=true, enum={"approve","reject"},
      *                                   description="Action to take on transfer request. Valid values:
-                                         approve,reject"),
+    approve,reject"),
      * @SWG\Parameter(name="reason", in="formData", type="string", description="Reason for transfer request rejection
-                                    [required for rejections]"),
+    [required for rejections]"),
      * @SWG\Response(
      *         response="400",
      *         description="Malformed request, missing required parameter",
@@ -912,13 +941,13 @@ class FacilityController extends APIController
      *         @SWG\Schema(
      *             type="object",
      *             @SWG\Property(property="status", type="string"),
-     *             @SWG\Property(property="transfers", type="array",
+     *             @SWG\Property(property="paths", type="array",
      *                 @SWG\Items(
      *                     type="object",
      *                 @SWG\Property(property="id", type="integer", description="Path DB ID"),
      *                     @SWG\Property(property="order", type="integer", description="ID used in ULS query"),
      *                     @SWG\Property(property="facility_id", type="string", description="Facility assocaited with
-                                                                 path"),
+    path"),
      *                     @SWG\Property(property="url", type="string", description="Return URL")
      *                 ),
      *             ),
