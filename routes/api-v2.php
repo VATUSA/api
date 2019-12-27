@@ -241,12 +241,14 @@ Route::group(['prefix' => '/user'], function () {
  * TMU functions
  */
 Route::group(['prefix' => '/tmu'], function () {
-    Route::get('notice/{notice}', 'TMUController@getNotice');
+    Route::group(['prefix' => '/notice'], function () {
+        Route::get('{notice}', 'TMUController@getNotice');
+        Route::put('{notice}', 'TMUController@editNotice');
+        Route::delete('{notice}', 'TMUController@removeNotice');
+    });
     Route::group(['prefix' => '/notices'], function () {
-        Route::get('{tmufacid?}', 'TMUController@getNotices');
-        Route::group(['middleware' => 'semiprivate'], function() {
-            Route::delete('{noticeId}', 'TMUController@removeNotice');
-            Route::put('{noticeId}', 'TMUController@editNotice');
+        Route::get('{facility?}', 'TMUController@getNotices');
+        Route::group(['middleware' => 'semiprivate'], function () {
             Route::post('/', 'TMUController@addNotice');
         });
     });
