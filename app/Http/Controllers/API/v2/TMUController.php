@@ -119,7 +119,7 @@ class TMUController extends APIController
      *     produces={"application/json"}, tags={"tmu"},
      * @SWG\Parameter(name="facility",type="string",description="TMU Facility/Map ID",in="formData",required=true),
      * @SWG\Parameter(name="priority",type="string",description="Priority of notice
-    (0: Low, 1: Standard, 2: Urgent)",in="formData",required=true),
+    (1: Low, 2: Standard, 3: Urgent)",in="formData",required=true),
      * @SWG\Parameter(name="message",type="string",description="Notice content",in="formData",required=true),
      * @SWG\Parameter(name="start_date",type="string",description="Effective date (YYYY-MM-DD
     HH:MM)",in="formData"),
