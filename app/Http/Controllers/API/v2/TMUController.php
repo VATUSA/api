@@ -320,7 +320,7 @@ class TMUController extends APIController
             $priority = $notice->priority;
         }
 
-        $message = strip_tags($request->input('message', $notice->message), "<em><strong><u>");
+        $message = Purifier::clean(nl2br($request->input('message', null)), config_path('purifier-ntos'));
         if (!$message) {
             $message = $notice->message;
         }
