@@ -11,6 +11,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
 use Illuminate\Http\Request;
+use Mews\Purifier\Facades\Purifier;
 
 /**
  * Class TMUController
@@ -163,8 +164,7 @@ class TMUController extends APIController
         $startdate = urldecode($request->input('start_date', null));
         $expdate = urldecode($request->input('expire_date', null));
         $priority = $request->input('priority', 1); //Default: standard priority
-        $message = strip_tags($request->input('message', null), "<em><strong><u>");
-
+        $message = Purifier::clean(nl2br($request->input('message', null)), config_path('purifier-ntos'));
 
         if (!$facility || !$message) {
             return response()->api(generate_error("Malformed request, missing fields"), 400);
