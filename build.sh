@@ -17,6 +17,7 @@ if [ "$WWW_ENV" == "prod" ]; then
   echo "*    *    *     *     *    cd /www && php artisan vatsim:flights" >> /etc/crontabs/application
   cd /www && php artisan migrate --force
   chown -R application:application /www/storage/logs
+  chmod -R 777 /www/storage/app/purifier/ # HTML Purifier
 fi
 
 /usr/bin/supervisord --nodaemon --configuration /etc/supervisord.conf
