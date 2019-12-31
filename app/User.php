@@ -547,4 +547,11 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     {
         return [];
     }
+
+    public function studentTrainingRecords() {
+        return $this->hasMany(TrainingRecord::class,'student_id','cid');
+    }
+    public function instructorTrainingRecords() {
+        return $this->hasMany(TrainingRecord::class,'instructor_id','cid');
+    }
 }
