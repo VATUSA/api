@@ -29,4 +29,8 @@ class Facility extends Model
     public function returnPaths() {
         return $this->hasMany(ReturnPaths::class);
     }
+
+    public function trainingRecords() {
+        return $this->hasMany(TrainingRecord::class);
+    }
 }
