@@ -16,6 +16,14 @@ class OTSEval extends Model
         //position to level (APP = S3).
     }
 
+    public function student() {
+        return $this->belongsTo(User::class, 'student_id', 'cid');
+    }
+
+    public function instructor() {
+        return $this->belongsTo(User::class, 'instructor_id', 'cid');
+    }
+
     public function getContent()
     {
         //TODO might need more here

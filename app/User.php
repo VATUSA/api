@@ -22,24 +22,24 @@ use Carbon\Carbon;
  *     @SWG\Property(property="lname", type="string", description="Last name"),
  *     @SWG\Property(property="email", type="string", description="Email address of user, will be null if API Key or
  *                                     necessary roles are not available (ATM, DATM, TA, WM, INS)"),
- *     @SWG\Property(property="facility", type="string", description="Facility ID"),
- *     @SWG\Property(property="rating", type="integer", description="Rating based off array where 1=OBS, S1, S2, S3,
+ * @SWG\Property(property="facility", type="string", description="Facility ID"),
+ * @SWG\Property(property="rating", type="integer", description="Rating based off array where 1=OBS, S1, S2, S3,
  *                                      C1, C2, C3, I1, I2, I3, SUP, ADM"),
- *     @SWG\Property(property="created_at", type="string", description="Date added to database"),
- *     @SWG\Property(property="updated_at", type="string"),
- *     @SWG\Property(property="flag_needbasic", type="integer", description="1 needs basic exam"),
- *     @SWG\Property(property="flag_xferOverride", type="integer", description="Has approved transfer override"),
- *     @SWG\Property(property="flag_broadcastOptedIn", type="integer", description="Has opted in to receiving broadcast
+ * @SWG\Property(property="created_at", type="string", description="Date added to database"),
+ * @SWG\Property(property="updated_at", type="string"),
+ * @SWG\Property(property="flag_needbasic", type="integer", description="1 needs basic exam"),
+ * @SWG\Property(property="flag_xferOverride", type="integer", description="Has approved transfer override"),
+ * @SWG\Property(property="flag_broadcastOptedIn", type="integer", description="Has opted in to receiving broadcast
  *                                                     emails"),
- *     @SWG\Property(property="flag_preventStaffAssign", type="integer", description="Ineligible for staff role
+ * @SWG\Property(property="flag_preventStaffAssign", type="integer", description="Ineligible for staff role
  *                                                       assignment"),
- *     @SWG\Property(property="facility_join", type="string", description="Date joined facility (YYYY-mm-dd
+ * @SWG\Property(property="facility_join", type="string", description="Date joined facility (YYYY-mm-dd
  *                                             hh:mm:ss)"),
- *     @SWG\Property(property="promotion_eligible", type="boolean", description="Is member eligible for promotion?"),
- *     @SWG\Property(property="transfer_eligible", type="boolean", description="Is member is eligible for transfer?"),
- *     @SWG\Property(property="flag_homecontroller", type="integer", description="1-Belongs to VATUSA"),
- *     @SWG\Property(property="lastactivity", type="string", description="Date last seen on website"),
- *     @SWG\Property(property="roles", type="array",
+ * @SWG\Property(property="promotion_eligible", type="boolean", description="Is member eligible for promotion?"),
+ * @SWG\Property(property="transfer_eligible", type="boolean", description="Is member is eligible for transfer?"),
+ * @SWG\Property(property="flag_homecontroller", type="integer", description="1-Belongs to VATUSA"),
+ * @SWG\Property(property="lastactivity", type="string", description="Date last seen on website"),
+ * @SWG\Property(property="roles", type="array",
  *         @SWG\Items(type="object",
  *             @SWG\Property(property="facility", type="string"),
  *             @SWG\Property(property="role", type="string")
@@ -548,10 +548,23 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         return [];
     }
 
-    public function studentTrainingRecords() {
-        return $this->hasMany(TrainingRecord::class,'student_id','cid');
+    public function studentTrainingRecords()
+    {
+        return $this->hasMany(TrainingRecord::class, 'student_id', 'cid');
     }
-    public function instructorTrainingRecords() {
-        return $this->hasMany(TrainingRecord::class,'instructor_id','cid');
+
+    public function instructorTrainingRecords()
+    {
+        return $this->hasMany(TrainingRecord::class, 'instructor_id', 'cid');
+    }
+
+    public function studentOTSEvals()
+    {
+        return $this->hasMany(OTSEval::class, 'student_id', 'cid');
+    }
+
+    public function instructorOTSEvals()
+    {
+        return $this->hasMany(OTSEval::class, 'instructor_id', 'cid');
     }
 }
