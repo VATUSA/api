@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 /**
  * Class TrainingController
  * @package App\Http\Controllers\API\v2
- * Note: training records are NOT editable or deleteable.
+ * Note: training records are editable by senior staff and the instructor that created it.
  */
 class TrainingController extends Controller
 {
@@ -70,4 +70,14 @@ class TrainingController extends Controller
         // POST /user/1275302/training/otsEval
         //TODO Link to Gist of correct OTS Eval format
     }
+
+    public function editRecord(Request $request, TrainingRecord $record) {
+        //Owner instructor and senior staff
+        //PUT /training/record/8
+    }
+
+    public function deleteRecord(Request $request, TrainingRecord $record) {
+    //Owner instructor and senior staff
+    //DELETE /training/record/8
+}
 }

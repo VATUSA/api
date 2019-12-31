@@ -35,6 +35,7 @@ class CreateTrainingRecordsTable extends Migration
 
             $table->boolean('otsResult')->nullable();
 
+            $table->integer('edited_by')->nullable();
             $table->timestamps();
         });
     }
