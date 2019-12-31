@@ -25,7 +25,7 @@ class CreateTrainingRecordsTable extends Migration
             $table->string('position');
             $table->time('session_duration')->nullable();
             $table->integer('num_movements')->nullable();
-            $table->integer('overall_score')->nullable();
+            $table->integer('score')->nullable();
             $table->text('notes');
 
             $table->smallInteger('session_location'); // 0 = Classroom, 1 = Live, 2 = Sweatbox
