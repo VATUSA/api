@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Model;
  *     @SWG\Property(property="isOTS", type="boolean", description="OTS Attempt"),
  *     @SWG\Property(property="isCBT", type="boolean", description="System - CBT Completion"),
  *     @SWG\Property(property="soloGranted", type="boolean", description="Solo was granted during the session"),
+ *     @SWG\Property(property="edited_by", type="boolean", description="Editor CID"),
  * )
  */
 class TrainingRecord extends Model
@@ -38,6 +39,11 @@ class TrainingRecord extends Model
     public function instructor()
     {
         return $this->belongsTo(User::class, 'instructor_id', 'cid');
+    }
+
+    public function editor()
+    {
+        return $this->belongsTo(User::class, 'edited_by', 'cid');
     }
 
     public function facility()

@@ -19,7 +19,7 @@ class CreateOtsEvalsTable extends Migration
             $table->integer('training_record_id')->nullable();
             $table->integer('student_id');
             $table->integer('instructor_id');
-            $table->smallInteger('eval_level'); //1 = S1, 2 = S2, 3 = S3, 4 = C1
+            $table->integer('rating_id'); //DB ID of rating
             $table->timestamps();
         });
     }
