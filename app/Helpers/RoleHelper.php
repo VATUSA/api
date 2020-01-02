@@ -174,28 +174,28 @@ class RoleHelper
 
     public static function isInstructor($cid = null, $facility = null)
     {
-        if (!Auth::check()) {
+        if (!\Auth::check()) {
             return false;
         }
         if (($cid == null || $cid == 0)) {
-            $cid = Auth::user()->cid;
+            $cid = \Auth::user()->cid;
         }
         if ($facility == null) {
-            $facility = Auth::user()->facility;
+            $facility = \Auth::user()->facility;
         }
 
         // Check home controller, if no always assume no
-        if (!Auth::user()->flag_homecontroller) {
+        if (!\Auth::user()->flag_homecontroller) {
             return false;
         }
 
         // First check home facility and rating (excluding SUP)
-        if (Auth::user()->facility == $facility && Auth::user()->rating >= Helper::ratingIntFromShort("I1") && Auth::user()->rating < Helper::ratingIntFromShort("SUP")) {
+        if (\Auth::user()->facility == $facility && \Auth::user()->rating >= Helper::ratingIntFromShort("I1") && \Auth::user()->rating < Helper::ratingIntFromShort("SUP")) {
             return true;
         }
 
         //ADMs have INS Access
-        if (Auth::user()->rating == Helper::ratingIntFromShort("ADM")) {
+        if (\Auth::user()->rating == Helper::ratingIntFromShort("ADM")) {
             return true;
         }
 
@@ -214,11 +214,11 @@ class RoleHelper
 
     public static function isMentor($cid = null)
     {
-        if (!Auth::check()) {
+        if (!\Auth::check()) {
             return false;
         }
         if ($cid == null || $cid == 0) {
-            $cid = Auth::user()->cid;
+            $cid = \Auth::user()->cid;
         }
         $user = User::find($cid);
         if (!$user->flag_homecontroller) {
