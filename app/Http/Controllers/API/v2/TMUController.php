@@ -29,6 +29,8 @@ class TMUController extends APIController
      *     tags={"tmu"},
      *     @SWG\Parameter(name="facility", in="path", type="string", description="TMU Facility/Map ID (optional)",
      *                                     required=false),
+     *     @SWG\Parameter(name="children", in="query", type="boolean", description="If a parent map is selected,
+    include its children TMU's Notices.", required=false),
      *     @SWG\Response(
      *         response="200",
      *         description="OK",
@@ -53,14 +55,26 @@ class TMUController extends APIController
      * ),
      * @param \Illuminate\Http\Request $request
      *
-     * @param \App\TMUFacility|null    $facility
+     * @param \App\TMUFacility         $facility
      *
      * @return \Illuminate\Http\JsonResponse
      */
     public function getNotices(Request $request, TMUFacility $facility = null)
     {
         if ($facility) {
-            $notices = $facility->tmuNotices()->get()->toArray();
+            if ($request->input('children', null) == false) {
+                $notices = $facility->tmuNotices()->get()->toArray();
+            } else {
+                $notices = TMUNotice::where(function ($q) {
+                    $q->where('expire_date', '>=', Carbon::now('utc'));
+                    $q->orWhereNull('expire_date');
+                })->where('start_date', '<=', Carbon::now())->orderBy('priority',
+                    'DESC')->orderBy('tmu_facility_id')->orderBy('start_date', 'DESC');
+
+                $allFacs = TMUFacility::where('id', $facility->id)->orWhere('parent', $facility->id);
+                $notices = $notices->whereIn('tmu_facility_id', $allFacs->get()->pluck('id'))
+                    ->get()->toArray();
+            }
         } else {
             $notices = TMUNotice::all()->toArray();
         }
