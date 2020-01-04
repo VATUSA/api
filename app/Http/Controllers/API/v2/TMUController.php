@@ -84,7 +84,7 @@ class TMUController extends APIController
                     ->get()->toArray();
             }
         } else {
-            $notices = TMUNotice::all()->toArray();
+            $notices = TMUNotice::with('tmuFacility:id,name')->get()->toArray();
         }
 
         return response()->api($notices);
