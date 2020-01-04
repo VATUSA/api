@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 class TMUNotice extends Model
 {
@@ -14,5 +15,13 @@ class TMUNotice extends Model
     public function tmuFacility()
     {
         return $this->belongsTo(TMUFacility::class);
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where(function ($q) {
+            $q->where('expire_date', '>=', Carbon::now('utc'));
+            $q->orWhereNull('expire_date');
+        })->where('start_date', '<=', Carbon::now());
     }
 }
