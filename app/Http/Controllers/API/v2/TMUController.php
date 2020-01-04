@@ -31,6 +31,8 @@ class TMUController extends APIController
      *                                     required=false),
      *     @SWG\Parameter(name="children", in="query", type="boolean", description="If a parent map is selected,
     include its children TMU's Notices.", required=false),
+     *     @SWG\Parameter(name="onlyactive", in="query", type="boolean", description="Only include active notices.
+     *                                       Default = true.", required=false),
      *     @SWG\Response(
      *         response="200",
      *         description="OK",
@@ -68,23 +70,32 @@ class TMUController extends APIController
      */
     public function getNotices(Request $request, TMUFacility $facility = null)
     {
+        $onlyActive = $request->input('onlyactive', true);
         if ($facility) {
             if ($request->input('children', null) == false) {
-                $notices = $facility->tmuNotices()->with('tmuFacility:id,name')->get()->toArray();
+                $notices = $facility->tmuNotices();
+                if ($onlyActive === true) {
+                    $notices = $notices->active();
+                }
+                $notices = $notices->with('tmuFacility:id,name')->get()->toArray();
             } else {
-                $notices = TMUNotice::where(function ($q) {
-                    $q->where('expire_date', '>=', Carbon::now('utc'));
-                    $q->orWhereNull('expire_date');
-                })->where('start_date', '<=', Carbon::now())
-                    ->with('tmuFacility:id,name')
-                    ->orderBy('priority', 'DESC')->orderBy('tmu_facility_id')->orderBy('start_date', 'DESC');
+                $notices = TMUNotice::with('tmuFacility:id,name');
+                if ($onlyActive === true) {
+                    $notices = $notices->active();
+                }
+                $notices = $notices->orderBy('priority', 'DESC')->orderBy('tmu_facility_id')->orderBy('start_date',
+                    'DESC');
 
                 $allFacs = TMUFacility::where('id', $facility->id)->orWhere('parent', $facility->id);
                 $notices = $notices->whereIn('tmu_facility_id', $allFacs->get()->pluck('id'))
                     ->get()->toArray();
             }
         } else {
-            $notices = TMUNotice::with('tmuFacility:id,name')->get()->toArray();
+            $notices = TMUNotice::with('tmuFacility:id,name');
+            if ($onlyActive === true) {
+                $notices = $notices->active();
+            }
+            $notices = $notices->get()->toArray();
         }
 
         return response()->api($notices);
