@@ -38,7 +38,14 @@ class TMUController extends APIController
      *             type="array",
      *             @SWG\Items(type="object",
      *                 @SWG\Property(property="id",type="integer",description="TMU Notice ID"),
-     *                 @SWG\Property(property="tmu_facility_id",type="string",description="TMU Map ID"),
+     *                 @SWG\Property(property="tmu_facility",type="array",
+     *                               @SWG\Items(type="object",
+     *                                          @SWG\Property(property="id", type="string", description="TMU Facility
+     *                                                                       ID"),
+     *                                          @SWG\Property(property="name", type="string", description="TMU Facility
+     *                                                                         Name")
+     *                               )
+     *                 ),
      *                 @SWG\Property(property="priority",type="string",description="Priority of notice
      *                                                                               (0:Low,1:Standard,2:Urgent)"),
      *                 @SWG\Property(property="message",type="string",description="Notice content"),
@@ -63,13 +70,14 @@ class TMUController extends APIController
     {
         if ($facility) {
             if ($request->input('children', null) == false) {
-                $notices = $facility->tmuNotices()->get()->toArray();
+                $notices = $facility->tmuNotices()->with('tmuFacility:id,name')->get()->toArray();
             } else {
                 $notices = TMUNotice::where(function ($q) {
                     $q->where('expire_date', '>=', Carbon::now('utc'));
                     $q->orWhereNull('expire_date');
-                })->where('start_date', '<=', Carbon::now())->orderBy('priority',
-                    'DESC')->orderBy('tmu_facility_id')->orderBy('start_date', 'DESC');
+                })->where('start_date', '<=', Carbon::now())
+                    ->with('tmuFacility:id,name')
+                    ->orderBy('priority', 'DESC')->orderBy('tmu_facility_id')->orderBy('start_date', 'DESC');
 
                 $allFacs = TMUFacility::where('id', $facility->id)->orWhere('parent', $facility->id);
                 $notices = $notices->whereIn('tmu_facility_id', $allFacs->get()->pluck('id'))
@@ -98,7 +106,14 @@ class TMUController extends APIController
      *             type="array",
      *             @SWG\Items(type="object",
      *                 @SWG\Property(property="id",type="integer",description="TMU Notice ID"),
-     *                 @SWG\Property(property="tmu_facility_id",type="string",description="TMU Map ID"),
+     *                 @SWG\Property(property="tmu_facility",type="array",
+     *                               @SWG\Items(type="object",
+     *                                          @SWG\Property(property="id", type="string", description="TMU Facility
+     *                                                                       ID"),
+     *                                          @SWG\Property(property="name", type="string", description="TMU Facility
+     *                                                                         Name")
+     *                               )
+     *                 ),
      *                 @SWG\Property(property="priority",type="string",description="Priority of notice
      *                                                                               (0:Low,1:Standard,2:Urgent)"),
      *                 @SWG\Property(property="message",type="string",description="Notice content"),
@@ -121,7 +136,8 @@ class TMUController extends APIController
      */
     public function getNotice(Request $request, TMUNotice $notice)
     {
-        return response()->api($notice->toArray());
+        return response()->api(array_merge($notice->toArray(),
+            ["tmu_facility" => ["id" => $notice->tmuFacility->id, "name" => $notice->tmuFacility->name]]));
     }
 
     /**
