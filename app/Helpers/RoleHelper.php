@@ -235,6 +235,12 @@ class RoleHelper
         return false;
     }
 
+    public static function isTrainingStaff($cid = null, bool $includeMentor = true)
+    {
+        return ($includeMentor && self::isMentor($cid)) || self::isInstructor($cid) || self::isSeniorStaff($cid, null,
+                true);
+    }
+
     public static function isVATUSAStaff($cid = null, $skipWebTeam = false)
     {
         if (!$cid) {
