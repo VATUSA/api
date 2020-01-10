@@ -15,7 +15,7 @@ class CreateOtsEvalsTable extends Migration
     {
         Schema::create('ots_evals', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('filename'); //Randomly generated and short, JSON
+            $table->string('filename'); //Randomly generated and short; JSON
             $table->integer('training_record_id')->nullable();
             $table->integer('student_id');
             $table->integer('instructor_id');
