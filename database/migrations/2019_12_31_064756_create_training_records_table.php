@@ -23,17 +23,17 @@ class CreateTrainingRecordsTable extends Migration
 
             $table->string('facility_id');
             $table->string('position');
-            $table->time('session_duration')->nullable();
+            $table->time('duration');
             $table->integer('num_movements')->nullable();
             $table->integer('score')->nullable();
             $table->text('notes');
 
-            $table->smallInteger('session_location'); // 0 = Classroom, 1 = Live, 2 = Sweatbox
-            $table->boolean('isOTS');
-            $table->boolean('isCBT'); //CBT Completion - Auto
-            $table->boolean('soloGranted');
+            $table->smallInteger('location'); // 0 = Classroom, 1 = Live, 2 = Sweatbox
+            $table->boolean('is_ots');
+            $table->boolean('is_cbt'); //CBT Completion - Auto
+            $table->boolean('solo_granted');
 
-            $table->boolean('otsResult')->nullable();
+            $table->boolean('ots_result')->nullable();
 
             $table->integer('edited_by')->nullable();
             $table->timestamps();
