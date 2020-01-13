@@ -42,10 +42,9 @@ class TMUController extends APIController
      *                 @SWG\Property(property="id",type="integer",description="TMU Notice ID"),
      *                 @SWG\Property(property="tmu_facility",type="array",
      *                               @SWG\Items(type="object",
-     *                                          @SWG\Property(property="id", type="string", description="TMU Facility
-                                                                             ID"),
-     *                                          @SWG\Property(property="name", type="string", description="TMU Facility
-                                                                              Name")
+     *                                          @SWG\Property(property="id", type="string", description="TMU Facility ID"),
+     *                                          @SWG\Property(property="name", type="string", description="TMU Facility Name"),
+     *                                          @SWG\Property(property="parent", type="string", description="Parent TMU Facility/ARTCC")
      *                               )
      *                 ),
      *                 @SWG\Property(property="priority",type="string",description="Priority of notice
@@ -77,9 +76,9 @@ class TMUController extends APIController
                 if ($onlyActive === true) {
                     $notices = $notices->active();
                 }
-                $notices = $notices->with('tmuFacility:id,name')->get()->toArray();
+                $notices = $notices->with('tmuFacility:id,name,parent')->get()->toArray();
             } else {
-                $notices = TMUNotice::with('tmuFacility:id,name');
+                $notices = TMUNotice::with('tmuFacility:id,name,parent');
                 if ($onlyActive === true) {
                     $notices = $notices->active();
                 }
@@ -91,7 +90,7 @@ class TMUController extends APIController
                     ->get()->toArray();
             }
         } else {
-            $notices = TMUNotice::with('tmuFacility:id,name');
+            $notices = TMUNotice::with('tmuFacility:id,name,parent');
             if ($onlyActive === true) {
                 $notices = $notices->active();
             }
@@ -118,12 +117,11 @@ class TMUController extends APIController
      *             @SWG\Items(type="object",
      *                 @SWG\Property(property="id",type="integer",description="TMU Notice ID"),
      *                 @SWG\Property(property="tmu_facility",type="array",
-     *                               @SWG\Items(type="object",
-     *                                          @SWG\Property(property="id", type="string", description="TMU Facility
-     *                                                                       ID"),
-     *                                          @SWG\Property(property="name", type="string", description="TMU Facility
-     *                                                                         Name")
-     *                               )
+     *                                @SWG\Items(type="object",
+     *                                          @SWG\Property(property="id", type="string", description="TMU Facility ID"),
+     *                                          @SWG\Property(property="name", type="string", description="TMU Facility Name"),
+     *                                          @SWG\Property(property="parent", type="string", description="Parent TMU Facility/ARTCC")
+     *                               ),
      *                 ),
      *                 @SWG\Property(property="priority",type="string",description="Priority of notice
                                                                                      (0:Low,1:Standard,2:Urgent)"),
@@ -148,7 +146,7 @@ class TMUController extends APIController
     public function getNotice(Request $request, TMUNotice $notice)
     {
         return response()->api(array_merge($notice->toArray(),
-            ["tmu_facility" => ["id" => $notice->tmuFacility->id, "name" => $notice->tmuFacility->name]]));
+            ["tmu_facility" => ["id" => $notice->tmuFacility->id, "name" => $notice->tmuFacility->name, "parent" => $notice->tmuFacility->parent]]));
     }
 
     /**
