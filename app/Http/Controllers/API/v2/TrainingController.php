@@ -177,6 +177,57 @@ class TrainingController extends Controller
     }
 
     /**
+     * @SWG\Post(
+     *     path="/user/{cid}/training/record",
+     *     summary="Submit new training record. [Key]",
+     *     description="Submit new training record. Requires API Key, JWT, or Session Cookie (required roles:
+    [N/A for API Key] Senior Staff, Training Staff)", produces={"application/json"}, tags={"training"},
+     *     security={"apikey","jwt","session"},
+     * @SWG\Parameter(name="student_id", in="formData", type="integer", required=true, description="Student CID"),
+     * @SWG\Parameter(name="instructor_id", in="formData", type="integer", required=true, description="Instructor CID"),
+     * @SWG\Parameter(name="session_date", in="formData", type="string", required=true, description="Session Date, YY-mm-dd HH:mm"),
+     * @SWG\Parameter(name="position", in="formData", type="string", required=true, description="Position ID
+    (XYZ_APP, ZZZ_CTR)"),
+     * @SWG\Parameter(name="duration", in="formData", type="string", required=true, description="Session Dueation, HH:mm"),
+     * @SWG\Parameter(name="num_movements", in="formData", type="integer", required=false, description="Number of Movements"),
+     * @SWG\Parameter(name="score", in="formData", type="integer", required=false, description="Session Score, 1-5"),
+     * @SWG\Parameter(name="notes", in="formData", type="string", required=true, description="Session Notes"),
+     * @SWG\Parameter(name="location", in="formData", type="integer", required=true, description="Session Location (0 = Classroom, 1 = Live, 2 = Sweatbox)"),
+     * @SWG\Parameter(name="is_ots", in="formData", type="boolean", required=true, description="Session is OTS Attempt"),
+     * @SWG\Parameter(name="is_cbt", in="formData", type="boolean", required=true, description="Record is a CBT Completion"),
+     * @SWG\Parameter(name="solo_granted", in="formData", type="boolean", required=true, description="Solo endorsement was granted"),
+     * @SWG\Parameter(name="ots_result", in="formData", type="boolean", required=false, description="OTS Result: true = pass."),
+     * @SWG\Response(
+     *         response="400",
+     *         description="Malformed request.",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={{"application/json":{"status"="error","message"="Invalid
+     *         position"}},{"application/json":{"status"="error","message"="Invalid session date."}}},
+     *     ),
+     * @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     * @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     * @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(property="status", type="string"),
+     *             @SWG\Property(property="id", type="integer", description="DB ID of Record"),
+     *         ),
+     *         examples={"application/json":{"status"="OK","id"=19, "testing": false}}
+     *     )
+     * ),
+     *
      * Add new record.
      *
      * @param \Illuminate\Http\Request $request
@@ -187,7 +238,7 @@ class TrainingController extends Controller
      */
     public function postNewRecord(Request $request, User $user)
     {
-        //The big one. Submit new record
+        //Submit new record
         // POST /user/1275302/training/record
         // Return training record id... resp()->ok(['id' => 19])
 
