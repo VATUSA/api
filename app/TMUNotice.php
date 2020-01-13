@@ -11,6 +11,7 @@ class TMUNotice extends Model
     protected $guarded = [];
     protected $hidden = ['tmu_facility_id'];
     protected $table = 'tmu_notices';
+    protected $casts = ['is_delay' => 'boolean'];
 
     public function tmuFacility()
     {
