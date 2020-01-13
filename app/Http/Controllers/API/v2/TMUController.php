@@ -30,9 +30,9 @@ class TMUController extends APIController
      *     @SWG\Parameter(name="facility", in="path", type="string", description="TMU Facility/Map ID (optional)",
      *                                     required=false),
      *     @SWG\Parameter(name="children", in="query", type="boolean", description="If a parent map is selected,
-    include its children TMU's Notices.", required=false),
+                                                            include its children TMU's Notices.", required=false),
      *     @SWG\Parameter(name="onlyactive", in="query", type="boolean", description="Only include active notices.
-     *                                       Default = true.", required=false),
+                                             Default = true.", required=false),
      *     @SWG\Response(
      *         response="200",
      *         description="OK",
@@ -43,19 +43,19 @@ class TMUController extends APIController
      *                 @SWG\Property(property="tmu_facility",type="array",
      *                               @SWG\Items(type="object",
      *                                          @SWG\Property(property="id", type="string", description="TMU Facility
-     *                                                                       ID"),
+                                                                             ID"),
      *                                          @SWG\Property(property="name", type="string", description="TMU Facility
-     *                                                                         Name")
+                                                                              Name")
      *                               )
      *                 ),
      *                 @SWG\Property(property="priority",type="string",description="Priority of notice
-     *                                                                               (0:Low,1:Standard,2:Urgent)"),
+                                                                                     (0:Low,1:Standard,2:Urgent)"),
      *                 @SWG\Property(property="message",type="string",description="Notice content"),
      *                 @SWG\Property(property="expire_date", type="string", description="Expiration time in Zulu
-     *                                                       (YYYY-MM-DD
-    H:i:s)"),
+                                                             (YYYY-MM-DD H:i:s)"),
      *                 @SWG\Property(property="start_date", type="string", description="Start time in Zulu (YYYY-MM-DD
-    H:i:s)")
+                                                              H:i:s)"),
+     *                 @SWG\Property(property="is_delay", type="boolean", description="TMU Notice is a ground stop or delay")
      *                   )
      *                )
      *             ),
@@ -126,13 +126,13 @@ class TMUController extends APIController
      *                               )
      *                 ),
      *                 @SWG\Property(property="priority",type="string",description="Priority of notice
-     *                                                                               (0:Low,1:Standard,2:Urgent)"),
+                                                                                     (0:Low,1:Standard,2:Urgent)"),
      *                 @SWG\Property(property="message",type="string",description="Notice content"),
      *                 @SWG\Property(property="expire_date", type="string", description="Expiration time in Zulu
-     *                                                       (YYYY-MM-DD
-    H:i:s)"),
+                                                            (YYYY-MM-DD H:i:s)"),
      *                 @SWG\Property(property="start_date", type="string", description="Start time in Zulu (YYYY-MM-DD
-    H:i:s)")
+                                                            H:i:s)"),
+     *                 @SWG\Property(property="is_delay", type="boolean", description="TMU Notice is a ground stop or delay.")
      *                   )
      *                )
      *             ),
@@ -167,6 +167,7 @@ class TMUController extends APIController
     HH:MM)",in="formData"),
      * @SWG\Parameter(name="expire_date",type="string",description="Expiration date (YYYY-MM-DD
     HH:MM)",in="formData"),
+     * @SWG\Parameter(name="is_delay",type="boolean",description="TMU Notice is a ground stop or delay",in="formData"),
      * @SWG\Response(
      *         response="400",
      *         description="Malformed request",
@@ -206,6 +207,8 @@ class TMUController extends APIController
         $expdate = urldecode($request->input('expire_date', null));
         $priority = $request->input('priority', 1); //Default: standard priority
         $message = Purifier::clean(nl2br($request->input('message', null)), config_path('purifier-ntos'));
+        $isDelay = $request->input('is_delay', null);
+        $isDelay = $isDelay === true || $isDelay === "on";
 
         if (!$facility || !$message) {
             return response()->api(generate_error("Malformed request, missing fields"), 400);
@@ -277,6 +280,7 @@ class TMUController extends APIController
             $notice->priority = $priority;
             $notice->start_date = $startdate;
             $notice->expire_date = $expdate;
+            $notice->is_delay = $isDelay;
             $tmuFac->tmuNotices()->save($notice);
         }
 
@@ -299,6 +303,7 @@ class TMUController extends APIController
      * @SWG\Parameter(name="start_date",type="string",description="Start time (YYYY-MM-DD HH:MM)", in="formData"),
      * @SWG\Parameter(name="expire_date",type="string",description="Expiration time (YYYY-MM-DD HH:MM) - null for no
     expiration",in="formData"),
+     * @SWG\Parameter(name="is_delay",type="boolean",description="TMU Notice is a ground stop or delay.",in="formData"),
      * @SWG\Response(
      *         response="400",
      *         description="Malformed request",
@@ -364,6 +369,11 @@ class TMUController extends APIController
         $message = Purifier::clean(nl2br($request->input('message', null)), config_path('purifier-ntos'));
         if (!$message) {
             $message = $notice->message;
+        }
+
+        $isDelay = $request->input('is_delay', $notice->is_delay);
+        if (!$isDelay) {
+            $isDelay = $notice->is_delay;
         }
 
         $tmuFac = TMUFacility::find($facility);
@@ -436,6 +446,7 @@ class TMUController extends APIController
             $notice->priority = $priority;
             $notice->start_date = $cStartDate;
             $notice->expire_date = $cExpDate;
+            $notice->is_delay = $isDelay === true || $isDelay === "on";
             $tmuFac->tmuNotices()->save($notice);
         }
 
