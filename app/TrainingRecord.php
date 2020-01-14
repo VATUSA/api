@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @SWG\Definition(
  *     type="object",
+ *     definition="trainingrecord",
  *     @SWG\Property(property="id", type="integer", description="Record ID"),
  *     @SWG\Property(property="student_id", type="integer", description="Student CID"),
  *     @SWG\Property(property="instructor_id", type="integer", description="Instructor CID"),
