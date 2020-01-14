@@ -90,30 +90,32 @@ Route::group(['middleware' => ['private', 'auth:jwt,web'], 'prefix' => '/exam'],
  * /facility
  * Facility functions
  */
-
-Route::get('facility', 'FacilityController@getIndex');
-Route::get('facility/{id}', 'FacilityController@getFacility')->where('id', '[A-Za-z]{3}');
-Route::get('facility/{id}/staff', 'FacilityController@getStaff')->where('id', '[A-Za-z]{3}');
-Route::get('facility/{id}/roster', 'FacilityController@getRoster')->where('id', '[A-Za-z]{3}');
-Route::group(['middleware' => 'auth:web,jwt'], function () {
-    Route::put('facility/{id}', 'FacilityController@putFacility')->where('id', '[A-Za-z]{3}');
-    Route::delete('facility/{id}/roster/{cid}', 'FacilityController@deleteRoster')->where([
-        'id'  => '[A-Za-z]{3}',
-        'cid' => '\d+'
-    ]);
-    Route::put('facility/{id}/transfers/{transferId}', 'FacilityController@putTransfer')->where([
-        'id'         => '[A-Za-z]{3}',
-        'transferId' => '\d+'
-    ]);
-    Route::post('facility/{id}/email/{templateName}', 'FacilityController@postEmailTemplate');
-});
-Route::group(['middleware' => 'semiprivate'], function () {
-    Route::get('facility/{id}/transfers', 'FacilityController@getTransfers')->where('id', '[A-Za-z]{3}');
-    Route::get('facility/{id}/email/{templateName}', 'FacilityController@getemailTemplate');
-    Route::get('facility/{id}/ulsReturns', 'FacilityController@getUlsReturns');
-    Route::post('facility/{id}/ulsReturns', 'FacilityController@addUlsReturn');
-    Route::delete('facility/{id}/ulsReturns/{order}', 'FacilityController@removeUlsReturn');
-    Route::put('facility/{id}/ulsReturns/{order}', 'FacilityController@putUlsReturn');
+Route::group(['prefix' => 'facility'], function () {
+    Route::get('/', 'FacilityController@getIndex');
+    Route::get('{id}', 'FacilityController@getFacility')->where('id', '[A-Za-z]{3}');
+    Route::get('{id}/staff', 'FacilityController@getStaff')->where('id', '[A-Za-z]{3}');
+    Route::get('{id}/roster', 'FacilityController@getRoster')->where('id', '[A-Za-z]{3}');
+    Route::group(['middleware' => 'auth:web,jwt'], function () {
+        Route::put('{id}', 'FacilityController@putFacility')->where('id', '[A-Za-z]{3}');
+        Route::delete('{id}/roster/{cid}', 'FacilityController@deleteRoster')->where([
+            'id'  => '[A-Za-z]{3}',
+            'cid' => '\d+'
+        ]);
+        Route::put('{id}/transfers/{transferId}', 'FacilityController@putTransfer')->where([
+            'id'         => '[A-Za-z]{3}',
+            'transferId' => '\d+'
+        ]);
+        Route::post('{id}/email/{templateName}', 'FacilityController@postEmailTemplate');
+    });
+    Route::group(['middleware' => 'semiprivate'], function () {
+        Route::get('{id}/transfers', 'FacilityController@getTransfers')->where('id', '[A-Za-z]{3}');
+        Route::get('{id}/email/{templateName}', 'FacilityController@getemailTemplate');
+        Route::get('{id}/ulsReturns', 'FacilityController@getUlsReturns');
+        Route::post('{id}/ulsReturns', 'FacilityController@addUlsReturn');
+        Route::delete('{id}/ulsReturns/{order}', 'FacilityController@removeUlsReturn');
+        Route::put('{id}/ulsReturns/{order}', 'FacilityController@putUlsReturn');
+        Route::get('{facility}/training/records', 'TrainingController@getFacilityRecords');
+    });
 });
 
 /******************************************************************************************
@@ -221,6 +223,8 @@ Route::group(['prefix' => '/user'], function () {
 
         Route::get('/{cid}/transfer/checklist', 'UserController@getTransferChecklist')->where('cid', '[0-9]+');
         Route::get('/{cid}/transfer/history', 'UserController@getTransferHistory')->where('cid', '[0-9]+');
+        Route::get('/{user}/training/records', 'TrainingController@getUserRecords')->where('user', '[0-9]+');
+        Route::post('/{user}/training/record', 'TrainingController@postNewRecord')->where('user', '[0-9]+');
     });
 
     Route::post('/{cid}/rating', 'UserController@postRating')->where('cid', '[0-9]+')
@@ -233,6 +237,8 @@ Route::group(['prefix' => '/user'], function () {
 
         Route::get('/{cid}/log', 'UserController@getActionLog')->where('cid', '[0-9]+');
         Route::post('/{cid}/log', 'UserController@postActionLog')->where('cid', '[0-9]+');
+        Route::get('/{user}/training/otsEvals', 'TrainingController@getUserOTSEvals')->where('user', '[0-9]+');
+        Route::post('/{user}/training/otsEval', 'TrainingController@postOTSEval')->where('user', '[0-9]+');
     });
 });
 
@@ -251,5 +257,22 @@ Route::group(['prefix' => '/tmu'], function () {
         Route::group(['middleware' => 'semiprivate'], function () {
             Route::post('/', 'TMUController@addNotice');
         });
+    });
+});
+
+/******************************************************************************************
+ * /training
+ * Training functions
+ */
+Route::group(['prefix' => 'training'], function () {
+    Route::group(['middleware' => 'semiprivate'], function () {
+        Route::get('records', 'TrainingController@getAllRecords');
+        Route::get('record/{record}', 'TrainingController@getTrainingRecord')->where('record', '[0-9]+');
+        Route::delete('record/{record}', 'TrainingController@deleteRecord')->where('record', '[0-9]+');
+        Route::put('record/{record}', 'TrainingController@editRecord')->where('record', '[0-9]+');
+    });
+    Route::group(['middleware' => 'private'], function() {
+        Route::get('otsEval/{eval}', 'TrainingController@getOTSEval')->where('eval', '[0-9]+');
+        Route::get('record/{record}/otsEval', 'TrainingController@getOTSTrainingEval')->where('record', '[0-9]+');
     });
 });
