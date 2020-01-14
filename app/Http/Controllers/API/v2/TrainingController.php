@@ -391,11 +391,11 @@ class TrainingController extends Controller
 
     /**
      * @SWG\Get(
-     *     path="/user/training/evals",
+     *     path="/training/evals",
      *     summary="Get all OTS evaluations. [Private]",
      *     description="Get all OTS evaluations. This does not include the actual content. CORS Restricted.",
      *     produces={"application/json"},
-     *     tags={"training", "user"},
+     *     tags={"training"},
      *     security={"apikey","jwt","session"},
      * @SWG\Parameter(name="rating_id", in="query", type="integer", required=true, description="Filter by rating ID"),
      * @SWG\Response(
