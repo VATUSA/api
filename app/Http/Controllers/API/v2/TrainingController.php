@@ -20,12 +20,42 @@ use Mews\Purifier\Facades\Purifier;
 /**
  * Class TrainingController
  * @package App\Http\Controllers\API\v2
- * Note: training records are editable by senior staff and the instructor that created it.
  */
 class TrainingController extends Controller
 {
     /**
-     * Get individual training records.
+     * @SWG\Get(
+     *     path="/training/record/{recordID}",
+     *     summary="Get training record. [Key]",
+     *     description="Get content of training record. Must have APIKey or be Senior Staff, Training Staff, or the
+           student.",
+     *     produces={"application/json"},
+     *     tags={"training"},
+     *     security={"session", "jwt", "apikey"},
+     * @SWG\Response(
+     *         response="400",
+     *         description="Malformed request.",
+     *         @SWG\Schema(ref="#/definitions/error")
+     *     ),
+     * @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     * @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     * @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *        @SWG\Schema(ref="#/definitions/trainingrecord")
+     *     )
+     * )
+     * Get individual training record.
      *
      * @param \Illuminate\Http\Request $request
      * @param \App\TrainingRecord      $record
@@ -45,6 +75,38 @@ class TrainingController extends Controller
     }
 
     /**
+     * @SWG\Get(
+     *     path="/user/{cid}/training/records",
+     *     summary="Get user's training records. [Key]",
+     *     description="Get all user's training records. Must have APIKey or be Senior Staff, Training Staff, or the
+           student.",
+     *     produces={"application/json"},
+     *     tags={"training", "user"},
+     *     security={"session", "jwt", "apikey"},
+     * @SWG\Response(
+     *         response="400",
+     *         description="Malformed request.",
+     *         @SWG\Schema(ref="#/definitions/error")
+     *     ),
+     * @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     * @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     * @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *        @SWG\Schema(ref="#/definitions/trainingrecord")
+     *     )
+     * )
+     *
      * Get user's training records.
      *
      * @param \Illuminate\Http\Request $request
@@ -65,6 +127,36 @@ class TrainingController extends Controller
     }
 
     /**
+     * @SWG\Get(
+     *     path="/facility/{facility}/training/records",
+     *     summary="Get facility's training records. [Key]",
+     *     description="Get all facility's training records. Must have APIKey or be Senior Staff or Training Staff.",
+     *     produces={"application/json"},
+     *     tags={"training", "facility"},
+     *     security={"session", "jwt", "apikey"},
+     * @SWG\Response(
+     *         response="400",
+     *         description="Malformed request.",
+     *         @SWG\Schema(ref="#/definitions/error")
+     *     ),
+     * @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     * @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     * @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *        @SWG\Schema(ref="#/definitions/trainingrecord")
+     *     )
+     * )
      * Get all facility training records.
      *
      * @param \Illuminate\Http\Request $request
@@ -85,6 +177,37 @@ class TrainingController extends Controller
     }
 
     /**
+     * @SWG\Get(
+     *     path="/training/records",
+     *     summary="Get all training records. [Key]",
+     *     description="Get all training records. Must have APIKey or be Senior Staff or Training Staff.",
+     *     produces={"application/json"},
+     *     tags={"training"},
+     *     security={"session", "jwt", "apikey"},
+     * @SWG\Response(
+     *         response="400",
+     *         description="Malformed request.",
+     *         @SWG\Schema(ref="#/definitions/error")
+     *     ),
+     * @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     * @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     * @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *        @SWG\Schema(ref="#/definitions/trainingrecord")
+     *     )
+     * )
+     *
      * Get All Records
      *
      * @param \Illuminate\Http\Request $request
@@ -104,6 +227,35 @@ class TrainingController extends Controller
     }
 
     /**
+     * @SWG\Get(
+     *     path="/training/otsEval/{recordID}",
+     *     summary="Get OTS Eval content. [Private]",
+     *     description="Get content of OTS Eval. CORS Restricted.",
+     *     produces={"application/json"},
+     *     tags={"training"},
+     *     security={"session", "jwt"},
+     * @SWG\Response(
+     *         response="400",
+     *         description="Malformed request.",
+     *         @SWG\Schema(ref="#/definitions/error")
+     *     ),
+     * @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     * @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     * @SWG\Response(
+     *         response="200",
+     *         description="OK"
+     *     )
+     * )
      * Get Eval Content
      *
      * @param \Illuminate\Http\Request $request
@@ -124,6 +276,35 @@ class TrainingController extends Controller
     }
 
     /**
+     * @SWG\Get(
+     *     path="/training/record/{recordID}/otsEval",
+     *     summary="Get attached OTS eval. [Private]",
+     *     description="Get content of OTS Eval attached to given record. CORS Restricted.",
+     *     produces={"application/json"},
+     *     tags={"training"},
+     *     security={"session", "jwt"},
+     * @SWG\Response(
+     *         response="400",
+     *         description="Malformed request.",
+     *         @SWG\Schema(ref="#/definitions/error")
+     *     ),
+     * @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     * @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     * @SWG\Response(
+     *         response="200",
+     *         description="OK"
+     *     )
+     * )
      * Get Attached Eval.
      *
      * @param \Illuminate\Http\Request $request
@@ -144,6 +325,38 @@ class TrainingController extends Controller
     }
 
     /**
+     * @SWG\Get(
+     *     path="/user/{cid}/training/otsEvals",
+     *     summary="Get user's OTS evaluations. [Private]",
+     *     description="Get users training evaluations. CORS Restricted.",
+     *     produces={"application/json"},
+     *     tags={"training", "user"},
+     *     security={"apikey","jwt","session"},
+     * @SWG\Parameter(name="rating_id", in="query", type="integer", required=true, description="Filter by rating ID"),
+     * @SWG\Response(
+     *         response="400",
+     *         description="Malformed request.",
+     *         @SWG\Schema(ref="#/definitions/error")
+     *     ),
+     * @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     * @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     * @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(ref="#/definitions/otseval")
+     *     )
+     * )
+     *
      * Get OTS Evals for a given User.
      *
      * @param \Illuminate\Http\Request $request
@@ -151,7 +364,7 @@ class TrainingController extends Controller
      *
      * @return array|\Illuminate\Database\Eloquent\Builder
      */
-    public function getOTSEvals(Request $request, User $user)
+    public function getUserOTSEvals(Request $request, User $user)
     {
         //Get OTS Evals for a user.
         //  GET /user/1275302/training/otsEvals
@@ -177,26 +390,100 @@ class TrainingController extends Controller
     }
 
     /**
+     * @SWG\Get(
+     *     path="/user/training/evals",
+     *     summary="Get all OTS evaluations. [Private]",
+     *     description="Get all OTS evaluations. This does not include the actual content. CORS Restricted.",
+     *     produces={"application/json"},
+     *     tags={"training", "user"},
+     *     security={"apikey","jwt","session"},
+     * @SWG\Parameter(name="rating_id", in="query", type="integer", required=true, description="Filter by rating ID"),
+     * @SWG\Response(
+     *         response="400",
+     *         description="Malformed request.",
+     *         @SWG\Schema(ref="#/definitions/error")
+     *     ),
+     * @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     * @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     * @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(ref="#/definitions/otseval")
+     *     )
+     * )
+     *
+     * Get OTS Evals for a given User.
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return array|\Illuminate\Database\Eloquent\Builder
+     */
+    public function getOTSEvals(Request $request)
+    {
+        //Get all OTS Evals.
+        //  GET /training/otsEvals
+        // QSP rating_id Filter by rating
+        //Use when selecting which Eval to attach for promotion.
+        $rating = $request->input('rating_id', null); //Rating ID
+        if ($rating && !Rating::find($rating)) {
+            return response()->api(generate_error("Invalid rating"), 400);
+        }
+
+        if ($this->canView($request) && !RoleHelper::isMentor()) {
+            //Training staff except Mentors
+            if ($rating) {
+                $return = OTSEval::where('rating_id', $rating)->get();
+            } else {
+                $return = OTSEval::all();
+            }
+            $return = $return->toArray();
+
+            return $return;
+        }
+
+        return response()->forbidden();
+    }
+
+    /**
      * @SWG\Post(
      *     path="/user/{cid}/training/record",
      *     summary="Submit new training record. [Key]",
      *     description="Submit new training record. Requires API Key, JWT, or Session Cookie (required roles:
-    [N/A for API Key] Senior Staff, Training Staff)", produces={"application/json"}, tags={"training"},
+           [N/A for API Key] Senior Staff, Training Staff)", produces={"application/json"}, tags={"training"},
      *     security={"apikey","jwt","session"},
      * @SWG\Parameter(name="student_id", in="formData", type="integer", required=true, description="Student CID"),
-     * @SWG\Parameter(name="instructor_id", in="formData", type="integer", required=true, description="Instructor CID"),
-     * @SWG\Parameter(name="session_date", in="formData", type="string", required=true, description="Session Date, YY-mm-dd HH:mm"),
+     * @SWG\Parameter(name="instructor_id", in="formData", type="integer", required=true, description="Instructor
+     *                                      CID"),
+     * @SWG\Parameter(name="session_date", in="formData", type="string", required=true, description="Session Date,
+     *                                     YY-mm-dd HH:mm"),
      * @SWG\Parameter(name="position", in="formData", type="string", required=true, description="Position ID
     (XYZ_APP, ZZZ_CTR)"),
-     * @SWG\Parameter(name="duration", in="formData", type="string", required=true, description="Session Dueation, HH:mm"),
-     * @SWG\Parameter(name="num_movements", in="formData", type="integer", required=false, description="Number of Movements"),
+     * @SWG\Parameter(name="duration", in="formData", type="string", required=true, description="Session Dueation,
+                                       HH:mm"),
+     * @SWG\Parameter(name="num_movements", in="formData", type="integer", required=false, description="Number of
+                                            Movements"),
      * @SWG\Parameter(name="score", in="formData", type="integer", required=false, description="Session Score, 1-5"),
      * @SWG\Parameter(name="notes", in="formData", type="string", required=true, description="Session Notes"),
-     * @SWG\Parameter(name="location", in="formData", type="integer", required=true, description="Session Location (0 = Classroom, 1 = Live, 2 = Sweatbox)"),
-     * @SWG\Parameter(name="is_ots", in="formData", type="boolean", required=true, description="Session is OTS Attempt"),
-     * @SWG\Parameter(name="is_cbt", in="formData", type="boolean", required=true, description="Record is a CBT Completion"),
-     * @SWG\Parameter(name="solo_granted", in="formData", type="boolean", required=true, description="Solo endorsement was granted"),
-     * @SWG\Parameter(name="ots_result", in="formData", type="boolean", required=false, description="OTS Result: true = pass."),
+     * @SWG\Parameter(name="location", in="formData", type="integer", required=true, description="Session Location (0 =
+                                       Classroom, 1 = Live, 2 = Sweatbox)"),
+     * @SWG\Parameter(name="is_ots", in="formData", type="boolean", required=true, description="Session is OTS
+                                     Attempt"),
+     * @SWG\Parameter(name="is_cbt", in="formData", type="boolean", required=true, description="Record is a CBT
+                                     Completion"),
+     * @SWG\Parameter(name="solo_granted", in="formData", type="boolean", required=true, description="Solo endorsement
+                                           was granted"),
+     * @SWG\Parameter(name="ots_result", in="formData", type="boolean", required=false, description="OTS Result: true =
+                                         pass."),
      * @SWG\Response(
      *         response="400",
      *         description="Malformed request.",
@@ -224,9 +511,9 @@ class TrainingController extends Controller
      *             @SWG\Property(property="status", type="string"),
      *             @SWG\Property(property="id", type="integer", description="DB ID of Record"),
      *         ),
-     *         examples={"application/json":{"status"="OK","id"=19, "testing": false}}
+     *         examples={"application/json":{"status"="OK", "id"=19, "testing": false}}
      *     )
-     * ),
+     * )
      *
      * Add new record.
      *
@@ -326,16 +613,43 @@ class TrainingController extends Controller
     }
 
     /**
+     * @SWG\Post(
+     *     path="/user/{cid}/training/otsEval",
+     *     summary="Post new OTS Eval for a user. [Private]",
+     *     description="Post new OTS Eval for a user. CORS Restricted.",
+     *     produces={"application/json"},
+     *     tags={"training", "user"},
+     *     security={"session", "jwt", "apikey"},
+     * @SWG\Response(
+     *         response="400",
+     *         description="Malformed request.",
+     *         @SWG\Schema(ref="#/definitions/error")
+     *     ),
+     * @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     * @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     * @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         examples={"application/json":{"status"="OK","id"=1234,"testing":false}}
+     *     )
+     * )
      * Add OTS Evaluation
      *
      * @param \Illuminate\Http\Request $request
      * @param \App\User                $user
      */
-    public
-    function postOTSEval(
-        Request $request,
-        User $user
-    ) {
+    public function postOTSEval(Request $request, User $user)
+    {
         //Upload OTS Attachment. Required before promotion.
         //Either linked to a training record, or independently created before promotion (trainng_record_id null).
         // Private.
@@ -343,21 +657,103 @@ class TrainingController extends Controller
     }
 
     /**
+     * @SWG\Put(
+     *     path="/training/record/{record}",
+     *     summary="Edit training record. [Key]",
+     *     description="Edit training record. Requires API Key, JWT, or Session Cookie (required roles:
+           [N/A for API Key] Senior Staff, Training Staff)",
+     *     produces={"application/json"},
+     *     tags={"training"},
+     *     security={"apikey","jwt","session"},
+     * @SWG\Parameter(name="student_id", in="formData", type="integer", description="Student CID"),
+     * @SWG\Parameter(name="instructor_id", in="formData", type="integer", description="Instructor CID"),
+     * @SWG\Parameter(name="session_date", in="formData", type="string", description="Session Date, YY-mm-dd HH:mm"),
+     * @SWG\Parameter(name="position", in="formData", type="string", description="Position ID
+    (XYZ_APP, ZZZ_CTR)"),
+     * @SWG\Parameter(name="duration", in="formData", type="string", description="Session Dueation, HH:mm"),
+     * @SWG\Parameter(name="num_movements", in="formData", type="integer", description="Number of Movements"),
+     * @SWG\Parameter(name="score", in="formData", type="integer", description="Session Score, 1-5"),
+     * @SWG\Parameter(name="notes", in="formData", type="string", description="Session Notes"),
+     * @SWG\Parameter(name="location", in="formData", type="integer", description="Session Location (0 = Classroom, 1 =
+                                       Live, 2 = Sweatbox)"),
+     * @SWG\Parameter(name="is_ots", in="formData", type="boolean", description="Session is OTS Attempt"),
+     * @SWG\Parameter(name="is_cbt", in="formData", type="boolean", description="Record is a CBT Completion"),
+     * @SWG\Parameter(name="solo_granted", in="formData", type="boolean", description="Solo endorsement was granted"),
+     * @SWG\Parameter(name="ots_result", in="formData", type="boolean", description="OTS Result: true = pass."),
+     * @SWG\Response(
+     *         response="400",
+     *         description="Malformed request.",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={{"application/json":{"status"="error","message"="Invalid
+     *         position"}},{"application/json":{"status"="error","message"="Invalid session date."}}},
+     *     ),
+     * @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     * @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     * @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(property="status", type="string"),
+     *             @SWG\Property(property="id", type="integer", description="DB ID of Record"),
+     *         ),
+     *         examples={"application/json":{"status"="OK", "testing": false}}
+     *     )
+     * )
+     *
      * Edit record.
      *
      * @param \Illuminate\Http\Request $request
      * @param \App\TrainingRecord      $record
      */
-    public
-    function editRecord(
-        Request $request,
-        TrainingRecord $record
-    ) {
+    public function editRecord(Request $request, TrainingRecord $record)
+    {
         //Owner instructor and senior staff
         //PUT /training/record/8
     }
 
     /**
+     * @SWG\Delete(
+     *     path="/training/record/{recordID}",
+     *     summary="Delete training record. [Key]",
+     *     description="Delete training record. Must have APIKey or be Senior Staff, Training Staff, or the student.",
+     *     produces={"application/json"},
+     *     tags={"training"},
+     *     security={"session", "jwt", "apikey"},
+     * @SWG\Response(
+     *         response="400",
+     *         description="Malformed request.",
+     *         @SWG\Schema(ref="#/definitions/error")
+     *     ),
+     * @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     * @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     * @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         examples={"application/json":{"status"="OK", "testing": false}}
+     *     )
+     * )
+     *
      * Delete record.
      *
      * @param \Illuminate\Http\Request $request
@@ -365,11 +761,8 @@ class TrainingController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public
-    function deleteRecord(
-        Request $request,
-        TrainingRecord $record
-    ) {
+    public function deleteRecord(Request $request, TrainingRecord $record)
+    {
         //Owner instructor and senior staff
         //DELETE /training/record/8
 
@@ -394,11 +787,8 @@ class TrainingController extends Controller
      *
      * @return bool
      */
-    private
-    function canModify(
-        Request $request,
-        TrainingRecord $record
-    ): bool {
+    private function canModify(Request $request, TrainingRecord $record): bool
+    {
         $hasApiKey = AuthHelper::validApiKeyv2($request->input('apikey', null));
         $isSeniorStaff = Auth::user() && RoleHelper::isSeniorStaff(Auth::user()->cid, Auth::user()->facility, true);
         $ownsRecord = $record && Auth::user() && $record->instructor_id == Auth::user()->cid;
@@ -415,12 +805,8 @@ class TrainingController extends Controller
      *
      * @return bool
      */
-    private
-    function canView(
-        Request $request,
-        TrainingRecord $record = null,
-        User $user = null
-    ): bool {
+    private function canView(Request $request, TrainingRecord $record = null, User $user = null): bool
+    {
 
         $hasApiKey = AuthHelper::validApiKeyv2($request->input('apikey', null));
         $isTrainingStaff = Auth::user() && RoleHelper::isTrainingStaff();
