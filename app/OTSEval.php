@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\File;
  *
  * @SWG\Definition(
  *     type="object",
+ *     definition="otseval",
  *     @SWG\Property(property="id", type="integer", description="Record ID"),
  *     @SWG\Property(property="filename", type="string", description="Filename in system"),
  *     @SWG\Property(property="training_record_id", type="integer", description="Training record DB ID, if exists"),
