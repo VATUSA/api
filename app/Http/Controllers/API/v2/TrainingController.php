@@ -67,7 +67,7 @@ class TrainingController extends Controller
         //Get training record info
         // GET /training/record/8
         if ($this->canView($request, $record)) {
-            return $record->toArray();
+            return response()->api($record->toArray());
         }
 
         return response()->forbidden();
@@ -119,7 +119,7 @@ class TrainingController extends Controller
         //Get records for a User
         // GET /user/1275302/training/records
         if ($this->canView($request, null, $user)) {
-            return TrainingRecord::where('student', $user->cid)->get()->toArray();
+            return response()->api(TrainingRecord::where('student', $user->cid)->get()->toArray());
         }
 
         return response()->forbidden();
@@ -169,7 +169,7 @@ class TrainingController extends Controller
         //Get records for a Facility
         // GET /facility/ZSE/training/records
         if ($this->canView($request)) {
-            return TrainingRecord::where('facility', $facility->id)->get()->toArray();
+            return response()->api(TrainingRecord::where('facility', $facility->id)->get()->toArray());
         }
 
         return response()->forbidden();
@@ -219,7 +219,7 @@ class TrainingController extends Controller
         //Get all records #nofilter
         // GET /training/records
         if ($this->canView($request)) {
-            return TrainingRecord::all()->toArray();
+            return response()->api(TrainingRecord::all()->toArray());
         }
 
         return response()->forbidden();
@@ -268,7 +268,7 @@ class TrainingController extends Controller
         //JSON of OTS Evaluation form from ID
         // GET /training/otsEval/8/
         if ($this->canView($request)) {
-            return $eval->getContent();
+            return response()->api(['content' => $eval->getContent()]);
         }
 
         return response()->forbidden();
@@ -317,7 +317,7 @@ class TrainingController extends Controller
         //JSON of OTS Evaluation form from training record
         // GET /training/record/8/otsEval
         if ($this->canView($request)) {
-            return $record->otsEval->getContent();
+            return response()->api(['content' => $record->otsEval->getContent()]);
         }
 
         return response()->forbidden();
@@ -383,7 +383,7 @@ class TrainingController extends Controller
             }
             $return = $return->get()->toArray();
 
-            return $return;
+            return response()->api($return);
         }
 
         return response()->forbidden();
@@ -448,7 +448,7 @@ class TrainingController extends Controller
             }
             $return = $return->toArray();
 
-            return $return;
+            return response()->api($return);
         }
 
         return response()->forbidden();
