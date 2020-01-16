@@ -159,8 +159,6 @@ class SMFHelper
             }
         }
 
-        dd($addl);
-
         static::setGroups($cid, $grp, $addl);
     }
 
