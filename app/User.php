@@ -100,7 +100,12 @@ class User extends Model implements AuthenticatableContract, JWTSubject
 
     public function facilityObj()
     {
-        return $this->hasOne('App\Facility', 'id', 'facility');
+        return $this->belongsTo(Facility::class, 'facility');
+    }
+
+    public function facility()
+    {
+        return $this->belongsTo(Facility::class, 'facility')->first();
     }
 
     /**
@@ -531,6 +536,50 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             "Transfer override flag " . ($value) ? "enabled by " . \Auth::user()->fullname() : "removed");
     }
 
+    public function getPrimaryRole() {
+        if ($this->facility()->atm == $this->cid)
+            return "ATM";
+        if ($this->facility()->datm == $this->cid)
+            return "DATM";
+        if ($this->facility()->ta == $this->cid)
+            return "TA";
+        if ($this->facility()->ec == $this->cid)
+            return "EC";
+        if ($this->facility()->fe == $this->cid)
+            return "FE";
+        if ($this->facility()->wm == $this->cid)
+            return "WM";
+
+        if (RoleHelper::has($this->cid, "ZHQ", "US1")) {
+            return "1";
+        }
+        if (RoleHelper::has($this->cid, "ZHQ", "US2")) {
+            return "2";
+        }
+        if (RoleHelper::has($this->cid, "ZHQ", "US3")) {
+            return "3";
+        }
+        if (RoleHelper::has($this->cid, "ZHQ", "US4")) {
+            return "4";
+        }
+        if (RoleHelper::has($this->cid, "ZHQ", "US5")) {
+            return "5";
+        }
+        if (RoleHelper::has($this->cid, "ZHQ", "US6")) {
+            return "6";
+        }
+        if (RoleHelper::has($this->cid, "ZHQ", "US7")) {
+            return "7";
+        }
+        if (RoleHelper::has($this->cid, "ZHQ", "US8")) {
+            return "8";
+        }
+        if (RoleHelper::has($this->cid, "ZHQ", "US9")) {
+            return "9";
+        }
+
+        return false;
+    }
     public function getRolesAttribute()
     {
         return Role::where('cid', $this->cid)->get();

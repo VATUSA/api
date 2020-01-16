@@ -1,9 +1,8 @@
 <?php
-namespace App\Classes;
 
-use App\Helpers\RoleHelper;
+namespace App\Helpers;
+
 use App\User;
-use App\Helpers\RatingHelper;
 
 /**
  * Class SMFHelper
@@ -12,21 +11,22 @@ use App\Helpers\RatingHelper;
 class SMFHelper
 {
     /**
-     * @param $cid
-     * @param $grp
+     * @param        $cid
+     * @param        $grp
      * @param string $addl
      */
     public static function setGroups($cid, $grp, $addl = "")
     {
         \DB::connection('forum')->table("smf_members")->where('member_name', $cid)
             ->update([
-                'id_group' => $grp,
+                'id_group'          => $grp,
                 'additional_groups' => $addl
             ]);
     }
 
     /**
      * @param $facility
+     *
      * @return int
      */
     public static function findFacilityStaffGroup($facility)
@@ -36,19 +36,24 @@ class SMFHelper
 
     /**
      * @param $group
+     *
      * @return int
      */
     public static function findGroup($group)
     {
         $staff = 0;
         $grp = \DB::connection('forum')->table("smf_membergroups")->where('group_name', $group)->first();
-        if ($grp) { $staff = $grp->id_group; }
+        if ($grp) {
+            $staff = $grp->id_group;
+        }
+
         return $staff;
     }
 
     /**
      * @param $cid
      */
+
     public static function setPermissions($cid)
     {
         $role = "";
@@ -56,43 +61,44 @@ class SMFHelper
         $grp = "";
 
         $user = User::find($cid);
-        // Safe for silent return
-        if (!$user) return;
 
-        if ($user->rating == RatingHelper::shortToInt("ADM")) {
-            if (!RoleHelper::isVATUSAStaff($cid, true)) {
-                static::setGroups($cid, static::findGroup("VATSIM Staff"));
+        if ($user->rating == Helper::ratingIntFromShort("ADM")) {
+            if (!RoleHelper::isVATUSAStaff()) {
+                static::setGroups($cid, static::findGroup("VATSIM Leadership"));
+
                 return;
             } else {
-                static::setGroups($cid, static::findGroup("VATSIM Staff"), static::findGroup("VATUSA Staff"));
+                // Allow for them to get the VATUSA Staff group
+                // as secondary group if they have a VATUSA Staff role
+                // per Mark Hubbert
+                static::setGroups($cid, static::findGroup("VATSIM Leadership"), static::findGroup("VATUSA Staff"));
+
                 return;
             }
-
         }
 
-        if (RoleHelper::isSeniorStaff($user->cid, $user->facility))
+        if ($user->facility()->atm == $user->cid || $user->facility()->datm == $user->cid) {
             $role = "ATM";
-        elseif (RoleHelper::has($user->cid, $user->facility, "TA"))
+        } elseif ($user->facility()->ta == $user->cid) {
             $role = "TA";
-        elseif (RoleHelper::has($user->cid, $user->facility, "EC"))
+        } elseif ($user->facility()->ec == $user->cid) {
             $role = "EC";
-        elseif (RoleHelper::has($user->cid, $user->facility, "FE"))
+        } elseif ($user->facility()->fe == $user->cid) {
             $role = "FE";
-        elseif (RoleHelper::has($user->cid, $user->facility, "WM"))
+        } elseif ($user->facility()->wm == $user->cid) {
             $role = "WM";
+        }
 
         if ($role) {
-            $grp = static::findFacilityStaffGroup($user->facility);
+            $grp = static::findFacilityStaff($user->facility);
         } else {
             $grp = static::findGroup("Members");
         }
 
-        if (RoleHelper::isVATUSAStaff($cid, true)) {
+        if (RoleHelper::isVATUSAStaff($cid, true, true)) {
             $grp = static::findGroup("VATUSA Staff");
             $role = "";
-            if (RoleHelper::has($cid, "ZHQ", "US1") ||
-                RoleHelper::has($cid, "ZHQ", "US2") ||
-                RoleHelper::has($cid, "ZHQ", "US6")) {
+            if (in_array($user->getPrimaryRole(), ['1', '2', '6'])) {
                 $role = "Administrator";
             }
         }
@@ -100,16 +106,67 @@ class SMFHelper
             $addl = static::findGroup($role);
         }
 
-        if (RoleHelper::isWebTeam($cid)) {
-            if ($addl) $addl .= ",";
-            $addl .= static::findGroup("Web Team");
-        }
         if (RoleHelper::has($cid, 'ZHQ', 'ACE')) {
-            if ($addl) $addl .= ",";
+            if ($addl) {
+                $addl .= ",";
+            }
             $addl .= static::findGroup("Ace Team");
         }
+        if ($user->rating === Helper::ratingIntFromShort("SUP") && $grp === static::findGroup("Members")) {
+            //Supervisor over Members (same perms set), WT, INSs, and MTRs
+            if ($addl) {
+                $addl .= ",";
+            }
+            $grp = static::findGroup("VATSIM Supervisors");
+            $addl .= static::findGroup("Members");
+        }
+        if (RoleHelper::isWebTeam($cid)) {
+            if ($addl) {
+                $addl .= ",";
+            }
+            if ($grp === static::findGroup("Members")) {
+                //WT Priority over INS, MTRs, Members
+                $grp = static::findGroup("Web Team");
+                $addl .= static::findGroup("Members");
+            } else {
+                $addl .= static::findGroup("Web Team");
+            }
+        }
+        if (RoleHelper::has($cid, $user->facility,
+                "INS") || ($user->rating >= Helper::ratingIntFromShort("I1") && $user->rating < Helper::ratingIntFromShort("SUP"))) {
+            if ($addl) {
+                $addl .= ",";
+            }
+            if ($grp === static::findGroup("Members")) {
+                //INS Priority over Members and MTRs
+                $grp = static::findGroup("Instructors");
+                $addl .= static::findGroup("Members");
+            } else {
+                $addl .= static::findGroup("Instructors");
+            }
+        }
+
+        if (RoleHelper::has($cid, $user->facility, "MTR")) {
+            if ($addl) {
+                $addl .= ",";
+            }
+            if ($grp === static::findGroup("Members")) {
+                //MTR Priority over Members
+                $grp = static::findGroup("Mentors");
+                $addl .= static::findGroup("Members");
+            } else {
+                $addl .= static::findGroup("Mentors");
+            }
+        }
+
+        dd($addl);
 
         static::setGroups($cid, $grp, $addl);
+    }
+
+    public static function findFacilityStaff($facility)
+    {
+        return static::findGroup($facility . " Staff");
     }
 
     /**
@@ -144,18 +201,21 @@ class SMFHelper
 
     /**
      * @param $cid
+     *
      * @return mixed
      */
-    public static function isRegistered($cid) {
+    public static function isRegistered($cid)
+    {
         return \DB::connection("forum")->table("smf_members")->where("member_name", $cid)->count();
     }
 
-    public static function updateData($cid, $last, $first, $email) {
+    public static function updateData($cid, $last, $first, $email)
+    {
         \DB::connection("forum")->table("smf_members")
-                                ->where("member_name", $cid)
-                                ->update([
-                                    'real_name' => "$first $last",
-                                    'email_address' => "$email"
-                                ]);
+            ->where("member_name", $cid)
+            ->update([
+                'real_name'     => "$first $last",
+                'email_address' => "$email"
+            ]);
     }
 }
