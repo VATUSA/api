@@ -2,7 +2,6 @@
 
 namespace App\Helpers;
 
-use App\Classes\Helper;
 use App\Facility;
 use Cache;
 use App\Role;
@@ -235,9 +234,18 @@ class RoleHelper
         return false;
     }
 
-    public static function isVATUSAStaff($cid = null, $skipWebTeam = false)
+
+    /**
+     * @param null|integer $cid
+     *
+     * @return bool
+     */
+    public static function isVATUSAStaff($cid = null, $skipWebTeam = false, $isApi = false)
     {
-        if (!$cid) {
+        if (!\Auth::check() && !$isApi) {
+            return false;
+        }
+        if ($cid == null || $cid == 0) {
             $cid = \Auth::user()->cid;
         }
 

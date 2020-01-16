@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Login;
 
-use App\Classes\SMFHelper;
+use App\Helpers\SMFHelper;
 use App\Helpers\EmailHelper;
 use App\Helpers\ULSHelper;
 use App\User;

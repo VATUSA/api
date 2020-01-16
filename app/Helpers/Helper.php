@@ -1,5 +1,5 @@
 <?php
-namespace App\Classes;
+namespace App\Helpers;
 
 use App\Rating;
 use App\User;
