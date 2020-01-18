@@ -158,9 +158,7 @@ class SMFHelper
                 $addl .= static::findGroup("Mentors");
             }
         }
-
-        dd($addl);
-
+        
         static::setGroups($cid, $grp, $addl);
     }
 
