@@ -15,6 +15,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use InvalidArgumentException;
 use Mews\Purifier\Facades\Purifier;
 
 /**
@@ -28,7 +29,7 @@ class TrainingController extends Controller
      *     path="/training/record/{recordID}",
      *     summary="Get training record. [Key]",
      *     description="Get content of training record. Must have APIKey or be Senior Staff, Training Staff, or the
-           student.",
+    student.",
      *     produces={"application/json"},
      *     tags={"training"},
      *     security={"session", "jwt", "apikey"},
@@ -79,7 +80,7 @@ class TrainingController extends Controller
      *     path="/user/{cid}/training/records",
      *     summary="Get user's training records. [Key]",
      *     description="Get all user's training records. Must have APIKey or be Senior Staff, Training Staff, or the
-           student.",
+    student.",
      *     produces={"application/json"},
      *     tags={"training", "user"},
      *     security={"session", "jwt", "apikey"},
@@ -459,30 +460,30 @@ class TrainingController extends Controller
      *     path="/user/{cid}/training/record",
      *     summary="Submit new training record. [Key]",
      *     description="Submit new training record. Requires API Key, JWT, or Session Cookie (required roles:
-           [N/A for API Key] Senior Staff, Training Staff)", produces={"application/json"}, tags={"training"},
+    [N/A for API Key] Senior Staff, Training Staff)", produces={"application/json"}, tags={"training"},
      *     security={"apikey","jwt","session"},
      * @SWG\Parameter(name="instructor_id", in="formData", type="integer", required=true, description="Instructor
-                                            CID"),
+    CID"),
      * @SWG\Parameter(name="session_date", in="formData", type="string", required=true, description="Session Date,
-                                           YYYY-mm-dd HH:mm"),
+    YYYY-mm-dd HH:mm"),
      * @SWG\Parameter(name="position", in="formData", type="string", required=true, description="Position ID
     (XYZ_APP, ZZZ_CTR)"),
      * @SWG\Parameter(name="duration", in="formData", type="string", required=true, description="Session Duration,
-                                       HH:mm"),
+    HH:mm"),
      * @SWG\Parameter(name="num_movements", in="formData", type="integer", required=false, description="Number of
-                                            Movements"),
+    Movements"),
      * @SWG\Parameter(name="score", in="formData", type="integer", required=false, description="Session Score, 1-5"),
      * @SWG\Parameter(name="notes", in="formData", type="string", required=true, description="Session Notes"),
      * @SWG\Parameter(name="location", in="formData", type="integer", required=true, description="Session Location (0 =
-                                       Classroom, 1 = Live, 2 = Sweatbox)"),
+    Classroom, 1 = Live, 2 = Sweatbox)"),
      * @SWG\Parameter(name="is_ots", in="formData", type="boolean", required=false, description="Session is OTS
-                                     Attempt"),
+    Attempt"),
      * @SWG\Parameter(name="is_cbt", in="formData", type="boolean", required=false, description="Record is a CBT
-                                     Completion"),
+    Completion"),
      * @SWG\Parameter(name="solo_granted", in="formData", type="boolean", required=false, description="Solo endorsement
-                                           was granted"),
+    was granted"),
      * @SWG\Parameter(name="ots_result", in="formData", type="boolean", required=false, description="OTS Result: true =
-                                         pass."),
+    pass. Required if is_ots is true."),
      * @SWG\Response(
      *         response="400",
      *         description="Malformed request.",
@@ -541,7 +542,7 @@ class TrainingController extends Controller
         $isOTS = $request->input("is_ots", false);
         $isCBT = $request->input("is_cbt", false);
         $soloGranted = $request->input("solo_granted", false);
-        $otsResult = $request->input("ots_result", false);
+        $otsResult = $request->input("ots_result", null);
 
         if (Auth::check()) {
             //Authenticated
@@ -553,15 +554,15 @@ class TrainingController extends Controller
         }
 
         //Validate
-        if (!$studentId || (!$instructorId && !Auth::check()) || !$sessionDate || !$position || !$notes) {
+        if (!$studentId || (!$instructorId && !Auth::check()) || !$sessionDate || !$position || !$notes || is_null($location)) {
             //Required Fields
             return response()->api(generate_error("Missing fields; see API documentation."), 400);
         }
         if ($numMovements && !is_numeric($numMovements)) {
             return response()->api(generate_error("Invalid number of movements, must be null or an integer."), 400);
         }
-        if ($score && !is_numeric($score)) {
-            return response()->api(generate_error("Invalid score, must be null or an integer."), 400);
+        if ($score && (!is_numeric($score) || !in_array(intval($score), [1, 2, 3, 4, 5]))) {
+            return response()->api(generate_error("Invalid score, must be null or an integer and between 1-5"), 400);
         }
         if (!preg_match("/^([A-Z0-9]{2,3})_(TWR|APP|CTR)$/", $position)) {
             return response()->api(generate_error("Invalid position."), 400);
@@ -570,20 +571,29 @@ class TrainingController extends Controller
             return response()->api(generate_error("Invalid session location. Must be 0, 1, or 2."), 400);
         }
 
-        $sessionDate = Carbon::createFromFormat("Y-m-d H:i", $sessionDate);
-        if (!$sessionDate) {
-            return response()->api(generate_error("Invalid date; must be YY-mm-dd HH:MM."), 400);
+        try {
+            $sessionDate = Carbon::createFromFormat("Y-m-d H:i", $sessionDate);
+        } catch (InvalidArgumentException $e) {
+            return response()->api(generate_error("Invalid date; must be YYYY-mm-dd HH:MM."), 400);
         }
 
-        $duration = Carbon::createFromFormat('H:i', $duration);
-        if (!$duration) {
+        try {
+            $duration = Carbon::createFromFormat('H:i', $duration);
+        } catch (InvalidArgumentException $e) {
             return response()->api(generate_error("Cannot create record. Invalid duration; must be HH:MM.", 400));
         }
         $duration = $duration->format("H:i:s");
 
+        if ($isOTS && is_null($otsResult)) {
+            return response()->api(generate_error("Record marked as OTS Attempt, however it is missing the result"),
+                400);
+        }
 
         //Clean
         $notes = Purifier::clean($notes);
+        if ($otsResult) {
+            $isOTS = true;
+        }
 
         //Submit
         $record = new TrainingRecord();
@@ -647,8 +657,11 @@ class TrainingController extends Controller
      * @param \Illuminate\Http\Request $request
      * @param \App\User                $user
      */
-    public function postOTSEval(Request $request, User $user)
-    {
+    public
+    function postOTSEval(
+        Request $request,
+        User $user
+    ) {
         //Upload OTS Attachment. Required before promotion.
         //Either linked to a training record, or independently created before promotion (trainng_record_id null).
         // Private.
@@ -660,7 +673,7 @@ class TrainingController extends Controller
      *     path="/training/record/{record}",
      *     summary="Edit training record. [Key]",
      *     description="Edit training record. Requires API Key, JWT, or Session Cookie (required roles:
-           [N/A for API Key] Senior Staff, Training Staff)",
+    [N/A for API Key] Senior Staff, Training Staff)",
      *     produces={"application/json"},
      *     tags={"training"},
      *     security={"apikey","jwt","session"},
@@ -674,7 +687,7 @@ class TrainingController extends Controller
      * @SWG\Parameter(name="score", in="formData", type="integer", description="Session Score, 1-5"),
      * @SWG\Parameter(name="notes", in="formData", type="string", description="Session Notes"),
      * @SWG\Parameter(name="location", in="formData", type="integer", description="Session Location (0 = Classroom, 1 =
-                                       Live, 2 = Sweatbox)"),
+    Live, 2 = Sweatbox)"),
      * @SWG\Parameter(name="is_ots", in="formData", type="boolean", description="Session is OTS Attempt"),
      * @SWG\Parameter(name="is_cbt", in="formData", type="boolean", description="Record is a CBT Completion"),
      * @SWG\Parameter(name="solo_granted", in="formData", type="boolean", description="Solo endorsement was granted"),
@@ -788,7 +801,7 @@ class TrainingController extends Controller
      */
     private function canModify(Request $request, TrainingRecord $record): bool
     {
-        $hasApiKey = AuthHelper::validApiKeyv2($request->input('apikey', null));
+        $hasApiKey = AuthHelper::validApiKeyv2($request->input('apikey', null), $record->facility->id);
         $isSeniorStaff = Auth::user() && RoleHelper::isSeniorStaff(Auth::user()->cid, Auth::user()->facility, true);
         $ownsRecord = $record && Auth::user() && $record->instructor_id == Auth::user()->cid;
 
@@ -804,8 +817,11 @@ class TrainingController extends Controller
      *
      * @return bool
      */
-    private function canView(Request $request, TrainingRecord $record = null, User $user = null): bool
-    {
+    private function canView(
+        Request $request,
+        TrainingRecord $record = null,
+        User $user = null
+    ): bool {
 
         $hasApiKey = AuthHelper::validApiKeyv2($request->input('apikey', null));
         $isTrainingStaff = Auth::user() && RoleHelper::isTrainingStaff();
