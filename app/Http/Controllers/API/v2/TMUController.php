@@ -378,13 +378,16 @@ class TMUController extends APIController
             $message = $notice->message;
         }
 
-        $isDelay = $request->input('is_delay', $notice->is_delay);
-        if (!$isDelay) {
-            $isDelay = $notice->is_delay;
-        }
-        $isPrefRoute = $request->input('is_pref_route', $notice->is_pref_route);
-        if(!$isPrefRoute) {
-            $isPrefRoute = $notice->is_pref_route;
+        $isDelay = $request->input('is_delay', null);
+        $isPrefRoute = $request->input('is_pref_route', null);
+        if(!$request->ajax()) {
+            //API Call, set defaults
+            if (is_null($isDelay)) {
+                $isDelay = $notice->is_delay;
+            }
+            if (is_null($isPrefRoute)) {
+                $isPrefRoute = $notice->is_pref_route;
+            }
         }
 
         $tmuFac = TMUFacility::find($facility);
