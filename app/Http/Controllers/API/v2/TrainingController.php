@@ -119,7 +119,7 @@ class TrainingController extends Controller
         //Get records for a User
         // GET /user/1275302/training/records
         if ($this->canView($request, null, $user)) {
-            return response()->api(TrainingRecord::where('student', $user->cid)->get()->toArray());
+            return response()->api(TrainingRecord::where('student_id', $user->cid)->get()->toArray());
         }
 
         return response()->forbidden();
@@ -461,14 +461,13 @@ class TrainingController extends Controller
      *     description="Submit new training record. Requires API Key, JWT, or Session Cookie (required roles:
            [N/A for API Key] Senior Staff, Training Staff)", produces={"application/json"}, tags={"training"},
      *     security={"apikey","jwt","session"},
-     * @SWG\Parameter(name="student_id", in="formData", type="integer", required=true, description="Student CID"),
      * @SWG\Parameter(name="instructor_id", in="formData", type="integer", required=true, description="Instructor
-     *                                      CID"),
+                                            CID"),
      * @SWG\Parameter(name="session_date", in="formData", type="string", required=true, description="Session Date,
-     *                                     YY-mm-dd HH:mm"),
+                                           YYYY-mm-dd HH:mm"),
      * @SWG\Parameter(name="position", in="formData", type="string", required=true, description="Position ID
     (XYZ_APP, ZZZ_CTR)"),
-     * @SWG\Parameter(name="duration", in="formData", type="string", required=true, description="Session Dueation,
+     * @SWG\Parameter(name="duration", in="formData", type="string", required=true, description="Session Duration,
                                        HH:mm"),
      * @SWG\Parameter(name="num_movements", in="formData", type="integer", required=false, description="Number of
                                             Movements"),
@@ -476,11 +475,11 @@ class TrainingController extends Controller
      * @SWG\Parameter(name="notes", in="formData", type="string", required=true, description="Session Notes"),
      * @SWG\Parameter(name="location", in="formData", type="integer", required=true, description="Session Location (0 =
                                        Classroom, 1 = Live, 2 = Sweatbox)"),
-     * @SWG\Parameter(name="is_ots", in="formData", type="boolean", required=true, description="Session is OTS
+     * @SWG\Parameter(name="is_ots", in="formData", type="boolean", required=false, description="Session is OTS
                                      Attempt"),
-     * @SWG\Parameter(name="is_cbt", in="formData", type="boolean", required=true, description="Record is a CBT
+     * @SWG\Parameter(name="is_cbt", in="formData", type="boolean", required=false, description="Record is a CBT
                                      Completion"),
-     * @SWG\Parameter(name="solo_granted", in="formData", type="boolean", required=true, description="Solo endorsement
+     * @SWG\Parameter(name="solo_granted", in="formData", type="boolean", required=false, description="Solo endorsement
                                            was granted"),
      * @SWG\Parameter(name="ots_result", in="formData", type="boolean", required=false, description="OTS Result: true =
                                          pass."),
@@ -530,7 +529,7 @@ class TrainingController extends Controller
         // Return training record id... resp()->ok(['id' => 19])
 
         //Input Data
-        $studentId = $request->input("student_id", null);
+        $studentId = $user->cid;
         $instructorId = $request->input("instructor_id", null);
         $sessionDate = $request->input("session_date", null);
         $position = $request->input("position", null);
@@ -576,7 +575,7 @@ class TrainingController extends Controller
             return response()->api(generate_error("Invalid date; must be YY-mm-dd HH:MM."), 400);
         }
 
-        $duration = Carbon::createFromFormat('H:i', $sessionDate);
+        $duration = Carbon::createFromFormat('H:i', $duration);
         if (!$duration) {
             return response()->api(generate_error("Cannot create record. Invalid duration; must be HH:MM.", 400));
         }
