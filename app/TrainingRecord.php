@@ -26,12 +26,17 @@ use Illuminate\Database\Eloquent\Model;
  *     @SWG\Property(property="is_cbt", type="boolean", description="System - CBT Completion"),
  *     @SWG\Property(property="solo_granted", type="boolean", description="Solo was granted during the session"),
  *     @SWG\Property(property="ots_result", type="boolean", description="OTS Result. True = pass, False = fail."),
- *     @SWG\Property(property="edited_by", type="boolean", description="Editor CID"),
+ *     @SWG\Property(property="modified_by", type="boolean", description="Editor CID"),
  * )
  */
 class TrainingRecord extends Model
 {
     protected $dates = ['created_at', 'updated_at', 'session_date'];
+    protected $casts = ['is_ots'       => 'boolean',
+                        'is_cbt'       => 'boolean',
+                        'solo_granted' => 'boolean',
+                        'ots_result'   => 'boolean'
+    ];
 
     public function student()
     {
@@ -45,7 +50,7 @@ class TrainingRecord extends Model
 
     public function editor()
     {
-        return $this->belongsTo(User::class, 'edited_by', 'cid');
+        return $this->belongsTo(User::class, 'modified_by', 'cid');
     }
 
     public function facility()
