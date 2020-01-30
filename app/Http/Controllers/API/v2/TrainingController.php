@@ -613,12 +613,14 @@ class TrainingController extends Controller
         $record->ots_result = $otsResult;
 
         try {
-            $record->saveOrFail();
+            if (!isTest()) {
+                $record->saveOrFail();
+            }
         } catch (Exception $e) {
             return response()->api(generate_error("Unable to save record.", 500));
         }
 
-        return response()->ok(['id' => $record->id]);
+        return response()->ok(['id' => isTest() ? null : $record->id]);
     }
 
     /**
@@ -677,8 +679,6 @@ class TrainingController extends Controller
      *     produces={"application/json"},
      *     tags={"training"},
      *     security={"apikey","jwt","session"},
-     * @SWG\Parameter(name="student_id", in="formData", type="integer", description="Student CID"),
-     * @SWG\Parameter(name="instructor_id", in="formData", type="integer", description="Instructor CID"),
      * @SWG\Parameter(name="session_date", in="formData", type="string", description="Session Date, YY-mm-dd HH:mm"),
      * @SWG\Parameter(name="position", in="formData", type="string", description="Position ID
     (XYZ_APP, ZZZ_CTR)"),
@@ -689,7 +689,6 @@ class TrainingController extends Controller
      * @SWG\Parameter(name="location", in="formData", type="integer", description="Session Location (0 = Classroom, 1 =
     Live, 2 = Sweatbox)"),
      * @SWG\Parameter(name="is_ots", in="formData", type="boolean", description="Session is OTS Attempt"),
-     * @SWG\Parameter(name="is_cbt", in="formData", type="boolean", description="Record is a CBT Completion"),
      * @SWG\Parameter(name="solo_granted", in="formData", type="boolean", description="Solo endorsement was granted"),
      * @SWG\Parameter(name="ots_result", in="formData", type="boolean", description="OTS Result: true = pass."),
      * @SWG\Response(
@@ -732,6 +731,117 @@ class TrainingController extends Controller
     {
         //Owner instructor and senior staff
         //PUT /training/record/8
+
+        //Input Data
+        $sessionDate = $request->input("session_date", $record->session_date);
+        if (!$sessionDate) {
+            $sessionDate = $record->session_date;
+        }
+        $position = $request->input("position", $record->position);
+        if (!$position) {
+            $position = $record->position;
+        }
+        $duration = $request->input("duration", $record->duration);
+        if (!$duration) {
+            $duration = $record->duration;
+        }
+        $numMovements = $request->input("num_movements", $record->num_movements);
+        if (!$numMovements) {
+            $numMovements = $record->num_movements;
+        }
+        $score = $request->input("score", $record->score);
+        if (!$score) {
+            $score = $record->score;
+        }
+        $notes = $request->input("notes", $record->notes);
+        if (!$notes) {
+            $notes = $record->notes;
+        }
+        $location = $request->input("location", $record->location);
+        if (!$location) {
+            $location = $record->location;
+        }
+        $isOTS = $request->input("is_ots", $record->is_ots);
+        if ($isOTS == "") {
+            $isOTS = $record->is_ots;
+        }
+        $soloGranted = $request->input("solo_granted", $record->solo_granted);
+        if ($soloGranted == "") {
+            $soloGranted = $record->solo_granted;
+        }
+        $otsResult = $request->input("ots_result", $record->ots_result);
+        if ($otsResult == "") {
+            $otsResult = $record->ots_result;
+        }
+
+        if (!$this->canModify($request, $record)) {
+            return response()->forbidden();
+        }
+
+        //Validate
+        if ($numMovements && !is_numeric($numMovements)) {
+            return response()->api(generate_error("Invalid number of movements, must be null or an integer."), 400);
+        }
+        if ($score && (!is_numeric($score) || !in_array(intval($score), [1, 2, 3, 4, 5]))) {
+            return response()->api(generate_error("Invalid score, must be null or an integer and between 1-5"), 400);
+        }
+        if (!preg_match("/^([A-Z0-9]{2,3})_(TWR|APP|CTR)$/", $position)) {
+            return response()->api(generate_error("Invalid position."), 400);
+        }
+        if (!in_array(intval($location), [0, 1, 2])) {
+            return response()->api(generate_error("Invalid session location. Must be 0, 1, or 2."), 400);
+        }
+
+        if (!($sessionDate instanceof Carbon)) {
+            try {
+                $sessionDate = Carbon::createFromFormat("Y-m-d H:i", $sessionDate);
+            } catch (InvalidArgumentException $e) {
+                return response()->api(generate_error("Invalid date; must be YYYY-mm-dd HH:MM."), 400);
+            }
+        }
+
+        if (!($duration instanceof Carbon)) {
+            try {
+                $duration = Carbon::createFromFormat('H:i', $duration);
+            } catch (InvalidArgumentException $e) {
+                return response()->api(generate_error("Cannot create record. Invalid duration; must be HH:MM.", 400));
+            }
+        }
+        $duration = $duration->format("H:i:s");
+
+        if ($isOTS && is_null($otsResult)) {
+            return response()->api(generate_error("Record marked as OTS Attempt, however it is missing the result"),
+                400);
+        }
+
+        //Clean
+        $notes = Purifier::clean(nl2br($notes));
+        if ($otsResult) {
+            $isOTS = true;
+        }
+
+        //Submit
+        $record = new TrainingRecord();
+        $record->session_date = $sessionDate;
+        $record->position = $position;
+        $record->duration = $duration;
+        $record->num_movements = $numMovements;
+        $record->score = $score;
+        $record->notes = $notes;
+        $record->location = $location;
+        $record->is_ots = $isOTS;
+        $record->solo_granted = $soloGranted;
+        $record->ots_result = $otsResult;
+
+        try {
+            if (!isTest()) {
+                $record->saveOrFail();
+            }
+        } catch (Exception $e) {
+            return response()->api(generate_error("Unable to save record.", 500));
+        }
+
+        return response()->ok();
     }
 
     /**
