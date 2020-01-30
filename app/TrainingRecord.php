@@ -60,4 +60,9 @@ class TrainingRecord extends Model
         //On training record display, search for independent evals (denoted with *) by mapping
         //position to level (APP = S3).
     }
+
+    public function resolveRouteBinding($value)
+    {
+        return $this->where($this->getRouteKeyName(), $value)->first() ?? abort(404);
+    }
 }
