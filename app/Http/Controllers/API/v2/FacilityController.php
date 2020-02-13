@@ -260,22 +260,24 @@ class FacilityController extends APIController
             }
 
             //Boolean - development JWK
-            $jwkdev = $request->input('jwkdev', false);
+            $jwkdev = $request->input('jwkdev', false) == "true";
 
             if ($request->has("ulsV2jwk")) {
                 if ($request->input('ulsV2jwk') != 'X') {
-                    $data = JWKFactory::createOctKey(
+                    $key = JWKFactory::createOctKey(
                         env('ULSV2_SIZE', 512),
                         ['alg' => env('ULSV2_ALG', 'HS256'), 'use' => 'sig']
                     );
                 } else {
-                    $data = "";
+                    $key = "";
                 }
 
                 if (!$jwkdev) {
-                    $facility->uls_jwk = encode_json($data);
+                    $facility->uls_jwk = encode_json($key);
+                    $data["uls_jwk"] = encode_json($key);
                 } else {
-                    $facility->uls_jwk_dev = $data == "" ? $data : encode_json($data);
+                    $facility->uls_jwk_dev = $key == "" ? $key : encode_json($key);
+                    $data["uls_jwk_dev"] = encode_json($key);
                 }
                 $facility->save();
 
@@ -284,18 +286,20 @@ class FacilityController extends APIController
 
             if ($request->has("apiV2jwk")) {
                 if ($request->input('apiV2jwk') != 'X') {
-                    $data = JWKFactory::createOctKey(
+                    $key = JWKFactory::createOctKey(
                         env('APIV2_SIZE', 1024),
                         ['alg' => env('APIV2_ALG', 'HS256'), 'use' => 'sig']
                     );
                 } else {
-                    $data = "";
+                    $key = "";
                 }
 
                 if (!$jwkdev) {
-                    $facility->apiv2_jwk = encode_json($data);
+                    $facility->apiv2_jwk = encode_json($key);
+                    $data["api_jwk"] = encode_json($key);
                 } else {
-                    $facility->apiv2_jwk_dev = $data == "" ? $data : encode_json($data);
+                    $facility->apiv2_jwk_dev = $key == "" ? $key : encode_json($key);
+                    $data["api_jwk_dev"] = encode_json($key);
                 }
                 $facility->save();
 
