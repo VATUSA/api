@@ -7,6 +7,7 @@ use App\ExamResults;
 use App\Helpers\AuthHelper;
 use App\Helpers\CERTHelper;
 use App\Helpers\EmailHelper;
+use App\Helpers\Helper;
 use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
 use App\Promotion;
@@ -72,6 +73,19 @@ class UserController extends APIController
             //Senior Staff Only
             $data['flag_preventStaffAssign'] = null;
         }
+
+        //Add rating_short property
+        $data['rating_short'] = RatingHelper::intToShort($data["rating"]);
+
+        //Is Mentor
+        $data['isMentor'] = $user->roles->where("facility", $user->facility)
+                ->where("role", "MTR")->count() > 0;
+
+        //Has Ins Perms
+        $data['isSupIns'] = $data['rating_short'] === "SUP" &&
+            Role::where("facility", $data['facility'])
+                ->where("cid", $user->cid)
+                ->where("role", "INS")->exists();
 
         return response()->api($data);
     }

@@ -123,12 +123,12 @@ class FacilityController extends APIController
         }
 
         if (\Cache::has("facility.$id.info")) {
-            return response()->api(json_decode(\Cache::get("facility.$id.info"),true));
+            return response()->api(json_decode(\Cache::get("facility.$id.info"), true));
         }
 
         $data['facility'] = [
-            'info' => $facility->toArray(),
-            'roles'     => Role::where('facility', $facility->id)->get()->toArray(),
+            'info'  => $facility->toArray(),
+            'roles' => Role::where('facility', $facility->id)->get()->toArray(),
         ];
         $data['stats']['controllers'] = User::where('facility', $id)->count();
         $data['stats']['pendingTransfers'] = Transfer::where('to', $id)->where(
@@ -260,22 +260,24 @@ class FacilityController extends APIController
             }
 
             //Boolean - development JWK
-            $jwkdev = $request->input('jwkdev', false);
+            $jwkdev = $request->input('jwkdev', false) == "true";
 
             if ($request->has("ulsV2jwk")) {
                 if ($request->input('ulsV2jwk') != 'X') {
-                    $data = JWKFactory::createOctKey(
+                    $key = JWKFactory::createOctKey(
                         env('ULSV2_SIZE', 512),
                         ['alg' => env('ULSV2_ALG', 'HS256'), 'use' => 'sig']
                     );
                 } else {
-                    $data = "";
+                    $key = "";
                 }
 
                 if (!$jwkdev) {
-                    $facility->uls_jwk = encode_json($data);
+                    $facility->uls_jwk = encode_json($key);
+                    $data["uls_jwk"] = encode_json($key);
                 } else {
-                    $facility->uls_jwk_dev = $data == "" ? $data : encode_json($data);
+                    $facility->uls_jwk_dev = $key == "" ? $key : encode_json($key);
+                    $data["uls_jwk_dev"] = encode_json($key);
                 }
                 $facility->save();
 
@@ -284,18 +286,20 @@ class FacilityController extends APIController
 
             if ($request->has("apiV2jwk")) {
                 if ($request->input('apiV2jwk') != 'X') {
-                    $data = JWKFactory::createOctKey(
+                    $key = JWKFactory::createOctKey(
                         env('APIV2_SIZE', 1024),
                         ['alg' => env('APIV2_ALG', 'HS256'), 'use' => 'sig']
                     );
                 } else {
-                    $data = "";
+                    $key = "";
                 }
 
                 if (!$jwkdev) {
-                    $facility->apiv2_jwk = encode_json($data);
+                    $facility->apiv2_jwk = encode_json($key);
+                    $data["api_jwk"] = encode_json($key);
                 } else {
-                    $facility->apiv2_jwk_dev = $data == "" ? $data : encode_json($data);
+                    $facility->apiv2_jwk_dev = $key == "" ? $key : encode_json($key);
+                    $data["api_jwk_dev"] = encode_json($key);
                 }
                 $facility->save();
 
@@ -566,25 +570,44 @@ class FacilityController extends APIController
         if (!$facility || $facility->active != 1) {
             return response()->api(generate_error("Not found"), 404);
         }
-        $roster = $facility->members->toArray();
-        $count = count($roster);
 
         $hasAPIKey = AuthHelper::validApiKeyv2($request->input('apikey', null), $id);
         $isFacStaff = \Auth::check() && RoleHelper::isFacilityStaff(\Auth::user()->cid, \Auth::user()->facility);
         $isSeniorStaff = \Auth::check() && RoleHelper::isSeniorStaff(\Auth::user()->cid, \Auth::user()->facility);
 
-        for ($i = 0; $i < $count; $i++) {
+        $rosterArr = [];
+        $i = 0;
+        $roster = $facility->members;
+        $count = count($roster);
+
+        foreach ($roster as $member) {
+            $rosterArr[$i] = $member;
             if (!$hasAPIKey && !$isFacStaff) {
-                $roster[$i]['flag_broadcastOptedIn'] = null;
-                $roster[$i]['email'] = null;
+                $rosterArr[$i]['flag_broadcastOptedIn'] = null;
+                $rosterArr[$i]['email'] = null;
             }
             if (!$isSeniorStaff) {
                 //Senior Staff Only
-                $roster[$i]['flag_preventStaffAssign'] = null;
+                $rosterArr[$i]['flag_preventStaffAssign'] = null;
             }
+
+
+            //Add rating_short property
+            $rosterArr[$i]['rating_short'] = RatingHelper::intToShort($member->rating);
+
+            //Is Mentor
+            $rosterArr[$i]['isMentor'] = $member->roles->where("facility", $member->facility)
+                ->where("role", "MTR")->count() > 0;
+
+            //Has Ins Perms
+            $rosterArr[$i]['isSupIns'] = $roster[$i]['rating_short'] === "SUP" &&
+                $member->roles->where("facility", $member->facility)
+                    ->where("role", "INS")->count() > 0;
+
+            $i++;
         }
 
-        return response()->api($roster);
+        return response()->api($rosterArr);
     }
 
     /**
@@ -719,14 +742,15 @@ class FacilityController extends APIController
      *                     @SWG\Property(property="fname", type="string", description="First name"),
      *                     @SWG\Property(property="lname", type="string", description="Last name"),
      *                     @SWG\Property(property="email", type="string", description="Email, if authenticated as staff
-                                                           member and/or api key is present."),
-     *                     @SWG\Property(property="reason", type="string", description="Transfer reason; must be authenticated as senior staff."),
+    member and/or api key is present."),
+     *                     @SWG\Property(property="reason", type="string", description="Transfer reason; must be
+     *                                                      authenticated as senior staff."),
      *                     @SWG\Property(property="fromFac", type="array",
      *                         @SWG\Items(
      *                             type="object",
      *                             @SWG\Property(property="id", type="integer", description="Facility ID (ex. ZSE)"),
      *                             @SWG\Property(property="name", type="integer", description="Facility Name (ex.
-                                                                  Seattle ARTCC)")
+    Seattle ARTCC)")
      *                         )
      *                     ),
      *                     @SWG\Property(property="rating", type="string", description="Short string rating (S1, S2)"),
@@ -738,8 +762,8 @@ class FacilityController extends APIController
      *             ),
      *         ),
      *         examples={"application/json":{"status":"OK","transfers":{"id":5606,"cid":1275302,"fname":"Blake",
-               "lname":"Nahin","email":null,"reason":"Only one class B? Too easy. I want something harder, like ZTL.",
-               "rating":"C1","intRating":5,"date":"2014-12-19","fromFac":{"id":"ZSE","name":"Seattle ARTCC"}}}}
+    "lname":"Nahin","email":null,"reason":"Only one class B? Too easy. I want something harder, like ZTL.",
+    "rating":"C1","intRating":5,"date":"2014-12-19","fromFac":{"id":"ZSE","name":"Seattle ARTCC"}}}}
      *     )
      * )
      */
@@ -779,9 +803,9 @@ class FacilityController extends APIController
                 'email'     => (AuthHelper::validApiKeyv2($request->input('apikey',
                         null)) || (\Auth::check() && RoleHelper::isFacilityStaff(\Auth::user()->cid)))
                     ? $transfer->user->email : null,
-                'reason' => (\Auth::check() && RoleHelper::isSeniorStaff(\Auth::user()->cid)) ? $transfer->reason : null,
-                'fromFac' => [
-                    'id' => $transfer->from,
+                'reason'    => (\Auth::check() && RoleHelper::isSeniorStaff(\Auth::user()->cid)) ? $transfer->reason : null,
+                'fromFac'   => [
+                    'id'   => $transfer->from,
                     'name' => $transfer->fromFac->name
                 ],
                 'rating'    => RatingHelper::intToShort($transfer->user->rating),
