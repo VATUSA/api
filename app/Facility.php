@@ -22,7 +22,7 @@ class Facility extends Model
 
     public function members()
     {
-        return $this->hasMany('App\User','facility', 'id');
+        return $this->hasMany('App\User','facility', 'id')->orderBy('lname', 'ASC');
     }
 
     public function atm()
