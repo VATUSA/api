@@ -201,8 +201,9 @@ class SSOController extends Controller
                             //Within last 90 days
                             $t = $transfers->first();
                             $member->addToFacility($t->from);
+                            
                             $trans = new Transfer();
-                            $trans->cid = $user->cid;
+                            $trans->cid = $member->cid;
                             $trans->to = $t->from;
                             $trans->from = "ZZN";
                             $trans->status = 1;
@@ -211,7 +212,7 @@ class SSOController extends Controller
                             $trans->save();
 
                             $log = new Actions();
-                            $log->to = $user->cid;
+                            $log->to = $member->cid;
                             $log->log = "Rejoined division within 90 days, facility set to " . $member->facility;
                             $log->save();
                         } elseif (Transfers::where('cid', $member->cid)->where('actiontext', "Left division")
@@ -224,7 +225,7 @@ class SSOController extends Controller
                             $member->flag_needbasic = 1;
 
                             $trans = new Transfer();
-                            $trans->cid = $user->cid;
+                            $trans->cid = $member->cid;
                             $trans->to = "ZAE";
                             $trans->from = "ZZN";
                             $trans->status = 1;
@@ -233,7 +234,7 @@ class SSOController extends Controller
                             $trans->save();
 
                             $log = new Action();
-                            $log->to = $user->cid;
+                            $log->to = $member->cid;
                             $log->log = "Rejoined division after more than 6 months, facility set to ZAE";
                             $log->save();
                         } else {
@@ -252,7 +253,7 @@ class SSOController extends Controller
                             $trans->save();
 
                             $log = new Action();
-                            $log->to = $user->cid;
+                            $log->to = $member->cid;
                             $log->log = "Rejoined division within 6 months and more than 90 days, facility set to ZAE";
                             $log->save();
                         }
