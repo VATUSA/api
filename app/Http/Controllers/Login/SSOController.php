@@ -180,7 +180,7 @@ class SSOController extends Controller
                         EmailHelper::sendEmail($member->email, "Welcome to VATUSA", "emails.user.join", []);
 
                         $log = new Action();
-                        $log->to = $user->cid;
+                        $log->to = $member->cid;
                         $log->log = "Joined division, facility set to ZAE";
                         $log->save();
                     }
