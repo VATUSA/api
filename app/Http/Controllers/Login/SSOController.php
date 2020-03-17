@@ -211,7 +211,7 @@ class SSOController extends Controller
                             $trans->reason = "Rejoined division";
                             $trans->save();
 
-                            $log = new Actions();
+                            $log = new Action();
                             $log->to = $member->cid;
                             $log->log = "Rejoined division within 90 days, facility set to " . $member->facility;
                             $log->save();
@@ -258,7 +258,7 @@ class SSOController extends Controller
                             $log->save();
                         }
                         // Now let us check to see if they have ever been in a facility.. if not, we need to override the need basic flag.
-                        if (!Transfers::where('cid', $member->cid)->where('to', 'NOT LIKE', 'ZAE')->where('to',
+                        if (!Transfer::where('cid', $member->cid)->where('to', 'NOT LIKE', 'ZAE')->where('to',
                             'NOT LIKE', 'ZZN')->exists()) {
                             $member->flag_needbasic = 1;
                         }
