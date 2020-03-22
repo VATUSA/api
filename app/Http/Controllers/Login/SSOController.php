@@ -215,7 +215,7 @@ class SSOController extends Controller
                             $log->to = $member->cid;
                             $log->log = "Rejoined division within 90 days, facility set to " . $member->facility;
                             $log->save();
-                        } elseif (Transfers::where('cid', $member->cid)->where('actiontext', "Left division")
+                        } elseif (Transfer::where('cid', $member->cid)->where('actiontext', "Left division")
                             ->where('created_at', '<=', Carbon::now()->subMonths(6))
                             ->orderBy('created_at', 'DESC')->count()
                         ) {
