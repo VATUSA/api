@@ -68,7 +68,18 @@ class TrainingController extends Controller
         //Get training record info
         // GET /training/record/8
         if ($this->canView($request, $record)) {
-            return response()->api($record->toArray());
+            return response()->api(array_merge($record->load('facility:id,name')->toArray(), [
+                'instructor' => [
+                    'cid'   => $record->instructor->cid,
+                    'fname' => $record->instructor->fname,
+                    'lname' => $record->instructor->lname,
+                ],
+                'editor'     => ($record->editor) ? [
+                    'cid'   => $record->editor->cid,
+                    'fname' => $record->editor->fname,
+                    'lname' => $record->editor->lname,
+                ] : []
+            ]));
         }
 
         return response()->forbidden();
@@ -120,7 +131,8 @@ class TrainingController extends Controller
         //Get records for a User
         // GET /user/1275302/training/records
         if ($this->canView($request, null, $user)) {
-            return response()->api(TrainingRecord::where('student_id', $user->cid)->get()->toArray());
+            return response()->api(TrainingRecord::where('student_id',
+                $user->cid)->with('facility:id,name')->get()->toArray());
         }
 
         return response()->forbidden();
@@ -170,7 +182,7 @@ class TrainingController extends Controller
         //Get records for a Facility
         // GET /facility/ZSE/training/records
         if ($this->canView($request)) {
-            return response()->api(TrainingRecord::where('facility', $facility->id)->get()->toArray());
+            return response()->api(TrainingRecord::where('facility', $facility->id)->with('facility:id,name')->get()->toArray());
         }
 
         return response()->forbidden();
@@ -220,7 +232,7 @@ class TrainingController extends Controller
         //Get all records #nofilter
         // GET /training/records
         if ($this->canView($request)) {
-            return response()->api(TrainingRecord::all()->toArray());
+            return response()->api(TrainingRecord::with('facility:id,name')->all()->toArray());
         }
 
         return response()->forbidden();
@@ -932,11 +944,10 @@ class TrainingController extends Controller
         TrainingRecord $record = null,
         User $user = null
     ): bool {
-
         $hasApiKey = AuthHelper::validApiKeyv2($request->input('apikey', null));
         $isTrainingStaff = Auth::user() && RoleHelper::isTrainingStaff();
-        $ownsRecord = $record && Auth::user() && $record->student == Auth::user()->cid;
-        $isOwnUser = Auth::user() && $user && $user->cid == Auth::user()->cid;
+        $ownsRecord = $record && Auth::user() && $record->student === Auth::user()->cid;
+        $isOwnUser = Auth::user() && $user && $user->cid === Auth::user()->cid;
 
         return $hasApiKey || $isTrainingStaff || $ownsRecord || $isOwnUser;
     }
