@@ -264,8 +264,9 @@ class SSOController extends Controller
                         }
 
                         $member->flag_homecontroller = 1;
-                        $member->save();
                     }
+
+                    $member->save();
                 }
 
                 return ULSHelper::doHandleLogin($user->id, $return);
