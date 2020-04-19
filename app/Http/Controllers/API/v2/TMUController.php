@@ -290,7 +290,7 @@ class TMUController extends APIController
             $tmuFac->tmuNotices()->save($notice);
         }
 
-        return response()->ok();
+        return response()->ok(['id' => isTest() ? 0 : $notice->id]);
     }
 
     /**
