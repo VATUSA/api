@@ -220,7 +220,7 @@ class TMUController extends APIController
         }
 
         $tmuFac = TMUFacility::find($facility);
-        if (!$tmuFac->exists()) {
+        if (!$tmuFac) {
             return response()->api(generate_error("TMU facility does not exist"), 404);
         }
 
@@ -391,7 +391,7 @@ class TMUController extends APIController
         }
 
         $tmuFac = TMUFacility::find($facility);
-        if (!$tmuFac->exists()) {
+        if (!$tmuFac) {
             return response()->api(generate_error("TMU facility does not exist"), 404);
         }
 
