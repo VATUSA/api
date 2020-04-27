@@ -71,11 +71,11 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     /**
      * @var array
      */
-    public $timestamps = ['created_at'];
+    public $timestamps = ["created_at", "updated_at", "lastactivity", "facility_join"];
     /**
      * @var array
      */
-    protected $hidden = ['password', 'remember_token', "cert_update", "access_token", "refresh_token", "token_expires"];
+    protected $hidden = ["password", "remember_token", "cert_update", "access_token", "refresh_token", "token_expires"];
 
     protected $fillable = ["access_token", "refresh_token", "token_expires"];
 
@@ -86,7 +86,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
      */
     public function getDates()
     {
-        return ['created_at', 'updated_at', 'lastactivity', 'facility_join'];
+        return ["created_at", "updated_at", "lastactivity", "facility_join"];
     }
 
     /**

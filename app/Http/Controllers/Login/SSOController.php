@@ -43,7 +43,7 @@ class SSOController extends Controller
     public function getIndex(Request $request)
     {
         if ($request->has("logout")) {
-            \Auth::logout();
+            Auth::logout();
             if (isset($_SERVER['HTTP_REFERER'])) {
                 $return = $_SERVER['HTTP_REFERER'];
             } else {
@@ -80,7 +80,7 @@ class SSOController extends Controller
             $return = $request->session()->get("return");
             $request->session()->forget("return");
 
-            return ULSHelper::doHandleLogin(\Auth::user()->cid, $return);
+            return ULSHelper::doHandleLogin(Auth::user()->cid, $return);
         }
 
         return $this->sso->redirect($request);
@@ -89,10 +89,10 @@ class SSOController extends Controller
     public function getReturn(Request $request, $token = null)
     {
         $user = $this->sso->validate($request, $token);
-        $isULS = $request->hasAny(['uls', 'ulsv2']);
         if ($user instanceof RedirectResponse) {
             return $user;
         }
+        $isULS = $request->hasAny(['uls', 'ulsv2']);
 
         $return = session("return", env("SSO_RETURN_FORUMS"));
         session()->forget("return");
