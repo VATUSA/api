@@ -106,17 +106,9 @@ class VatsimConnect extends GenericProvider
             }
         }
         $resource = json_decode(json_encode($this->getResourceOwner($token)->toArray()));
-        if (!isset($resource->data, $resource->data->cid)) {
+        if (!isset($resource->data, $resource->data->cid) || $resource->data->oauth->token_valid != true) {
             $request->session()->forget("return");
             $error = "Insufficient user data provided. In order to login, you must allow us to continuously recieve all of your VATSIM data: full name, email, and rating information.
-             Please try again. If this error persists, contact VATUSA6.";
-
-            return $isULS ? response($error, 401) : redirect(env('SSO_RETURN_HOME'))->with('error',
-                $error);
-        }
-        if ($resource->data->oauth->token_valid != true) {
-            $request->session()->forget("return");
-            $error = "Invalid SSO token. In order to login, you must allow us to continuously recieve all of your VATSIM data: full name, email, and rating information.
              Please try again. If this error persists, contact VATUSA6.";
 
             return $isULS ? response($error, 401) : redirect(env('SSO_RETURN_HOME'))->with('error',
