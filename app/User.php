@@ -619,13 +619,10 @@ class User extends Model implements AuthenticatableContract, JWTSubject
                 'refresh_token' => $this->refresh_token,
                 'expires' => $this->token_expires,
             ]);
-
             if ($token->hasExpired()) {
                 $token = VatsimOAuthController::updateToken($token);
             }
 
-            // Can't put it inside the "if token expired"; $this is null there
-            // but anyway Laravel will only update if any changes have been made.
             $this->update([
                 'access_token' => ($token) ? $token->getToken() : null,
                 'refresh_token' => ($token) ? $token->getRefreshToken() : null,

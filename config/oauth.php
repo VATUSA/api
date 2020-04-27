@@ -10,6 +10,11 @@ return [
     'base' => env('VATSIM_OAUTH_BASE', 'https://auth.vatsim.net'),
 
     /*
+     * Redirect URL
+     */
+    'redirect' => env('VATSIM_OAUTH_REDIRECT', 'https://login.vatusa.net/return'),
+
+    /*
      * The consumer key for your organisation (provided by VATSIM)
      */
     'id' => env('VATSIM_OAUTH_CLIENT'),
