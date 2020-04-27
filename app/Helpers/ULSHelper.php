@@ -65,17 +65,21 @@ class ULSHelper
     {
         //require_once(config('sso.forumapi', ''));
         //smfapi_login($cid, 14400);
-        \Auth::loginUsingId($cid);
+        \Auth::loginUsingId($cid, true);
 
-        $token = [
-            "cid"    => $cid,
-            "nlt"    => time() + 7,
-            "return" => $return
-        ];
-        $token = static::base64url_encode(json_encode($token));
-        $signature = static::base64url_encode(hash_hmac("sha512", $token, base64_decode(env("FORUM_SECRET"))));
+        if (!app()->environment('dev')) {
+            $token = [
+                "cid"    => $cid,
+                "nlt"    => time() + 7,
+                "return" => $return
+            ];
+            $token = static::base64url_encode(json_encode($token));
+            $signature = static::base64url_encode(hash_hmac("sha512", $token, base64_decode(env("FORUM_SECRET"))));
 
-        return redirect("https://forums.vatusa.net/api.php?login=1&token=$token&signature=$signature");
+            return redirect("https://forums.vatusa.net/api.php?login=1&token=$token&signature=$signature");
+        }
+
+        return redirect(env('SSO_RETURN_HOME'));
     }
 
     public static function base64url_encode($data, $use_padding = false)
