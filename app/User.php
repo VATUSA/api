@@ -10,6 +10,8 @@ use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Carbon\Carbon;
+use App\Classes\OAuth\VatsimOAuthController;
+use League\OAuth2\Client\Token\AccessToken;
 
 /**
  * Class User
@@ -69,11 +71,13 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     /**
      * @var array
      */
-    public $timestamps = ['created_at'];
+    public $timestamps = ["created_at", "updated_at", "lastactivity", "facility_join"];
     /**
      * @var array
      */
-    protected $hidden = ['password', 'remember_token', "cert_update"];
+    protected $hidden = ["password", "remember_token", "cert_update", "access_token", "refresh_token", "token_expires"];
+
+    protected $fillable = ["access_token", "refresh_token", "token_expires"];
 
     protected $appends = ["promotion_eligible", "transfer_eligible", "roles"];
 
@@ -82,7 +86,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
      */
     public function getDates()
     {
-        return ['created_at', 'updated_at', 'lastactivity', 'facility_join'];
+        return ["created_at", "updated_at", "lastactivity", "facility_join"];
     }
 
     /**
@@ -598,5 +602,34 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     public function getJWTCustomClaims()
     {
         return [];
+    }
+
+    /**
+     * When doing $user->token, return a valid access token or null if none exists
+     *
+     * @return \League\OAuth2\Client\Token\AccessToken
+     * @return null
+     */
+    public function getTokenAttribute()
+    {
+        if ($this->access_token === null) return null;
+        else {
+            $token = new AccessToken([
+                'access_token' => $this->access_token,
+                'refresh_token' => $this->refresh_token,
+                'expires' => $this->token_expires,
+            ]);
+            if ($token->hasExpired()) {
+                $token = VatsimOAuthController::updateToken($token);
+            }
+
+            $this->update([
+                'access_token' => ($token) ? $token->getToken() : null,
+                'refresh_token' => ($token) ? $token->getRefreshToken() : null,
+                'token_expires' => ($token) ? $token->getExpires() : null,
+            ]);
+
+            return $token;
+        }
     }
 }
