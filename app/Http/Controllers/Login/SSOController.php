@@ -92,7 +92,7 @@ class SSOController extends Controller
         if ($user instanceof RedirectResponse) {
             return $user;
         }
-        $isULS = $request->hasAny(['uls', 'ulsv2']);
+        $isULS = $request->session()->has(['uls', 'ulsv2']);
 
         $return = session("return", env("SSO_RETURN_FORUMS"));
         session()->forget("return");
