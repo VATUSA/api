@@ -86,7 +86,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
      */
     public function getDates()
     {
-        return ["created_at", "updated_at", "lastactivity", "facility_join"];
+        return ["created_at", "updated_at"];
     }
 
     /**
