@@ -69,7 +69,7 @@ class ULSHelper
 
         if (!app()->environment('dev')) {
             $token = [
-                "cid"    => $cid,
+                "cid"    => (string) $cid,
                 "nlt"    => time() + 7,
                 "return" => $return
             ];
