@@ -80,7 +80,7 @@ class VatsimConnect extends GenericProvider
     {
         $code = $request->input('code', null);
         $state = $request->input('state', null);
-        $isULS = $request->hasAny(['uls', 'ulsv2']);
+        $isULS = $request->session()->has(['uls', 'ulsv2']);
 
         if (!$code || !$state || $state !== $request->get('oauthstate')) {
             $request->session()->forget("return");
