@@ -71,7 +71,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     /**
      * @var array
      */
-    public $timestamps = ["created_at", "updated_at", "lastactivity", "facility_join"];
+    public $timestamps = ["created_at", "updated_at"];
     /**
      * @var array
      */
