@@ -107,6 +107,7 @@ class VatsimConnect extends GenericProvider
         }
         $resource = json_decode(json_encode($this->getResourceOwner($token)->toArray()));
         if (!isset($resource->data, $resource->data->cid, $resource->data->vatsim,
+                $resource->data->vatsim->rating, $resource->data->vatsim->division,
                 $resource->data->personal, $resource->data->personal->email,
                 $resource->data->personal->name_first, $resource->data->personal->name_last) || $resource->data->oauth->token_valid != true) {
             $request->session()->forget("return");
