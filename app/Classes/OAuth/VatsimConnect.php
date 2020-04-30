@@ -106,7 +106,9 @@ class VatsimConnect extends GenericProvider
             }
         }
         $resource = json_decode(json_encode($this->getResourceOwner($token)->toArray()));
-        if (!isset($resource->data, $resource->data->cid) || $resource->data->oauth->token_valid != true) {
+        if (!isset($resource->data, $resource->data->cid, $resource->data->vatsim,
+                $resource->data->personal, $resource->data->personal->email,
+                $resource->data->personal->name_first, $resource->data->personal->name_last) || $resource->data->oauth->token_valid != true) {
             $request->session()->forget("return");
             $error = "Insufficient user data provided. In order to login, you must allow us to continuously recieve all of your VATSIM data: full name, email, and rating information.
              Please try again. If this error persists, contact VATUSA6.";
