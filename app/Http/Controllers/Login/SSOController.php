@@ -103,6 +103,12 @@ class SSOController extends Controller
 
             return $isULS ? response($error, 403) : redirect(env('SSO_RETURN_HOME'))->with('error', $error);
         }
+        if ($user->vatsim->rating->id < 0) {
+            $error = "Your account has been disabled by VATSIM. This could be because of inactivity or a duplicate account. 
+                Please <a href='https://membership.vatsim.net/'>contact VATSIM Member Services</a> to resolve this issue.";
+
+            return $isULS ? response($error, 403) : redirect(env('SSO_RETURN_HOME'))->with('error', $error);
+        }
 
         // Check if user is registered in forums...
         if (!app()->environment('dev')) {
