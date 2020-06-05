@@ -1,9 +1,41 @@
-version: '2'
+version: '3.8'
+volumes:
+  mysql_data:
+  mysql_log:
+
+secrets:
+  api.env:
+    file: /home/vatusane/api/.env.devel
+  mysql_root_password:
+    file: /home/vatusane/api/.mysql_root_password
+
 services:
   api:
     build:
       context: .
       dockerfile: Dockerfile
     image: vatusa/api
+    secrets:
+      - api.env
+    environment:
+      - VIRTUAL_HOST=api.vatusa.devel
+  percona:
+    image: percona:ps-8
+    volumes:
+    - mysql_data:/var/lib/mysql
+    - mysql_log:/var/log/mysql
+    secrets:
+      - mysql_root_password
+    environment:
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/mysql_root_password
+  redis:
+    image: redis:alpine
+  ngx:
+    image: jwilder/nginx-proxy:alpine
     ports:
-    - '5002:80'
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - /etc/nginx/certs:/etc/nginx/certs
+      - /etc/nginx/dhparam:/etc/nginx/dhparam
