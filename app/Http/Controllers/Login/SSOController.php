@@ -172,10 +172,10 @@ class SSOController extends Controller
             if (!$member->flag_homecontroller && $user->vatsim->division->id == "USA") {
                 //User is rejoining
                 $transfers = Transfer::where('cid', $member->cid)->where('actiontext', "Left division")
-                    ->where('created_at', '>=', Carbon::now()->subDays(90))
+                    ->where('created_at', '>=', Carbon::now()->subHours(48))
                     ->orderBy('created_at', 'DESC');
                 if ($transfers->count()) {
-                    //Within last 90 days
+                    //Within last 48 hours
                     $t = $transfers->first();
                     $member->addToFacility($t->from);
 
@@ -190,7 +190,7 @@ class SSOController extends Controller
 
                     $log = new Action();
                     $log->to = $member->cid;
-                    $log->log = "Rejoined division within 90 days, facility set to " . $member->facility;
+                    $log->log = "Rejoined division within 48 hours, facility set to " . $member->facility;
                     $log->save();
                 } elseif (Transfer::where('cid', $member->cid)->where('actiontext', "Left division")
                     ->where('created_at', '<=', Carbon::now()->subMonths(6))
@@ -215,7 +215,7 @@ class SSOController extends Controller
                     $log->log = "Rejoined division after more than 6 months, facility set to ZAE";
                     $log->save();
                 } else {
-                    //Within last 6 months but more than 90 days (or xfr doesn't exist for some reason)
+                    //Within last 6 months but more than 48 hours (or xfr doesn't exist for some reason)
                     $member->facility = "ZAE";
                     $member->facility_join = Carbon::now();
                     $member->flag_needbasic = !$transfers->exists();
@@ -231,7 +231,7 @@ class SSOController extends Controller
 
                     $log = new Action();
                     $log->to = $member->cid;
-                    $log->log = "Rejoined division within 6 months and more than 90 days, facility set to ZAE";
+                    $log->log = "Rejoined division within 6 months and more than 48 hours, facility set to ZAE";
                     $log->save();
                 }
                 // Now let us check to see if they have ever been in a facility.. if not, we need to override the need basic flag.
