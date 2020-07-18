@@ -178,6 +178,7 @@ class SSOController extends Controller
                     //Within last 48 hours
                     $t = $transfers->first();
                     $member->addToFacility($t->from);
+                    $member->flag_needbasic = 0;
 
                     $trans = new Transfer();
                     $trans->cid = $member->cid;
@@ -193,10 +194,29 @@ class SSOController extends Controller
                     $log->log = "Rejoined division within 48 hours, facility set to " . $member->facility;
                     $log->save();
                 } elseif (Transfer::where('cid', $member->cid)->where('actiontext', "Left division")
-                    ->where('created_at', '<=', Carbon::now()->subMonths(6))
+                    ->where('created_at', '>=', Carbon::now()->subMonths(6))
                     ->orderBy('created_at', 'DESC')->count()
                 ) {
-                    //More than 6 months ago
+                    //Within last 6 months but more than 48 hours
+                    $member->facility = "ZAE";
+                    $member->facility_join = Carbon::now();
+                    $member->flag_needbasic = 0;
+
+                    $trans = new Transfer();
+                    $trans->cid = $member->cid;
+                    $trans->to = "ZAE";
+                    $trans->from = "ZZN";
+                    $trans->status = 1;
+                    $trans->actiontext = "Rejoined division";
+                    $trans->reason = "Rejoined division";
+                    $trans->save();
+
+                    $log = new Action();
+                    $log->to = $member->cid;
+                    $log->log = "Rejoined division within 6 months and more than 48 hours, facility set to ZAE";
+                    $log->save();
+                } else {
+                    //More than 6 months ago (or xfr doesn't exist for some reason)
                     $member->facility = "ZAE";
                     $member->facility_join = Carbon::now();
                     $member->flag_needbasic = 1;
@@ -213,25 +233,6 @@ class SSOController extends Controller
                     $log = new Action();
                     $log->to = $member->cid;
                     $log->log = "Rejoined division after more than 6 months, facility set to ZAE";
-                    $log->save();
-                } else {
-                    //Within last 6 months but more than 48 hours (or xfr doesn't exist for some reason)
-                    $member->facility = "ZAE";
-                    $member->facility_join = Carbon::now();
-                    $member->flag_needbasic = !$transfers->exists();
-
-                    $trans = new Transfer();
-                    $trans->cid = $member->cid;
-                    $trans->to = "ZAE";
-                    $trans->from = "ZZN";
-                    $trans->status = 1;
-                    $trans->actiontext = "Rejoined division";
-                    $trans->reason = "Rejoined division";
-                    $trans->save();
-
-                    $log = new Action();
-                    $log->to = $member->cid;
-                    $log->log = "Rejoined division within 6 months and more than 48 hours, facility set to ZAE";
                     $log->save();
                 }
                 // Now let us check to see if they have ever been in a facility.. if not, we need to override the need basic flag.
