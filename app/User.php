@@ -105,6 +105,11 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         return $this->belongsTo(Facility::class, 'facility')->first();
     }
 
+    public function visits()
+    {
+        return $this->hasMany(Visit::class, 'cid', 'cid');
+    }
+
     /**
      * @return bool
      */
