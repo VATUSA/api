@@ -310,10 +310,10 @@ class User extends Model implements AuthenticatableContract, JWTSubject
 
         $this->facility_join = Carbon::now();
         $this->facility = $newfac;
-        if ($this->rating == RatingHelper::shortToInt(("I1")) && $newfac == "ZAE") {
+        if ($this->rating == RatingHelper::shortToInt("I1") && $newfac == "ZAE") {
             $demotion = new Promotion();
             $demotion->cid = $this->cid;
-            $demotion->grantor = 0; // automated 
+            $demotion->grantor = 0; // automated
             $demotion->from = RatingHelper::shortToInt("I1");
             $demotion->to = RatingHelper::shortToInt("C1");
             $demotion->save();
