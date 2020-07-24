@@ -310,14 +310,27 @@ class User extends Model implements AuthenticatableContract, JWTSubject
 
         $this->facility_join = Carbon::now();
         $this->facility = $newfac;
+
+        /**
+         * Demote I1 on transfer to ZAE to C1/C3 based on their previous rating.
+         */
         if ($this->rating == RatingHelper::shortToInt("I1") && $newfac == "ZAE") {
-            $demotion = new Promotion();
-            $demotion->cid = $this->cid;
-            $demotion->grantor = 0; // automated
-            $demotion->from = RatingHelper::shortToInt("I1");
-            $demotion->to = RatingHelper::shortToInt("C1");
-            $demotion->save();
-            log_action($this->cid, "Demoted to C1 on transfer to ZAE");
+            $dm = new Promotion();
+            $pm_hist = $dm->where('cid', $this->cid)
+                ->where('to', RatingHelper::shortToInt("I1"))
+                ->orderBy('id', 'desc')->limit(1)->get();
+            // visiting controllers have no promotion record
+            if ($pm_hist->count() > 0) {
+                $original_rating = $pm_hist[0]->from;
+                $dm->cid = $this->cid;
+                $dm->grantor = 0; // automated
+                $dm->from = RatingHelper::shortToInt("I1");
+                $dm->to = $original_rating;
+                $dm->save();
+                CERTHelper::changeRating($this->cid, $original_rating, false);
+                $this->rating = $original_rating; // save within this function, not using CERTHelper
+                log_action($this->cid, "Demoted to " .RatingHelper::intToShort($original_rating). " on transfer to ZAE");
+            }
         }
         $this->save();
 
