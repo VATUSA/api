@@ -1,5 +1,6 @@
 <?php namespace App;
 
+use App\Helpers\CERTHelper;
 use App\Helpers\EmailHelper;
 use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
@@ -318,10 +319,10 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             $dm = new Promotion();
             $pm_hist = $dm->where('cid', $this->cid)
                 ->where('to', RatingHelper::shortToInt("I1"))
-                ->orderBy('id', 'desc')->limit(1)->get();
+                ->orderBy('id', 'desc')->first();
             // visiting controllers have no promotion record
-            if ($pm_hist->count() > 0) {
-                $original_rating = $pm_hist[0]->from;
+            if ($pm_hist != null) {
+                $original_rating = $pm_hist->from;
                 $dm->cid = $this->cid;
                 $dm->grantor = 0; // automated
                 $dm->from = RatingHelper::shortToInt("I1");
@@ -599,6 +600,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
 
         return false;
     }
+
     public function getRolesAttribute()
     {
         return Role::where('cid', $this->cid)->get();
