@@ -24,7 +24,7 @@ class CreateTrainingRecordsTable extends Migration
             $table->string('facility_id');
             $table->string('position');
             $table->time('duration');
-            $table->integer('num_movements')->nullable();
+            $table->integer('movements')->nullable();
             $table->integer('score')->nullable();
             $table->text('notes');
 
