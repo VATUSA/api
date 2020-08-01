@@ -482,7 +482,7 @@ class TrainingController extends Controller
     (XYZ_APP, ZZZ_CTR)"),
      * @SWG\Parameter(name="duration", in="formData", type="string", required=true, description="Session Duration,
     HH:mm"),
-     * @SWG\Parameter(name="num_movements", in="formData", type="integer", required=false, description="Number of
+     * @SWG\Parameter(name="movements", in="formData", type="integer", required=false, description="Number of
     Movements"),
      * @SWG\Parameter(name="score", in="formData", type="integer", required=false, description="Session Score, 1-5"),
      * @SWG\Parameter(name="notes", in="formData", type="string", required=true, description="Session Notes"),
@@ -547,7 +547,7 @@ class TrainingController extends Controller
         $sessionDate = $request->input("session_date", null);
         $position = $request->input("position", null);
         $duration = $request->input("duration", null);
-        $numMovements = $request->input("num_movements", null);
+        $numMovements = $request->input("movements", null);
         $score = $request->input("score", null);
         $notes = $request->input("notes", null);
         $location = $request->input("location", null);
@@ -615,7 +615,7 @@ class TrainingController extends Controller
         $record->facility_id = $facility;
         $record->position = $position;
         $record->duration = $duration;
-        $record->num_movements = $numMovements;
+        $record->movements = $numMovements;
         $record->score = $score;
         $record->notes = $notes;
         $record->location = $location;
@@ -694,8 +694,8 @@ class TrainingController extends Controller
      * @SWG\Parameter(name="session_date", in="formData", type="string", description="Session Date, YY-mm-dd HH:mm"),
      * @SWG\Parameter(name="position", in="formData", type="string", description="Position ID
     (XYZ_APP, ZZZ_CTR)"),
-     * @SWG\Parameter(name="duration", in="formData", type="string", description="Session Dueation, HH:mm"),
-     * @SWG\Parameter(name="num_movements", in="formData", type="integer", description="Number of Movements"),
+     * @SWG\Parameter(name="duration", in="formData", type="string", description="Session Duration, HH:mm"),
+     * @SWG\Parameter(name="movements", in="formData", type="integer", description="Number of Movements"),
      * @SWG\Parameter(name="score", in="formData", type="integer", description="Session Score, 1-5"),
      * @SWG\Parameter(name="notes", in="formData", type="string", description="Session Notes"),
      * @SWG\Parameter(name="location", in="formData", type="integer", description="Session Location (0 = Classroom, 1 =
@@ -757,9 +757,9 @@ class TrainingController extends Controller
         if (!$duration) {
             $duration = $record->duration;
         }
-        $numMovements = $request->input("num_movements", $record->num_movements);
+        $numMovements = $request->input("movements", $record->movements);
         if (!$numMovements) {
-            $numMovements = $record->num_movements;
+            $numMovements = $record->movements;
         }
         $score = $request->input("score", $record->score);
         if (!$score) {
@@ -797,7 +797,7 @@ class TrainingController extends Controller
         if ($score && (!is_numeric($score) || !in_array(intval($score), [1, 2, 3, 4, 5]))) {
             return response()->api(generate_error("Invalid score, must be null or an integer and between 1-5"), 400);
         }
-        if (!preg_match("/^([A-Z0-9]{2,3})_(TWR|APP|CTR)$/", $position)) {
+        if (!preg_match("/^([A-Z0-9]{2,3})_(DEL|GND|TWR|APP|CTR)$/", $position)) {
             return response()->api(generate_error("Invalid position."), 400);
         }
         if (!in_array(intval($location), [0, 1, 2])) {
@@ -833,11 +833,10 @@ class TrainingController extends Controller
         }
 
         //Submit
-        $record = new TrainingRecord();
         $record->session_date = $sessionDate;
         $record->position = $position;
         $record->duration = $duration;
-        $record->num_movements = $numMovements;
+        $record->movements = $numMovements;
         $record->score = $score;
         $record->notes = $notes;
         $record->location = $location;

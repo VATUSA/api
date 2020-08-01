@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  *     @SWG\Property(property="facility_id", type="string", description="Facility ID (ex. ZSE)"),
  *     @SWG\Property(property="position", type="string", description="Position worked/trained on (ex. SEA_APP)"),
  *     @SWG\Property(property="duration", type="string", description="Duration of session, HH:MM"),
- *     @SWG\Property(property="num_movements", type="integer", description="Number of aircraft seen"),
+ *     @SWG\Property(property="movements", type="integer", description="Number of aircraft seen"),
  *     @SWG\Property(property="score", type="integer", description="Overall score/rating out of 5"),
  *     @SWG\Property(property="notes", type="string", description="Training notes content"),
  *     @SWG\Property(property="location", type="integer", description="0 = Classroom; 1 = Live; 2 = Sweatbox"),
