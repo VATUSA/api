@@ -182,7 +182,8 @@ class TrainingController extends Controller
         //Get records for a Facility
         // GET /facility/ZSE/training/records
         if ($this->canView($request)) {
-            return response()->api(TrainingRecord::where('facility', $facility->id)->with('facility:id,name')->get()->toArray());
+            return response()->api(TrainingRecord::where('facility',
+                $facility->id)->with('facility:id,name')->get()->toArray());
         }
 
         return response()->forbidden();
@@ -540,12 +541,18 @@ class TrainingController extends Controller
         //Submit new record
         // POST /user/1275302/training/record
         // Return training record id... resp()->ok(['id' => 19])
+        if (!$this->canCreate($request)) {
+            return response()->forbidden();
+        }
 
         //Input Data
         $studentId = $user->cid;
         $instructorId = $request->input("instructor_id", null);
         $sessionDate = $request->input("session_date", null);
         $position = $request->input("position", null);
+        if ($position) {
+            $position = strtoupper($position);
+        }
         $duration = $request->input("duration", null);
         $numMovements = $request->input("movements", null);
         $score = $request->input("score", null);
@@ -556,13 +563,17 @@ class TrainingController extends Controller
         $soloGranted = $request->input("solo_granted", false);
         $otsResult = $request->input("ots_result", null);
 
-        if (Auth::check()) {
-            //Authenticated
-            $facility = Auth::user()->facility;
+        if (RoleHelper::isVATUSAStaff() && $request->input('facility', null)) {
+            $facility = $request->input('facility');
         } else {
-            //Use API key.
-            $facility = Facility::where('apikey', $request->apikey)
-                ->orWhere('api_sandbox_key', $request->apikey)->first()->id;
+            if (Auth::check()) {
+                //Authenticated
+                $facility = Auth::user()->facility;
+            } else {
+                //Use API key.
+                $facility = Facility::where('apikey', $request->apikey)
+                    ->orWhere('api_sandbox_key', $request->apikey)->first()->id;
+            }
         }
 
         //Validate
@@ -576,7 +587,7 @@ class TrainingController extends Controller
         if ($score && (!is_numeric($score) || !in_array(intval($score), [1, 2, 3, 4, 5]))) {
             return response()->api(generate_error("Invalid score, must be null or an integer and between 1-5"), 400);
         }
-        if (!preg_match("/^([A-Z0-9]{2,3})_(TWR|APP|CTR)$/", $position)) {
+        if (!preg_match("/^([A-Z0-9]{2,3})_(DEL|GND|TWR|APP|CTR)$/", $position)) {
             return response()->api(generate_error("Invalid position."), 400);
         }
         if (!in_array(intval($location), [0, 1, 2])) {
@@ -749,7 +760,7 @@ class TrainingController extends Controller
         if (!$sessionDate) {
             $sessionDate = $record->session_date;
         }
-        $position = $request->input("position", $record->position);
+        $position = strtoupper($request->input("position", $record->position));
         if (!$position) {
             $position = $record->position;
         }
@@ -949,5 +960,13 @@ class TrainingController extends Controller
         $isOwnUser = Auth::user() && $user && $user->cid === Auth::user()->cid;
 
         return $hasApiKey || $isTrainingStaff || $ownsRecord || $isOwnUser;
+    }
+
+    private function canCreate(Request $request)
+    {
+        $hasApiKey = AuthHelper::validApiKeyv2($request->input('apikey', null));
+        $isTrainingStaff = Auth::user() && RoleHelper::isTrainingStaff();
+
+        return $hasApiKey || $isTrainingStaff;
     }
 }
