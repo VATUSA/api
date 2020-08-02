@@ -489,14 +489,11 @@ class TrainingController extends Controller
      * @SWG\Parameter(name="notes", in="formData", type="string", required=true, description="Session Notes"),
      * @SWG\Parameter(name="location", in="formData", type="integer", required=true, description="Session Location (0 =
     Classroom, 1 = Live, 2 = Sweatbox)"),
-     * @SWG\Parameter(name="is_ots", in="formData", type="boolean", required=false, description="Session is OTS
-    Attempt"),
+     * @SWG\Parameter(name="ots_status", in="formData", type="boolean", required=false, description="0 = Not OTS, 1 = OTS Pass, 2 = OTS Fail, 3 = OTS Recommended"),
      * @SWG\Parameter(name="is_cbt", in="formData", type="boolean", required=false, description="Record is a CBT
     Completion"),
      * @SWG\Parameter(name="solo_granted", in="formData", type="boolean", required=false, description="Solo endorsement
     was granted"),
-     * @SWG\Parameter(name="ots_result", in="formData", type="boolean", required=false, description="OTS Result: true =
-    pass. Required if is_ots is true."),
      * @SWG\Response(
      *         response="400",
      *         description="Malformed request.",
@@ -558,10 +555,9 @@ class TrainingController extends Controller
         $score = $request->input("score", null);
         $notes = $request->input("notes", null);
         $location = $request->input("location", null);
-        $isOTS = $request->input("is_ots", false);
+        $otsStatus = $request->input("ots_status", 0);
         $isCBT = $request->input("is_cbt", false);
         $soloGranted = $request->input("solo_granted", false);
-        $otsResult = $request->input("ots_result", null);
 
         if (RoleHelper::isVATUSAStaff() && $request->input('facility', null)) {
             $facility = $request->input('facility');
@@ -607,16 +603,8 @@ class TrainingController extends Controller
         }
         $duration = $duration->format("H:i:s");
 
-        if ($isOTS && is_null($otsResult)) {
-            return response()->api(generate_error("Record marked as OTS Attempt, however it is missing the result"),
-                400);
-        }
-
         //Clean
         $notes = Purifier::clean($notes);
-        if ($otsResult) {
-            $isOTS = true;
-        }
 
         //Submit
         $record = new TrainingRecord();
@@ -630,10 +618,9 @@ class TrainingController extends Controller
         $record->score = $score;
         $record->notes = $notes;
         $record->location = $location;
-        $record->is_ots = $isOTS;
+        $record->ots_status = $otsStatus;
         $record->is_cbt = $isCBT;
         $record->solo_granted = $soloGranted;
-        $record->ots_result = $otsResult;
 
         try {
             if (!isTest()) {
@@ -711,10 +698,9 @@ class TrainingController extends Controller
      * @SWG\Parameter(name="notes", in="formData", type="string", description="Session Notes"),
      * @SWG\Parameter(name="location", in="formData", type="integer", description="Session Location (0 = Classroom, 1 =
     Live, 2 = Sweatbox)"),
-     * @SWG\Parameter(name="is_ots", in="formData", type="boolean", description="Session is OTS Attempt"),
+     * @SWG\Parameter(name="ots_status", in="formData", type="boolean", required=false, description="0 = Not OTS, 1 = OTS Pass, 2 = OTS Fail, 3 = OTS Recommended"),
      * @SWG\Parameter(name="solo_granted", in="formData", type="boolean", description="Solo endorsement was granted"),
-     * @SWG\Parameter(name="ots_result", in="formData", type="boolean", description="OTS Result: true = pass."),
-     * @SWG\Response(
+      * @SWG\Response(
      *         response="400",
      *         description="Malformed request.",
      *         @SWG\Schema(ref="#/definitions/error"),
@@ -784,17 +770,13 @@ class TrainingController extends Controller
         if (!$location) {
             $location = $record->location;
         }
-        $isOTS = $request->input("is_ots", $record->is_ots);
-        if ($isOTS == "") {
-            $isOTS = $record->is_ots;
+        $otsStatus = $request->input("ots_status", $record->ots_status);
+        if (!$otsStatus) {
+            $isOTS = $record->ots_status;
         }
         $soloGranted = $request->input("solo_granted", $record->solo_granted);
         if ($soloGranted == "") {
             $soloGranted = $record->solo_granted;
-        }
-        $otsResult = $request->input("ots_result", $record->ots_result);
-        if ($otsResult == "") {
-            $otsResult = $record->ots_result;
         }
 
         if (!$this->canModify($request, $record)) {
@@ -832,16 +814,8 @@ class TrainingController extends Controller
         }
         $duration = $duration->format("H:i:s");
 
-        if ($isOTS && is_null($otsResult)) {
-            return response()->api(generate_error("Record marked as OTS Attempt, however it is missing the result"),
-                400);
-        }
-
         //Clean
         $notes = Purifier::clean(nl2br($notes));
-        if ($otsResult) {
-            $isOTS = true;
-        }
 
         //Submit
         $record->session_date = $sessionDate;
@@ -851,9 +825,8 @@ class TrainingController extends Controller
         $record->score = $score;
         $record->notes = $notes;
         $record->location = $location;
-        $record->is_ots = $isOTS;
+        $record->ots_status = $otsStatus;
         $record->solo_granted = $soloGranted;
-        $record->ots_result = $otsResult;
 
         try {
             if (!isTest()) {
