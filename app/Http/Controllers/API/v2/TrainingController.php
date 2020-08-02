@@ -538,13 +538,16 @@ class TrainingController extends Controller
         //Submit new record
         // POST /user/1275302/training/record
         // Return training record id... resp()->ok(['id' => 19])
-        if (!$this->canCreate($request)) {
+        if (!$this->canCreate($request, $user)) {
             return response()->forbidden();
         }
 
         //Input Data
         $studentId = $user->cid;
         $instructorId = $request->input("instructor_id", null);
+        if(Auth::check() && (!$instructorId || ($instructorId && !RoleHelper::isSeniorStaff()))) {
+            $instructorId = Auth::user()->cid;
+        }
         $sessionDate = $request->input("session_date", null);
         $position = $request->input("position", null);
         if ($position) {
@@ -909,8 +912,9 @@ class TrainingController extends Controller
         $hasApiKey = AuthHelper::validApiKeyv2($request->input('apikey', null), $record->facility->id);
         $isSeniorStaff = Auth::user() && RoleHelper::isSeniorStaff(Auth::user()->cid, Auth::user()->facility, true);
         $ownsRecord = $record && Auth::user() && $record->instructor_id == Auth::user()->cid;
+        $notOwn = Auth::user() && $record->cid !== Auth::user()->cid; //No one can modify their own record!
 
-        return $hasApiKey || $isSeniorStaff || $ownsRecord;
+        return $notOwn && ($hasApiKey || $isSeniorStaff || $ownsRecord);
     }
 
     /**
@@ -935,11 +939,12 @@ class TrainingController extends Controller
         return $hasApiKey || $isTrainingStaff || $ownsRecord || $isOwnUser;
     }
 
-    private function canCreate(Request $request)
+    private function canCreate(Request $request, User $user)
     {
         $hasApiKey = AuthHelper::validApiKeyv2($request->input('apikey', null));
         $isTrainingStaff = Auth::user() && RoleHelper::isTrainingStaff();
+        $notOwn = Auth::user() && $user->cid !== Auth::user()->cid; //No one can add their own record!
 
-        return $hasApiKey || $isTrainingStaff;
+        return $notOwn && ($hasApiKey || $isTrainingStaff);
     }
 }
