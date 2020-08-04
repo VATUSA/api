@@ -489,7 +489,8 @@ class TrainingController extends Controller
      * @SWG\Parameter(name="notes", in="formData", type="string", required=true, description="Session Notes"),
      * @SWG\Parameter(name="location", in="formData", type="integer", required=true, description="Session Location (0 =
     Classroom, 1 = Live, 2 = Sweatbox)"),
-     * @SWG\Parameter(name="ots_status", in="formData", type="boolean", required=false, description="0 = Not OTS, 1 = OTS Pass, 2 = OTS Fail, 3 = OTS Recommended"),
+     * @SWG\Parameter(name="ots_status", in="formData", type="boolean", required=false, description="0 = Not OTS, 1 =
+                                         OTS Pass, 2 = OTS Fail, 3 = OTS Recommended"),
      * @SWG\Parameter(name="is_cbt", in="formData", type="boolean", required=false, description="Record is a CBT
     Completion"),
      * @SWG\Parameter(name="solo_granted", in="formData", type="boolean", required=false, description="Solo endorsement
@@ -545,7 +546,7 @@ class TrainingController extends Controller
         //Input Data
         $studentId = $user->cid;
         $instructorId = $request->input("instructor_id", null);
-        if(Auth::check() && (!$instructorId || ($instructorId && !RoleHelper::isSeniorStaff()))) {
+        if (Auth::check() && (!$instructorId || ($instructorId && !RoleHelper::isSeniorStaff()))) {
             $instructorId = Auth::user()->cid;
         }
         $sessionDate = $request->input("session_date", null);
@@ -701,9 +702,10 @@ class TrainingController extends Controller
      * @SWG\Parameter(name="notes", in="formData", type="string", description="Session Notes"),
      * @SWG\Parameter(name="location", in="formData", type="integer", description="Session Location (0 = Classroom, 1 =
     Live, 2 = Sweatbox)"),
-     * @SWG\Parameter(name="ots_status", in="formData", type="boolean", required=false, description="0 = Not OTS, 1 = OTS Pass, 2 = OTS Fail, 3 = OTS Recommended"),
+     * @SWG\Parameter(name="ots_status", in="formData", type="boolean", required=false, description="0 = Not OTS, 1 =
+                                         OTS Pass, 2 = OTS Fail, 3 = OTS Recommended"),
      * @SWG\Parameter(name="solo_granted", in="formData", type="boolean", description="Solo endorsement was granted"),
-      * @SWG\Response(
+     * @SWG\Response(
      *         response="400",
      *         description="Malformed request.",
      *         @SWG\Schema(ref="#/definitions/error"),
@@ -744,6 +746,15 @@ class TrainingController extends Controller
         //Owner instructor and senior staff
         //PUT /training/record/8
 
+        if (!$this->canModify($request, $record)) {
+            return response()->forbidden();
+        }
+
+        if (in_array($record->ots_status, [1, 2])) {
+            return response()->api(generate_error("Unable to edit record because it is an OTS exam. Please contact VATUSA3 or 13 for assistance."),
+                500);
+        }
+
         //Input Data
         $sessionDate = $request->input("session_date", $record->session_date);
         if (!$sessionDate) {
@@ -780,10 +791,6 @@ class TrainingController extends Controller
         $soloGranted = $request->input("solo_granted", $record->solo_granted);
         if ($soloGranted == "") {
             $soloGranted = $record->solo_granted;
-        }
-
-        if (!$this->canModify($request, $record)) {
-            return response()->forbidden();
         }
 
         //Validate
@@ -887,6 +894,10 @@ class TrainingController extends Controller
         //DELETE /training/record/8
 
         if ($this->canModify($request, $record)) {
+            if (in_array($record->ots_status, [1, 2])) {
+                return response()->api(generate_error("Unable to delete record because it is an OTS exam. Please contact VATUSA3 or 13 for assistance."),
+                    500);
+            }
             try {
                 $record->delete();
             } catch (Exception $e) {
@@ -912,7 +923,7 @@ class TrainingController extends Controller
         $hasApiKey = AuthHelper::validApiKeyv2($request->input('apikey', null), $record->facility->id);
         $isSeniorStaff = Auth::user() && RoleHelper::isSeniorStaff(Auth::user()->cid, Auth::user()->facility, true);
         $ownsRecord = $record && Auth::user() && $record->instructor_id == Auth::user()->cid;
-        $notOwn = Auth::user() && $record->cid !== Auth::user()->cid; //No one can modify their own record!
+        $notOwn = Auth::user() && $record->student_id !== Auth::user()->cid; //No one can modify their own record!
 
         return $notOwn && ($hasApiKey || $isSeniorStaff || $ownsRecord);
     }
