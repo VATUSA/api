@@ -41,20 +41,18 @@ class OTSEval extends Model
         return $this->belongsTo(User::class, 'instructor_id', 'cid');
     }
 
-    public function rating()
+    public function facility()
     {
-        return $this->belongsTo(Rating::class);
+        return $this->belongsTo(Facility::class);
     }
 
-    public function getContent()
+    public function form()
     {
-        //TODO might need more here
-        try {
-            $content = File::get(storage_path('app/otsEvals/' . $this->filename . '.json'));
-        } catch (FileNotFoundException $e) {
-            $content = null;
-        }
+        return $this->belongsTo(OTSEvalForm::class);
+    }
 
-        return $content;
+    public function results()
+    {
+        return $this->hasMany(OTSEvalIndResult::class);
     }
 }

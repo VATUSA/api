@@ -52,6 +52,6 @@ class CreateOtsEvalsForeignKeys extends Migration
      */
     public function down()
     {
-        //
+        Schema::disableForeignKeyConstraints();
     }
 }

@@ -29,6 +29,7 @@ class CreateOtsEvalsFormsTable extends Migration
      */
     public function down()
     {
+        Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('ots_evals_forms');
     }
 }
