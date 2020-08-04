@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateOtsEvalsTable extends Migration
+class CreateOtsEvalsPerfCatsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,15 +13,11 @@ class CreateOtsEvalsTable extends Migration
      */
     public function up()
     {
-        Schema::create('ots_evals', function (Blueprint $table) {
+        Schema::create('ots_evals_perf_cats', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('training_record_id')->nullable();
-            $table->integer('student_id');
-            $table->integer('instructor_id');
-            $table->string('facility_id');
+            $table->string('label');
             $table->unsignedInteger('form_id');
-            $table->text('notes');
-            $table->boolean('result'); // 0 = Fail, 1 = Pass
+            $table->integer('order');
 
             $table->timestamps();
         });
@@ -34,6 +30,6 @@ class CreateOtsEvalsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('ots_evals');
+        Schema::dropIfExists('ots_evals_perf_cats');
     }
 }
