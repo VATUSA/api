@@ -30,10 +30,13 @@ class CreateTrainingRecordsTable extends Migration
 
             $table->smallInteger('location'); // 0 = Classroom, 1 = Live, 2 = Sweatbox
             $table->smallInteger('ots_status'); // 0 = Not OTS, 1 = OTS Pass, 2 = OTS Fail, 3 = OTS Recommended
+            $table->integer('ots_eval_id')->nullable();
+
             $table->boolean('is_cbt'); //CBT Completion - Auto
             $table->boolean('solo_granted');
 
             $table->integer('modified_by')->nullable();
+
             $table->timestamps();
         });
     }
