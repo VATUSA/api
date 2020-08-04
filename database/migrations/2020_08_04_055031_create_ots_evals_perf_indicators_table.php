@@ -21,6 +21,7 @@ class CreateOtsEvalsPerfIndicatorsTable extends Migration
             $table->boolean('is_header');
             $table->boolean('is_commendable')->default(1); // 1 = Only Sat/Unsat
             $table->boolean('is_required')->default(1); // 1 = Only Sat/Unsat
+            $table->integer("order");
 
             $table->timestamps();
         });
@@ -33,6 +34,7 @@ class CreateOtsEvalsPerfIndicatorsTable extends Migration
      */
     public function down()
     {
+        Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('ots_evals_perf_indicators');
     }
 }
