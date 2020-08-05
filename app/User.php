@@ -73,7 +73,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     /**
      * @var array
      */
-    protected $hidden = ["password", "remember_token", "cert_update", "access_token", "refresh_token", "token_expires"];
+    protected $hidden = ["password", "remember_token", "cert_update", "access_token", "refresh_token", "token_expires", "discord_id"];
 
     protected $fillable = ["access_token", "refresh_token", "token_expires"];
 
