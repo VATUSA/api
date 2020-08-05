@@ -487,7 +487,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         }
 
         // S1-S3 within 90 check
-        $promotion = Promotion::where('cid', $this->cid)->where("to", "<=", RatingHelper::shortToInt("S3"))
+        $promotion = Promotion::where('cid', $this->cid)->where("to", "<=", RatingHelper::shortToInt("C1"))
             ->where('created_at', '>=', \DB::raw('DATE(NOW() - INTERVAL 90 DAY)'))->first();
 
         if ($promotion == null) {
