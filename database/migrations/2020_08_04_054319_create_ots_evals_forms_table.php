@@ -15,9 +15,13 @@ class CreateOtsEvalsFormsTable extends Migration
     {
         Schema::create('ots_evals_forms', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('name');
+            $table->string('name')->unique();
             $table->integer('rating_id');
-            $table->text('instructor_notes');
+            $table->string('position');
+            $table->text('instructor_notes')->nullable();
+            $table->boolean('is_statement')->default(0);
+            $table->text('description');
+            $table->boolean('active')->default(1);
             $table->timestamps();
         });
     }
