@@ -20,6 +20,16 @@ class Facility extends Model
     public $timestamps = false;
     public $incrementing = false;   // id is IATA of facility
 
+    protected $hidden = [
+        'apikey',
+        'uls_jwk',
+        'uls_secret',
+        'api_sandbox_key',
+        'apiv2_jwk',
+        'apiv2_jwk_dev',
+        'uls_jwk_dev'
+    ];
+
     public function members()
     {
         return $this->hasMany('App\User','facility', 'id')->orderBy('lname', 'ASC');
@@ -55,7 +65,8 @@ class Facility extends Model
         return $this->hasOne('App\User', 'cid', 'wm')->first();
     }
 
-    public function returnPaths() {
+    public function returnPaths()
+    {
         return $this->hasMany(ReturnPaths::class);
     }
 

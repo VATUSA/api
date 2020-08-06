@@ -5,7 +5,7 @@ namespace App\Http\Controllers\API\v2;
 use App\Helpers\AuthHelper;
 use App\Helpers\RoleHelper;
 use App\User;
-use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 use App\SoloCert;
 
@@ -124,7 +124,7 @@ class SoloController extends APIController
         }
 
         $position = strtoupper($request->input("position"));
-        if (!preg_match("/^([A-Z0-9]{2,3})_(TWR|APP|CTR)$/", $request->input("position"))) {
+        if (!preg_match("/^([A-Z0-9]{2,3})_(APP|CTR)$/", $request->input("position"))) {
             return response()->api(generate_error("Malformed position."), 400);
         }
 
@@ -158,10 +158,13 @@ class SoloController extends APIController
      * @SWG\Delete(
      *     path="/solo",
      *     summary="Delete solo certification. [Key]",
-     *     description="Delete solo certification. Requires API Key, JWT, or Session cookie (required roles: [N/A
-    for API Key] ATM, DATM, TA, INS)",
+     *     description="Delete solo certification. Pass the DB ID OR both CID and Position. Requires API Key, JWT, or
+     *     Session cookie (required roles: [N/A
+    for API Key] ATM, DATM, TA, INS).",
      *     produces={"application/json"}, tags={"solo"},
      *     security={"apikey","jwt","session"},
+     * @SWG\Parameter(name="id", in="formData", type="integer", required=false, description="Endorsement ID. Use this
+     *                           OR both CID and Position."),
      * @SWG\Parameter(name="cid", in="formData", type="integer", required=true, description="Vatsim ID"),
      * @SWG\Parameter(name="position", in="formData", type="string", required=true, description="Position ID (XYZ_APP,
     ZZZ_CTR)"),
@@ -204,9 +207,21 @@ class SoloController extends APIController
         }
 
         if (!isTest()) {
-            SoloCert::where('cid', $request->input("cid", null))
-                ->where("position", strtoupper($request->input("position", null)))
-                ->delete();
+            if ($request->input("id", null)) {
+                try {
+                    SoloCert::findOrFail($request->id)->delete();
+                } catch (Exception $e) {
+                    return response()->api(generate_error("Certification not found"), 404);
+                }
+            } else {
+                $cert = SoloCert::where('cid', $request->input("cid", null))
+                    ->where("position", strtoupper($request->input("position", null)));
+                if (!$cert->count()) {
+                    return response()->api(generate_error("Certification not found"), 404);
+                } else {
+                    $cert->delete();
+                }
+            }
         }
 
         return response()->ok();
