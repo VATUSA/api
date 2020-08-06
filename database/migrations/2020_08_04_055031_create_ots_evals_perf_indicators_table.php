@@ -18,9 +18,10 @@ class CreateOtsEvalsPerfIndicatorsTable extends Migration
             $table->unsignedInteger('perf_cat_id');
             $table->string('label');
             $table->string('help_text')->nullable();
-            $table->boolean('is_header');
-            $table->boolean('is_commendable')->default(1); // 1 = Only Sat/Unsat
-            $table->boolean('is_required')->default(1); // 1 = Only Sat/Unsat
+            $table->boolean('is_header')->default(0);
+            $table->boolean('is_commendable')->default(1); // 1 = Can Commend
+            $table->boolean('is_required')->default(1); // 1 = Result Required
+            $table->boolean('can_unsat')->default(1); // 1 = Result can Unsat
             $table->integer("order");
 
             $table->timestamps();
