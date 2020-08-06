@@ -55,7 +55,7 @@ class UserController extends APIController
      */
     public function getIndex(Request $request, $cid)
     {
-        $user = User::find($cid);
+        $user = $request->exists('d') ? User::where('discord_id', $cid)->first() : User::find($cid);
         $isFacStaff = \Auth::check() && RoleHelper::isFacilityStaff(\Auth::user()->cid, \Auth::user()->facility);
         $isSeniorStaff = \Auth::check() && RoleHelper::isSeniorStaff(\Auth::user()->cid, \Auth::user()->facility);
 

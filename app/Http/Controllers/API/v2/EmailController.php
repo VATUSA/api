@@ -304,8 +304,21 @@ class EmailController extends APIController
             }
 
             // Now handle, *FORWARD*
-            if (!filter_var($destination, FILTER_VALIDATE_EMAIL)) {
-                return response()->api(generate_error("Missing required field", true), 400);
+            $destinationArr = [];
+            if (strpos($destination, ",")) {
+                $destinationArr = explode(",", $destination);
+            }
+            if(!empty($destinationArr)) {
+                foreach($destinationArr as $d) {
+                    if (!filter_var($d, FILTER_VALIDATE_EMAIL)) {
+                        return response()->api(generate_error("Invalid email $d", true), 400);
+                    }
+                }
+            }
+            else {
+                if (!filter_var($destination, FILTER_VALIDATE_EMAIL)) {
+                    return response()->api(generate_error("Invalid email $destination", true), 400);
+                }
             }
             if (EmailHelper::getType($email) === EmailHelper::$email_full) {
                 if (!EmailHelper::deleteEmail($email)) {

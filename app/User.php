@@ -3,13 +3,13 @@
 use App\Helpers\EmailHelper;
 use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
-use App\Transfer;
+use App\Helpers\SMFHelper;
 use Illuminate\Auth\Authenticatable;
-use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
-use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Carbon\Carbon;
+use App\Classes\OAuth\VatsimOAuthController;
+use League\OAuth2\Client\Token\AccessToken;
 
 /**
  * Class User
@@ -40,11 +40,13 @@ use Carbon\Carbon;
  *     @SWG\Property(property="transfer_eligible", type="boolean", description="Is member is eligible for transfer?"),
  *     @SWG\Property(property="flag_homecontroller", type="boolean", description="1-Belongs to VATUSA"),
  *     @SWG\Property(property="lastactivity", type="string", description="Date last seen on website"),
+ *     @SWG\Property(property="isMentor", type="boolean", description="Has Mentor role"),
+ *     @SWG\Property(property="isSupIns", type="boolean", description="Is a SUP and has INS role"),
  *     @SWG\Property(property="roles", type="array",
- *             @SWG\Items(type="object",
- *                 @SWG\Property(property="facility", type="string"),
- *                 @SWG\Property(property="role", type="string")
- *             )
+ *         @SWG\Items(type="object",
+ *             @SWG\Property(property="facility", type="string"),
+ *             @SWG\Property(property="role", type="string")
+ *         )
  *     )
  * )
  */
@@ -67,11 +69,13 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     /**
      * @var array
      */
-    public $timestamps = ['created_at'];
+    public $timestamps = ["created_at", "updated_at"];
     /**
      * @var array
      */
-    protected $hidden = ['password', 'remember_token', "cert_update"];
+    protected $hidden = ["password", "remember_token", "cert_update", "access_token", "refresh_token", "token_expires", "discord_id"];
+
+    protected $fillable = ["access_token", "refresh_token", "token_expires"];
 
     protected $appends = ["promotion_eligible", "transfer_eligible", "roles"];
 
@@ -88,7 +92,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
      */
     public function getDates()
     {
-        return ['created_at', 'updated_at', 'lastactivity', 'facility_join'];
+        return ["created_at", "updated_at", "lastactivity"];
     }
 
     /**
@@ -491,7 +495,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         }
 
         // S1-S3 within 90 check
-        $promotion = Promotion::where('cid', $this->cid)->where("to", "<=", RatingHelper::shortToInt("S3"))
+        $promotion = Promotion::where('cid', $this->cid)->where("to", "<=", RatingHelper::shortToInt("C1"))
             ->where('created_at', '>=', \DB::raw('DATE(NOW() - INTERVAL 90 DAY)'))->first();
 
         if ($promotion == null) {
@@ -604,6 +608,35 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     public function getJWTCustomClaims()
     {
         return [];
+    }
+
+    /**
+     * When doing $user->token, return a valid access token or null if none exists
+     *
+     * @return \League\OAuth2\Client\Token\AccessToken
+     * @return null
+     */
+    public function getTokenAttribute()
+    {
+        if ($this->access_token === null) return null;
+        else {
+            $token = new AccessToken([
+                'access_token' => $this->access_token,
+                'refresh_token' => $this->refresh_token,
+                'expires' => $this->token_expires,
+            ]);
+            if ($token->hasExpired()) {
+                $token = VatsimOAuthController::updateToken($token);
+            }
+
+            $this->update([
+                'access_token' => ($token) ? $token->getToken() : null,
+                'refresh_token' => ($token) ? $token->getRefreshToken() : null,
+                'token_expires' => ($token) ? $token->getExpires() : null,
+            ]);
+
+            return $token;
+        }
     }
 
     public function resolveRouteBinding($value)
