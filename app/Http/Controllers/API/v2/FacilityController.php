@@ -644,7 +644,7 @@ class FacilityController extends APIController
      * @return \Illuminate\Http\JsonResponse
      *
      * @SWG\Post(
-     *     path="/facility/{id}/manageVisitor/{cid}",
+     *     path="/facility/{id}/roster/manageVisitor/{cid}",
      *     summary="Add member to visiting roster. [Auth]",
      *     description="Add member to visiting roster.  JWT or Session Cookie required (required role: ATM,
     DATM, VATUSA STAFF)",
@@ -749,7 +749,7 @@ class FacilityController extends APIController
      * @return \Illuminate\Http\JsonResponse
      *
      * @SWG\Delete(
-     *     path="/facility/{id}/manageVisitor/{cid}",
+     *     path="/facility/{id}/roster/manageVisitor/{cid}",
      *     summary="Delete member from visiting roster. [Auth]",
      *     description="Delete member from visiting roster.  JWT or Session Cookie required (required role: ATM,
     DATM, VATUSA STAFF)",
