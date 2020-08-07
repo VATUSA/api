@@ -12,6 +12,7 @@ use App\TMUFacility;
 use App\TMUNotice;
 use App\Transfer;
 use App\User;
+use App\Promotion;
 use App\Visit;
 use Illuminate\Http\Request;
 use App\Facility;
@@ -629,6 +630,14 @@ class FacilityController extends APIController
             $rosterArr[$i]['isSupIns'] = $roster[$i]['rating_short'] === "SUP" &&
                 $member->roles->where("facility", $id)
                     ->where("role", "INS")->count() > 0;
+
+            // Last promotion date
+            $promotion = Promotion::where('cid', $member->cid)->latest()->first();
+            if ($promotion) {
+                $rosterArr[$i]['last_promotion'] = $promotion->created_at;
+            } else {
+                $rosterArr[$i]['last_promotion'] = null;
+            }
 
             $i++;
         }
