@@ -2,9 +2,7 @@
 
 namespace App;
 
-use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\File;
 
 /**
  * Class OTSEval
@@ -48,11 +46,11 @@ class OTSEval extends Model
 
     public function form()
     {
-        return $this->belongsTo(OTSEvalForm::class);
+        return $this->belongsTo(OTSEvalForm::class, 'form_id');
     }
 
     public function results()
     {
-        return $this->hasMany(OTSEvalIndResult::class);
+        return $this->hasMany(OTSEvalIndResult::class, 'eval_id');
     }
 }
