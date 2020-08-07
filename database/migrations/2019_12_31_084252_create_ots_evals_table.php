@@ -22,6 +22,7 @@ class CreateOtsEvalsTable extends Migration
             $table->unsignedInteger('form_id');
             $table->text('notes');
             $table->boolean('result'); // 0 = Fail, 1 = Pass
+            $table->text('signature');
 
             $table->timestamps();
         });
