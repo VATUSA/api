@@ -18,7 +18,7 @@ class CreateOtsEvalsIndicatorResultsTable extends Migration
             $table->unsignedInteger('perf_indicator_id');
             $table->unsignedInteger('eval_id');
             $table->smallInteger('result'); // 0 = Not Observed, 1 = Commendable, 2 = Satisfactory, 3 = Unsatisfactory
-
+            $table->string('comment')->nullable();
             $table->timestamps();
         });
     }

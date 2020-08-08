@@ -7,6 +7,8 @@ use App\Facility;
 use App\Helpers\AuthHelper;
 use App\Helpers\RoleHelper;
 use App\OTSEval;
+use App\OTSEvalForm;
+use App\OTSEvalIndResult;
 use App\Rating;
 use App\Role;
 use App\TrainingRecord;
@@ -490,7 +492,7 @@ class TrainingController extends Controller
      * @SWG\Parameter(name="location", in="formData", type="integer", required=true, description="Session Location (0 =
     Classroom, 1 = Live, 2 = Sweatbox)"),
      * @SWG\Parameter(name="ots_status", in="formData", type="boolean", required=false, description="0 = Not OTS, 1 =
-                                         OTS Pass, 2 = OTS Fail, 3 = OTS Recommended"),
+    OTS Pass, 2 = OTS Fail, 3 = OTS Recommended"),
      * @SWG\Parameter(name="is_cbt", in="formData", type="boolean", required=false, description="Record is a CBT
     Completion"),
      * @SWG\Parameter(name="solo_granted", in="formData", type="boolean", required=false, description="Solo endorsement
@@ -593,6 +595,15 @@ class TrainingController extends Controller
         if (!in_array(intval($location), [0, 1, 2])) {
             return response()->api(generate_error("Invalid session location. Must be 0, 1, or 2."), 400);
         }
+        if (TrainingRecord::where([
+            'ots_status' => 1,
+            ['position', 'like', '%' . explode('_', $position)[1]],
+            'student_id' => $studentId
+        ])->exists()) {
+            return response()->api(generate_error("The controller has an existing, passing OTS exam record for that position type."),
+                400);
+        }
+
 
         try {
             $sessionDate = Carbon::createFromFormat("Y-m-d H:i", $sessionDate);
@@ -628,7 +639,26 @@ class TrainingController extends Controller
 
         try {
             if (!isTest()) {
-                $record->saveOrFail();
+                try {
+                    $record->saveOrFail();
+                } catch (\Throwable $e) {
+                    return response()->api(generate_error("Unable to save record.", 500));
+                }
+                //Check for evaluation
+                if (in_array($otsStatus, [1, 2])) {
+                    $eval = $user->evaluations()->where([
+                        'position'   => strtolower(explode('_', $position)[1]),
+                        'ots_status' => $otsStatus == 1,
+                        'exam_date'  => $sessionDate->format('Y-m-d')
+                    ]);
+                    if ($eval->exists()) {
+                        $otsEval = $eval->first();
+                        $otsEval->training_record_id = $record->id;
+                        $record->ots_eval_id = $otsEval->id;
+                        $otsEval->save();
+                        $record->save();
+                    }
+                }
             }
         } catch (Exception $e) {
             return response()->api(generate_error("Unable to save record.", 500));
@@ -672,16 +702,109 @@ class TrainingController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      * @param \App\User                $user
+     *
+     * @throws \Exception
      */
     public
     function postOTSEval(
         Request $request,
         User $user
     ) {
-        //Upload OTS Attachment. Required before promotion.
-        //Either linked to a training record, or independently created before promotion (trainng_record_id null).
-        // Private.
-        // POST /user/1275302/training/otsEval
+        if (!Auth::user() || !RoleHelper::isInstructor(Auth::user()->cid, $user->facility)) {
+            return response()->forbidden();
+        }
+
+        $form = $request->input('form', null);
+        $position = $request->input('position', null);
+        $date = $request->input('date', null);
+        $result = $request->input('result', null);
+        $notes = nl2br($request->input('notes', null));
+        $signature = $request->input('signature', null);
+        $indicators = $request->input('indicators', null);
+
+        $form = OTSEvalForm::find($form);
+        if (!$form) {
+            return response()->api(generate_error("Invalid evaluation form."), 400);
+        }
+
+        if ($form->rating_id !== $user->rating + 1 || !$user->promotionEligible()) {
+            return response()->api(generate_error("The user is ineligible for this evaluation."), 400);
+        }
+
+        if (!$position || !preg_match('/^([A-Z0-9]{2,3})_(TWR|APP|CTR)$/', $position)) {
+            return response()->api(generate_error("Invalid position."), 400);
+        }
+        try {
+            $examDate = Carbon::createFromFormat("Y-m-d", $date);
+        } catch (InvalidArgumentException $e) {
+            return response()->api(generate_error("Invalid date, must be YYYY-mm-dd."), 400);
+        }
+        if (is_null($result)) {
+            return response()->api(generate_error("No result sent."), 400);
+        }
+        if (!$signature) {
+            return response()->api(generate_error("No signature sent."), 400);
+        }
+        if (!$indicators || !is_array($indicators) || count($indicators) !== $form->indicators()->where('header_type',
+                '!=', 1)->count()) {
+            return response()->api(generate_error("Invalid indicator results."), 400);
+        }
+
+        $record = TrainingRecord::where([
+            'student_id' => $user->cid,
+            'ots_status' => $result ? $result : 2,
+            ['position', 'like', '%' . explode('_', $position)[1]],
+            [\DB::raw('DATE(session_date)'), '=', $date]
+        ])->orderBy('created_at', 'desc');
+
+        if ($record->exists()) {
+            $record = $record->first();
+            $recordId = $record->id;
+        } else {
+            $recordId = null;
+        }
+
+        $eval = new OTSEval();
+        $eval->training_record_id = $recordId;
+        $eval->student_id = $user->cid;
+        $eval->instructor_id = Auth::user()->cid;
+        $eval->exam_date = $date;
+        $eval->facility_id = $user->facility;
+        $eval->exam_position = strtoupper($position);
+        $eval->form_id = $form->id;
+        $eval->notes = $notes;
+        $eval->result = $result;
+        try {
+            $eval->saveOrFail();
+        } catch (\Throwable $e) {
+            return response()->api(generate_error("Unable to save submission."), 400);
+        }
+
+        if ($recordId) {
+            $record->ots_eval_id = $eval->id;
+            try {
+                $record->saveOrFail();
+            } catch (\Throwable $e) {
+                return response()->api(generate_error("Unable to save submission. $e"), 400);
+            }
+        }
+
+        foreach ($indicators as $k => $v) {
+            $indResult = new OTSEvalIndResult();
+            $indResult->perf_indicator_id = $v['id'];
+            $indResult->eval_id = $eval->id;
+            $indResult->result = $v['value'];
+            $indResult->comment = strlen($v['comment']) ? $v['comment'] : null;
+            try {
+                $indResult->saveOrFail();
+            } catch (\Throwable $e) {
+                $eval->delete();
+
+                return response()->api(generate_error("Unable to save submission. $e"), 400);
+            }
+        }
+
+        return response()->ok(['id' => $eval->id]);
     }
 
     /**
@@ -703,7 +826,7 @@ class TrainingController extends Controller
      * @SWG\Parameter(name="location", in="formData", type="integer", description="Session Location (0 = Classroom, 1 =
     Live, 2 = Sweatbox)"),
      * @SWG\Parameter(name="ots_status", in="formData", type="boolean", required=false, description="0 = Not OTS, 1 =
-                                         OTS Pass, 2 = OTS Fail, 3 = OTS Recommended"),
+    OTS Pass, 2 = OTS Fail, 3 = OTS Recommended"),
      * @SWG\Parameter(name="solo_granted", in="formData", type="boolean", description="Solo endorsement was granted"),
      * @SWG\Response(
      *         response="400",
