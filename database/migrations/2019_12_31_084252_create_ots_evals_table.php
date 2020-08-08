@@ -19,8 +19,10 @@ class CreateOtsEvalsTable extends Migration
             $table->integer('student_id');
             $table->integer('instructor_id');
             $table->string('facility_id');
+            $table->string('exam_position');
             $table->unsignedInteger('form_id');
-            $table->text('notes');
+            $table->text('notes')->nullable();
+            $table->date('exam_date');
             $table->boolean('result'); // 0 = Fail, 1 = Pass
             $table->text('signature');
 

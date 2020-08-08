@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class OTSEvalForm extends Model
@@ -20,21 +21,35 @@ class OTSEvalForm extends Model
 
     public function indicators()
     {
-        return $this->hasManyThrough(OTSEvalPerfInd::class, OTSEvalPerfCat::class, 'form_id','perf_cat_id');
+        return $this->hasManyThrough(OTSEvalPerfInd::class, OTSEvalPerfCat::class, 'form_id', 'perf_cat_id');
     }
 
     public function results()
     {
-        return $this->hasManyThrough(OTSEvalIndResult::class, OTSEvalPerfInd::class,'form_id','perf_indicator_id');
+        return $this->hasManyThrough(OTSEvalIndResult::class, OTSEvalPerfInd::class, 'form_id', 'perf_indicator_id');
     }
 
     /**
      * Scope  to only include active forms.
      *
      * @param \Illuminate\Database\Eloquent\Builder $query
+     *
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeActive($query) {
+    public function scopeActive($query)
+    {
         return $query->where('active', 1);
+    }
+
+    /**
+     * Eager-load all form elements.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeWithAll(Builder $query)
+    {
+        return $query->with(['perfcats', 'perfcats.indicators', 'perfcats.indicators.results']);
     }
 }
