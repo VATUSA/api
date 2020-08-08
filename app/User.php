@@ -112,7 +112,25 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     {
         return $this->belongsTo(Facility::class, 'facility')->first();
     }
+    public function trainingRecords()
+    {
+        return $this->hasMany(TrainingRecord::class, 'student_id', 'cid');
+    }
 
+    public function trainingRecordsIns()
+    {
+        return $this->hasMany(TrainingRecord::class, 'instructor_id', 'cid');
+    }
+
+    public function evaluations()
+    {
+        return $this->hasMany(OTSEval::class, 'student_id', 'cid');
+    }
+
+    public function evaluationsIns()
+    {
+        return $this->hasMany(OTSEval::class, 'instructor_id', 'cid');
+    }
     /**
      * @return bool
      */

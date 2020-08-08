@@ -37,7 +37,7 @@ class CreateOtsEvalsForeignKeys extends Migration
         //ots_evals_indicator_results
         Schema::table('ots_evals_indicator_results', function (Blueprint $table) {
             $table->foreign('perf_indicator_id')
-                ->references('id')->on('ots_evals_perf_cats')
+                ->references('id')->on('ots_evals_perf_indicators')
                 ->onDelete('cascade');
             $table->foreign('eval_id')
                 ->references('id')->on('ots_evals')
