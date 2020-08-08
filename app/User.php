@@ -488,7 +488,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         }
 
         // S1-C1 within 90 check
-        $promotion = Promotions::where('cid', $this->cid)->where([
+        $promotion = Promotion::where('cid', $this->cid)->where([
             ['to',         '<=', Helper::ratingIntFromShort("C1")],
             ['to',         '>', 'from'],
             ['created_at', '>=', \DB::raw("DATE(NOW() - INTERVAL 90 DAY)")]
