@@ -1,5 +1,6 @@
 <?php namespace App;
 
+use App\Classes\Helper;
 use App\Helpers\EmailHelper;
 use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
@@ -486,14 +487,16 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             }
         }
 
-        // S1-S3 within 90 check
-        $promotion = Promotion::where('cid', $this->cid)->where("to", "<=", RatingHelper::shortToInt("C1"))
-            ->where('created_at', '>=', \DB::raw('DATE(NOW() - INTERVAL 90 DAY)'))->first();
-
+        // S1-C1 within 90 check
+        $promotion = Promotions::where('cid', $this->cid)->where([
+            ['to',         '<=', Helper::ratingIntFromShort("C1")],
+            ['to',         '>', 'from'],
+            ['created_at', '>=', \DB::raw("DATE(NOW() - INTERVAL 90 DAY)")]
+        ])->first();
         if ($promotion == null) {
-            $checks['promo'] = true;
+            $checks['promo'] = 1;
         } else {
-            $checks['promo'] = false;
+            $checks['promo'] = 0;
         }
 
         if ($this->rating >= RatingHelper::shortToInt("I1") && $this->rating <= RatingHelper::shortToInt("I3")) {
