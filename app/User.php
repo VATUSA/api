@@ -1,6 +1,6 @@
 <?php namespace App;
 
-use App\Classes\Helper;
+use App\Helpers\Helper;
 use App\Helpers\EmailHelper;
 use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
