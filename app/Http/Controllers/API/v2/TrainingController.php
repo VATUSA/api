@@ -742,7 +742,7 @@ class TrainingController extends Controller
         if (is_null($result)) {
             return response()->api(generate_error("No result sent."), 400);
         }
-        if (!$signature) {
+        if (!$signature || count(explode(',', $signature)) != 2) {
             return response()->api(generate_error("No signature sent."), 400);
         }
         if (!$indicators || !is_array($indicators) || count($indicators) !== $form->indicators()->where('header_type',
@@ -772,6 +772,7 @@ class TrainingController extends Controller
         $eval->facility_id = $user->facility;
         $eval->exam_position = strtoupper($position);
         $eval->form_id = $form->id;
+        $eval->signature = $signature;
         $eval->notes = $notes;
         $eval->result = $result;
         try {
@@ -793,7 +794,7 @@ class TrainingController extends Controller
             $indResult = new OTSEvalIndResult();
             $indResult->perf_indicator_id = $v['id'];
             $indResult->eval_id = $eval->id;
-            $indResult->result = $v['value'];
+            $indResult->result = $v['value'] ?? 0;
             $indResult->comment = strlen($v['comment']) ? $v['comment'] : null;
             try {
                 $indResult->saveOrFail();
