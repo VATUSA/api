@@ -32,7 +32,7 @@ class UserController extends APIController
      *     path="/user/(cid)",
      *     summary="Get user's information.",
      *     description="Get user's information. Email field and broadcast opt-in status require authentication as staff member or API key.
-      Prevent staff assigment flag requires authentication as senior staff.",
+    Prevent staff assigment flag requires authentication as senior staff.",
      *     produces={"application/json"}, tags={"user"},
      * @SWG\Parameter(name="cid",in="path",required=true,type="string",description="Cert ID"),
      * @SWG\Response(
@@ -131,7 +131,7 @@ class UserController extends APIController
     }
 
     /**
-     * @param int    $cid
+     * @param int $cid
      * @param string $facility
      * @param string $role
      *
@@ -566,8 +566,24 @@ class UserController extends APIController
             }
 
             Promotion::process($cid, \Auth::user()->cid, $rating);
-            $return = CERTHelper::changeRating($cid, $rating, true);
-            if ($return) {
+            // remove MTR/INS on promote to I1/I3
+            $role = new Role();
+            $mtr_ins_query = $role->where("cid", $cid)
+                ->where(function ($query) {
+                    $query->where("role", "MTR")->orWhere("role", "INS");
+                });
+
+            $changeRatingReturn = CERTHelper::changeRating($cid, $rating, true);
+            if ($mtr_ins_query->count()) {
+                try {
+                    $mtr_ins_query->delete();
+                    log_action($this->cid, "MTR/INS role removed on promotion to I1/I3");
+                } catch (\Exception $e) {
+                    return response()->api(["status" => "Internal server error"], 500);
+                }
+            }
+
+            if ($changeRatingReturn) {
                 return response()->api(["status" => "OK"]);
             } else {
                 return response()->api(["status" => "Internal server error"], 500);
@@ -604,8 +620,8 @@ class UserController extends APIController
 
         Promotion::process($user->cid, \Auth::user()->cid, $user->rating + 1, $user->rating, $examDate, $examiner,
             $position);
-        $return = CERTHelper::changeRating($cid, $rating, true);
-        if ($return) {
+        $changeRatingReturn = CERTHelper::changeRating($cid, $rating, true);
+        if ($changeRatingReturn) {
             return response()->ok();
         } else {
             return response()->api(["status" => "Internal server error"], 500);
@@ -974,10 +990,10 @@ class UserController extends APIController
         foreach ($chapters as $chapter) {
             $tp = TrainingProgress::where('cid', $cid)->where('chapterid', $chapter->id)->first();
             $data[] = [
-                'chapterId'   => $chapter->id,
+                'chapterId' => $chapter->id,
                 'chapterName' => $chapter->name,
-                'completed'   => (!$tp) ? false : true,
-                'date'        => (!$tp) ? null : $tp->date
+                'completed' => (!$tp) ? false : true,
+                'date' => (!$tp) ? null : $tp->date
             ];
         }
 
