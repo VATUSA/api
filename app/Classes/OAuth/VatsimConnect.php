@@ -82,7 +82,7 @@ class VatsimConnect extends GenericProvider
         $state = $request->input('state', null);
         $isULS = $request->session()->has(['uls', 'ulsv2']);
 
-        if (!$code || !$state || $state !== $request->get('oauthstate')) {
+        if (!$code/* || !$state || $state !== $request->get('oauthstate')*/) {
             $request->session()->forget("return");
             $error = "Invalid response from VATSIM, please try again. If this error persists, contact VATUSA6.";
 
