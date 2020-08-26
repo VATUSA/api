@@ -1,6 +1,7 @@
 <?php namespace App;
 
 use App\Helpers\CERTHelper;
+use App\Helpers\Helper;
 use App\Helpers\EmailHelper;
 use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
@@ -74,7 +75,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     /**
      * @var array
      */
-    protected $hidden = ["password", "remember_token", "cert_update", "access_token", "refresh_token", "token_expires"];
+    protected $hidden = ["password", "remember_token", "cert_update", "access_token", "refresh_token", "token_expires", "discord_id"];
 
     protected $fillable = ["access_token", "refresh_token", "token_expires"];
 
@@ -520,14 +521,16 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             }
         }
 
-        // S1-S3 within 90 check
-        $promotion = Promotion::where('cid', $this->cid)->where("to", "<=", RatingHelper::shortToInt("S3"))
-            ->where('created_at', '>=', \DB::raw('DATE(NOW() - INTERVAL 90 DAY)'))->first();
-
+        // S1-C1 within 90 check
+        $promotion = Promotion::where('cid', $this->cid)->where([
+            ['to',         '<=', Helper::ratingIntFromShort("C1")],
+            ['to',         '>', 'from'],
+            ['created_at', '>=', \DB::raw("DATE(NOW() - INTERVAL 90 DAY)")]
+        ])->first();
         if ($promotion == null) {
-            $checks['promo'] = true;
+            $checks['promo'] = 1;
         } else {
-            $checks['promo'] = false;
+            $checks['promo'] = 0;
         }
 
         if ($this->rating >= RatingHelper::shortToInt("I1") && $this->rating <= RatingHelper::shortToInt("I3")) {
