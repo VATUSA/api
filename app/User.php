@@ -1,5 +1,6 @@
 <?php namespace App;
 
+use App\Helpers\CERTHelper;
 use App\Helpers\Helper;
 use App\Helpers\EmailHelper;
 use App\Helpers\RatingHelper;
@@ -273,13 +274,13 @@ class User extends Model implements AuthenticatableContract, JWTSubject
      */
     public function removeFromFacility($by = "Automated", $msg = "None provided", $newfac = "ZAE")
     {
-        $facility = $this->facility;
+        $old_facility = $this->facility;
         $region = $this->facilityObj->region;
         $facname = $this->facilityObj->name;
 
-        if ($facility != "ZAE") {
+        if ($old_facility != "ZAE") {
             EmailHelper::sendEmail(
-                [$this->email, "$facility-atm@vatusa.net", "$facility-datm@vatusa.net", "vatusa$region@vatusa.net"],
+                [$this->email, "$old_facility-atm@vatusa.net", "$old_facility-datm@vatusa.net", "vatusa$region@vatusa.net"],
                 "Removal from $facname",
                 "emails.user.removed",
                 [
@@ -287,7 +288,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
                     'facility'    => $this->facname,
                     'by'          => User::findName($by),
                     'msg'         => $msg,
-                    'facid'       => $facility,
+                    'facid'       => $old_facility,
                     'region'      => $region,
                     'obsInactive' => $this->rating == 1 && str_contains($msg,
                             ['inactive', 'inactivity', 'Inactive', 'Inactivity', 'activity', 'Activity'])
@@ -300,23 +301,56 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             $by = $byuser->fullname();
         }
 
-        log_action($this->cid, "Removed from $facility by $by: $msg");
+        log_action($this->cid, "Removed from $old_facility by $by: $msg");
 
         if ($this->rating == RatingHelper::shortToInt("OBS") &&
             env('EXIT_SURVEY', null) != null &&
-            !in_array($facility, ["ZZN", "ZAE", "ZHQ"]) &&
+            !in_array($old_facility, ["ZZN", "ZAE", "ZHQ"]) &&
             $newfac == "ZAE") {
             SurveyAssignment::assign(Survey::find(env('EXIT_SURVEY_ID')), $this, ['region' => $region]);
         }
 
         $this->facility_join = Carbon::now();
         $this->facility = $newfac;
+
+        /**
+         * Demote I1 on transfer to ZAE to C1/C3 based on their previous rating.
+         */
+        if ($this->rating == RatingHelper::shortToInt("I1") && $newfac == "ZAE") {
+            $dm = new Promotion();
+            $pm_hist = $dm->where('cid', $this->cid)
+                ->where('to', RatingHelper::shortToInt("I1"))
+                ->orderBy('id', 'desc')->first();
+            // visiting controllers have no promotion record
+            if ($pm_hist != null) {
+                $original_rating = $pm_hist->from;
+                $dm->cid = $this->cid;
+                $dm->grantor = 0; // automated
+                $dm->from = RatingHelper::shortToInt("I1");
+                $dm->to = $original_rating;
+                $dm->save();
+                CERTHelper::changeRating($this->cid, $original_rating, false);
+                $this->rating = $original_rating; // save within this function, not using CERTHelper
+                log_action($this->cid, "Demoted to " .RatingHelper::intToShort($original_rating). " on transfer to ZAE");
+            }
+            // remove MTR/INS role
+            $role = new Role();
+            $mtr_ins_query = $role->where("cid", $this->cid)
+                ->where("facility", $old_facility)
+                ->where(function ($query) {
+                    $query->where("role", "MTR")->orWhere("role", "INS");
+                });
+            if ($mtr_ins_query->count()) {
+                $mtr_ins_query->delete();
+                log_action($this->cid, "MTR/INS role removed on transfer to ZAE");
+            }
+        }
         $this->save();
 
         $t = new Transfer();
         $t->cid = $this->cid;
         $t->to = $newfac;
-        $t->from = $facility;
+        $t->from = $old_facility;
         $t->reason = $msg;
         $t->status = 1;
         $t->actiontext = $msg;
@@ -324,8 +358,8 @@ class User extends Model implements AuthenticatableContract, JWTSubject
 
         if ($this->rating >= RatingHelper::shortToInt("I1")) {
             SMFHelper::createPost(7262, 82,
-                "User Removal: " . $this->fullname() . " (" . RatingHelper::intToShort($this->rating) . ") from " . $facility,
-                "User " . $this->fullname() . " (" . $this->cid . "/" . RatingHelper::intToShort($this->rating) . ") was removed from $facility and holds a higher rating.  Please check for demotion requirements.  [url=https://www.vatusa.net/mgt/controller/" . $this->cid . "]Member Management[/url]");
+                "User Removal: " . $this->fullname() . " (" . RatingHelper::intToShort($this->rating) . ") from " . $old_facility,
+                "User " . $this->fullname() . " (" . $this->cid . "/" . RatingHelper::intToShort($this->rating) . ") was removed from $old_facility and holds a higher rating.  Please check for demotion requirements.  [url=https://www.vatusa.net/mgt/controller/" . $this->cid . "]Member Management[/url]");
         }
     }
 
@@ -580,6 +614,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
 
         return false;
     }
+
     public function getRolesAttribute()
     {
         return Role::where('cid', $this->cid)->get();
