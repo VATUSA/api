@@ -52,10 +52,16 @@ class SMFHelper
 
     /**
      * @param $cid
+     *
+     * @return bool|void
      */
 
     public static function setPermissions($cid)
     {
+        if (in_array(app()->environment(), ["livedev", "dev", "devel"])) {
+            return true;
+        }
+
         $role = "";
         $addl = "";
         $grp = "";
@@ -158,7 +164,7 @@ class SMFHelper
                 $addl .= static::findGroup("Mentors");
             }
         }
-        
+
         static::setGroups($cid, $grp, $addl);
     }
 
