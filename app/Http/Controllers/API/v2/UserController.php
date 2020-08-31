@@ -16,6 +16,7 @@ use App\TrainingChapter;
 use App\TrainingProgress;
 use App\Transfer;
 use App\User;
+use Auth;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Facility;
@@ -56,8 +57,8 @@ class UserController extends APIController
     public function getIndex(Request $request, $cid)
     {
         $user = $request->exists('d') ? User::where('discord_id', $cid)->first() : User::find($cid);
-        $isFacStaff = \Auth::check() && RoleHelper::isFacilityStaff(\Auth::user()->cid, \Auth::user()->facility);
-        $isSeniorStaff = \Auth::check() && RoleHelper::isSeniorStaff(\Auth::user()->cid, \Auth::user()->facility);
+        $isFacStaff = Auth::check() && RoleHelper::isFacilityStaff(Auth::user()->cid, Auth::user()->facility);
+        $isSeniorStaff = Auth::check() && RoleHelper::isSeniorStaff(Auth::user()->cid, Auth::user()->facility);
 
         if (!$user) {
             return response()->api(generate_error("Not found"), 404);
@@ -168,7 +169,7 @@ class UserController extends APIController
      */
     public function postRole($cid, $facility, $role)
     {
-        if (!\Auth::check()) {
+        if (!Auth::check()) {
             return response()->api(generate_error("Unauthorized"), 401);
         }
 
@@ -179,7 +180,7 @@ class UserController extends APIController
 
         $role = strtoupper($role);
 
-        if (!RoleHelper::canModify(\Auth::user(), $facility, $role)) {
+        if (!RoleHelper::canModify(Auth::user(), $facility, $role)) {
             return response()->api(generate_error("Forbidden"), 403);
         }
 
@@ -202,7 +203,7 @@ class UserController extends APIController
             $r->role = $role;
             $r->save();
 
-            log_action($cid, "Assigned to role $role for $facility->id by " . \Auth::user()->fullname());
+            log_action($cid, "Assigned to role $role for $facility->id by " . Auth::user()->fullname());
         }
 
         return response()->ok();
@@ -253,7 +254,7 @@ class UserController extends APIController
      */
     public function deleteRole($cid, $facility, $role)
     {
-        if (!\Auth::check()) {
+        if (!Auth::check()) {
             return response()->api(generate_error("Unauthorized"), 401);
         }
 
@@ -264,7 +265,7 @@ class UserController extends APIController
             return response()->api(generate_error("Facility not found or invalid"), 404);
         }
 
-        if (!RoleHelper::canModify(\Auth::user(), $fac, $role)) {
+        if (!RoleHelper::canModify(Auth::user(), $fac, $role)) {
             return response()->api(generate_error("Forbidden"), 403);
         }
 
@@ -291,7 +292,7 @@ class UserController extends APIController
                 }
             }
 
-            log_action($cid, "Removed from role $role for $fac->id by " . \Auth::user()->fullname());
+            log_action($cid, "Removed from role $role for $fac->id by " . Auth::user()->fullname());
         }
 
         return response()->ok();
@@ -353,10 +354,10 @@ class UserController extends APIController
      */
     public function postTransfer($cid)
     {
-        if (!\Auth::check()) {
+        if (!Auth::check()) {
             return response()->api(generate_error("Unauthorized"), 401);
         }
-        if (\Auth::user()->cid != $cid && !RoleHelper::isVATUSAStaff(\Auth::user()->cid)) {
+        if (Auth::user()->cid != $cid && !RoleHelper::isVATUSAStaff(Auth::user()->cid)) {
             return response()->api(generate_error("Forbidden"), 403);
         }
         $user = User::find($cid);
@@ -445,14 +446,14 @@ class UserController extends APIController
     public function getTransferChecklist($cid)
     {
         $hasValidApiKey = AuthHelper::validApiKeyv2(request()->input('apikey', null));
-        if (!$hasValidApiKey && !\Auth::check()) {
+        if (!$hasValidApiKey && !Auth::check()) {
             return response()->api(generate_error("Unauthorized"), 401);
         }
-        if ($hasValidApiKey || (\Auth::check() &&
+        if ($hasValidApiKey || (Auth::check() &&
                 (
-                    \Auth::user()->cid == $cid ||
-                    RoleHelper::isVATUSAStaff(\Auth::user()->cid) ||
-                    RoleHelper::has(\Auth::user()->cid, \Auth::user()->facility, ["ATM", "DATM", "WM"])
+                    Auth::user()->cid == $cid ||
+                    RoleHelper::isVATUSAStaff(Auth::user()->cid) ||
+                    RoleHelper::has(Auth::user()->cid, Auth::user()->facility, ["ATM", "DATM", "WM"])
                 )
             )) {
             $check = [];
@@ -465,7 +466,8 @@ class UserController extends APIController
     }
 
     /**
-     * @param $cid
+     * @param \Illuminate\Http\Request $request
+     * @param                          $cid
      *
      * @return array|string
      *
@@ -528,23 +530,23 @@ class UserController extends APIController
      *     )
      * )
      */
-    public function postRating($cid)
+    public function postRating(Request $request, $cid)
     {
-        if (!\Auth::check()) {
+        if (!Auth::check()) {
             return response()->api(generate_error("Unauthorized"), 401);
         }
         $user = User::find($cid);
         if (!$user) {
             return response()->api(generate_error("Not found"), 404);
         }
-        $rating = request()->input("rating", null);
+        $rating = $request->input("rating", null);
         if (!$rating) {
             return response()->api(generate_error("Malformed request"), 400);
         }
 
-        $examDate = request()->input("examDate", null); // Will be checked when appropriate
-        $examiner = request()->input("examiner", null); // Will be checked when appropriate
-        $position = request()->input("position", null); // Will be checked when appropriate
+        $examDate = $request->input("examDate", null); // Will be checked when appropriate
+        $examiner = $request->input("examiner", null); // Will be checked when appropriate
+        $position = $request->input("position", null); // Will be checked when appropriate
 
         if (!is_numeric($rating)) {
             $rating = RatingHelper::shortToInt($rating);
@@ -565,7 +567,7 @@ class UserController extends APIController
                 return response()->api(["status" => "OK"]);
             }
 
-            Promotion::process($cid, \Auth::user()->cid, $rating);
+            Promotion::process($cid, Auth::user()->cid, $rating);
             $return = CERTHelper::changeRating($cid, $rating, true);
             if ($return) {
                 return response()->api(["status" => "OK"]);
@@ -576,8 +578,8 @@ class UserController extends APIController
 
         // OBS-C1 changes
         if (!RoleHelper::isVATUSAStaff() &&
-            !RoleHelper::has(\Auth::user()->cid, \Auth::user()->facility, ["ATM", "DATM", "TA"]) &&
-            !RoleHelper::isInstructor(\Auth::user()->cid)) {
+            !RoleHelper::has(Auth::user()->cid, Auth::user()->facility, ["ATM", "DATM", "TA"]) &&
+            !RoleHelper::isInstructor(Auth::user()->cid, $user->facility)) {
 
             return response()->api(generate_error("Forbidden"), 403);
         }
@@ -585,16 +587,16 @@ class UserController extends APIController
             return response()->api(generate_error("Conflict"), 409);
         }
 
-        $validator = Validator::make(request()->all(), [
-            'examData' => 'required|date_format:Y-m-d',
-            'examiner' => 'required|integer',
+        $validator = Validator::make($request->all(), [
+            'examDate' => 'required|date_format:Y-m-d',
             'position' => 'required|max:8',
         ]);
         if ($validator->fails()) {
             return response()->api(generate_error("Malformed request"), 400);
         }
 
-        if (!$user->promotionEligible()) {
+        $user->checkPromotionCriteria($trainingRecordStatus, $otsEvalStatus, $examPosition, $dateOfExam, $evalId);
+        if (!$user->promotionEligible() || !(abs($trainingRecordStatus) == 1 && abs($otsEvalStatus) == 1)) {
             return response()->api(generate_error("Precondition failed"), 412);
         }
 
@@ -602,8 +604,8 @@ class UserController extends APIController
             return response()->ok();
         }
 
-        Promotion::process($user->cid, \Auth::user()->cid, $user->rating + 1, $user->rating, $examDate, $examiner,
-            $position);
+        Promotion::process($user->cid, Auth::user()->cid, $user->rating + 1, $user->rating, $examDate, $examiner,
+            $position, $evalId);
         $return = CERTHelper::changeRating($cid, $rating, true);
         if ($return) {
             return response()->ok();
@@ -660,14 +662,14 @@ class UserController extends APIController
         if (!User::find($cid)) {
             return response()->api(generate_error("Not found"), 404);
         }
-        if (!$hasValidApiKey && !\Auth::check()) {
+        if (!$hasValidApiKey && !Auth::check()) {
             return response()->api(generate_error("Unauthorized"), 401);
         }
-        if (!$hasValidApiKey && !(\Auth::check() &&
+        if (!$hasValidApiKey && !(Auth::check() &&
                 (
-                    \Auth::user()->cid == $cid ||
-                    RoleHelper::isVATUSAStaff(\Auth::user()->cid) ||
-                    RoleHelper::has(\Auth::user()->cid, \Auth::user()->facility, ["ATM", "DATM", "WM"])
+                    Auth::user()->cid == $cid ||
+                    RoleHelper::isVATUSAStaff(Auth::user()->cid) ||
+                    RoleHelper::has(Auth::user()->cid, Auth::user()->facility, ["ATM", "DATM", "WM"])
                 )
             )) {
 
@@ -726,12 +728,12 @@ class UserController extends APIController
         if (!User::find($cid)) {
             return response()->api(generate_error("Not found"), 404);
         }
-        if (!\Auth::check()) {
+        if (!Auth::check()) {
             return response()->api(generate_error("Unauthorized"), 401);
         }
-        if (\Auth::user()->cid == $cid ||
-            RoleHelper::isVATUSAStaff(\Auth::user()->cid) ||
-            RoleHelper::has(\Auth::user()->cid, \Auth::user()->facility, ["ATM", "DATM"])
+        if (Auth::user()->cid == $cid ||
+            RoleHelper::isVATUSAStaff(Auth::user()->cid) ||
+            RoleHelper::has(Auth::user()->cid, Auth::user()->facility, ["ATM", "DATM"])
         ) {
 
             return response()->api(generate_error("Forbidden"), 403);
@@ -787,11 +789,11 @@ class UserController extends APIController
         if (!$entry) {
             return response()->api(generate_error("Malformed request"), 400);
         }
-        if (!\Auth::check()) {
+        if (!Auth::check()) {
             return response()->api(generate_error("Unauthorized"), 401);
         }
-        if (!RoleHelper::isVATUSAStaff(\Auth::user()->cid) && !RoleHelper::has(\Auth::user()->cid,
-                \Auth::user()->facility, ["ATM", "DATM"])) {
+        if (!RoleHelper::isVATUSAStaff(Auth::user()->cid) && !RoleHelper::has(Auth::user()->cid,
+                Auth::user()->facility, ["ATM", "DATM"])) {
             return response()->api(generate_error("Forbidden"), 403);
         }
 
@@ -853,15 +855,15 @@ class UserController extends APIController
         if (!User::find($cid)) {
             return response()->api(generate_error("Not found"), 404);
         }
-        if (!$hasValidApiKey && !\Auth::check()) {
+        if (!$hasValidApiKey && !Auth::check()) {
             return response()->api(generate_error("Unauthorized"), 401);
         }
 
-        if (!$hasValidApiKey && !(\Auth::check() &&
+        if (!$hasValidApiKey && !(Auth::check() &&
                 (
-                    \Auth::user()->cid == $cid ||
-                    RoleHelper::isVATUSAStaff(\Auth::user()->cid) ||
-                    RoleHelper::has(\Auth::user()->cid, \Auth::user()->facility, ["ATM", "DATM", "TA", "WM"])
+                    Auth::user()->cid == $cid ||
+                    RoleHelper::isVATUSAStaff(Auth::user()->cid) ||
+                    RoleHelper::has(Auth::user()->cid, Auth::user()->facility, ["ATM", "DATM", "TA", "WM"])
                 )
             )) {
             return response()->api(generate_error("Forbidden"), 403);
@@ -904,11 +906,11 @@ class UserController extends APIController
     public function getCBTHistory($cid)
     {
         $hasValidApiKey = AuthHelper::validApiKeyv2(request()->input('apikey', null));
-        if (!$hasValidApiKey && !(\Auth::check() &&
+        if (!$hasValidApiKey && !(Auth::check() &&
                 (
-                    \Auth::user()->cid == $cid ||
-                    RoleHelper::isVATUSAStaff(\Auth::user()->cid) ||
-                    RoleHelper::has(\Auth::user()->cid, \Auth::user()->facility, ["ATM", "DATM", "TA", "WM"])
+                    Auth::user()->cid == $cid ||
+                    RoleHelper::isVATUSAStaff(Auth::user()->cid) ||
+                    RoleHelper::has(Auth::user()->cid, Auth::user()->facility, ["ATM", "DATM", "TA", "WM"])
                 )
             )) {
             return response()->api(generate_error("Unauthorized"), 401);
@@ -959,11 +961,11 @@ class UserController extends APIController
     public function getCBTProgress($cid, $blockId)
     {
         $hasValidApiKey = AuthHelper::validApiKeyv2(request()->input('apikey', null));
-        if (!$hasValidApiKey && !(\Auth::check() &&
+        if (!$hasValidApiKey && !(Auth::check() &&
                 (
-                    \Auth::user()->cid == $cid ||
-                    RoleHelper::isVATUSAStaff(\Auth::user()->cid) ||
-                    RoleHelper::has(\Auth::user()->cid, \Auth::user()->facility, ["ATM", "DATM", "TA", "WM"])
+                    Auth::user()->cid == $cid ||
+                    RoleHelper::isVATUSAStaff(Auth::user()->cid) ||
+                    RoleHelper::has(Auth::user()->cid, Auth::user()->facility, ["ATM", "DATM", "TA", "WM"])
                 )
             )) {
             return response()->api(generate_error("Unauthorized"), 401);
@@ -1022,11 +1024,11 @@ class UserController extends APIController
     public function putCBTProgress($cid, $chapterId)
     {
         $apikey = AuthHelper::validApiKeyv2(request()->input('apikey', null));
-        if (!\Auth::check() && !$apikey) {
+        if (!Auth::check() && !$apikey) {
             return response()->api(generate_error("Unauthorized"), 401);
         }
 
-        if (!$apikey && \Auth::user()->cid != $cid) {
+        if (!$apikey && Auth::user()->cid != $cid) {
             return response()->api(generate_error("Forbidden"), 403);
         }
 
@@ -1082,11 +1084,11 @@ class UserController extends APIController
     public function getExamHistory($cid)
     {
         $hasValidApiKey = AuthHelper::validApiKeyv2(request()->input('apikey', null));
-        if (!\Auth::check() && !$hasValidApiKey) {
+        if (!Auth::check() && !$hasValidApiKey) {
             return response()->api(generate_error("Unauthenticated"), 401);
         }
 
-        if (!$hasValidApiKey && $cid != \Auth::user()->cid &&
+        if (!$hasValidApiKey && $cid != Auth::user()->cid &&
             !RoleHelper::isVATUSAStaff() &&
             !RoleHelper::isFacilityStaff() &&
             !RoleHelper::isInstructor()) {
