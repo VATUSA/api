@@ -1,5 +1,6 @@
 <?php namespace App;
 
+use App\Helpers\Helper;
 use App\Helpers\EmailHelper;
 use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
@@ -660,5 +661,66 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     public function resolveRouteBinding($value)
     {
         return $this->where($this->getRouteKeyName(), $value)->first() ?? abort(404);
+    }
+    public function checkPromotionCriteria(&$trainingRecordStatus, &$otsEvalStatus, &$examPosition, &$dateOfExam, &$evalId)
+    {
+        $trainingRecordStatus = 0;
+        $otsEvalStatus = 0;
+
+        $dateOfExam = null;
+        $examPosition = null;
+        $evalId = null;
+
+        $evals = $this->evaluations;
+        $numPass = 0;
+        $numFail = 0;
+
+        if ($evals) {
+            foreach ($evals as $eval) {
+                if ($eval->form->rating_id == $this->rating + 1) {
+                    if ($eval->result) {
+                        $dateOfExam = $eval->exam_date;
+                        $examPosition = $eval->exam_position;
+                        $evalId = $eval->id;
+                        $numPass++;
+                    } else {
+                        $numFail++;
+                    }
+                }
+            }
+            if ($numPass) {
+                $otsEvalStatus = 1;
+            } elseif ($numFail) {
+                $otsEvalStatus = 2;
+            }
+        }
+
+        switch (Helper::ratingShortFromInt($this->rating + 1)) {
+            case 'S1':
+                $pos = "GND";
+                break;
+            case 'S2':
+                $pos = "TWR";
+                break;
+            case 'S3':
+                $pos = "APP";
+                break;
+            case 'C1':
+                $pos = "CTR";
+                break;
+            default:
+                $pos = "NA";
+                break;
+        }
+        if ($this->trainingRecords()->where([
+            ['position', 'like', "%$pos"],
+            'ots_status' => 1
+        ])->exists()) {
+            $trainingRecordStatus = 1;
+        }
+
+        if ($pos == "GND") {
+            $trainingRecordStatus = $otsEvalStatus = -1;
+        }
     }
 }

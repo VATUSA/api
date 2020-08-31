@@ -24,6 +24,8 @@ class OTSEval extends Model
 {
     protected $table = "ots_evals";
 
+    public $timestamps = ['created_at', 'updated_at', 'exam_date'];
+
     public function trainingRecord()
     {
         return $this->belongsTo(TrainingRecord::class);
