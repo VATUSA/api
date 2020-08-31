@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Login;
 
 use App\Action;
 use App\Classes\OAuth\VatsimConnect;
+use App\Helpers\RoleHelper;
 use App\Helpers\SMFHelper;
 use App\Helpers\EmailHelper;
 use App\Helpers\ULSHelper;
@@ -109,7 +110,10 @@ class SSOController extends Controller
 
             return $isULS ? response($error, 403) : redirect(env('SSO_RETURN_HOME'))->with('error', $error);
         }
-
+        if(app()->environment() === "livedev" && !RoleHelper::isVATUSAStaff($user->cid) && !in_array($user->cid, explode(',', env("LIVEDEV_CIDS", "")))) {
+            $error = "You are not authorized to access the live development website.";
+            return $isULS ? response($error, 403) : redirect(env('SSO_RETURN_HOME'))->with('error', $error);
+        }
         // Check if user is registered in forums...
         if (!app()->environment('dev')) {
             if (SMFHelper::isRegistered($user->cid)) {
