@@ -6,6 +6,8 @@ env:
 - DOCKER_COMPOSE_VERSION=1.17.1
 services:
 - docker
+before_script:
+  - cp .env.travis .env
 before_install:
 - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname
   -s`-`uname -m` > docker-compose
