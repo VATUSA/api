@@ -115,7 +115,7 @@ class SSOController extends Controller
             return $isULS ? response($error, 403) : redirect(env('SSO_RETURN_HOME'))->with('error', $error);
         }
         // Check if user is registered in forums...
-        if (!app()->environment('dev')) {
+        if (!app()->environment('dev') && !app()->environment('livedev')) {
             if (SMFHelper::isRegistered($user->cid)) {
                 SMFHelper::updateData($user->cid, $user->personal->name_last, $user->personal->name_first,
                     $user->personal->email);
