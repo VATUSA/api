@@ -51,7 +51,7 @@ class SSOController extends Controller
                 $return = env('SSO_RETURN_HOME');
             }
 
-            return redirect(app()->environment('dev') ? $return : "https://forums.vatusa.net/api.php?logout=1&return=$return");
+            return redirect(app()->environment('dev') || app()->environment('livedev') ? $return : "https://forums.vatusa.net/api.php?logout=1&return=$return");
         }
 
         /* Lots to check here ... but this is our multi-point redirect */
@@ -102,17 +102,19 @@ class SSOController extends Controller
         if ($user->vatsim->rating->id == 0) {
             $error = "You are suspended from the network. Therefore, login has been cancelled.";
 
-            return $isULS ? response($error, 403) : redirect(env('SSO_RETURN_HOME'))->with('error', $error);
+            return $isULS ? response($error, 403) : redirect(env('SSO_RETURN_HOME_ERROR'))->with('error', $error);
         }
         if ($user->vatsim->rating->id < 0) {
             $error = "Your account has been disabled by VATSIM. This could be because of inactivity or a duplicate account. 
                 Please <a href='https://membership.vatsim.net/'>contact VATSIM Member Services</a> to resolve this issue.";
 
-            return $isULS ? response($error, 403) : redirect(env('SSO_RETURN_HOME'))->with('error', $error);
+            return $isULS ? response($error, 403) : redirect(env('SSO_RETURN_HOME_ERROR'))->with('error', $error);
         }
-        if(app()->environment() === "livedev" && !RoleHelper::isVATUSAStaff($user->cid) && !in_array($user->cid, explode(',', env("LIVEDEV_CIDS", "")))) {
+        if (app()->environment("livedev") && !RoleHelper::isVATUSAStaff($user->cid) && !in_array($user->cid,
+                explode(',', env("LIVEDEV_CIDS", "")))) {
             $error = "You are not authorized to access the live development website.";
-            return $isULS ? response($error, 403) : redirect(env('SSO_RETURN_HOME'))->with('error', $error);
+
+            return $isULS ? response($error, 403) : redirect(env('SSO_RETURN_HOME_ERROR'))->with('error', $error);
         }
         // Check if user is registered in forums...
         if (!app()->environment('dev') && !app()->environment('livedev')) {
@@ -135,7 +137,7 @@ class SSOController extends Controller
                 if ($data != "OK") {
                     $error = "Unable to create forum data. Please try again later or contact VATUSA6.";
 
-                    return $isULS ? response($error, 401) : redirect(env('SSO_RETURN_HOME'))->with('error', $error);
+                    return $isULS ? response($error, 401) : redirect(env('SSO_RETURN_HOME_ERROR'))->with('error', $error);
 
                 }
             }
