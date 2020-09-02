@@ -110,7 +110,7 @@ class SSOController extends Controller
 
             return $isULS ? response($error, 403) : redirect(env('SSO_RETURN_HOME_ERROR'))->with('error', $error);
         }
-        if (app()->environment("livedev") && !RoleHelper::isVATUSAStaff($user->cid) && !in_array($user->cid,
+        if (app()->environment("livedev") && !RoleHelper::isVATUSAStaff($user->cid, false, true) && !in_array($user->cid,
                 explode(',', env("LIVEDEV_CIDS", "")))) {
             $error = "You are not authorized to access the live development website.";
 
