@@ -1049,7 +1049,7 @@ class TrainingController extends Controller
         $ownsRecord = $record && Auth::user() && $record->instructor_id == Auth::user()->cid;
         $notOwn = Auth::user() && $record->student_id !== Auth::user()->cid; //No one can modify their own record!
 
-        return $notOwn && ($hasApiKey || $isSeniorStaff || $ownsRecord);
+        return ($notOwn && ($isSeniorStaff || $ownsRecord)) || $hasApiKey;
     }
 
     /**
@@ -1080,6 +1080,6 @@ class TrainingController extends Controller
         $isTrainingStaff = Auth::user() && RoleHelper::isTrainingStaff();
         $notOwn = Auth::user() && $user->cid !== Auth::user()->cid; //No one can add their own record!
 
-        return $notOwn && ($hasApiKey || $isTrainingStaff);
+        return $notOwn && $isTrainingStaff || $hasApiKey;
     }
 }
