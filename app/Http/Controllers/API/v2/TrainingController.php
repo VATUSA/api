@@ -23,6 +23,7 @@ use Mews\Purifier\Facades\Purifier;
 /**
  * Class TrainingController
  * @package App\Http\Controllers\API\v2
+ * @author Blake Nahin <vatusa6@vatusa.net>
  */
 class TrainingController extends Controller
 {
@@ -183,7 +184,7 @@ class TrainingController extends Controller
     {
         //Get records for a Facility
         // GET /facility/ZSE/training/records
-        if ($this->canView($request)) {
+        if ($this->canView($request, null, null, $facility)) {
             return response()->api(TrainingRecord::where('facility',
                 $facility->id)->with('facility:id,name')->get()->toArray());
         }
@@ -195,8 +196,8 @@ class TrainingController extends Controller
     /**
      * @SWG\Get(
      *     path="/training/records",
-     *     summary="Get all training records. [Key]",
-     *     description="Get all training records. Must have APIKey or be Senior Staff or Training Staff.",
+     *     summary="Get all training records. [Private]",
+     *     description="Get all training records. CORS Restricted.",
      *     produces={"application/json"},
      *     tags={"training"},
      *     security={"session", "jwt", "apikey"},
@@ -281,14 +282,7 @@ class TrainingController extends Controller
      */
     public function getOTSEval(Request $request, OTSEval $eval)
     {
-        //JSON of OTS Evaluation form from ID
-        // GET /training/otsEval/8/
-        if ($this->canView($request)) {
-            return response()->api(['content' => $eval->getContent()]);
-        }
-
-        return response()->forbidden();
-
+        // [Not Implemented]
     }
 
     /**
@@ -332,12 +326,13 @@ class TrainingController extends Controller
     {
         //JSON of OTS Evaluation form from training record
         // GET /training/record/8/otsEval
-        if ($this->canView($request)) {
-            return response()->api(['content' => $record->otsEval->getContent()]);
-        }
+        //if ($this->canView($request)) {
+        //    return response()->api(['content' => $record->otsEval->getContent()]);
+        // }
 
-        return response()->forbidden();
+        // return response()->forbidden();
 
+        // [Not Implemented]
     }
 
     /**
@@ -888,12 +883,12 @@ class TrainingController extends Controller
         if (!$position) {
             $position = $record->position;
         }
-        $duration = $request->input("duration", $record->duration);
+        $duration = $request->input("duration", substr($record->duration, 0, 5));
         if (!$duration) {
-            $duration = $record->duration;
+            $duration = substr($record->duration, 0, 5);
         }
         $numMovements = $request->input("movements", $record->movements);
-        if (!$numMovements) {
+        if (is_null($numMovements)) {
             $numMovements = $record->movements;
         }
         $score = $request->input("score", $record->score);
@@ -1045,8 +1040,9 @@ class TrainingController extends Controller
     private function canModify(Request $request, TrainingRecord $record): bool
     {
         $hasApiKey = AuthHelper::validApiKeyv2($request->input('apikey', null), $record->facility->id);
-        $isSeniorStaff = Auth::user() && RoleHelper::isSeniorStaff(Auth::user()->cid, Auth::user()->facility, true);
-        $ownsRecord = $record && Auth::user() && $record->instructor_id == Auth::user()->cid;
+        $isSeniorStaff = Auth::user() && RoleHelper::isSeniorStaff(Auth::user()->cid, $record->facility, true);
+        $ownsRecord = $record && Auth::user() && $record->instructor_id == Auth::user()->cid && RoleHelper::isTrainingStaff(Auth::user()->cid,
+                true, $record->facility);
         $notOwn = Auth::user() && $record->student_id !== Auth::user()->cid; //No one can modify their own record!
 
         return ($notOwn && ($isSeniorStaff || $ownsRecord)) || $hasApiKey;
@@ -1059,15 +1055,19 @@ class TrainingController extends Controller
      * @param \App\TrainingRecord|null $record
      * @param \App\User|null           $user
      *
+     * @param \App\Facility|null       $facility
+     *
      * @return bool
      */
     private function canView(
         Request $request,
         TrainingRecord $record = null,
-        User $user = null
+        User $user = null,
+        Facility $facility = null
     ): bool {
-        $hasApiKey = AuthHelper::validApiKeyv2($request->input('apikey', null));
-        $isTrainingStaff = Auth::user() && RoleHelper::isTrainingStaff();
+        $hasApiKey = AuthHelper::validApiKeyv2($request->input('apikey', null), $record->facility->id ?? $facility->id ?? null);
+        $isTrainingStaff = Auth::user() && RoleHelper::isTrainingStaff($user->cid ?? null, true,
+                $record->facility ?? $facility ?? null);
         $ownsRecord = $record && Auth::user() && $record->student === Auth::user()->cid;
         $isOwnUser = Auth::user() && $user && $user->cid === Auth::user()->cid;
 
@@ -1076,8 +1076,8 @@ class TrainingController extends Controller
 
     private function canCreate(Request $request, User $user)
     {
-        $hasApiKey = AuthHelper::validApiKeyv2($request->input('apikey', null));
-        $isTrainingStaff = Auth::user() && RoleHelper::isTrainingStaff();
+        $hasApiKey = AuthHelper::validApiKeyv2($request->input('apikey', null), $user->facility);
+        $isTrainingStaff = Auth::user() && RoleHelper::isTrainingStaff($user->cid, true, $user->facility);
         $notOwn = Auth::user() && $user->cid !== Auth::user()->cid; //No one can add their own record!
 
         return $notOwn && $isTrainingStaff || $hasApiKey;
