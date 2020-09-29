@@ -53,7 +53,7 @@ class SemiPrivateCORS
                     ->header("Access-Control-Allow-Origin", $_SERVER['HTTP_ORIGIN']);
             }
 
-            return response()->json(generate_error("Forbidden", true), 401);
+            return response()->json(generate_error("Unauthorized", true), 401);
         }
     }
 }
