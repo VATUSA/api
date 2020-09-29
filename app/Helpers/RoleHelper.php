@@ -70,8 +70,11 @@ class RoleHelper
     public static function has($cid, $facility, $role)
     {
         if (is_array($role)) {
+            if ($facility instanceof Facility) {
+                $facility = $facility->id;
+            }
             foreach ($role as $r) {
-                $rq = Role::Where("facility", $facility)->where("cid", $cid)->where("role", $r)->count();
+                $rq = Role::where("facility", $facility)->where("cid", $cid)->where("role", $r)->count();
                 if ($rq) {
                     return true;
                 }
@@ -221,7 +224,7 @@ class RoleHelper
 
         if (!$facility || !Facility::find($facility)) {
             $facility = \Auth::user()->facilityObj;
-        } elseif(is_string($facility)) {
+        } elseif (is_string($facility)) {
             $facility = Facility::find($facility);
         }
 
