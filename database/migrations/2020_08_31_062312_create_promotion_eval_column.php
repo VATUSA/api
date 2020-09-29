@@ -14,8 +14,8 @@ class CreatePromotionEvalColumn extends Migration
     public function up()
     {
         Schema::table('promotions', function (Blueprint $table) {
-        $table->unsignedInteger('eval_id')->nullable();
-    });
+            $table->unsignedInteger('eval_id')->nullable();
+        });
     }
 
     /**

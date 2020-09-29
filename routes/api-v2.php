@@ -266,12 +266,12 @@ Route::group(['prefix' => '/tmu'], function () {
  */
 Route::group(['prefix' => 'training'], function () {
     Route::group(['middleware' => 'semiprivate'], function () {
-        Route::get('records', 'TrainingController@getAllRecords');
         Route::get('record/{record}', 'TrainingController@getTrainingRecord')->where('record', '[0-9]+');
         Route::delete('record/{record}', 'TrainingController@deleteRecord')->where('record', '[0-9]+');
         Route::put('record/{record}', 'TrainingController@editRecord')->where('record', '[0-9]+');
     });
     Route::group(['middleware' => 'private'], function() {
+        Route::get('records', 'TrainingController@getAllRecords');
         Route::get('otsEval/{eval}', 'TrainingController@getOTSEval')->where('eval', '[0-9]+');
         Route::get('record/{record}/otsEval', 'TrainingController@getOTSTrainingEval')->where('record', '[0-9]+');
     });

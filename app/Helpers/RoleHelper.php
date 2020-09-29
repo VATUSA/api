@@ -26,6 +26,7 @@ class RoleHelper
         }
         $role = Role::where("facility", $facility)->where("role", $role)->get();
         Cache::put("role.$facility.$role", 24 * 60);
+
         return $role;
     }
 
@@ -209,7 +210,7 @@ class RoleHelper
         return false;
     }
 
-    public static function isMentor($cid = null)
+    public static function isMentor($cid = null, $facility = null)
     {
         if (!\Auth::check()) {
             return false;
@@ -217,24 +218,32 @@ class RoleHelper
         if ($cid == null || $cid == 0) {
             $cid = \Auth::user()->cid;
         }
+
+        if (!$facility || !Facility::find($facility)) {
+            $facility = \Auth::user()->facilityObj;
+        } elseif(is_string($facility)) {
+            $facility = Facility::find($facility);
+        }
+
         $user = User::find($cid);
         if (!$user->flag_homecontroller) {
             return false;
         }
-        if (!$user->facility()->active && $user->facility != "ZHQ") {
+        if (!$facility->active && $facility != "ZHQ") {
             return false;
         }
 
-        if (Role::where("cid", $cid)->where("facility", $user->facility)->where("role", "MTR")->count()) {
+        if (Role::where("cid", $cid)->where("facility", $facility)->where("role", "MTR")->count()) {
             return true;
         }
 
         return false;
     }
 
-    public static function isTrainingStaff($cid = null, bool $includeMentor = true)
+    public static function isTrainingStaff($cid = null, bool $includeMentor = true, $facility = null)
     {
-        return ($includeMentor && self::isMentor($cid)) || self::isInstructor($cid) || self::isSeniorStaff($cid, null,
+        return ($includeMentor && self::isMentor($cid, $facility)) || self::isInstructor($cid,
+                $facility) || self::isSeniorStaff($cid, $facility,
                 true);
     }
 
