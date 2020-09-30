@@ -185,6 +185,10 @@ class RoleHelper
             $facility = \Auth::user()->facility;
         }
 
+        if($facility instanceof Facility) {
+            $facility = $facility->id;
+        }
+
         // Check home controller, if no always assume no
         if (!\Auth::user()->flag_homecontroller) {
             return false;
