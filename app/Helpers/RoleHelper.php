@@ -236,7 +236,7 @@ class RoleHelper
             return false;
         }
 
-        if (Role::where("cid", $cid)->where("facility", $facility)->where("role", "MTR")->count()) {
+        if (Role::where("cid", $cid)->where("facility", $facility->id)->where("role", "MTR")->count()) {
             return true;
         }
 
