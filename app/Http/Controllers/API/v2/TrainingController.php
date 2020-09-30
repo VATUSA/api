@@ -574,7 +574,7 @@ class TrainingController extends Controller
         }
 
         //Validate
-        if (!$studentId || (!$instructorId && !Auth::check()) || !$sessionDate || !$position || !$notes || is_null($location)) {
+        if (!$studentId || (!$instructorId && !Auth::check()) || !$sessionDate || !$position || !$notes || is_null($location) || $location === "") {
             //Required Fields
             return response()->api(generate_error("Missing fields; see API documentation."), 400);
         }
@@ -590,7 +590,7 @@ class TrainingController extends Controller
         if (!in_array(intval($location), [0, 1, 2])) {
             return response()->api(generate_error("Invalid session location. Must be 0, 1, or 2."), 400);
         }
-        if (TrainingRecord::where([
+        if ($otsStatus == 1 && TrainingRecord::where([
             'ots_status' => 1,
             ['position', 'like', '%' . explode('_', $position)[1]],
             'student_id' => $studentId
@@ -642,8 +642,8 @@ class TrainingController extends Controller
                 //Check for evaluation
                 if (in_array($otsStatus, [1, 2])) {
                     $eval = $user->evaluations()->where([
-                        'position'   => strtolower(explode('_', $position)[1]),
-                        'ots_status' => $otsStatus == 1,
+                        'exam_position'   => $position,
+                        'result' => $otsStatus == 1,
                         'exam_date'  => $sessionDate->format('Y-m-d')
                     ]);
                     if ($eval->exists()) {
@@ -869,7 +869,7 @@ class TrainingController extends Controller
             return response()->forbidden();
         }
 
-        if (in_array($record->ots_status, [1, 2])) {
+        if (in_array($record->ots_status, [1, 2]) && !RoleHelper::isVATUSAStaff()) {
             return response()->api(generate_error("Unable to edit record because it is an OTS exam. Please contact VATUSA3 or 13 for assistance."),
                 500);
         }
@@ -960,6 +960,21 @@ class TrainingController extends Controller
         try {
             if (!isTest()) {
                 $record->saveOrFail();
+                //Check for evaluation
+                if (in_array($otsStatus, [1, 2])) {
+                    $eval = $record->student->evaluations()->where([
+                        'exam_position'   => $position,
+                        'result' => $otsStatus == 1,
+                        'exam_date'  => $sessionDate->format('Y-m-d')
+                    ]);
+                    if ($eval->exists()) {
+                        $otsEval = $eval->first();
+                        $otsEval->training_record_id = $record->id;
+                        $record->ots_eval_id = $otsEval->id;
+                        $otsEval->save();
+                        $record->save();
+                    }
+                }
             }
         } catch (Exception $e) {
             return response()->api(generate_error("Unable to save record.", 500));
