@@ -595,8 +595,8 @@ class UserController extends APIController
             return response()->api(generate_error("Malformed request"), 400);
         }
 
-        $user->checkPromotionCriteria($trainingRecordStatus, $otsEvalStatus, $examPosition, $dateOfExam, $evalId);
-        if (!$user->promotionEligible() || !(abs($trainingRecordStatus) == 1 && abs($otsEvalStatus) == 1)) {
+       $user->checkPromotionCriteria($trainingRecordStatus, $otsEvalStatus, $examPosition, $dateOfExam, $evalId);
+        if (!$user->promotionEligible()/* || !(abs($trainingRecordStatus) == 1 && abs($otsEvalStatus) == 1)*/) {
             return response()->api(generate_error("Precondition failed"), 412);
         }
 
