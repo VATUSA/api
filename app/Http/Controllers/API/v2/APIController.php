@@ -13,7 +13,7 @@ use \App\Http\Controllers\Controller as BaseController;
  *     host="api.vatusa.net",
  *     schemes={"https"},
  *     @SWG\Info(
- *         version="2.2",
+ *         version="2.3",
  *         title="VATUSA API",
  *         description="VATUSA APIv2 Documentation.
             Authentication methods are: <ul>
