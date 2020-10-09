@@ -26,18 +26,23 @@ class Promotion extends Model {
         $this->belongsTo('\App\User', 'cid', 'cid');
     }
 
-    public static function process($cid, $grantor, $to, $from = null, $exam = "0000-00-00 00:00:00", $examiner = 0, $position = "n/a") {
+    public static function process($cid, $grantor, $to, $from = null, $exam = "0000-00-00 00:00:00", $examiner = null, $position = "n/a", $evalId = null) {
         $p = new Promotion();
         $p->cid = $cid;
         $p->grantor = $grantor;
-        $p->from = (!$from) ? User::find($cid)->rating : $from;
+        $p->from = !$from ? User::find($cid)->rating : $from;
         $p->to = $to;
         $p->exam = $exam;
-        $p->examiner = ($examiner>0) ? $examiner : $grantor;
+        $p->examiner = $examiner ? $examiner : $grantor;
         $p->position = $position;
+        $p->eval_id = $evalId;
         $p->save();
 
         return $p;
+    }
+
+    public function evaluation() {
+        return $this->belongsTo(OTSEval::class, 'eval_id');
     }
 }
 
