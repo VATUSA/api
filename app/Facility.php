@@ -32,7 +32,7 @@ class Facility extends Model
 
     public function members()
     {
-        return $this->hasMany('App\User', 'facility', 'id')->orderBy('lname', 'ASC');
+        return $this->hasMany('App\User','facility', 'id')->orderBy('lname', 'ASC');
     }
 
     public function atm()
@@ -68,5 +68,9 @@ class Facility extends Model
     public function returnPaths()
     {
         return $this->hasMany(ReturnPaths::class);
+    }
+
+    public function trainingRecords() {
+        return $this->hasMany(TrainingRecord::class);
     }
 }

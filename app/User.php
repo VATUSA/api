@@ -30,17 +30,17 @@ use League\OAuth2\Client\Token\AccessToken;
  *     @SWG\Property(property="rating_short", type="string", description="String representation of rating"),
  *     @SWG\Property(property="created_at", type="string", description="Date added to database"),
  *     @SWG\Property(property="updated_at", type="string"),
- *     @SWG\Property(property="flag_needbasic", type="integer", description="1 needs basic exam"),
- *     @SWG\Property(property="flag_xferOverride", type="integer", description="Has approved transfer override"),
- *     @SWG\Property(property="flag_broadcastOptedIn", type="integer", description="Has opted in to receiving broadcast
+ *     @SWG\Property(property="flag_needbasic", type="boolean", description="1 needs basic exam"),
+ *     @SWG\Property(property="flag_xferOverride", type="boolean", description="Has approved transfer override"),
+ *     @SWG\Property(property="flag_broadcastOptedIn", type="boolean", description="Has opted in to receiving broadcast
  *                                                     emails"),
- *     @SWG\Property(property="flag_preventStaffAssign", type="integer", description="Ineligible for staff role
+ *     @SWG\Property(property="flag_preventStaffAssign", type="boolean", description="Ineligible for staff role
  *                                                       assignment"),
  *     @SWG\Property(property="facility_join", type="string", description="Date joined facility (YYYY-mm-dd
  *                                             hh:mm:ss)"),
  *     @SWG\Property(property="promotion_eligible", type="boolean", description="Is member eligible for promotion?"),
  *     @SWG\Property(property="transfer_eligible", type="boolean", description="Is member is eligible for transfer?"),
- *     @SWG\Property(property="flag_homecontroller", type="integer", description="1-Belongs to VATUSA"),
+ *     @SWG\Property(property="flag_homecontroller", type="boolean", description="1-Belongs to VATUSA"),
  *     @SWG\Property(property="lastactivity", type="string", description="Date last seen on website"),
  *     @SWG\Property(property="isMentor", type="boolean", description="Has Mentor role"),
  *     @SWG\Property(property="isSupIns", type="boolean", description="Is a SUP and has INS role"),
@@ -81,6 +81,14 @@ class User extends Model implements AuthenticatableContract, JWTSubject
 
     protected $appends = ["promotion_eligible", "transfer_eligible", "roles"];
 
+    protected $casts = [
+        'flag_needbasic'          => 'boolean',
+        'flag_xferOverride'       => 'boolean',
+        'flag_homecontroller'     => 'boolean',
+        'flag_broadcastOptedIn'   => 'boolean',
+        'flag_preventStaffAssign' => 'boolean'
+    ];
+
     /**
      * @return array
      */
@@ -106,7 +114,25 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     {
         return $this->belongsTo(Facility::class, 'facility')->first();
     }
+    public function trainingRecords()
+    {
+        return $this->hasMany(TrainingRecord::class, 'student_id', 'cid');
+    }
 
+    public function trainingRecordsIns()
+    {
+        return $this->hasMany(TrainingRecord::class, 'instructor_id', 'cid');
+    }
+
+    public function evaluations()
+    {
+        return $this->hasMany(OTSEval::class, 'student_id', 'cid');
+    }
+
+    public function evaluationsIns()
+    {
+        return $this->hasMany(OTSEval::class, 'instructor_id', 'cid');
+    }
     /**
      * @return bool
      */
@@ -666,6 +692,72 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             ]);
 
             return $token;
+        }
+    }
+
+    public function resolveRouteBinding($value)
+    {
+        return $this->where($this->getRouteKeyName(), $value)->first() ?? abort(404);
+    }
+    public function checkPromotionCriteria(&$trainingRecordStatus, &$otsEvalStatus, &$examPosition, &$dateOfExam, &$evalId)
+    {
+        $trainingRecordStatus = 0;
+        $otsEvalStatus = 0;
+
+        $dateOfExam = null;
+        $examPosition = null;
+        $evalId = null;
+
+        $evals = $this->evaluations;
+        $numPass = 0;
+        $numFail = 0;
+
+        if ($evals) {
+            foreach ($evals as $eval) {
+                if ($eval->form->rating_id == $this->rating + 1) {
+                    if ($eval->result) {
+                        $dateOfExam = $eval->exam_date;
+                        $examPosition = $eval->exam_position;
+                        $evalId = $eval->id;
+                        $numPass++;
+                    } else {
+                        $numFail++;
+                    }
+                }
+            }
+            if ($numPass) {
+                $otsEvalStatus = 1;
+            } elseif ($numFail) {
+                $otsEvalStatus = 2;
+            }
+        }
+
+        switch (Helper::ratingShortFromInt($this->rating + 1)) {
+            case 'S1':
+                $pos = "GND";
+                break;
+            case 'S2':
+                $pos = "TWR";
+                break;
+            case 'S3':
+                $pos = "APP";
+                break;
+            case 'C1':
+                $pos = "CTR";
+                break;
+            default:
+                $pos = "NA";
+                break;
+        }
+        if ($this->trainingRecords()->where([
+            ['position', 'like', "%$pos"],
+            'ots_status' => 1
+        ])->exists()) {
+            $trainingRecordStatus = 1;
+        }
+
+        if ($pos == "GND") {
+            $trainingRecordStatus = $otsEvalStatus = -1;
         }
     }
 }

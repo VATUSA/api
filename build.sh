@@ -12,7 +12,7 @@ chown application:application /www/storage/logs
 chmod 600 /run/secrets/*.key
 chown application:application /run/secrets/*.key
 
-if [[ "$WWW_ENV" == "prod" ]]; then
+if [[ "$WWW_ENV" == "prod" ]] || [[ "$WWW_ENV" == "livedev" ]]; then
   echo "*    *    *     *     *    cd /www && php artisan schedule:run" >> /etc/crontabs/application
   echo "*    *    *     *     *    cd /www && php artisan vatsim:flights" >> /etc/crontabs/application
   cd /www && php artisan migrate --force
