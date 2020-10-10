@@ -7,6 +7,8 @@ use App\Facility;
 
 class CERTHelper
 {
+    private static $baseUrl = "http://cert.vatsim.net/vatsimnet/admin/";
+
     public static function changeRating($cid, $newRating, $addToDatabase = false)
     {
         if (env('APP_ENV', 'dev') != "prod") {
