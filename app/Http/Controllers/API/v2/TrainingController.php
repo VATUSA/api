@@ -591,10 +591,10 @@ class TrainingController extends Controller
             return response()->api(generate_error("Invalid session location. Must be 0, 1, or 2."), 400);
         }
         if ($otsStatus == 1 && TrainingRecord::where([
-            'ots_status' => 1,
-            ['position', 'like', '%' . explode('_', $position)[1]],
-            'student_id' => $studentId
-        ])->exists()) {
+                'ots_status' => 1,
+                ['position', 'like', '%' . explode('_', $position)[1]],
+                'student_id' => $studentId
+            ])->exists()) {
             return response()->api(generate_error("The controller has an existing, passing OTS exam record for that position type."),
                 400);
         }
@@ -642,9 +642,9 @@ class TrainingController extends Controller
                 //Check for evaluation
                 if (in_array($otsStatus, [1, 2])) {
                     $eval = $user->evaluations()->where([
-                        'exam_position'   => $position,
-                        'result' => $otsStatus == 1,
-                        'exam_date'  => $sessionDate->format('Y-m-d')
+                        'exam_position' => $position,
+                        'result'        => $otsStatus == 1,
+                        'exam_date'     => $sessionDate->format('Y-m-d')
                     ]);
                     if ($eval->exists()) {
                         $otsEval = $eval->first();
@@ -726,7 +726,7 @@ class TrainingController extends Controller
             return response()->api(generate_error("The user is ineligible for this evaluation."), 400);
         }
 
-        if (!$position || !preg_match('/^([A-Z]{1,3})(_([A-Z]{1,3}))?_(TWR|APP|CTR)$/', $position)) {
+        if (!$position || !preg_match('/^([A-Z]{2,3})(_([A-Z]{1,3}))?_(TWR|APP|CTR)$/', $position)) {
             return response()->api(generate_error("Invalid position."), 400);
         }
         try {
@@ -963,9 +963,9 @@ class TrainingController extends Controller
                 //Check for evaluation
                 if (in_array($otsStatus, [1, 2])) {
                     $eval = $record->student->evaluations()->where([
-                        'exam_position'   => $position,
-                        'result' => $otsStatus == 1,
-                        'exam_date'  => $sessionDate->format('Y-m-d')
+                        'exam_position' => $position,
+                        'result'        => $otsStatus == 1,
+                        'exam_date'     => $sessionDate->format('Y-m-d')
                     ]);
                     if ($eval->exists()) {
                         $otsEval = $eval->first();
@@ -1080,7 +1080,8 @@ class TrainingController extends Controller
         User $user = null,
         Facility $facility = null
     ): bool {
-        $hasApiKey = AuthHelper::validApiKeyv2($request->input('apikey', null), $record->facility->id ?? $facility->id ?? null);
+        $hasApiKey = AuthHelper::validApiKeyv2($request->input('apikey', null),
+            $record->facility->id ?? $facility->id ?? null);
         $isTrainingStaff = Auth::user() && RoleHelper::isTrainingStaff($user->cid ?? null, true,
                 $record->facility ?? $facility ?? null);
         $ownsRecord = $record && Auth::user() && $record->student === Auth::user()->cid;
