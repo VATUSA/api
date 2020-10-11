@@ -584,7 +584,7 @@ class TrainingController extends Controller
         if ($score && (!is_numeric($score) || !in_array(intval($score), [1, 2, 3, 4, 5]))) {
             return response()->api(generate_error("Invalid score, must be null or an integer and between 1-5"), 400);
         }
-        if (!preg_match("/^([A-Z]{2,3})_([A-Z]{2,3})_(DEL|GND|TWR|APP|DEP|CTR)$/", $position)) {
+        if (!preg_match("/^([A-Z]{2,3})(_([A-Z]{2,3}))?_(DEL|GND|TWR|APP|DEP|CTR)$/", $position)) {
             return response()->api(generate_error("Invalid position."), 400);
         }
         if (!in_array(intval($location), [0, 1, 2])) {
@@ -726,7 +726,7 @@ class TrainingController extends Controller
             return response()->api(generate_error("The user is ineligible for this evaluation."), 400);
         }
 
-        if (!$position || !preg_match('/^([A-Z]{2,3})_([A-Z]{2,3})_(TWR|APP|CTR)$/', $position)) {
+        if (!$position || !preg_match('/^([A-Z]{2,3})(_([A-Z]{2,3}))?_(TWR|APP|CTR)$/', $position)) {
             return response()->api(generate_error("Invalid position."), 400);
         }
         try {
@@ -919,7 +919,7 @@ class TrainingController extends Controller
         if ($score && (!is_numeric($score) || !in_array(intval($score), [1, 2, 3, 4, 5]))) {
             return response()->api(generate_error("Invalid score, must be null or an integer and between 1-5"), 400);
         }
-        if (!preg_match("/^([A-Z]{2,3})_([A-Z]{2,3})_(DEL|GND|TWR|APP|DEP|CTR)$/", $position)) {
+        if (!preg_match("/^([A-Z]{2,3})(_([A-Z]{2,3}))?_(DEL|GND|TWR|APP|DEP|CTR)$/", $position)) {
             return response()->api(generate_error("Invalid position."), 400);
         }
         if (!in_array(intval($location), [0, 1, 2])) {
