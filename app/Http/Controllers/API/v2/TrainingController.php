@@ -1084,7 +1084,7 @@ class TrainingController extends Controller
             $record->facility->id ?? $facility->id ?? null);
         $isTrainingStaff = Auth::user() && RoleHelper::isTrainingStaff($user->cid ?? null, true,
                 $record->facility ?? $facility ?? null);
-        $ownsRecord = $record && Auth::user() && $record->student === Auth::user()->cid;
+        $ownsRecord = $record && Auth::user() && $record->student_id === Auth::user()->cid;
         $isOwnUser = Auth::user() && $user && $user->cid === Auth::user()->cid;
 
         return $hasApiKey || $isTrainingStaff || $ownsRecord || $isOwnUser;
