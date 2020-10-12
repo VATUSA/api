@@ -869,10 +869,10 @@ class TrainingController extends Controller
             return response()->forbidden();
         }
 
-        /*if (in_array($record->ots_status, [1, 2]) && !RoleHelper::isVATUSAStaff()) {
+        if (in_array($record->ots_status, [1, 2]) && !RoleHelper::isVATUSAStaff()) {
             return response()->api(generate_error("Unable to edit record because it is an OTS exam. Please contact VATUSA3 or 13 for assistance."),
                 500);
-        }*/
+        }
 
         //Input Data
         $sessionDate = $request->input("session_date", $record->session_date);
