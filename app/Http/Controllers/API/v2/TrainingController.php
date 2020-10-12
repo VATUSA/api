@@ -77,6 +77,11 @@ class TrainingController extends Controller
                     'fname' => $record->instructor->fname,
                     'lname' => $record->instructor->lname,
                 ],
+                'student' => [
+                    'cid'   => $record->student->cid,
+                    'fname' => $record->student->fname,
+                    'lname' => $record->student->lname,
+                ],
                 'editor'     => ($record->editor) ? [
                     'cid'   => $record->editor->cid,
                     'fname' => $record->editor->fname,
