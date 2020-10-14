@@ -1098,7 +1098,7 @@ class TrainingController extends Controller
     private function canCreate(Request $request, User $user)
     {
         $hasApiKey = AuthHelper::validApiKeyv2($request->input('apikey', null), $user->facility);
-        $isTrainingStaff = Auth::user() && RoleHelper::isTrainingStaff($user->cid, true, $user->facility);
+        $isTrainingStaff = Auth::user() && RoleHelper::isTrainingStaff(Auth::user()->cid, true, $user->facility);
         $notOwn = Auth::user() && $user->cid !== Auth::user()->cid; //No one can add their own record!
 
         return $notOwn && $isTrainingStaff || $hasApiKey;
