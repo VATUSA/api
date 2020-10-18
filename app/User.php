@@ -1,5 +1,7 @@
 <?php namespace App;
 
+use App\Helpers\CERTHelper;
+use App\Helpers\Helper;
 use App\Helpers\EmailHelper;
 use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
@@ -34,12 +36,14 @@ use League\OAuth2\Client\Token\AccessToken;
  *     @SWG\Property(property="last_promotion", type="string", description="Date last promoted (YYYY-mm-dd hh:mm:ss)"),
  *     @SWG\Property(property="flag_needbasic", type="boolean", description="1 needs basic exam"),
  *     @SWG\Property(property="flag_xferOverride", type="boolean", description="Has approved transfer override"),
- *     @SWG\Property(property="flag_broadcastOptedIn", type="boolean", description="Has opted in to receiving broadcast
- *                                                     emails"),
- *     @SWG\Property(property="flag_preventStaffAssign", type="boolean", description="Ineligible for staff role
- *                                                       assignment"),
- *     @SWG\Property(property="facility_join", type="string", description="Date joined facility (YYYY-mm-dd
- *                                             hh:mm:ss)"),
+ *     @SWG\Property(property="flag_broadcastOptedIn", type="boolean", description="Has opted in to receiving broadcast emails"),
+ *     @SWG\Property(property="flag_preventStaffAssign", type="boolean", description="Ineligible for staff role assignment"),
+ *     @SWG\Property(property="facility_join", type="string", description="Date joined facility (YYYY-mm-dd hh:mm:ss)"),
+ *     @SWG\Property(property="flag_needbasic", type="boolean", description="1 needs basic exam"),
+ *     @SWG\Property(property="flag_xferOverride", type="boolean", description="Has approved transfer override"),
+ *     @SWG\Property(property="flag_broadcastOptedIn", type="boolean", description="Has opted in to receiving broadcast emails"),
+ *     @SWG\Property(property="flag_preventStaffAssign", type="boolean", description="Ineligible for staff role assignment"),
+ *     @SWG\Property(property="facility_join", type="string", description="Date joined facility (YYYY-mm-dd hh:mm:ss)"),
  *     @SWG\Property(property="promotion_eligible", type="boolean", description="Is member eligible for promotion?"),
  *     @SWG\Property(property="transfer_eligible", type="boolean", description="Is member is eligible for transfer?"),
  *     @SWG\Property(property="flag_homecontroller", type="boolean", description="1-Belongs to VATUSA"),
@@ -77,11 +81,19 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     /**
      * @var array
      */
-    protected $hidden = ["password", "remember_token", "cert_update", "access_token", "refresh_token", "token_expires"];
+    protected $hidden = ["password", "remember_token", "cert_update", "access_token", "refresh_token", "token_expires", "discord_id"];
 
     protected $fillable = ["access_token", "refresh_token", "token_expires"];
 
     protected $appends = ["promotion_eligible", "transfer_eligible", "roles"];
+
+    protected $casts = [
+        'flag_needbasic'          => 'boolean',
+        'flag_xferOverride'       => 'boolean',
+        'flag_homecontroller'     => 'boolean',
+        'flag_broadcastOptedIn'   => 'boolean',
+        'flag_preventStaffAssign' => 'boolean'
+    ];
 
     /**
      * @return array
@@ -108,7 +120,30 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     {
         return $this->belongsTo(Facility::class, 'facility')->first();
     }
+    public function trainingRecords()
+    {
+        return $this->hasMany(TrainingRecord::class, 'student_id', 'cid');
+    }
 
+    public function trainingRecordsIns()
+    {
+        return $this->hasMany(TrainingRecord::class, 'instructor_id', 'cid');
+    }
+
+    public function evaluations()
+    {
+        return $this->hasMany(OTSEval::class, 'student_id', 'cid');
+    }
+
+    public function evaluationsIns()
+    {
+        return $this->hasMany(OTSEval::class, 'instructor_id', 'cid');
+    }
+
+    public function visits()
+    {
+        return $this->hasMany(Visit::class, 'cid', 'cid');
+    }
     /**
      * @return bool
      */
@@ -276,13 +311,13 @@ class User extends Model implements AuthenticatableContract, JWTSubject
      */
     public function removeFromFacility($by = "Automated", $msg = "None provided", $newfac = "ZAE")
     {
-        $facility = $this->facility;
+        $old_facility = $this->facility;
         $region = $this->facilityObj->region;
         $facname = $this->facilityObj->name;
 
-        if ($facility != "ZAE") {
+        if ($old_facility != "ZAE") {
             EmailHelper::sendEmail(
-                [$this->email, "$facility-atm@vatusa.net", "$facility-datm@vatusa.net", "vatusa$region@vatusa.net"],
+                [$this->email, "$old_facility-atm@vatusa.net", "$old_facility-datm@vatusa.net", "vatusa$region@vatusa.net"],
                 "Removal from $facname",
                 "emails.user.removed",
                 [
@@ -290,7 +325,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
                     'facility'    => $this->facname,
                     'by'          => User::findName($by),
                     'msg'         => $msg,
-                    'facid'       => $facility,
+                    'facid'       => $old_facility,
                     'region'      => $region,
                     'obsInactive' => $this->rating == 1 && str_contains($msg,
                             ['inactive', 'inactivity', 'Inactive', 'Inactivity', 'activity', 'Activity'])
@@ -303,23 +338,56 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             $by = $byuser->fullname();
         }
 
-        log_action($this->cid, "Removed from $facility by $by: $msg");
+        log_action($this->cid, "Removed from $old_facility by $by: $msg");
 
         if ($this->rating == RatingHelper::shortToInt("OBS") &&
             env('EXIT_SURVEY', null) != null &&
-            !in_array($facility, ["ZZN", "ZAE", "ZHQ"]) &&
+            !in_array($old_facility, ["ZZN", "ZAE", "ZHQ"]) &&
             $newfac == "ZAE") {
             SurveyAssignment::assign(Survey::find(env('EXIT_SURVEY_ID')), $this, ['region' => $region]);
         }
 
         $this->facility_join = Carbon::now();
         $this->facility = $newfac;
+
+        /**
+         * Demote I1 on transfer to ZAE to C1/C3 based on their previous rating.
+         */
+        if ($this->rating == RatingHelper::shortToInt("I1") && $newfac == "ZAE") {
+            $dm = new Promotion();
+            $pm_hist = $dm->where('cid', $this->cid)
+                ->where('to', RatingHelper::shortToInt("I1"))
+                ->orderBy('id', 'desc')->first();
+            // visiting controllers have no promotion record
+            if ($pm_hist != null) {
+                $original_rating = $pm_hist->from;
+                $dm->cid = $this->cid;
+                $dm->grantor = 0; // automated
+                $dm->from = RatingHelper::shortToInt("I1");
+                $dm->to = $original_rating;
+                $dm->save();
+                CERTHelper::changeRating($this->cid, $original_rating, false);
+                $this->rating = $original_rating; // save within this function, not using CERTHelper
+                log_action($this->cid, "Demoted to " .RatingHelper::intToShort($original_rating). " on transfer to ZAE");
+            }
+            // remove MTR/INS role
+            $role = new Role();
+            $mtr_ins_query = $role->where("cid", $this->cid)
+                ->where("facility", $old_facility)
+                ->where(function ($query) {
+                    $query->where("role", "MTR")->orWhere("role", "INS");
+                });
+            if ($mtr_ins_query->count()) {
+                $mtr_ins_query->delete();
+                log_action($this->cid, "MTR/INS role removed on transfer to ZAE");
+            }
+        }
         $this->save();
 
         $t = new Transfer();
         $t->cid = $this->cid;
         $t->to = $newfac;
-        $t->from = $facility;
+        $t->from = $old_facility;
         $t->reason = $msg;
         $t->status = 1;
         $t->actiontext = $msg;
@@ -327,8 +395,8 @@ class User extends Model implements AuthenticatableContract, JWTSubject
 
         if ($this->rating >= RatingHelper::shortToInt("I1")) {
             SMFHelper::createPost(7262, 82,
-                "User Removal: " . $this->fullname() . " (" . RatingHelper::intToShort($this->rating) . ") from " . $facility,
-                "User " . $this->fullname() . " (" . $this->cid . "/" . RatingHelper::intToShort($this->rating) . ") was removed from $facility and holds a higher rating.  Please check for demotion requirements.  [url=https://www.vatusa.net/mgt/controller/" . $this->cid . "]Member Management[/url]");
+                "User Removal: " . $this->fullname() . " (" . RatingHelper::intToShort($this->rating) . ") from " . $old_facility,
+                "User " . $this->fullname() . " (" . $this->cid . "/" . RatingHelper::intToShort($this->rating) . ") was removed from $old_facility and holds a higher rating.  Please check for demotion requirements.  [url=https://www.vatusa.net/mgt/controller/" . $this->cid . "]Member Management[/url]");
         }
     }
 
@@ -490,14 +558,17 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             }
         }
 
-        // S1-S3 within 90 check
-        $promotion = Promotion::where('cid', $this->cid)->where("to", "<=", RatingHelper::shortToInt("S3"))
-            ->where('created_at', '>=', \DB::raw('DATE(NOW() - INTERVAL 90 DAY)'))->first();
+        // S1-C1 within 90 check
+        $promotion = Promotion::where('cid', $this->cid)->where([
+            ['to',         '<=', Helper::ratingIntFromShort("C1")],
+            ['to',         '>', 'from'],
+            ['created_at', '>=', \DB::raw("DATE(NOW() - INTERVAL 90 DAY)")]
+        ])->first();
 
         if ($promotion == null) {
-            $checks['promo'] = true;
+            $checks['promo'] = 1;
         } else {
-            $checks['promo'] = false;
+            $checks['promo'] = 0;
         }
 
         if ($this->rating >= RatingHelper::shortToInt("I1") && $this->rating <= RatingHelper::shortToInt("I3")) {
@@ -581,6 +652,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
 
         return false;
     }
+
     public function getRolesAttribute()
     {
         return Role::where('cid', $this->cid)->get();
@@ -632,6 +704,72 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             ]);
 
             return $token;
+        }
+    }
+
+    public function resolveRouteBinding($value)
+    {
+        return $this->where($this->getRouteKeyName(), $value)->first() ?? abort(404);
+    }
+    public function checkPromotionCriteria(&$trainingRecordStatus, &$otsEvalStatus, &$examPosition, &$dateOfExam, &$evalId)
+    {
+        $trainingRecordStatus = 0;
+        $otsEvalStatus = 0;
+
+        $dateOfExam = null;
+        $examPosition = null;
+        $evalId = null;
+
+        $evals = $this->evaluations;
+        $numPass = 0;
+        $numFail = 0;
+
+        if ($evals) {
+            foreach ($evals as $eval) {
+                if ($eval->form->rating_id == $this->rating + 1) {
+                    if ($eval->result) {
+                        $dateOfExam = $eval->exam_date;
+                        $examPosition = $eval->exam_position;
+                        $evalId = $eval->id;
+                        $numPass++;
+                    } else {
+                        $numFail++;
+                    }
+                }
+            }
+            if ($numPass) {
+                $otsEvalStatus = 1;
+            } elseif ($numFail) {
+                $otsEvalStatus = 2;
+            }
+        }
+
+        switch (Helper::ratingShortFromInt($this->rating + 1)) {
+            case 'S1':
+                $pos = "GND";
+                break;
+            case 'S2':
+                $pos = "TWR";
+                break;
+            case 'S3':
+                $pos = "APP";
+                break;
+            case 'C1':
+                $pos = "CTR";
+                break;
+            default:
+                $pos = "NA";
+                break;
+        }
+        if ($this->trainingRecords()->where([
+            ['position', 'like', "%$pos"],
+            'ots_status' => 1
+        ])->exists()) {
+            $trainingRecordStatus = 1;
+        }
+
+        if ($pos == "GND") {
+            $trainingRecordStatus = $otsEvalStatus = -1;
         }
     }
 }
