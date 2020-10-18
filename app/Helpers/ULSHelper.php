@@ -67,7 +67,7 @@ class ULSHelper
         //smfapi_login($cid, 14400);
         \Auth::loginUsingId($cid, true);
 
-        if (!app()->environment('dev')) {
+        if (!app()->environment('dev') && !app()->environment('livedev')) {
             $token = [
                 "cid"    => (string) $cid,
                 "nlt"    => time() + 7,
