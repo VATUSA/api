@@ -58,7 +58,7 @@ class Handler extends ExceptionHandler
      * @param \Illuminate\Http\Request $request
      * @param \Exception               $exception
      *
-     * @return \Illuminate\Http\Response
+     * @return bool|\Illuminate\Http\JsonResponse|\Symfony\Component\HttpFoundation\Response
      */
     public function render($request, Exception $exception)
     {
@@ -77,12 +77,15 @@ class Handler extends ExceptionHandler
             return false;
         }
 
-        return response()->json([
-            'status'    => 'error',
-            'msg'       => $exception->getMessage(),
-            'exception' => get_class($exception)
-        ], $status);
-        //return parent::render($request, $exception);
+        if (!app()->environment("dev")) {
+            return response()->json([
+                'status'    => 'error',
+                'msg'       => $exception->getMessage(),
+                'exception' => get_class($exception)
+            ], $status);
+        } else {
+            return parent::render($request, $exception);
+        }
     }
 
     /**

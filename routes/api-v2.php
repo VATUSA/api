@@ -121,6 +121,32 @@ Route::group(['middleware' => 'semiprivate'], function () {
     Route::post('facility/{id}/ulsReturns', 'FacilityController@addUlsReturn');
     Route::delete('facility/{id}/ulsReturns/{order}', 'FacilityController@removeUlsReturn');
     Route::put('facility/{id}/ulsReturns/{order}', 'FacilityController@putUlsReturn');
+Route::group(['prefix' => 'facility'], function () {
+    Route::get('/', 'FacilityController@getIndex');
+    Route::get('{id}', 'FacilityController@getFacility')->where('id', '[A-Za-z]{3}');
+    Route::get('{id}/staff', 'FacilityController@getStaff')->where('id', '[A-Za-z]{3}');
+    Route::get('{id}/roster', 'FacilityController@getRoster')->where('id', '[A-Za-z]{3}');
+    Route::group(['middleware' => 'auth:web,jwt'], function () {
+        Route::put('{id}', 'FacilityController@putFacility')->where('id', '[A-Za-z]{3}');
+        Route::delete('{id}/roster/{cid}', 'FacilityController@deleteRoster')->where([
+            'id'  => '[A-Za-z]{3}',
+            'cid' => '\d+'
+        ]);
+        Route::put('{id}/transfers/{transferId}', 'FacilityController@putTransfer')->where([
+            'id'         => '[A-Za-z]{3}',
+            'transferId' => '\d+'
+        ]);
+        Route::post('{id}/email/{templateName}', 'FacilityController@postEmailTemplate');
+    });
+    Route::group(['middleware' => 'semiprivate'], function () {
+        Route::get('{id}/transfers', 'FacilityController@getTransfers')->where('id', '[A-Za-z]{3}');
+        Route::get('{id}/email/{templateName}', 'FacilityController@getemailTemplate');
+        Route::get('{id}/ulsReturns', 'FacilityController@getUlsReturns');
+        Route::post('{id}/ulsReturns', 'FacilityController@addUlsReturn');
+        Route::delete('{id}/ulsReturns/{order}', 'FacilityController@removeUlsReturn');
+        Route::put('{id}/ulsReturns/{order}', 'FacilityController@putUlsReturn');
+        Route::get('{facility}/training/records', 'TrainingController@getFacilityRecords');
+    });
 });
 
 /******************************************************************************************
