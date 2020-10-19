@@ -632,9 +632,9 @@ class FacilityController extends APIController
                     ->where("role", "INS")->count() > 0;
 
             // Last promotion date
-            $promotion = Promotion::where('cid', $member->cid)->latest()->first();
-            if ($promotion) {
-                $rosterArr[$i]['last_promotion'] = $promotion->created_at;
+            $last_promotion = $member->lastPromotion();
+            if ($last_promotion) {
+                $rosterArr[$i]['last_promotion'] = $last_promotion->created_at;
             } else {
                 $rosterArr[$i]['last_promotion'] = null;
             }

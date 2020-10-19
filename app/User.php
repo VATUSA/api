@@ -33,19 +33,9 @@ use League\OAuth2\Client\Token\AccessToken;
  *     @SWG\Property(property="flag_broadcastOptedIn", type="integer", description="Has opted in to receiving broadcast emails"),
  *     @SWG\Property(property="flag_preventStaffAssign", type="integer", description="Ineligible for staff role assignment"),
  *     @SWG\Property(property="facility_join", type="string", description="Date joined facility (YYYY-mm-dd hh:mm:ss)"),
- *     @SWG\Property(property="last_promotion", type="string", description="Date last promoted (YYYY-mm-dd hh:mm:ss)"),
- *     @SWG\Property(property="flag_needbasic", type="boolean", description="1 needs basic exam"),
- *     @SWG\Property(property="flag_xferOverride", type="boolean", description="Has approved transfer override"),
- *     @SWG\Property(property="flag_broadcastOptedIn", type="boolean", description="Has opted in to receiving broadcast emails"),
- *     @SWG\Property(property="flag_preventStaffAssign", type="boolean", description="Ineligible for staff role assignment"),
- *     @SWG\Property(property="facility_join", type="string", description="Date joined facility (YYYY-mm-dd hh:mm:ss)"),
- *     @SWG\Property(property="flag_needbasic", type="boolean", description="1 needs basic exam"),
- *     @SWG\Property(property="flag_xferOverride", type="boolean", description="Has approved transfer override"),
- *     @SWG\Property(property="flag_broadcastOptedIn", type="boolean", description="Has opted in to receiving broadcast emails"),
- *     @SWG\Property(property="flag_preventStaffAssign", type="boolean", description="Ineligible for staff role assignment"),
- *     @SWG\Property(property="facility_join", type="string", description="Date joined facility (YYYY-mm-dd hh:mm:ss)"),
  *     @SWG\Property(property="promotion_eligible", type="boolean", description="Is member eligible for promotion?"),
  *     @SWG\Property(property="transfer_eligible", type="boolean", description="Is member is eligible for transfer?"),
+ *     @SWG\Property(property="last_promotion", type="string", description="Date last promoted"),
  *     @SWG\Property(property="flag_homecontroller", type="boolean", description="1-Belongs to VATUSA"),
  *     @SWG\Property(property="lastactivity", type="string", description="Date last seen on website"),
  *     @SWG\Property(property="isMentor", type="boolean", description="Has Mentor role"),
@@ -144,6 +134,12 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     {
         return $this->hasMany(Visit::class, 'cid', 'cid');
     }
+
+    public function lastPromotion()
+    {
+        return $this->hasMany(Promotion::class, 'cid', 'cid')->latest()->first();
+    }
+
     /**
      * @return bool
      */
