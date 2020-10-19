@@ -88,6 +88,9 @@ class UserController extends APIController
                 ->where("cid", $user->cid)
                 ->where("role", "INS")->exists();
 
+        //Last Promotion
+        $data['last_promotion'] = $user->lastPromotion()->created_at;
+
         return response()->api($data);
     }
 
