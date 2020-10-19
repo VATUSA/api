@@ -563,11 +563,36 @@ class FacilityController extends APIController
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(
-     *             type="array",
-     *             @SWG\Items(
-     *                 ref="#/definitions/User",
-     *             ),
-     *         ),
+     *             type="object",
+     *             @SWG\Property(property="cid", type="integer"),
+     *             @SWG\Property(property="fname", type="string", description="First name"),
+     *             @SWG\Property(property="lname", type="string", description="Last name"),
+     *             @SWG\Property(property="email", type="string", description="Email address of user, will be null if API Key or necessary roles are not available (ATM, DATM, TA, WM, INS)"),
+     *             @SWG\Property(property="facility", type="string", description="Facility ID"),
+     *             @SWG\Property(property="rating", type="integer", description="Rating based off array where 1=OBS, S1, S2, S3, C1, C2, C3, I1, I2, I3, SUP, ADM"),
+     *             @SWG\Property(property="rating_short", type="string", description="String representation of rating"),
+     *             @SWG\Property(property="created_at", type="string", description="Date added to database"),
+     *             @SWG\Property(property="updated_at", type="string"),
+     *             @SWG\Property(property="flag_needbasic", type="integer", description="1 needs basic exam"),
+     *             @SWG\Property(property="flag_xferOverride", type="integer", description="Has approved transfer override"),
+     *             @SWG\Property(property="flag_broadcastOptedIn", type="integer", description="Has opted in to receiving broadcast emails"),
+     *             @SWG\Property(property="flag_preventStaffAssign", type="integer", description="Ineligible for staff role assignment"),
+     *             @SWG\Property(property="facility_join", type="string", description="Date joined facility (YYYY-mm-dd hh:mm:ss)"),
+     *             @SWG\Property(property="promotion_eligible", type="boolean", description="Is member eligible for promotion?"),
+     *             @SWG\Property(property="transfer_eligible", type="boolean", description="Is member is eligible for transfer?"),
+     *             @SWG\Property(property="last_promotion", type="string", description="Date last promoted"),
+     *             @SWG\Property(property="flag_homecontroller", type="boolean", description="1-Belongs to VATUSA"),
+     *             @SWG\Property(property="lastactivity", type="string", description="Date last seen on website"),
+     *             @SWG\Property(property="isMentor", type="boolean", description="Has Mentor role"),
+     *             @SWG\Property(property="isSupIns", type="boolean", description="Is a SUP and has INS role"),
+     *             @SWG\Property(property="membership", type="string", description="'Home' or 'visit' depending on facility membership."),
+     *             @SWG\Property(property="roles", type="array",
+     *                 @SWG\Items(type="object",
+     *                     @SWG\Property(property="facility", type="string"),
+     *                     @SWG\Property(property="role", type="string")
+     *                 )
+     *             )
+     *         )
      *     )
      * )
      */
@@ -631,12 +656,21 @@ class FacilityController extends APIController
                 $member->roles->where("facility", $id)
                     ->where("role", "INS")->count() > 0;
 
-            // Last promotion date
+            //Last promotion date
             $last_promotion = $member->lastPromotion();
             if ($last_promotion) {
                 $rosterArr[$i]['last_promotion'] = $last_promotion->created_at;
             } else {
                 $rosterArr[$i]['last_promotion'] = null;
+            }
+
+            //Membership
+            if ($member->facility == $id) {
+                $rosterArr[$i]['membership'] = 'home';
+            } else {
+                $rosterArr[$i]['membership'] = 'visit';
+                $rosterArr[$i]['facility_join'] = Visit::where('facility', $id)
+                                                        ->where('cid', $member->cid)->first()->updated_at;
             }
 
             $i++;
