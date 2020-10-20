@@ -216,6 +216,8 @@ Route::group(['prefix' => '/survey', 'middleware' => 'private'], function () {
  */
 
 Route::group(['prefix' => '/user'], function () {
+    Route::get('/filtercid/{partialCid}', 'UserController@filterUsersCid')->where('partialCid', '[0-9]+');
+    Route::get('/filterlname/{partialLName}', 'UserController@filterUsersLName')->where('partialLName', '[A-Za-z0-9]+');
     Route::get('/{cid}', 'UserController@getIndex')->where('cid', '[0-9]+');
 
     Route::get('/roles/{facility}/{role}', 'UserController@getRoleUsers')->where([
