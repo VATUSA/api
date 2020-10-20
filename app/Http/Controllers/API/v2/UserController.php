@@ -32,7 +32,7 @@ class UserController extends APIController
      * @SWG\Get(
      *     path="/user/(cid)",
      *     summary="Get user's information.",
-     *     description="Get user's information. Email field and broadcast opt-in status require authentication as staff member or API key.
+     *     description="Get user's information. Email field, broadcast opt-in status, and visiting facilities require authentication as staff member or API key.
     Prevent staff assigment flag requires authentication as senior staff.",
      *     produces={"application/json"}, tags={"user"},
      * @SWG\Parameter(name="cid",in="path",required=true,type="string",description="Cert ID"),
@@ -77,6 +77,28 @@ class UserController extends APIController
 
         //Add rating_short property
         $data['rating_short'] = RatingHelper::intToShort($data["rating"]);
+
+        if ($isFacStaff || $isSeniorStaff || AuthHelper::validApiKeyv2($request->input('apikey', null))) {
+            // Get Facilties CID is Visiting
+            $vis_query = $user->visits()
+                ->pluck('facility');
+
+            $vis_array = [];
+
+            foreach ($vis_query as &$fac) {
+                $query = Facility::where('id', $fac);
+
+                $array = [
+                    "id" => $fac,
+                    "name" => $query->value('name'),
+                    "region" => $query->value('region')
+                ];
+
+                $vis_array[] = $array;
+            }
+
+            $data['visiting_facilities'] = $vis_array;
+        }
 
         //Is Mentor
         $data['isMentor'] = $user->roles->where("facility", $user->facility)
