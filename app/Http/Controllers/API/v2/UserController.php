@@ -98,6 +98,8 @@ class UserController extends APIController
             }
 
             $data['visiting_facilities'] = $vis_array;
+        } else {
+            $data['visiting_facilities'] = null;
         }
 
         //Is Mentor
@@ -1177,8 +1179,7 @@ class UserController extends APIController
      *                 @SWG\Property(property="lname", type="string"),
      *             )
      *         ),
-     *         examples={"application/json":{
-     *         }}
+     *         examples={"application/json":{"0":{"cid":1391803,"fname":"Michael","lname":"Romashov"},"1":{"cid":1391802,"fname":"Sankara","lname":"Narayanan "}}}
      *     )
      * )
      */
@@ -1237,8 +1238,7 @@ class UserController extends APIController
      *                 @SWG\Property(property="lname", type="string"),
      *             )
      *         ),
-     *         examples={"application/json":{
-     *         }}
+     *         examples={"application/json":{"0":{"cid":1459055,"fname":"Aidan","lname":"Deschene"},"1":{"cid":1263769,"fname":"Austin","lname":"Tedesco"},"2":{"cid":919571,"fname":"Matthew","lname":"Tedesco"},"3":{"cid":1202101,"fname":"Mike","lname":"Tedesco"}}}
      *     )
      * )
      */

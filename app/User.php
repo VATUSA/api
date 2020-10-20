@@ -45,6 +45,13 @@ use League\OAuth2\Client\Token\AccessToken;
  *             @SWG\Property(property="facility", type="string"),
  *             @SWG\Property(property="role", type="string")
  *         )
+ *     ),
+ *     @SWG\Property(property="visiting_facilities", type="array",
+ *         @SWG\Items(type="object",
+ *             @SWG\Property(property="id", type="string"),
+ *             @SWG\Property(property="name", type="string"),
+ *             @SWG\Property(property="region", type="integer")
+ *         )
  *     )
  * )
  */
