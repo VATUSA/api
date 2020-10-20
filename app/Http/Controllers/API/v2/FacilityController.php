@@ -779,6 +779,9 @@ class FacilityController extends APIController
             $visitor->facility = $id;
             $visitor->active = 1;
             $visitor->save();
+
+            log_action($user->cid, "User added to $facility->id visiting roster by " . \Auth::user()->fullname()
+                . " (" . \Auth::user()->cid . ")");
         }
 
         return response()->ok();
@@ -860,9 +863,9 @@ class FacilityController extends APIController
 
         // Checks if user with specified cid exists
         $user = User::where('cid', $cid)->first();
-        if (!$user || $user->facility != $facility->id) {
+        if (!$user) {
             return response()->api(
-                generate_error("User not found or not in facility"), 404
+                generate_error("User not found."), 404
             );
         }
 
@@ -881,6 +884,9 @@ class FacilityController extends APIController
 
         $visit->active = 0;
         $visit->save();
+
+        log_action($user->cid, "User removed from $facility->id visiting roster by " . \Auth::user()->fullname()
+            . ": " . $request->input("reason"));
 
         return response()->ok();
     }
