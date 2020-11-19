@@ -152,15 +152,18 @@ class FacilityHelper
 
     public static function findEmailTemplate($id, $tn)
     {
-        $template = EmailTemplate::where('facility_id', $id)->where('template', $tn)->first();
+        /*$template = EmailTemplate::where('facility_id', $id)->where('template', $tn)->first();
         if (!$template) {
             $template = new EmailTemplate();
             $template->facility_id = $id;
             $template->template = $tn;
             $template->body = file_get_contents(static::EmailTemplateMap($tn));
             $template->save();
-        }
-
+        }*/
+        $template = new EmailTemplate();
+        $template->facility_id = $id;
+        $template->template = $tn;
+        $template->body = file_get_contents(static::EmailTemplateMap($tn));
         return $template;
     }
 
