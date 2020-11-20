@@ -1,6 +1,7 @@
 /node_modules
 /public/hot
 /public/storage
+bootstrap/cache
 /storage/*.key
 /storage/api-docs/api-docs.json
 /vendor
