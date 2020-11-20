@@ -35,13 +35,13 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
       
       - name: Push to Docker Hub (Master)
-        if: contains(github.ref, "master")
+        if: contains(github.ref, 'master')
         run: |
           docker tag vatusa/api vatusa/api:latest
           docker push vatusa/api:latest
           
       - name: Push to Docker Hub (Dev)
-        if: contains(github.ref, "dev")
+        if: contains(github.ref, 'dev')
         run: |
           docker tag vatusa/api vatusa/api:devel
           docker push vatusa/api:devel
