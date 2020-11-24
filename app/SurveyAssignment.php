@@ -71,7 +71,7 @@ class SurveyAssignment extends Model
             fputs($fh, $data);
             fclose($fh);
 
-            \Mail::to($user)->cc("vatusa6@vatusa.net")->send(new \App\Mail\SurveyAssignment($user, $survey, $a));
+            \Mail::to($user)->cc("vatusa12@vatusa.net")->send(new \App\Mail\SurveyAssignment($user, $survey, $a));
             unlink($template_file);
         }
         return $a;
