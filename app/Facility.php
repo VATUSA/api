@@ -38,7 +38,7 @@ class Facility extends Model
     public function visitors()
     {
         return User::whereHas('visits', function($q) {
-            $q->where('facility', $this->id)->where('active', 1);
+            $q->where('facility', $this->id);
         })->get();
     }
 
