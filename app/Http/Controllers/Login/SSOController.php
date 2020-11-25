@@ -135,7 +135,7 @@ class SSOController extends Controller
                 $signature = ULSHelper::base64url_encode($signature);
                 $data = file_get_contents("https://forums.vatusa.net/api.php?register=1&data=$token&signature=$signature");
                 if ($data != "OK") {
-                    $error = "Unable to create forum data. Please try again later or contact VATUSA6.";
+                    $error = "Unable to create forum data. Please try again later or contact VATUSA12.";
 
                     return $isULS ? response($error, 401) : redirect(env('SSO_RETURN_HOME_ERROR'))->with('error', $error);
 

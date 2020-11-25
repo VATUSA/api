@@ -12,6 +12,8 @@ use App\TMUFacility;
 use App\TMUNotice;
 use App\Transfer;
 use App\User;
+use App\Promotion;
+use App\Visit;
 use Illuminate\Http\Request;
 use App\Facility;
 use Jose\Component\KeyManagement\JWKFactory;
@@ -533,16 +535,24 @@ class FacilityController extends APIController
     /**
      * @param \Illuminate\Http\Request $request
      * @param                          $id
+     * @param                          $membership
      *
      * @return \Illuminate\Http\JsonResponse
      *
      * @SWG\Get(
-     *     path="/facility/{id}/roster",
+     *     path="/facility/{id}/roster/{membership}",
      *     summary="Get facility roster.",
      *     description="Get facility staff. Email field requires authentication as senior staff.
     Broadcast opt-in status requires API key or staff member authentication. Prevent Staff Assignment field requires
     authentication as senior staff.", produces={"application/json"}, tags={"facility"},
      * @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
+     * @SWG\Parameter(name="membership", in="query", description="Membership type (home, visit, both)", default="home", type="string"),
+     * @SWG\Response(
+     *         response="400",
+     *         description="Malformed request, invalid role parameter",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Malformed request"}},
+     *     ),
      * @SWG\Response(
      *         response="404",
      *         description="Not found or not active",
@@ -553,18 +563,44 @@ class FacilityController extends APIController
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(
-     *             type="array",
-     *             @SWG\Items(
-     *                 ref="#/definitions/User",
-     *             ),
-     *         ),
+     *             type="object",
+     *             @SWG\Property(property="cid", type="integer"),
+     *             @SWG\Property(property="fname", type="string", description="First name"),
+     *             @SWG\Property(property="lname", type="string", description="Last name"),
+     *             @SWG\Property(property="email", type="string", description="Email address of user, will be null if API Key or necessary roles are not available (ATM, DATM, TA, WM, INS)"),
+     *             @SWG\Property(property="facility", type="string", description="Facility ID"),
+     *             @SWG\Property(property="rating", type="integer", description="Rating based off array where 1=OBS, S1, S2, S3, C1, C2, C3, I1, I2, I3, SUP, ADM"),
+     *             @SWG\Property(property="rating_short", type="string", description="String representation of rating"),
+     *             @SWG\Property(property="created_at", type="string", description="Date added to database"),
+     *             @SWG\Property(property="updated_at", type="string"),
+     *             @SWG\Property(property="flag_needbasic", type="integer", description="1 needs basic exam"),
+     *             @SWG\Property(property="flag_xferOverride", type="integer", description="Has approved transfer override"),
+     *             @SWG\Property(property="flag_broadcastOptedIn", type="integer", description="Has opted in to receiving broadcast emails"),
+     *             @SWG\Property(property="flag_preventStaffAssign", type="integer", description="Ineligible for staff role assignment"),
+     *             @SWG\Property(property="facility_join", type="string", description="Date joined facility (YYYY-mm-dd hh:mm:ss)"),
+     *             @SWG\Property(property="promotion_eligible", type="boolean", description="Is member eligible for promotion?"),
+     *             @SWG\Property(property="transfer_eligible", type="boolean", description="Is member is eligible for transfer?"),
+     *             @SWG\Property(property="last_promotion", type="string", description="Date last promoted"),
+     *             @SWG\Property(property="flag_homecontroller", type="boolean", description="1-Belongs to VATUSA"),
+     *             @SWG\Property(property="lastactivity", type="string", description="Date last seen on website"),
+     *             @SWG\Property(property="isMentor", type="boolean", description="Has Mentor role"),
+     *             @SWG\Property(property="isSupIns", type="boolean", description="Is a SUP and has INS role"),
+     *             @SWG\Property(property="membership", type="string", description="'Home' or 'visit' depending on facility membership."),
+     *             @SWG\Property(property="roles", type="array",
+     *                 @SWG\Items(type="object",
+     *                     @SWG\Property(property="facility", type="string"),
+     *                     @SWG\Property(property="role", type="string")
+     *                 )
+     *             )
+     *         )
      *     )
      * )
      */
     public
     function getRoster(
         Request $request,
-        $id
+        $id,
+        $membership = 'home'
     ) {
         $facility = Facility::find($id);
         if (!$facility || $facility->active != 1) {
@@ -576,10 +612,23 @@ class FacilityController extends APIController
         $isSeniorStaff = \Auth::check() && RoleHelper::isSeniorStaff(\Auth::user()->cid, \Auth::user()->facility);
 
         $rosterArr = [];
-        $i = 0;
-        $roster = $facility->members;
-        $count = count($roster);
 
+        if ($membership == 'both') {
+            $home = $facility->members;
+            $visiting = $facility->visitors();
+            $roster = $home->merge($visiting);
+        } else {
+            if ($membership == 'home') {
+                $roster = $facility->members;
+            } else {
+                if ($membership == 'visit') {
+                    $roster = $facility->visitors();
+                } else {
+                    return response()->api(generate_error("Malformed request"), 400);
+                }
+            }
+        }
+        $i = 0;
         foreach ($roster as $member) {
             $rosterArr[$i] = $member;
             if (!$hasAPIKey && !$isFacStaff) {
@@ -596,18 +645,239 @@ class FacilityController extends APIController
             $rosterArr[$i]['rating_short'] = RatingHelper::intToShort($member->rating);
 
             //Is Mentor
-            $rosterArr[$i]['isMentor'] = $member->roles->where("facility", $member->facility)
-                ->where("role", "MTR")->count() > 0;
+            $rosterArr[$i]['isMentor'] = $member->roles->where("facility", $id)
+                    ->where("role", "MTR")->count() > 0;
 
             //Has Ins Perms
             $rosterArr[$i]['isSupIns'] = $roster[$i]['rating_short'] === "SUP" &&
-                $member->roles->where("facility", $member->facility)
+                $member->roles->where("facility", $id)
                     ->where("role", "INS")->count() > 0;
+
+            //Last promotion date
+            $last_promotion = $member->lastPromotion();
+            if ($last_promotion) {
+                $rosterArr[$i]['last_promotion'] = $last_promotion->created_at;
+            } else {
+                $rosterArr[$i]['last_promotion'] = null;
+            }
+
+            //Membership
+            if ($member->facility == $id) {
+                $rosterArr[$i]['membership'] = 'home';
+            } else {
+                $rosterArr[$i]['membership'] = 'visit';
+                $rosterArr[$i]['facility_join'] = Visit::where('facility', $id)
+                    ->where('cid', $member->cid)->first()->updated_at;
+            }
 
             $i++;
         }
 
         return response()->api($rosterArr);
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @param string                   $id
+     * @param integer                  $cid
+     *
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @SWG\Post(
+     *     path="/facility/{id}/roster/manageVisitor/{cid}",
+     *     summary="Add member to visiting roster. [Auth]",
+     *     description="Add member to visiting roster.  JWT or Session Cookie required (required role: ATM,
+    DATM, VATUSA STAFF)",
+     * produces={"application/json"},
+     * tags={"facility"},
+     * security={"jwt","session"},
+     * @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
+     * @SWG\Parameter(name="cid", in="query", description="CID of controller", required=true, type="integer"),
+     * @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     * @SWG\Response(
+     *         response="403",
+     *         description="Forbidden -- needs to have role of ATM, DATM or VATUSA Division staff member",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","message"="Forbidden"}},
+     *     ),
+     * @SWG\Response(
+     *         response="404",
+     *         description="Not found or not active",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *     ),
+     * @SWG\Response(
+     *         response="412",
+     *         description="User is already visiting this facility",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="User is already visiting this facility"}},
+     *     ),
+     * @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(ref="#/definitions/OK"),
+     *         examples={"application/json":{"status"="OK", "testing"=false}}
+     *     )
+     * )
+     */
+    public
+    function addVisitor(
+        Request $request,
+        string $id,
+        int $cid
+    ) {
+        // Checks if facility exists and is active
+        $facility = Facility::find($id);
+        if (!$facility || !$facility->active) {
+            return response()->api(
+                generate_error("Facility not found or not active"), 404);
+        }
+
+        // Checks if requesting user is VATUSA or senior staff
+        if (!RoleHelper::isVATUSAStaff() && !RoleHelper::isSeniorStaff(\Auth::user()->cid, $id, false)) {
+            return response()->api(generate_error("Forbidden"), 403);
+        }
+
+        // Checks if user with specified cid exists
+        $user = User::where('cid', $cid)->first();
+        if (!$user) {
+            return response()->api(
+                generate_error("User not found"), 404
+            );
+        }
+
+        // Checks if user is a member at the specified facility
+        if ($user->facility == $id) {
+            return response()->api(
+                generate_error("User is a member at this facility"), 400
+            );
+        }
+
+        // Checks if the visit already exists
+        $visit = Visit::where('cid', $cid)->where('facility', $id)->first();
+        if ($visit) {
+            return response()->api(
+                generate_error("User is already visiting this facility"), 400
+            );
+        } else {
+            $visitor = new Visit();
+            $visitor->cid = $user->cid;
+            $visitor->facility = $id;
+            $visitor->save();
+
+            log_action($user->cid, "User added to $facility->id visiting roster by " . \Auth::user()->fullname()
+                . " (" . \Auth::user()->cid . ")");
+        }
+
+        return response()->ok();
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @param string                   $id
+     * @param integer                  $cid
+     *
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @SWG\Delete(
+     *     path="/facility/{id}/roster/manageVisitor/{cid}",
+     *     summary="Delete member from visiting roster. [Auth]",
+     *     description="Delete member from visiting roster.  JWT or Session Cookie required (required role: ATM,
+    DATM, VATUSA STAFF)",
+     * produces={"application/json"},
+     * tags={"facility"},
+     * security={"jwt","session"},
+     * @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
+     * @SWG\Parameter(name="cid", in="query", description="CID of controller", required=true, type="integer"),
+     * @SWG\Parameter(name="reason", in="formData", description="Reason for deletion", required=true, type="string"),
+     * @SWG\Response(
+     *         response="400",
+     *         description="Malformed request, missing required parameter",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Malformed request"}},
+     *     ),
+     * @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     * @SWG\Response(
+     *         response="403",
+     *         description="Forbidden -- needs to have role of ATM, DATM or VATUSA Division staff member",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","message"="Forbidden"}},
+     *     ),
+     * @SWG\Response(
+     *         response="404",
+     *         description="Not found or not active",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *     ),
+     * @SWG\Response(
+     *         response="412",
+     *         description="User is not visiting this facility",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="User is not visiting this facility"}},
+     *     ),
+     * @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(ref="#/definitions/OK"),
+     *         examples={"application/json":{"status"="OK", "testing"=false}}
+     *     )
+     * )
+     */
+    public
+    function removeVisitor(
+        Request $request,
+        string $id,
+        int $cid
+    ) {
+        // Checks if facility exists and is active
+        $facility = Facility::find($id);
+        if (!$facility || !$facility->active) {
+            return response()->api(
+                generate_error("Facility not found or not active"), 404);
+        }
+
+        // Checks if requesting user is VATUSA or senior staff
+        if (!RoleHelper::isVATUSAStaff() && !RoleHelper::isSeniorStaff(\Auth::user()->cid, $id, false)) {
+            return response()->api(generate_error("Forbidden"), 403);
+        }
+
+        // Checks if user with specified cid exists
+        $user = User::where('cid', $cid)->first();
+        if (!$user) {
+            return response()->api(
+                generate_error("User not found."), 404
+            );
+        }
+
+        // Checks if request has a reason attached
+        if (!$request->has("reason") || !$request->filled("reason")) {
+            return response()->api(generate_error("Malformed request"), 400);
+        }
+
+        // Checks if user is a member at the specified facility
+        $visit = Visit::where('cid', $cid)->where('facility', $id)->first();
+        if (!$visit) {
+            return response()->api(
+                generate_error("User is not visiting this facility"), 412
+            );
+        }
+
+        $visit->delete();
+
+        log_action($user->cid, "User removed from $facility->id visiting roster by " . \Auth::user()->fullname()
+            . ": " . $request->input("reason"));
+
+        return response()->ok();
     }
 
     /**

@@ -35,6 +35,13 @@ class Facility extends Model
         return $this->hasMany('App\User','facility', 'id')->orderBy('lname', 'ASC');
     }
 
+    public function visitors()
+    {
+        return User::whereHas('visits', function($q) {
+            $q->where('facility', $this->id);
+        })->get();
+    }
+
     public function atm()
     {
         return $this->hasOne('App\User', 'cid', 'atm')->first();

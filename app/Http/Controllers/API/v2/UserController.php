@@ -32,7 +32,7 @@ class UserController extends APIController
      * @SWG\Get(
      *     path="/user/(cid)",
      *     summary="Get user's information.",
-     *     description="Get user's information. Email field and broadcast opt-in status require authentication as staff member or API key.
+     *     description="Get user's information. Email field, broadcast opt-in status, and visiting facilities require authentication as staff member or API key.
     Prevent staff assigment flag requires authentication as senior staff.",
      *     produces={"application/json"}, tags={"user"},
      * @SWG\Parameter(name="cid",in="path",required=true,type="string",description="Cert ID"),
@@ -78,6 +78,13 @@ class UserController extends APIController
         //Add rating_short property
         $data['rating_short'] = RatingHelper::intToShort($data["rating"]);
 
+        if ($isFacStaff || $isSeniorStaff || AuthHelper::validApiKeyv2($request->input('apikey', null))) {
+            // Get Facilties CID is Visiting
+            $data['visiting_facilities'] = $user->visits->toArray();
+        } else {
+            $data['visiting_facilities'] = null;
+        }
+
         //Is Mentor
         $data['isMentor'] = $user->roles->where("facility", $user->facility)
                 ->where("role", "MTR")->count() > 0;
@@ -87,6 +94,9 @@ class UserController extends APIController
             Role::where("facility", $data['facility'])
                 ->where("cid", $user->cid)
                 ->where("role", "INS")->exists();
+
+        //Last Promotion
+        $data['last_promotion'] = $user->lastPromotion()->created_at;
 
         return response()->api($data);
     }
@@ -1115,5 +1125,123 @@ class UserController extends APIController
         $results = ExamResults::where('cid', $cid)->orderBy('date', 'desc')->get()->toArray();
 
         return response()->api($results);
+    }
+
+    /**
+     * @param $partialCid
+     *
+     * @return array|string
+     *
+     * @SWG\Get(
+     *     path="/user/filtercid/(partialCid)",
+     *     summary="Filter users by partial CID.",
+     *     description="Get an array of users matching a given partial CID.",
+     *     produces={"application/json"}, tags={"user"},
+     * @SWG\Parameter(name="partialCid", in="path", required=true, type="integer", description="Partial CERT ID"),
+     * @SWG\Response(
+     *         response="404",
+     *         description="Not Found",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="No matching users found."}},
+     *     ),
+     * @SWG\Response(
+     *         response="412",
+     *         description="Precondition Failed (>= 4 digits)",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Partial CID must be at least 4 digits."}},
+     *     ),
+     * @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="array",
+     *             @SWG\Items(
+     *                 type="object",
+     *                 @SWG\Property(property="cid", type="integer"),
+     *                 @SWG\Property(property="fname", type="string"),
+     *                 @SWG\Property(property="lname", type="string"),
+     *             )
+     *         ),
+     *         examples={"application/json":{"0":{"cid":1391803,"fname":"Michael","lname":"Romashov"},"1":{"cid":1391802,"fname":"Sankara","lname":"Narayanan "}}}
+     *     )
+     * )
+     */
+    public function filterUsersCid($partialCid)
+    {
+        if (strlen($partialCid) < 4) {
+            return response()->api(generate_error("Partial CID must be at least 4 digits."), 412);
+        }
+
+        $matches = User::where('cid', 'like', "%$partialCid%")->orderBy('fname', 'asc')->get();
+
+        if (!$matches) {
+            return response()->api(generate_error("No matching users found.", 404));
+        }
+
+        $return = [];
+        foreach ($matches as $match) {
+            $return[] = ['cid' => $match->cid, 'fname' => $match->fname, 'lname' => $match->lname];
+        }
+
+        return response()->api($return);
+    }
+
+    /**
+     * @param $partialLName
+     *
+     * @return array|string
+     *
+     * @SWG\Get(
+     *     path="/user/filterlname/(partialLName)",
+     *     summary="Filter users by partial last name.",
+     *     description="Get an array of users matching a given partial last name.",
+     *     produces={"application/json"}, tags={"user"},
+     * @SWG\Parameter(name="partialLName", in="path", required=true, type="string", description="Partial Last Name"),
+     * @SWG\Response(
+     *         response="404",
+     *         description="Not Found",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="No matching users found."}},
+     *     ),
+     * @SWG\Response(
+     *         response="412",
+     *         description="Precondition Failed (>= 4 letters)",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Partial last name must be at least 4 letters."}},
+     *     ),
+     * @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="array",
+     *             @SWG\Items(
+     *                 type="object",
+     *                 @SWG\Property(property="cid", type="integer"),
+     *                 @SWG\Property(property="fname", type="string"),
+     *                 @SWG\Property(property="lname", type="string"),
+     *             )
+     *         ),
+     *         examples={"application/json":{"0":{"cid":1459055,"fname":"Aidan","lname":"Deschene"},"1":{"cid":1263769,"fname":"Austin","lname":"Tedesco"},"2":{"cid":919571,"fname":"Matthew","lname":"Tedesco"},"3":{"cid":1202101,"fname":"Mike","lname":"Tedesco"}}}
+     *     )
+     * )
+     */
+    public function filterUsersLName($partialLName)
+    {
+        if (strlen($partialLName) < 4) {
+            return response()->api(generate_error("Partial last name must be at least 4 letters."), 412);
+        }
+
+        $matches = User::where('lname', 'like', "%$partialLName%")->orderBy('fname', 'asc')->get();
+
+        if (!$matches) {
+            return response()->api(generate_error("No matching users found.", 404));
+        }
+
+        $return = [];
+        foreach ($matches as $match) {
+            $return[] = ['cid' => $match->cid, 'fname' => $match->fname, 'lname' => $match->lname];
+        }
+
+        return response()->api($return);
     }
 }
