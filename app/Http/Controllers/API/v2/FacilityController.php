@@ -687,7 +687,7 @@ class FacilityController extends APIController
      *     path="/facility/{id}/roster/manageVisitor/{cid}",
      *     summary="Add member to visiting roster. [Auth]",
      *     description="Add member to visiting roster.  JWT or Session Cookie required (required role: ATM,
-    DATM, VATUSA STAFF)",
+    DATM, WM, VATUSA STAFF)",
      * produces={"application/json"},
      * tags={"facility"},
      * security={"jwt","session"},
@@ -739,7 +739,8 @@ class FacilityController extends APIController
         }
 
         // Checks if requesting user is VATUSA or senior staff
-        if (!RoleHelper::isVATUSAStaff() && !RoleHelper::isSeniorStaff(\Auth::user()->cid, $id, false)) {
+        if (!RoleHelper::isVATUSAStaff() && !RoleHelper::isSeniorStaff(\Auth::user()->cid, $id,
+                false) && !RoleHelper::has(\Auth::user()->cid, $id, "WM")) {
             return response()->api(generate_error("Forbidden"), 403);
         }
 
@@ -847,7 +848,8 @@ class FacilityController extends APIController
         }
 
         // Checks if requesting user is VATUSA or senior staff
-        if (!RoleHelper::isVATUSAStaff() && !RoleHelper::isSeniorStaff(\Auth::user()->cid, $id, false)) {
+        if (!RoleHelper::isVATUSAStaff() && !RoleHelper::isSeniorStaff(\Auth::user()->cid, $id,
+                false) && !RoleHelper::has(\Auth::user()->cid, $id, "WM")) {
             return response()->api(generate_error("Forbidden"), 403);
         }
 
