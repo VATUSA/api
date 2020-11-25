@@ -194,7 +194,7 @@ class TrainingController extends Controller
         //Get records for a Facility
         // GET /facility/ZSE/training/records
         if ($this->canView($request, null, null, $facility)) {
-            return response()->api(TrainingRecord::where('facility',
+            return response()->api(TrainingRecord::where('facility_id',
                 $facility->id)->with('facility:id,name')->get()->toArray());
         }
 
