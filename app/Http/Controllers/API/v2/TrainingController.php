@@ -141,16 +141,7 @@ class TrainingController extends Controller
         // GET /user/1275302/training/records
         if ($this->canView($request, null, $user)) {
             return response()->api(TrainingRecord::where('student_id',
-                $user->cid)->with('facility:id,name')->get()->filter(function ($record) use ($user, $request) {
-                if (Auth::user() && $user->facility !== Auth::user()->facility || $request->has('apikey') && $user->visits()->where('facility',
-                        Facility::where("apikey", $request->apikey)
-                            ->orWhere("api_sandbox_key", $request->apikey)->first()->id)->exists()) {
-                    //Visitor
-                    return $record->ots_status > 0;
-                } else {
-                    return true;
-                }
-            })->toArray());
+                $user->cid)->with('facility:id,name')->get()->toArray());
         }
 
         return response()->forbidden();
@@ -1134,7 +1125,7 @@ class TrainingController extends Controller
         if ($request->has('apikey') && $keyFac) {
             if ($record) {
                 $apiKeyVisitor = $record->student->visits()->where('facility',
-                        $keyFac->id)->exists() && $record->ots_status;
+                        $keyFac->id)->exists();
             }
             if ($user) {
                 $apiKeyVisitor = $user->visits()->where('facility',
@@ -1142,7 +1133,7 @@ class TrainingController extends Controller
             }
         }
         $visitor = Auth::user() && RoleHelper::isTrainingStaff(Auth::user()->cid,
-                true) && ($record && $record->ots_status && $record->student->visits()->where('facility',
+                true) && ($record && $record->student->visits()->where('facility',
                     Auth::user()->facility)->exists() || $user && $user->visits()->where('facility',
                     Auth::user()->facility)->exists());
 
