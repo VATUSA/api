@@ -625,32 +625,10 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         if ($this->facility()->wm == $this->cid)
             return "WM";
 
-        if (RoleHelper::has($this->cid, "ZHQ", "US1")) {
-            return "1";
-        }
-        if (RoleHelper::has($this->cid, "ZHQ", "US2")) {
-            return "2";
-        }
-        if (RoleHelper::has($this->cid, "ZHQ", "US3")) {
-            return "3";
-        }
-        if (RoleHelper::has($this->cid, "ZHQ", "US4")) {
-            return "4";
-        }
-        if (RoleHelper::has($this->cid, "ZHQ", "US5")) {
-            return "5";
-        }
-        if (RoleHelper::has($this->cid, "ZHQ", "US6")) {
-            return "6";
-        }
-        if (RoleHelper::has($this->cid, "ZHQ", "US7")) {
-            return "7";
-        }
-        if (RoleHelper::has($this->cid, "ZHQ", "US8")) {
-            return "8";
-        }
-        if (RoleHelper::has($this->cid, "ZHQ", "US9")) {
-            return "9";
+        for ($i = 1; $i <= 14; $i++) {
+            if (RoleHelper::has($this->cid, "ZHQ", "US$i")) {
+                return $i;
+            }
         }
 
         return false;

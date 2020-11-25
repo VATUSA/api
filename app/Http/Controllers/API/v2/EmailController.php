@@ -61,14 +61,12 @@ class EmailController extends APIController
         foreach ($return as $row) {
             if ($row->facility === "ZHQ" && preg_match("/^US(\d+)$/", $row->role, $matches)) {
                 $temp = [
-                    "type"  => EmailHelper::isStaticForward("vatusa" . $matches[1] . "@vatusa.net") ?
-                        EmailHelper::$email_static :
-                        EmailHelper::getType("vatusa" . $matches[1] . "@vatusa.net"),
-                    "email" => "vatusa" . $matches[1] . "@vatusa.net",
+                    "type"  => EmailHelper::$email_full,
+                    "email" => strtolower(substr(\Auth::user()->fname, 0, 1) . "." . \Auth::user()->lname) . "@vatusa.net",
                 ];
-                if ($temp['type'] === EmailHelper::$email_forward || $temp['type'] === EmailHelper::$email_static) {
+                /*if ($temp['type'] === EmailHelper::$email_forward || $temp['type'] === EmailHelper::$email_static) {
                     $temp['destination'] = implode(",", EmailHelper::forwardDestination($temp['email']));
-                }
+                }*/
                 $response[] = $temp;
             }
             if ($row->facility !== "ZHQ" && $row->facility !== "ZAE" && in_array($row->role,
@@ -308,14 +306,13 @@ class EmailController extends APIController
             if (strpos($destination, ",")) {
                 $destinationArr = explode(",", $destination);
             }
-            if(!empty($destinationArr)) {
-                foreach($destinationArr as $d) {
+            if (!empty($destinationArr)) {
+                foreach ($destinationArr as $d) {
                     if (!filter_var($d, FILTER_VALIDATE_EMAIL)) {
                         return response()->api(generate_error("Invalid email $d", true), 400);
                     }
                 }
-            }
-            else {
+            } else {
                 if (!filter_var($destination, FILTER_VALIDATE_EMAIL)) {
                     return response()->api(generate_error("Invalid email $destination", true), 400);
                 }
