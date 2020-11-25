@@ -777,10 +777,10 @@ class FacilityController extends APIController
             $visitor->save();
 
             if (Auth::check()) {
-                log_action($user->cid, "User added to $facility->id visiting roster by " . Auth::user()->fullname()
+                log_action($user->cid, "User added to {$facility->id} visiting roster by " . Auth::user()->fullname()
                     . " (" . Auth::user()->cid . ")");
             } else {
-                log_action($user->cid, "User added to $facility->id visiting roster");
+                log_action($user->cid, "User added to {$facility->id} visiting roster");
             }
         }
 
@@ -890,10 +890,10 @@ class FacilityController extends APIController
         $visit->delete();
 
         if (Auth::check()) {
-            log_action($user->cid, "User removed from $facility->id visiting roster by " . Auth::user()->fullname()
+            log_action($user->cid, "User removed from {$facility->id} visiting roster by " . Auth::user()->fullname()
                 . ": " . $request->input("reason"));
         } else {
-            log_action($user->cid, "User removed from $facility->id visiting roster: " . $request->input("reason"));
+            log_action($user->cid, "User removed from {$facility->id} visiting roster: " . $request->input("reason"));
         }
 
         return response()->ok();
