@@ -23,7 +23,7 @@ use Mews\Purifier\Facades\Purifier;
 /**
  * Class TrainingController
  * @package App\Http\Controllers\API\v2
- * @author Blake Nahin <vatusa6@vatusa.net>
+ * @author  Blake Nahin <vatusa12@vatusa.net>
  */
 class TrainingController extends Controller
 {
@@ -71,13 +71,14 @@ class TrainingController extends Controller
         //Get training record info
         // GET /training/record/8
         if ($this->canView($request, $record)) {
+
             return response()->api(array_merge($record->load('facility:id,name')->toArray(), [
                 'instructor' => [
                     'cid'   => $record->instructor->cid,
                     'fname' => $record->instructor->fname,
                     'lname' => $record->instructor->lname,
                 ],
-                'student' => [
+                'student'    => [
                     'cid'   => $record->student->cid,
                     'fname' => $record->student->fname,
                     'lname' => $record->student->lname,
@@ -185,8 +186,11 @@ class TrainingController extends Controller
      *
      * @return array
      */
-    public function getFacilityRecords(Request $request, Facility $facility)
-    {
+    public
+    function getFacilityRecords(
+        Request $request,
+        Facility $facility
+    ) {
         //Get records for a Facility
         // GET /facility/ZSE/training/records
         if ($this->canView($request, null, null, $facility)) {
@@ -236,8 +240,10 @@ class TrainingController extends Controller
      *
      * @return array
      */
-    public function getAllRecords(Request $request)
-    {
+    public
+    function getAllRecords(
+        Request $request
+    ) {
         //Get all records #nofilter
         // GET /training/records
         if ($this->canView($request)) {
@@ -285,8 +291,11 @@ class TrainingController extends Controller
      *
      * @return string|null
      */
-    public function getOTSEval(Request $request, OTSEval $eval)
-    {
+    public
+    function getOTSEval(
+        Request $request,
+        OTSEval $eval
+    ) {
         // [Not Implemented]
     }
 
@@ -327,8 +336,11 @@ class TrainingController extends Controller
      *
      * @return string|null
      */
-    public function getOTSTrainingEval(Request $request, TrainingRecord $record)
-    {
+    public
+    function getOTSTrainingEval(
+        Request $request,
+        TrainingRecord $record
+    ) {
         //JSON of OTS Evaluation form from training record
         // GET /training/record/8/otsEval
         //if ($this->canView($request)) {
@@ -380,8 +392,11 @@ class TrainingController extends Controller
      *
      * @return array|\Illuminate\Database\Eloquent\Builder
      */
-    public function getUserOTSEvals(Request $request, User $user)
-    {
+    public
+    function getUserOTSEvals(
+        Request $request,
+        User $user
+    ) {
         //Get OTS Evals for a user.
         //  GET /user/1275302/training/otsEvals
         // QSP rating_id Filter by rating
@@ -444,8 +459,10 @@ class TrainingController extends Controller
      *
      * @return array|\Illuminate\Database\Eloquent\Builder
      */
-    public function getOTSEvals(Request $request)
-    {
+    public
+    function getOTSEvals(
+        Request $request
+    ) {
         //Get all OTS Evals.
         //  GET /training/otsEvals
         // QSP rating_id Filter by rating
@@ -536,8 +553,11 @@ class TrainingController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Throwable
      */
-    public function postNewRecord(Request $request, User $user)
-    {
+    public
+    function postNewRecord(
+        Request $request,
+        User $user
+    ) {
         //Submit new record
         // POST /user/1275302/training/record
         // Return training record id... resp()->ok(['id' => 19])
@@ -865,8 +885,11 @@ class TrainingController extends Controller
      * @param \Illuminate\Http\Request $request
      * @param \App\TrainingRecord      $record
      */
-    public function editRecord(Request $request, TrainingRecord $record)
-    {
+    public
+    function editRecord(
+        Request $request,
+        TrainingRecord $record
+    ) {
         //Owner instructor and senior staff
         //PUT /training/record/8
 
@@ -1027,8 +1050,11 @@ class TrainingController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function deleteRecord(Request $request, TrainingRecord $record)
-    {
+    public
+    function deleteRecord(
+        Request $request,
+        TrainingRecord $record
+    ) {
         //Owner instructor and senior staff
         //DELETE /training/record/8
 
@@ -1057,8 +1083,11 @@ class TrainingController extends Controller
      *
      * @return bool
      */
-    private function canModify(Request $request, TrainingRecord $record): bool
-    {
+    private
+    function canModify(
+        Request $request,
+        TrainingRecord $record
+    ): bool {
         $hasApiKey = AuthHelper::validApiKeyv2($request->input('apikey', null), $record->facility->id);
         $isSeniorStaff = Auth::user() && RoleHelper::isSeniorStaff(Auth::user()->cid, $record->facility, true);
         $ownsRecord = $record && Auth::user() && $record->instructor_id == Auth::user()->cid && RoleHelper::isTrainingStaff(Auth::user()->cid,
@@ -1079,24 +1108,48 @@ class TrainingController extends Controller
      *
      * @return bool
      */
-    private function canView(
+    private
+    function canView(
         Request $request,
         TrainingRecord $record = null,
         User $user = null,
         Facility $facility = null
     ): bool {
         $hasApiKey = AuthHelper::validApiKeyv2($request->input('apikey', null),
-            $record->facility->id ?? $facility->id ?? null);
-        $isTrainingStaff = Auth::user() && RoleHelper::isTrainingStaff($user->cid ?? null, true,
+            $record->facility->id ?? $facility->id ?? $user->facility ?? null);
+
+        //Check Visiting Facilities
+        $apiKeyVisitor = false;
+        $keyFac = Facility::where("apikey", $request->apikey)
+            ->orWhere("api_sandbox_key", $request->apikey)->first();
+        if ($request->has('apikey') && $keyFac) {
+            if ($record) {
+                $apiKeyVisitor = $record->student->visits()->where('facility',
+                        $keyFac->id)->exists();
+            }
+            if ($user) {
+                $apiKeyVisitor = $user->visits()->where('facility',
+                    $keyFac->id)->exists();
+            }
+        }
+        $visitor = Auth::user() && RoleHelper::isTrainingStaff(Auth::user()->cid,
+                true) && ($record && $record->student->visits()->where('facility',
+                    Auth::user()->facility)->exists() || $user && $user->visits()->where('facility',
+                    Auth::user()->facility)->exists());
+
+        $isTrainingStaff = Auth::user() && RoleHelper::isTrainingStaff(Auth::user()->cid, true,
                 $record->facility ?? $facility ?? null);
         $ownsRecord = $record && Auth::user() && $record->student_id === Auth::user()->cid;
         $isOwnUser = Auth::user() && $user && $user->cid === Auth::user()->cid;
 
-        return $hasApiKey || $isTrainingStaff || $ownsRecord || $isOwnUser;
+        return $hasApiKey || $apiKeyVisitor || $visitor || $isTrainingStaff || $ownsRecord || $isOwnUser;
     }
 
-    private function canCreate(Request $request, User $user)
-    {
+    private
+    function canCreate(
+        Request $request,
+        User $user
+    ) {
         $hasApiKey = AuthHelper::validApiKeyv2($request->input('apikey', null), $user->facility);
         $isTrainingStaff = Auth::user() && RoleHelper::isTrainingStaff(Auth::user()->cid, true, $user->facility);
         $notOwn = Auth::user() && $user->cid !== Auth::user()->cid; //No one can add their own record!
