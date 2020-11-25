@@ -712,7 +712,7 @@ class FacilityController extends APIController
      *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
      *     ),
      * @SWG\Response(
-     *         response="412",
+     *         response="422",
      *         description="User is already visiting this facility",
      *         @SWG\Schema(ref="#/definitions/error"),
      *         examples={"application/json":{"status"="error","msg"="User is already visiting this facility"}},
@@ -755,7 +755,7 @@ class FacilityController extends APIController
         // Checks if user is a member at the specified facility
         if ($user->facility == $id) {
             return response()->api(
-                generate_error("User is a member at this facility"), 400
+                generate_error("User is a member at this facility"), 422
             );
         }
 
@@ -763,7 +763,7 @@ class FacilityController extends APIController
         $visit = Visit::where('cid', $cid)->where('facility', $id)->first();
         if ($visit) {
             return response()->api(
-                generate_error("User is already visiting this facility"), 400
+                generate_error("User is already visiting this facility"), 422
             );
         } else {
             $visitor = new Visit();
@@ -821,7 +821,7 @@ class FacilityController extends APIController
      *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
      *     ),
      * @SWG\Response(
-     *         response="412",
+     *         response="422",
      *         description="User is not visiting this facility",
      *         @SWG\Schema(ref="#/definitions/error"),
      *         examples={"application/json":{"status"="error","msg"="User is not visiting this facility"}},
@@ -870,7 +870,7 @@ class FacilityController extends APIController
         $visit = Visit::where('cid', $cid)->where('facility', $id)->first();
         if (!$visit) {
             return response()->api(
-                generate_error("User is not visiting this facility"), 412
+                generate_error("User is not visiting this facility"), 422
             );
         }
 
