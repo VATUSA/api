@@ -603,7 +603,24 @@ class FacilityController extends APIController
         $id,
         $membership = 'home'
     ) {
-        $facility = Facility::find($id);
+        $facility = Facility::with([
+            'members', 'members.visits', 'members.lastPromotion',
+            'visitors', 'visitors.lastPromotion'
+        ])->withCount([
+            'members.roles AS roles_mentor' => function($q) use ($id) {
+                $q->where('facility', $id)->where('role', 'MTR');
+            },
+            'members.roles AS roles_instructor' => function($q) use ($id) {
+                $q->where('facility', $id)->where('role', 'INS');
+            },
+            'visitors.roles AS roles_mentor' => function($q) use ($id) {
+                $q->where('facility', $id)->where('role', 'MTR');
+            },
+            'visitors.roles AS roles_instructor' => function($q) use ($id) {
+                $q->where('facility', $id)->where('role', 'INS');
+            },
+        ])->find($id);
+
         if (!$facility || $facility->active != 1) {
             return response()->api(generate_error("Not found"), 404);
         }
@@ -612,67 +629,46 @@ class FacilityController extends APIController
         $isFacStaff = Auth::check() && RoleHelper::isFacilityStaff(Auth::user()->cid, Auth::user()->facility);
         $isSeniorStaff = Auth::check() && RoleHelper::isSeniorStaff(Auth::user()->cid, Auth::user()->facility);
 
-        $rosterArr = [];
-
-        if ($membership == 'both') {
-            $home = $facility->members;
-            $visiting = $facility->visitors();
-            $roster = $home->merge($visiting);
+        if($membership == "home") {
+            $roster = $facility->members;
+        } elseif($membership == "visit") {
+            $roster = $facility->visitors;
+        } elseif($membership == "both") {
+            $roster = $facility->members->merge($facility->visitors);
         } else {
-            if ($membership == 'home') {
-                $roster = $facility->members;
-            } else {
-                if ($membership == 'visit') {
-                    $roster = $facility->visitors();
-                } else {
-                    return response()->api(generate_error("Malformed request"), 400);
-                }
-            }
+            return response()->api(generate_error("Malformed request"), 400);
         }
-        $i = 0;
-        foreach ($roster as $member) {
-            $rosterArr[$i] = $member;
+
+        $rosterArr = $roster->map(function($member) use ($id, $hasAPIKey, $isFacStaff, $isSeniorStaff) {
+            $member->rating_short = RatingHelper::intToShort($member->rating);
+
+            //Nullify fields that aren't gated for the given authentication scope
             if (!$hasAPIKey && !$isFacStaff) {
-                $rosterArr[$i]['flag_broadcastOptedIn'] = null;
-                $rosterArr[$i]['email'] = null;
+                $member->flag_broadcastOptedIn = null;
+                $member->email = null;
             }
+
             if (!$isSeniorStaff) {
-                //Senior Staff Only
-                $rosterArr[$i]['flag_preventStaffAssign'] = null;
+                $member->flag_preventStaffAssign = null;
             }
 
+            //Member is a mentor in requested facility
+            $member->isMentor = $member->roles_mentor > 0;
 
-            //Add rating_short property
-            $rosterArr[$i]['rating_short'] = RatingHelper::intToShort($member->rating);
-
-            //Is Mentor
-            $rosterArr[$i]['isMentor'] = $member->roles->where("facility", $id)
-                    ->where("role", "MTR")->count() > 0;
-
-            //Has Ins Perms
-            $rosterArr[$i]['isSupIns'] = $roster[$i]['rating_short'] === "SUP" &&
-                $member->roles->where("facility", $id)
-                    ->where("role", "INS")->count() > 0;
+            //Member has sup/instructor permissions
+            $member->isSupIns = $member->rating_short === "SUP" || $member->roles_instructor > 0;
 
             //Last promotion date
-            $last_promotion = $member->lastPromotion();
-            if ($last_promotion) {
-                $rosterArr[$i]['last_promotion'] = $last_promotion->created_at;
-            } else {
-                $rosterArr[$i]['last_promotion'] = null;
-            }
+            $member->last_promotion = $member->lastPromotion->created_at ?? null;
 
             //Membership
-            if ($member->facility == $id) {
-                $rosterArr[$i]['membership'] = 'home';
+            if($member->facility == $id) {
+                $member->membership = "home";
             } else {
-                $rosterArr[$i]['membership'] = 'visit';
-                $rosterArr[$i]['facility_join'] = Visit::where('facility', $id)
-                    ->where('cid', $member->cid)->first()->updated_at;
+                $member->membership = "visit";
+                $member->facility_join = $member->visits->where('facility', $id)->first()->updated_at;
             }
-
-            $i++;
-        }
+        })->toArray();
 
         return response()->api($rosterArr);
     }

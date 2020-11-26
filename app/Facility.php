@@ -37,9 +37,7 @@ class Facility extends Model
 
     public function visitors()
     {
-        return User::whereHas('visits', function($q) {
-            $q->where('facility', $this->id);
-        })->get();
+        return $this->belongsToMany(User::class, 'visits', 'facility', 'cid');
     }
 
     public function atm()
