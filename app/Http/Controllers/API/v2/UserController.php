@@ -80,24 +80,7 @@ class UserController extends APIController
 
         if ($isFacStaff || $isSeniorStaff || AuthHelper::validApiKeyv2($request->input('apikey', null))) {
             // Get Facilties CID is Visiting
-            $vis_query = $user->visits()
-                ->pluck('facility');
-
-            $vis_array = [];
-
-            foreach ($vis_query as &$fac) {
-                $query = Facility::where('id', $fac);
-
-                $array = [
-                    "id" => $fac,
-                    "name" => $query->value('name'),
-                    "region" => $query->value('region')
-                ];
-
-                $vis_array[] = $array;
-            }
-
-            $data['visiting_facilities'] = $vis_array;
+            $data['visiting_facilities'] = $user->visits->toArray();
         } else {
             $data['visiting_facilities'] = null;
         }
