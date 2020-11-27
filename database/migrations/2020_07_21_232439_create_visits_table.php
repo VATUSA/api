@@ -17,7 +17,6 @@ class CreateVisitsTable extends Migration
             $table->bigInteger('id', true)->unsigned();
             $table->integer('cid')->unsigned();
             $table->string('facility', 3);
-            $table->integer('active')->unsigned();
             $table->timestamps();
         });
     }

@@ -613,23 +613,20 @@ class FacilityController extends APIController
 
         $rosterArr = [];
 
-        if ($membership == 'both')
-        {
+        if ($membership == 'both') {
             $home = $facility->members;
             $visiting = $facility->visitors();
             $roster = $home->merge($visiting);
-        }
-        else if ($membership == 'home')
-        {
-            $roster = $facility->members;
-        }
-        else if ($membership == 'visit')
-        {
-            $roster = $facility->visitors();
-        }
-        else
-        {
-            return response()->api(generate_error("Malformed request"), 400);
+        } else {
+            if ($membership == 'home') {
+                $roster = $facility->members;
+            } else {
+                if ($membership == 'visit') {
+                    $roster = $facility->visitors();
+                } else {
+                    return response()->api(generate_error("Malformed request"), 400);
+                }
+            }
         }
         $i = 0;
         foreach ($roster as $member) {
@@ -670,7 +667,7 @@ class FacilityController extends APIController
             } else {
                 $rosterArr[$i]['membership'] = 'visit';
                 $rosterArr[$i]['facility_join'] = Visit::where('facility', $id)
-                                                        ->where('cid', $member->cid)->first()->updated_at;
+                    ->where('cid', $member->cid)->first()->updated_at;
             }
 
             $i++;
@@ -764,20 +761,13 @@ class FacilityController extends APIController
         // Checks if the visit already exists
         $visit = Visit::where('cid', $cid)->where('facility', $id)->first();
         if ($visit) {
-            // If visit is inactive it will reactivate it
-            if (!$visit->active) {
-                $visit->active = 1;
-                $visit->save();
-            } else {
-                return response()->api(
-                    generate_error("User is already visiting this facility"), 400
-                );
-            }
+            return response()->api(
+                generate_error("User is already visiting this facility"), 400
+            );
         } else {
             $visitor = new Visit();
             $visitor->cid = $user->cid;
             $visitor->facility = $id;
-            $visitor->active = 1;
             $visitor->save();
 
             log_action($user->cid, "User added to $facility->id visiting roster by " . \Auth::user()->fullname()
@@ -882,8 +872,7 @@ class FacilityController extends APIController
             );
         }
 
-        $visit->active = 0;
-        $visit->save();
+        $visit->delete();
 
         log_action($user->cid, "User removed from $facility->id visiting roster by " . \Auth::user()->fullname()
             . ": " . $request->input("reason"));
