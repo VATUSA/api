@@ -100,14 +100,6 @@ Route::group(['middleware' => 'auth:web,jwt'], function () {
         'id'  => '[A-Za-z]{3}',
         'cid' => '\d+'
     ]);
-    Route::post('facility/{id}/roster/manageVisitor/{cid}', 'FacilityController@addVisitor')->where([
-        'id'  => '[A-Za-z]{3}',
-        'cid' => '\d+'
-    ]);
-    Route::delete('facility/{id}/roster/manageVisitor/{cid}', 'FacilityController@removeVisitor')->where([
-        'id'  => '[A-Za-z]{3}',
-        'cid' => '\d+'
-    ]);
     Route::put('facility/{id}/transfers/{transferId}', 'FacilityController@putTransfer')->where([
         'id'         => '[A-Za-z]{3}',
         'transferId' => '\d+'
@@ -139,6 +131,14 @@ Route::group(['prefix' => 'facility'], function () {
         Route::delete('{id}/ulsReturns/{order}', 'FacilityController@removeUlsReturn');
         Route::put('{id}/ulsReturns/{order}', 'FacilityController@putUlsReturn');
         Route::get('{facility}/training/records', 'TrainingController@getFacilityRecords');
+        Route::post('{id}/roster/manageVisitor/{cid}', 'FacilityController@addVisitor')->where([
+            'id'  => '[A-Za-z]{3}',
+            'cid' => '\d+'
+        ]);
+        Route::delete('{id}/roster/manageVisitor/{cid}', 'FacilityController@removeVisitor')->where([
+            'id'  => '[A-Za-z]{3}',
+            'cid' => '\d+'
+        ]);
     });
 });
 
