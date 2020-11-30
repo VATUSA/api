@@ -646,12 +646,12 @@ class FacilityController extends APIController
             $rosterArr[$i]['rating_short'] = RatingHelper::intToShort($member->rating);
 
             //Is Mentor
-            $rosterArr[$i]['isMentor'] = $member->roles->where("facility", $id)
+            $rosterArr[$i]['isMentor'] = $member->roles->where("facility", $member->facility)
                     ->where("role", "MTR")->count() > 0;
 
             //Has Ins Perms
             $rosterArr[$i]['isSupIns'] = $roster[$i]['rating_short'] === "SUP" &&
-                $member->roles->where("facility", $id)
+                $member->roles->where("facility", $member->facility)
                     ->where("role", "INS")->count() > 0;
 
             //Last promotion date
@@ -663,11 +663,11 @@ class FacilityController extends APIController
             }
 
             //Membership
-            if ($member->facility == $id) {
+            if ($member->facility == $facility->id) {
                 $rosterArr[$i]['membership'] = 'home';
             } else {
                 $rosterArr[$i]['membership'] = 'visit';
-                $rosterArr[$i]['facility_join'] = Visit::where('facility', $id)
+                $rosterArr[$i]['facility_join'] = Visit::where('facility', $facility->id)
                     ->where('cid', $member->cid)->first()->updated_at;
             }
 
@@ -758,14 +758,14 @@ class FacilityController extends APIController
         }
 
         // Checks if user is a member at the specified facility
-        if ($user->facility == $id) {
+        if ($user->facility == $facility->id) {
             return response()->api(
                 generate_error("User is a member at this facility"), 422
             );
         }
 
         // Checks if the visit already exists
-        $visit = Visit::where('cid', $cid)->where('facility', $id)->first();
+        $visit = Visit::where('cid', $cid)->where('facility', $facility->id)->first();
         if ($visit) {
             return response()->api(
                 generate_error("User is already visiting this facility"), 422
@@ -773,7 +773,7 @@ class FacilityController extends APIController
         } else {
             $visitor = new Visit();
             $visitor->cid = $user->cid;
-            $visitor->facility = $id;
+            $visitor->facility = $facility->id;
             $visitor->save();
 
             if (Auth::check()) {
@@ -880,7 +880,7 @@ class FacilityController extends APIController
         }
 
         // Checks if user is a member at the specified facility
-        $visit = Visit::where('cid', $cid)->where('facility', $id)->first();
+        $visit = Visit::where('cid', $cid)->where('facility', $facility->id)->first();
         if (!$visit) {
             return response()->api(
                 generate_error("User is not visiting this facility"), 422
