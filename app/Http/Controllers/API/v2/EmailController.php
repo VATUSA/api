@@ -264,7 +264,7 @@ class EmailController extends APIController
          * - Forward (destination set)
          */
         $password = $request->input("password", null);
-        $destination = $request->input("destination", null);
+        $destination = preg_replace('/\s+/', '', $request->input("destination", null));
         if (!$password && !$destination) {
             return response()->api(generate_error("Missing required field", true), 400);
         }

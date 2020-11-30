@@ -96,7 +96,7 @@ class UserController extends APIController
                 ->where("role", "INS")->exists();
 
         //Last Promotion
-        $data['last_promotion'] = $user->lastPromotion()->created_at;
+        $data['last_promotion'] = $user->lastPromotion() ? $user->lastPromotion()->created_at : null;
 
         return response()->api($data);
     }
@@ -142,7 +142,7 @@ class UserController extends APIController
     }
 
     /**
-     * @param int $cid
+     * @param int    $cid
      * @param string $facility
      * @param string $role
      *
@@ -576,7 +576,7 @@ class UserController extends APIController
             if (isTest()) {
                 return response()->api(["status" => "OK"]);
             }
-          
+
             Promotion::process($cid, \Auth::user()->cid, $rating);
             // remove MTR/INS on promote to I1/I3
             $role = new Role();
@@ -621,7 +621,7 @@ class UserController extends APIController
             return response()->api(generate_error("Malformed request"), 400);
         }
 
-       $user->checkPromotionCriteria($trainingRecordStatus, $otsEvalStatus, $examPosition, $dateOfExam, $evalId);
+        $user->checkPromotionCriteria($trainingRecordStatus, $otsEvalStatus, $examPosition, $dateOfExam, $evalId);
         if (!$user->promotionEligible()/* || !(abs($trainingRecordStatus) == 1 && abs($otsEvalStatus) == 1)*/) {
             return response()->api(generate_error("Precondition failed"), 412);
         }
@@ -1003,10 +1003,10 @@ class UserController extends APIController
         foreach ($chapters as $chapter) {
             $tp = TrainingProgress::where('cid', $cid)->where('chapterid', $chapter->id)->first();
             $data[] = [
-                'chapterId' => $chapter->id,
+                'chapterId'   => $chapter->id,
                 'chapterName' => $chapter->name,
-                'completed' => (!$tp) ? false : true,
-                'date' => (!$tp) ? null : $tp->date
+                'completed'   => (!$tp) ? false : true,
+                'date'        => (!$tp) ? null : $tp->date
             ];
         }
 
