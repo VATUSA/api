@@ -78,7 +78,15 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     /**
      * @var array
      */
-    protected $hidden = ["password", "remember_token", "cert_update", "access_token", "refresh_token", "token_expires", "discord_id"];
+    protected $hidden = [
+        "password",
+        "remember_token",
+        "cert_update",
+        "access_token",
+        "refresh_token",
+        "token_expires",
+        "discord_id"
+    ];
 
     protected $fillable = ["access_token", "refresh_token", "token_expires"];
 
@@ -117,6 +125,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     {
         return $this->belongsTo(Facility::class, 'facility')->first();
     }
+
     public function trainingRecords()
     {
         return $this->hasMany(TrainingRecord::class, 'student_id', 'cid');
@@ -320,7 +329,12 @@ class User extends Model implements AuthenticatableContract, JWTSubject
 
         if ($old_facility != "ZAE") {
             EmailHelper::sendEmail(
-                [$this->email, "$old_facility-atm@vatusa.net", "$old_facility-datm@vatusa.net", "vatusa$region@vatusa.net"],
+                [
+                    $this->email,
+                    "$old_facility-atm@vatusa.net",
+                    "$old_facility-datm@vatusa.net",
+                    "vatusa$region@vatusa.net"
+                ],
                 "Removal from $facname",
                 "emails.user.removed",
                 [
@@ -371,7 +385,8 @@ class User extends Model implements AuthenticatableContract, JWTSubject
                 $dm->save();
                 CERTHelper::changeRating($this->cid, $original_rating, false);
                 $this->rating = $original_rating; // save within this function, not using CERTHelper
-                log_action($this->cid, "Demoted to " .RatingHelper::intToShort($original_rating). " on transfer to ZAE");
+                log_action($this->cid,
+                    "Demoted to " . RatingHelper::intToShort($original_rating) . " on transfer to ZAE");
             }
             // remove MTR/INS role
             $role = new Role();
@@ -385,6 +400,15 @@ class User extends Model implements AuthenticatableContract, JWTSubject
                 log_action($this->cid, "MTR/INS role removed on transfer to ZAE");
             }
         }
+
+        /** Remove from visiting rosters if going to ZAE */
+        if ($newfac == "ZAE" && $this->visits) {
+            foreach($this->visits as $visit) {
+                log_action($this->cid, "User removed from {$visit->facility} visiting roster: Transfer to ZAE");
+                $visit->delete();
+            }
+        }
+
         $this->save();
 
         $t = new Transfer();
@@ -563,7 +587,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
 
         // S1-C1 within 90 check
         $promotion = Promotion::where('cid', $this->cid)->where([
-            ['to',         '<=', Helper::ratingIntFromShort("C1")],
+            ['to', '<=', Helper::ratingIntFromShort("C1")],
             ['created_at', '>=', \DB::raw("DATE(NOW() - INTERVAL 90 DAY)")]
         ])->whereRaw('promotions.to > promotions.from')->first();
 
@@ -610,19 +634,26 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             "Transfer override flag " . ($value) ? "enabled by " . \Auth::user()->fullname() : "removed");
     }
 
-    public function getPrimaryRole() {
-        if ($this->facility()->atm == $this->cid)
+    public function getPrimaryRole()
+    {
+        if ($this->facility()->atm == $this->cid) {
             return "ATM";
-        if ($this->facility()->datm == $this->cid)
+        }
+        if ($this->facility()->datm == $this->cid) {
             return "DATM";
-        if ($this->facility()->ta == $this->cid)
+        }
+        if ($this->facility()->ta == $this->cid) {
             return "TA";
-        if ($this->facility()->ec == $this->cid)
+        }
+        if ($this->facility()->ec == $this->cid) {
             return "EC";
-        if ($this->facility()->fe == $this->cid)
+        }
+        if ($this->facility()->fe == $this->cid) {
             return "FE";
-        if ($this->facility()->wm == $this->cid)
+        }
+        if ($this->facility()->wm == $this->cid) {
             return "WM";
+        }
 
         for ($i = 1; $i <= 14; $i++) {
             if (RoleHelper::has($this->cid, "ZHQ", "US$i")) {
@@ -666,19 +697,20 @@ class User extends Model implements AuthenticatableContract, JWTSubject
      */
     public function getTokenAttribute()
     {
-        if ($this->access_token === null) return null;
-        else {
+        if ($this->access_token === null) {
+            return null;
+        } else {
             $token = new AccessToken([
-                'access_token' => $this->access_token,
+                'access_token'  => $this->access_token,
                 'refresh_token' => $this->refresh_token,
-                'expires' => $this->token_expires,
+                'expires'       => $this->token_expires,
             ]);
             if ($token->hasExpired()) {
                 $token = VatsimOAuthController::updateToken($token);
             }
 
             $this->update([
-                'access_token' => ($token) ? $token->getToken() : null,
+                'access_token'  => ($token) ? $token->getToken() : null,
                 'refresh_token' => ($token) ? $token->getRefreshToken() : null,
                 'token_expires' => ($token) ? $token->getExpires() : null,
             ]);
@@ -691,8 +723,14 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     {
         return $this->where($this->getRouteKeyName(), $value)->first() ?? abort(404);
     }
-    public function checkPromotionCriteria(&$trainingRecordStatus, &$otsEvalStatus, &$examPosition, &$dateOfExam, &$evalId)
-    {
+
+    public function checkPromotionCriteria(
+        &$trainingRecordStatus,
+        &$otsEvalStatus,
+        &$examPosition,
+        &$dateOfExam,
+        &$evalId
+    ) {
         $trainingRecordStatus = 0;
         $otsEvalStatus = 0;
 

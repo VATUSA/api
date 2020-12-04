@@ -757,6 +757,13 @@ class FacilityController extends APIController
             );
         }
 
+        // Checks if user is not ZAE
+        if ($user->facility == "ZAE") {
+            return response()->api(
+                generate_error("User is in ZAE, cannot visit"), 422
+            );
+        }
+
         // Checks if user is a member at the specified facility
         if ($user->facility == $facility->id) {
             return response()->api(
