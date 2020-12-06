@@ -67,7 +67,7 @@ class ULSHelper
         //smfapi_login($cid, 14400);
         \Auth::loginUsingId($cid, true);
 
-        if (!app()->environment('dev') && !app()->environment('livedev')) {
+        if (!in_array(app()->environment(), ["livedev", "dev", "staging"])) {
             $token = [
                 "cid"    => (string) $cid,
                 "nlt"    => time() + 7,
@@ -77,6 +77,18 @@ class ULSHelper
             $signature = static::base64url_encode(hash_hmac("sha512", $token, base64_decode(env("FORUM_SECRET"))));
 
             return redirect("https://forums.vatusa.net/api.php?login=1&token=$token&signature=$signature");
+        }
+        if(app()->environment("staging")) {
+            $token = [
+                "cid"    => (string) $cid,
+                "nlt"    => time() + 7,
+                "return" => $return
+            ];
+            $token = static::base64url_encode(json_encode($token));
+            $signature = static::base64url_encode(hash_hmac("sha512", $token, base64_decode(env("FORUM_SECRET"))));
+
+            return redirect("https://forums.staging.vatusa.net/api.php?login=1&token=$token&signature=$signature");
+
         }
 
         return redirect(env('SSO_RETURN_HOME'));
