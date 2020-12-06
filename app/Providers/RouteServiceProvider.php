@@ -75,6 +75,11 @@ class RouteServiceProvider extends ServiceProvider
                 ->middleware(["web","api"])
                 ->namespace($this->namespaceapi)
                 ->group(base_path("routes/api.php"));
+        } elseif (env('APP_ENV') == "staging") {
+            Route::domain("api.staging.vatusa.net")
+                ->middleware(["web","api"])
+                ->namespace($this->namespaceapi)
+                ->group(base_path("routes/api.php"));
         } else {
             Route::domain("api.vatusa.net")
                 ->middleware(["web","api"])
