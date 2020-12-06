@@ -107,7 +107,7 @@ class EmailHelper {
     public static function sendSupportEmail($email, $ticket, $subject, $template, $data)
     {
         $backup = Mail::getSwiftMailer();
-        $transport = \Swift_SmtpTransport::newInstance("mail.vatusa.net", 587, null);
+        $transport = \Swift_SmtpTransport::newInstance(env('MAIL_HOST'), 587, null);
         $transport->setUsername(env("SUPPORT_EMAIL_USERNAME"));
         $transport->setPassword(env("SUPPORT_EMAIL_PASSWORD"));
         $support = new \Swift_Mailer($transport);

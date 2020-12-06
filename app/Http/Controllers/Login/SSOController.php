@@ -51,6 +51,10 @@ class SSOController extends Controller
                 $return = env('SSO_RETURN_HOME');
             }
 
+            if(app()->environment('staging')) {
+                return "https://forums.staging.vatusa.net/api.php?logout=1&return=$return";
+            }
+
             return redirect(app()->environment('dev') || app()->environment('livedev') ? $return : "https://forums.vatusa.net/api.php?logout=1&return=$return");
         }
 

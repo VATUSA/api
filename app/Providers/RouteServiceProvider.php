@@ -95,6 +95,11 @@ class RouteServiceProvider extends ServiceProvider
                 ->namespace($this->namespacelogin)
                 ->middleware("web")
                 ->group(base_path("routes/login.php"));
+        } elseif (env('APP_ENV') == "staging") {
+            Route::domain("login.staging.vatusa.net")
+                ->namespace($this->namespacelogin)
+                ->middleware("web")
+                ->group(base_path("routes/login.php"));
         } else {
             Route::domain("login.vatusa.net")
                 ->namespace($this->namespacelogin)
