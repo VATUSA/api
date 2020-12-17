@@ -777,7 +777,9 @@ class FacilityController extends APIController
             return response()->api(
                 generate_error("User is already visiting this facility"), 422
             );
-        } else {
+        }
+
+        if(!isTest()) {
             $visitor = new Visit();
             $visitor->cid = $user->cid;
             $visitor->facility = $facility->id;
@@ -894,13 +896,17 @@ class FacilityController extends APIController
             );
         }
 
-        $visit->delete();
+        if(!isTest()) {
+            $visit->delete();
 
-        if (Auth::check()) {
-            log_action($user->cid, "User removed from {$facility->id} visiting roster by " . Auth::user()->fullname()
-                . ": " . $request->input("reason"));
-        } else {
-            log_action($user->cid, "User removed from {$facility->id} visiting roster: " . $request->input("reason"));
+            if (Auth::check()) {
+                log_action($user->cid,
+                    "User removed from {$facility->id} visiting roster by " . Auth::user()->fullname()
+                    . ": " . $request->input("reason"));
+            } else {
+                log_action($user->cid,
+                    "User removed from {$facility->id} visiting roster: " . $request->input("reason"));
+            }
         }
 
         return response()->ok();
