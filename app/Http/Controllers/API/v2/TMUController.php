@@ -73,9 +73,9 @@ class TMUController extends APIController
         $onlyActive = $request->input('onlyactive', true);
         if ($facility) {
             if ($request->input('children', null) == false) {
-                $notices = $facility->tmuNotices()->get()->toArray();
+                $notices = $facility->tmuNotices();
                 if ($onlyActive === true) {
-                    $notices = $notices->active()->get()->toArray();
+                    $notices = $notices->active();
                 }
                 $notices = $notices->with('tmuFacility:id,name,parent')->get()->toArray();
             } else {
@@ -92,10 +92,7 @@ class TMUController extends APIController
             }
         } else {
             $notices = TMUNotice::with('tmuFacility:id,name,parent');
-            if ($onlyActive === true) {
-                $notices = $notices->active()->get()->toArray();
-            }
-            $notices = $notices->get()->toArray();
+            $notices = $onlyActive ? $notices->active()->get()->toArray() : $notices->get()->toArray();
         }
 
         return response()->api($notices);
