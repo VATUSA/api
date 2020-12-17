@@ -403,7 +403,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
 
         /** Remove from visiting rosters if going to ZAE */
         if ($newfac == "ZAE" && $this->visits) {
-            foreach($this->visits as $visit) {
+            foreach ($this->visits as $visit) {
                 log_action($this->cid, "User removed from {$visit->facility} visiting roster: Transfer to ZAE");
                 $visit->delete();
             }
@@ -492,6 +492,8 @@ class User extends Model implements AuthenticatableContract, JWTSubject
                 "rating"   => RatingHelper::intToShort($this->rating),
                 "facility" => $fac
             ]);
+
+            $this->visits()->where('facility', $fac)->delete();
         }
     }
 

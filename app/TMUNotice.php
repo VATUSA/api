@@ -7,7 +7,7 @@ use Illuminate\Support\Carbon;
 
 class TMUNotice extends Model
 {
-    public $dates = ['created_at', 'updated_at', 'expire_date', 'start_date'];
+    protected $dates = ['created_at', 'updated_at', 'expire_date', 'start_date'];
     protected $guarded = [];
     protected $hidden = ['tmu_facility_id'];
     protected $table = 'tmu_notices';
