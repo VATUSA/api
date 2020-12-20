@@ -24,7 +24,7 @@ return [
     'settings'      => [
         'default'           => [
             'HTML.Doctype'             => 'HTML 4.01 Transitional',
-            'HTML.Allowed'             => 'div,b,strong,i,em,u,a[href|title],br,span[style]',
+            'HTML.Allowed'             => 'b,strong,i,em,u,a[href|title],br,span[style]',
             'CSS.AllowedProperties'    => null,
             'CSS.ForbiddenProperties'  => 'font,font-size',
             'AutoFormat.AutoParagraph' => true,
