@@ -5,7 +5,7 @@ return [
     'host' => env('MAIL_HOST', 'mail.vatusa.net'),
     'port' => env('MAIL_PORT', 587),
     'from' => ['address' => 'no-reply@vatusa.net', 'name' => 'VATUSA'],
-    'encryption' => env('MAIL_ENCRYPT', null),
+    'encryption' => env('MAIL_ENCRYPTION', null),
     'username' => env('MAIL_USERNAME', 'no-reply@vatusa.net'),
     'password' => env('MAIL_PASSWORD'),
 
