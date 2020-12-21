@@ -1138,7 +1138,7 @@ class TrainingController extends Controller
                     Auth::user()->facility)->exists());
 
         $isTrainingStaff = Auth::user() && RoleHelper::isTrainingStaff(Auth::user()->cid, true,
-                $record->facility ?? $facility ?? null);
+                $facility ?? Auth::user()->facility) && (!$record || $record && $record->student->facility == Auth::user()->facility);
         $ownsRecord = $record && Auth::user() && $record->student_id === Auth::user()->cid;
         $isOwnUser = Auth::user() && $user && $user->cid === Auth::user()->cid;
 
