@@ -19,7 +19,7 @@ class APIKey
      * @return mixed
      */
     public function handle($request, Closure $next) {
-        $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+        $ip = $request->ip();
         $apikey = $request->apikey;
 
         if ($apikey != "vatusa") {
