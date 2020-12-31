@@ -607,7 +607,10 @@ class TrainingController extends Controller
             return response()->api(generate_error("Invalid number of movements, must be null or an integer."), 400);
         }
         if ($score && (!is_numeric($score) || !in_array(intval($score), [1, 2, 3, 4, 5]))) {
-            return response()->api(generate_error("Invalid score, must be null or an integer and between 1-5"), 400);
+            return response()->api(generate_error("Invalid score, must be null or an integer and between 1-5."), 400);
+        }
+        if(!User::find($instructorId)) {
+            return response()->api(generate_error("Invalid instructor."), 400);
         }
         if (!preg_match("/^([A-Z]{2,3})(_([A-Z]{1,3}))?_(DEL|GND|TWR|APP|DEP|CTR)$/", $position)) {
             return response()->api(generate_error("Invalid position."), 400);
