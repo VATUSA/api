@@ -269,7 +269,7 @@ class EmailController extends APIController
             return response()->api(generate_error("Missing required field", true), 400);
         }
         // We cannot determine full or forward if both are set, causing ambiguous information
-        if ($password !== null && $destination !== null) {
+        if ($password && $destination) {
             return response()->api(generate_error("Ambiguous request", true), 409);
         }
 
