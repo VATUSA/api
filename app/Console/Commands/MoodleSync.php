@@ -52,11 +52,13 @@ class MoodleSync extends Command
             $user = User::find($this->argument('user'));
             if (!$user) {
                 $this->error("Invalid CID");
-                exit;
+
+                return 1;
             }
 
             $this->sync($user);
-            exit;
+
+            return 1;
         }
 
         //Syncronize Users
@@ -64,6 +66,8 @@ class MoodleSync extends Command
         foreach ($users as $user) {
             $this->sync($user);
         }
+
+        return 1;
     }
 
     /**
