@@ -118,7 +118,7 @@ class MoodleSync extends Command
         if (RoleHelper::isVATUSAStaff() || RoleHelper::has($user->cid, $user->facility, "MTR")) {
             for ($i = 1; $i <= $user->rating; $i++) {
                 $category = "CATEGORY_CONTEXT_" . Helper::ratingShortFromInt($i);
-                $this->moodle->assignRole($id, $this->moodle->getConstant($category) ?? null, "MTR", "course");
+                $this->moodle->assignRole($id, $this->moodle->getConstant($category), "MTR", "course");
             }
         }
 

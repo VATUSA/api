@@ -483,9 +483,15 @@ class VATUSAMoodle extends MoodleRest
         return (new ReflectionClass(self::class))->getConstants();
     }
 
-    public function getConstant(string $constant)
+    /**
+     * Get specific class constant
+     * @param string $constant
+     *
+     * @return int|null
+     */
+    public function getConstant(string $constant): ?int
     {
-        return $this->getConstants()[$constant];
+        return $this->getConstants()[$constant] ?? null;
     }
 
     public function getAcademyCategoryContexts()
