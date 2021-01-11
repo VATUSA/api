@@ -2,10 +2,13 @@
 
 namespace App\Helpers;
 
+use App\Classes\VATUSAMoodle;
 use App\Facility;
 use App\ReturnPaths;
 use App\Role;
 use App\User;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
 
 class ULSHelper
 {
@@ -68,6 +71,14 @@ class ULSHelper
         \Auth::loginUsingId($cid, true);
 
         if (!in_array(app()->environment(), ["livedev", "dev", "staging"])) {
+            //Sync Moodle Roles
+            Artisan::call("moodle:sync", ["user" => $cid]);
+
+            $moodle = new VATUSAMoodle(true);
+            $response = $moodle->request("auth_userkey_request_login_url",
+                ['user' => ['idnumber' => Auth::user()->cid]]);
+            $url = $response["loginurl"];
+
             $token = [
                 "cid"    => (string) $cid,
                 "nlt"    => time() + 7,
@@ -76,7 +87,7 @@ class ULSHelper
             $token = static::base64url_encode(json_encode($token));
             $signature = static::base64url_encode(hash_hmac("sha512", $token, base64_decode(env("FORUM_SECRET"))));
 
-            return redirect("https://forums.vatusa.net/api.php?login=1&token=$token&signature=$signature");
+            return redirect($url . "&wantsurl=" . urlencode("https://forums.vatusa.net/api.php?login=1&token=$token&signature=$signature"));
         }
         if(app()->environment("staging")) {
             $token = [

@@ -32,41 +32,51 @@ return [
     */
 
     'connections' => [
-        'mysql' => [
-            'driver' => 'mysql',
-            'host' => env('DB_HOST', 'localhost'),
+        'mysql'  => [
+            'driver'    => 'mysql',
+            'host'      => env('DB_HOST', 'localhost'),
             //'host'      => [env('DB_HOST2', 'localhost'), env('DB_HOST1','')],
-            'database' => env('DB_DATABASE', 'forge'),
-            'username' => env('DB_USERNAME', 'forge'),
-            'password' => env('DB_PASSWORD', ''),
-            'charset' => 'utf8',
+            'database'  => env('DB_DATABASE', 'forge'),
+            'username'  => env('DB_USERNAME', 'forge'),
+            'password'  => env('DB_PASSWORD', ''),
+            'charset'   => 'utf8',
             'collation' => 'utf8_unicode_ci',
-            'prefix' => '',
-            'strict' => false,
+            'prefix'    => '',
+            'strict'    => false,
         ],
-        'forum' => [
-            'driver' => env('DB_FORUM_CONNECTION', 'mysql'),
-            'host' => env('DB_FORUM_HOST', '127.0.0.1'),
-            'port' => env('DB_FORUM_PORT', 3306),
-            'database' => env('DB_FORUM_DATABASE', 'forum'),
-            'username' => env('DB_FORUM_USERNAME', 'forum'),
-            'password' => env('DB_FORUM_PASSWORD', ''),
-            'charset' => 'utf8',
+        'forum'  => [
+            'driver'    => env('DB_FORUM_CONNECTION', 'mysql'),
+            'host'      => env('DB_FORUM_HOST', '127.0.0.1'),
+            'port'      => env('DB_FORUM_PORT', 3306),
+            'database'  => env('DB_FORUM_DATABASE', 'forum'),
+            'username'  => env('DB_FORUM_USERNAME', 'forum'),
+            'password'  => env('DB_FORUM_PASSWORD', ''),
+            'charset'   => 'utf8',
             'collation' => 'utf8_unicode_ci',
-            'prefix' => '',
-            'strict' => false
+            'prefix'    => '',
+            'strict'    => false
         ],
-        'email' => [
-            'driver' => env('DB_EMAIL_CONNECTION', 'mysql'),
-            'host' => env('DB_EMAIL_HOST', '127.0.0.1'),
-            'port' => env('DB_EMAIL_PORT', 3306),
-            'database' => env('DB_EMAIL_DATABASE', 'forum'),
-            'username' => env('DB_EMAIL_USERNAME', 'forum'),
-            'password' => env('DB_EMAIL_PASSWORD', ''),
-            'charset' => 'utf8',
+        'email'  => [
+            'driver'    => env('DB_EMAIL_CONNECTION', 'mysql'),
+            'host'      => env('DB_EMAIL_HOST', '127.0.0.1'),
+            'port'      => env('DB_EMAIL_PORT', 3306),
+            'database'  => env('DB_EMAIL_DATABASE', 'forum'),
+            'username'  => env('DB_EMAIL_USERNAME', 'forum'),
+            'password'  => env('DB_EMAIL_PASSWORD', ''),
+            'charset'   => 'utf8',
             'collation' => 'utf8_unicode_ci',
-            'prefix' => '',
-            'strict' => false
+            'prefix'    => '',
+            'strict'    => false
+        ],
+        'moodle' => [
+            'driver'   => env('DB_MOODLE_CONNECTION', 'mysql'),
+            'host'     => env('DB_MOODLE_HOST', '127.0.0.1'),
+            'port'     => env('DB_MOODLE_PORT', 3306),
+            'database' => env('DB_MOODLE_DATABASE', 'forum'),
+            'username' => env('DB_MOODLE_USERNAME', 'forum'),
+            'password' => env('DB_MOODLE_PASSWORD', ''),
+            'prefix'   => 'mdl_',
+            'strict'   => false
         ],
 
     ],
@@ -100,9 +110,9 @@ return [
         'client' => 'predis',
 
         'default' => [
-            'host' => env('REDIS_HOST', '127.0.0.1'),
+            'host'     => env('REDIS_HOST', '127.0.0.1'),
             'password' => env('REDIS_PASSWORD', null),
-            'port' => env('REDIS_PORT', 6379),
+            'port'     => env('REDIS_PORT', 6379),
             'database' => 0,
         ],
 
