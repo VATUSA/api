@@ -53,12 +53,12 @@ class MoodleSync extends Command
             if (!$user) {
                 $this->error("Invalid CID");
 
-                return 1;
+                return 0;
             }
 
             $this->sync($user);
 
-            return 1;
+            return 0;
         }
 
         //Syncronize Users
@@ -67,7 +67,7 @@ class MoodleSync extends Command
             $this->sync($user);
         }
 
-        return 1;
+        return 0;
     }
 
     /**
