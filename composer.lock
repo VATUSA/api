@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "134881b0c489c7fbb360bcd3132afe5a",
+    "content-hash": "c94efd7a857499d2acf4bf72b61fbab1",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1233,6 +1233,7 @@
                 "faker",
                 "fixtures"
             ],
+            "abandoned": true,
             "time": "2019-12-12T13:22:17+00:00"
         },
         {
@@ -2062,6 +2063,40 @@
                 "single sign on"
             ],
             "time": "2018-11-22T18:33:57+00:00"
+        },
+        {
+            "name": "llagerlof/moodlerest",
+            "version": "2.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/llagerlof/MoodleRest.git",
+                "reference": "9ddccb80b0778d3297d9815fc33849337c38046e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/llagerlof/MoodleRest/zipball/9ddccb80b0778d3297d9815fc33849337c38046e",
+                "reference": "9ddccb80b0778d3297d9815fc33849337c38046e",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "MoodleRest.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Lawrence Lagerlof",
+                    "email": "llagerlof@gmail.com"
+                }
+            ],
+            "description": "MoodleRest is a PHP class to query Moodle REST webservices",
+            "homepage": "https://github.com/llagerlof",
+            "time": "2019-12-20T12:04:37+00:00"
         },
         {
             "name": "mews/purifier",
@@ -3187,12 +3222,12 @@
             "version": "v1.1.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/nrk/predis.git",
+                "url": "https://github.com/predis/predis.git",
                 "reference": "f0210e38881631afeafb56ab43405a92cafd9fd1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nrk/predis/zipball/f0210e38881631afeafb56ab43405a92cafd9fd1",
+                "url": "https://api.github.com/repos/predis/predis/zipball/f0210e38881631afeafb56ab43405a92cafd9fd1",
                 "reference": "f0210e38881631afeafb56ab43405a92cafd9fd1",
                 "shasum": ""
             },
@@ -8113,7 +8148,7 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=7.0.0",
+        "php": ">=7.1",
         "ext-json": "*"
     },
     "platform-dev": []

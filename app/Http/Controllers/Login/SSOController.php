@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Login;
 
 use App\Action;
 use App\Classes\OAuth\VatsimConnect;
+use App\Classes\VATUSAMoodle;
 use App\Helpers\RoleHelper;
 use App\Helpers\SMFHelper;
 use App\Helpers\EmailHelper;
@@ -68,6 +69,8 @@ class SSOController extends Controller
             $request->session()->put('return', env('SSO_RETURN_HOMEDEV'));
         } elseif ($request->has('forums')) {
             $request->session()->put('return', env('SSO_RETURN_FORUMS'));
+        } elseif ($request->has('moodle')) {
+            $request->session()->put('return', env('SSO_RETURN_MOODLE'));
         } elseif ($request->has('localdev')) {
             $request->session()->put('return', env('SSO_RETURN_LOCALDEV'));
         } elseif ($request->has('uls')) {
@@ -258,5 +261,9 @@ class SSOController extends Controller
         }
 
         return ULSHelper::doHandleLogin($user->cid, $return);
+    }
+
+    public function moodleLogin(Request $request) {
+
     }
 }
