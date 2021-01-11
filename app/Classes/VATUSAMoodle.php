@@ -78,8 +78,7 @@ class VATUSAMoodle extends MoodleRest
      */
     public function setSSO(bool $isSSO = true)
     {
-        parent::__construct(config('services.moodle.url') . '/webservice/rest/server.php',
-            $isSSO ? config('services.moodle.token_sso') : config('services.moodle.token'));
+        $this->setToken($isSSO ? config('services.moodle.token_sso') : config('services.moodle.token'));
     }
 
     /**
