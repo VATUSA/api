@@ -73,7 +73,7 @@ class ULSHelper
         if (!in_array(app()->environment(), ["livedev", "dev", "staging"])) {
 
             //Sync Moodle Roles
-            $moodle = new VATUSAMoodle(true);
+            $moodle = new VATUSAMoodle(false);
             if ($id = $moodle->getUserId($cid)) {
                 //Update Information
                 $moodle->updateUser(Auth::user(), $id);
@@ -83,7 +83,7 @@ class ULSHelper
             }
             Artisan::queue("moodle:sync", ["user" => $cid]);
 
-            $moodle->setSSO(false);
+            $moodle->setSSO(true);
             $response = $moodle->request("auth_userkey_request_login_url",
                 ['user' => ['idnumber' => Auth::user()->cid]]);
             $url = $response["loginurl"];
