@@ -71,16 +71,24 @@ class ULSHelper
         \Auth::loginUsingId($cid, true);
 
         if (!in_array(app()->environment(), ["livedev", "dev", "staging"])) {
-            //Sync Moodle Roles
-            Artisan::call("moodle:sync", ["user" => $cid]);
 
+            //Sync Moodle Roles
             $moodle = new VATUSAMoodle(true);
+            if ($id = $moodle->getUserId($cid)) {
+                //Update Information
+                $moodle->updateUser(Auth::user(), $id);
+            } else {
+                //Create User
+                $moodle->createUser(Auth::user())[0]["id"];
+            }
+            Artisan::queue("moodle:sync", ["user" => $cid]);
+
             $response = $moodle->request("auth_userkey_request_login_url",
                 ['user' => ['idnumber' => Auth::user()->cid]]);
             $url = $response["loginurl"];
 
             $token = [
-                "cid"    => (string) $cid,
+                "cid"    => (string)$cid,
                 "nlt"    => time() + 7,
                 "return" => $return
             ];
@@ -89,9 +97,9 @@ class ULSHelper
 
             return redirect($url . "&wantsurl=" . urlencode("https://forums.vatusa.net/api.php?login=1&token=$token&signature=$signature"));
         }
-        if(app()->environment("staging")) {
+        if (app()->environment("staging")) {
             $token = [
-                "cid"    => (string) $cid,
+                "cid"    => (string)$cid,
                 "nlt"    => time() + 7,
                 "return" => $return
             ];
