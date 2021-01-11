@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Classes\Helper;
-use App\Classes\RoleHelper;
+use App\Helpers\Helper;
+use App\Helpers\RoleHelper;
 use App\Classes\VATUSAMoodle;
 use App\Facility;
 use App\Role;
