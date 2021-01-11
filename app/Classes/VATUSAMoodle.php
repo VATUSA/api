@@ -73,6 +73,16 @@ class VATUSAMoodle extends MoodleRest
     }
 
     /**
+     * Set token type
+     * @param bool $isSSO
+     */
+    public function setSSO(bool $isSSO = true)
+    {
+        parent::__construct(config('services.moodle.url') . '/webservice/rest/server.php',
+            $isSSO ? config('services.moodle.token_sso') : config('services.moodle.token'));
+    }
+
+    /**
      * Get all Cohorts
      * @return mixed
      */
@@ -485,6 +495,7 @@ class VATUSAMoodle extends MoodleRest
 
     /**
      * Get specific class constant
+     *
      * @param string $constant
      *
      * @return int|null

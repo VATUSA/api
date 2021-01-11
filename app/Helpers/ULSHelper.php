@@ -83,6 +83,7 @@ class ULSHelper
             }
             Artisan::queue("moodle:sync", ["user" => $cid]);
 
+            $moodle->setSSO(false);
             $response = $moodle->request("auth_userkey_request_login_url",
                 ['user' => ['idnumber' => Auth::user()->cid]]);
             $url = $response["loginurl"];
