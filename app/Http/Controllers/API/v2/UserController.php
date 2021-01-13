@@ -615,7 +615,7 @@ class UserController extends APIController
 
         $validator = Validator::make($request->all(), [
             'examDate' => 'required|date_format:Y-m-d',
-            'position' => 'required|max:8',
+            'position' => 'required|max:11',
         ]);
         if ($validator->fails()) {
             return response()->api(generate_error("Malformed request"), 400);
