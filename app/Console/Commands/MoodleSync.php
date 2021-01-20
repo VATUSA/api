@@ -64,7 +64,9 @@ class MoodleSync extends Command
         //Syncronize Users
         $users = User::all();
         foreach ($users as $user) {
-            $this->sync($user);
+            if ($this->moodle->getUserId($user->cid)) {
+                $this->sync($user);
+            }
         }
 
         return 0;
