@@ -568,7 +568,7 @@ class TrainingController extends Controller
         //Input Data
         $studentId = $user->cid;
         $instructorId = $request->input("instructor_id", null);
-        if (Auth::check() && (!$instructorId || ($instructorId && !RoleHelper::isSeniorStaff()))) {
+        if (Auth::check() && (!$instructorId || ($instructorId && !RoleHelper::isSeniorStaff(Auth::user()->cid, Auth::user()->facility, true)))) {
             $instructorId = Auth::user()->cid;
         }
         $sessionDate = $request->input("session_date", null);
