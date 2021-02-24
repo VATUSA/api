@@ -609,7 +609,7 @@ class TrainingController extends Controller
         if ($score && (!is_numeric($score) || !in_array(intval($score), [1, 2, 3, 4, 5]))) {
             return response()->api(generate_error("Invalid score, must be null or an integer and between 1-5."), 400);
         }
-        if(!User::find($instructorId)) {
+        if (!User::find($instructorId)) {
             return response()->api(generate_error("Invalid instructor."), 400);
         }
         if (!preg_match("/^([A-Z]{2,3})(_([A-Z]{1,3}))?_(DEL|GND|TWR|APP|DEP|CTR)$/", $position)) {
@@ -1128,7 +1128,7 @@ class TrainingController extends Controller
         if ($request->has('apikey') && $keyFac) {
             if ($record) {
                 $apiKeyVisitor = $record->student->visits()->where('facility',
-                        $keyFac->id)->exists();
+                    $keyFac->id)->exists();
             }
             if ($user) {
                 $apiKeyVisitor = $user->visits()->where('facility',
@@ -1156,6 +1156,15 @@ class TrainingController extends Controller
     ) {
         $hasApiKey = AuthHelper::validApiKeyv2($request->input('apikey', null), $user->facility);
         $isTrainingStaff = Auth::user() && RoleHelper::isTrainingStaff(Auth::user()->cid, true, $user->facility);
+        if (!$isTrainingStaff && Auth::user()) {
+            //Check visiting facilities.
+            foreach ($user->visits as $visit) {
+                $isTrainingStaff = RoleHelper::isTrainingStaff(Auth::user()->cid, true, $visit->facility);
+                if ($isTrainingStaff) {
+                    break;
+                }
+            }
+        }
         $notOwn = Auth::user() && $user->cid !== Auth::user()->cid; //No one can add their own record!
 
         return $notOwn && $isTrainingStaff || $hasApiKey;
