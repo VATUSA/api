@@ -74,16 +74,22 @@ Route::group(['middleware' => ['private', 'auth:web,jwt'], 'prefix' => '/email']
 Route::get('/exam', 'ExamController@getExams');
 Route::get('/exam/{facility}', 'ExamController@getExams')->where('facility', '[A-Z]{3}');
 Route::get('/exam/{id}', 'ExamController@getExambyId')->where('id', '[0-9]+');
+
 Route::group(['middleware' => ['auth:web,jwt', 'private'], 'prefix' => '/exam'], function () {
     Route::get('{id}/questions', 'ExamController@getExamQuestions')->where('id', '[0-9]+');
     Route::put('{id}', 'ExamController@putExam')->where('id', '[0-9]+');
     Route::post('{id}/assign/{cid}', 'ExamController@postExamAssign');
     Route::delete('{id}/assign/{cid}', 'ExamController@deleteExamAssignment');
 });
+
 Route::group(['middleware' => ['private', 'auth:jwt,web'], 'prefix' => '/exam'], function () {
     Route::post('queue/{id}', 'ExamController@postQueue');
     Route::get('request', 'ExamController@getRequest');
     Route::post('submit', 'ExamController@postSubmit');
+});
+
+Route::group([['middleware' => 'semiprivate'], 'prefix' => '/exam'], function () {
+    Route::get('result/{id}', 'ExamController@getResult')->where('id', '[0-9]+');
 });
 
 /******************************************************************************************
@@ -301,4 +307,14 @@ Route::group(['prefix' => 'training'], function () {
         Route::get('otsEval/{eval}', 'TrainingController@getOTSEval')->where('eval', '[0-9]+');
         Route::get('record/{record}/otsEval', 'TrainingController@getOTSTrainingEval')->where('record', '[0-9]+');
     });
+});
+
+/******************************************************************************************
+ * /public
+ * Public functions
+ */
+
+Route::group(['prefix' => 'public'], function() {
+    Route::get('events/{limit}', 'PublicController@getEvents')->where('limit', '[0-9]+');
+    Route::get('news/{limit}', 'PublicController@getNews')->where('limit', '[0-9]+');
 });
