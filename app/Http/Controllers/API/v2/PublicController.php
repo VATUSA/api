@@ -16,7 +16,7 @@ class PublicController extends APIController
      *     path="/public/events/(limit)",
      *     summary="Get events.",
      *     description="Get events (from Forums) set with a specific limit",
-     *     tags={"user","public"},
+     *     tags={"public"},
      *     produces={"application/json"},
      *     @SWG\Parameter(name="limit", in="path", type="integer", description="Limit"),
      *     @SWG\Response(
@@ -52,7 +52,7 @@ class PublicController extends APIController
      *     path="/public/news/(limits)",
      *     summary="Get news.",
      *     description="Get news (from Forums) set with a specific limit",
-     *     tags={"user","public"},
+     *     tags={"public"},
      *     produces={"application/json"},
      *     @SWG\Parameter(name="limit", in="path", type="integer", description="Limit"),
      *     @SWG\Response(
