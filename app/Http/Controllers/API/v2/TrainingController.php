@@ -1155,6 +1155,16 @@ class TrainingController extends Controller
         User $user
     ) {
         $hasApiKey = AuthHelper::validApiKeyv2($request->input('apikey', null), $user->facility);
+        
+        //Check Visiting Facilities
+        $apiKeyVisitor = false;
+        $keyFac = Facility::where("apikey", $request->apikey)
+            ->orWhere("api_sandbox_key", $request->apikey)->first();
+        if ($request->has('apikey') && $keyFac) {
+            $apiKeyVisitor = $user->visits()->where('facility',
+                $keyFac->id)->exists();
+        }
+        
         $isTrainingStaff = Auth::user() && RoleHelper::isTrainingStaff(Auth::user()->cid, true, $user->facility);
         if (!$isTrainingStaff && Auth::user()) {
             //Check visiting facilities.
@@ -1167,6 +1177,6 @@ class TrainingController extends Controller
         }
         $notOwn = Auth::user() && $user->cid !== Auth::user()->cid; //No one can add their own record!
 
-        return $notOwn && $isTrainingStaff || $hasApiKey;
+        return $notOwn && $isTrainingStaff || $hasApiKey || $apiKeyVisitor;
     }
 }
