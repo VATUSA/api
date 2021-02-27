@@ -26,7 +26,7 @@ class PublicController extends APIController
      *             ref="#/definitions/OK"
      *         ),
      *         examples={"application/json":{"id_event":760,"start_date":"2000-03-30","end_date":"2000-03-30","id_board":0,"id_topic":0,"title":"FNOklahoma
-     *         City","id_member":1021}}
+               City","id_member":1021}}
      *     )
      * )
      * @param \Illuminate\Http\Request $request
@@ -43,7 +43,7 @@ class PublicController extends APIController
             ->get()
             ->toArray();
 
-        return response()->api([$data]);
+        return response()->api($data);
     }
 
     /**
@@ -60,7 +60,8 @@ class PublicController extends APIController
      *         description="OK",
      *         @SWG\Schema(
      *             ref="#/definitions/OK"
-     *         )
+     *         ),
+     *         examples={"application/json":{"id_msg":45163,"id_topic":10004,"id_board":47,"poster_time":1614395041,"id_member":2906,"id_msg_modified":45163,"subject":"Position Posting: VATUSA Web Team","poster_name":1275302,"poster_email":"","poster_ip":"","smileys_enabled":1,"modified_time":0,"modified_name":"","body":"","icon":"xx","approved":1}}
      *     )
      * )
      * @param \Illuminate\Http\Request $request
@@ -75,9 +76,10 @@ class PublicController extends APIController
             ->orderByDesc('id_msg')
             ->limit($limit)
             ->get()
+            ->makeHidden(['poster_email', 'poster_ip'])
             ->toArray();
 
-        return response()->api([$data]);
+        return response()->api($data);
     }
 
 }
