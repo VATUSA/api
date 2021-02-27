@@ -4,11 +4,8 @@ namespace App\Http\Controllers\API\v2;
 
 use App\ForumCalendar;
 use App\ForumMessages;
-use App\Helpers\RoleHelper;
-use App\Helpers\AuthHelper;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class PublicController extends APIController
 {
@@ -44,9 +41,12 @@ class PublicController extends APIController
 
 public function getEvents(Request $request, $limit = 100)
 {
-    $data = ForumCalendar::limit($limit)->get()->toArray();
+    $data = ForumCalendar::limit($limit)
+        ->orderBy('start_date', 'asc')
+        ->get()
+        ->toArray();
 
-    return response()->ok($data);
+    return response()->ok([$data]);
 }
 
 /**
@@ -85,7 +85,7 @@ public function getNews(Request $request, $limit = 100)
         ->get()
         ->toArray();
 
-    return response()->ok($data);
+    return response()->ok([$data]);
 }
 
 }
