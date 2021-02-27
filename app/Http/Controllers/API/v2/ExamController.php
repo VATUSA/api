@@ -1032,7 +1032,7 @@ class ExamController extends APIController
             return response()->api(generate_error("Not found"), 404);
         }
 
-        if (\Auth::check() && RoleHelper::isSeniorStaff() || RoleHelper::isVATUSAStaff() || RoleHelper::isInstructor()) {
+        if (\Auth::check() && (RoleHelper::isSeniorStaff() || RoleHelper::isVATUSAStaff() || RoleHelper::isInstructor())) {
             $questions = ExamResultsData::where("result_id", $id)->get()->toArray();
         } else {
             $questions = null;
