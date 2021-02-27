@@ -1049,6 +1049,6 @@ class ExamController extends APIController
             $questions = null;
         }
 
-        return response()->ok([array_merge($results, ["questions" => $questions])]);
+        return response()->api([array_merge($results, ["questions" => $questions])]);
     }
 }

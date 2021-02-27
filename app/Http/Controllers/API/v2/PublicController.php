@@ -25,11 +25,7 @@ class PublicController extends APIController
  *         @SWG\Schema(
  *             ref="#/definitions/OK"
  *         ),
- *         examples={"application/json":{{}
- *         "status"="OK",
- *         "testing"=false
- *         }
- *         },
+ *         examples={"application/json":{"id_event":760,"start_date":"2000-03-30","end_date":"2000-03-30","id_board":0,"id_topic":0,"title":"FNOklahoma City","id_member":1021}}
  *     )
  * )
  * @param \Illuminate\Http\Request $request
@@ -46,7 +42,7 @@ public function getEvents(Request $request, $limit = 100)
         ->get()
         ->toArray();
 
-    return response()->ok([$data]);
+    return response()->api([$data]);
 }
 
 /**
@@ -85,7 +81,7 @@ public function getNews(Request $request, $limit = 100)
         ->get()
         ->toArray();
 
-    return response()->ok([$data]);
+    return response()->api([$data]);
 }
 
 }
