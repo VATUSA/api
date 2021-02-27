@@ -50,7 +50,7 @@ class SemiPrivateCORS
                     ->header("Access-Control-Allow-Credentials", "true")
                     ->header("Access-Control-Allow-Headers", "x-csrf-token")
                     ->header("Access-Control-Allow-Methods", $_SERVER['REQUEST_METHOD'])
-                    ->header("Access-Control-Allow-Origin", $_SERVER['HTTP_ORIGIN']);
+                    ->header("Access-Control-Allow-Origin", $_SERVER['HTTP_ORIGIN'] ?? $request->url());
             }
 
             return response()->json(generate_error("Unauthorized", true), 401);
