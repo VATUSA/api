@@ -78,12 +78,8 @@ class UserController extends APIController
         //Add rating_short property
         $data['rating_short'] = RatingHelper::intToShort($data["rating"]);
 
-        if ($isFacStaff || $isSeniorStaff || AuthHelper::validApiKeyv2($request->input('apikey', null))) {
-            // Get Facilties CID is Visiting
-            $data['visiting_facilities'] = $user->visits->toArray();
-        } else {
-            $data['visiting_facilities'] = null;
-        }
+        // Get Facilties CID is Visiting
+        $data['visiting_facilities'] = $user->visits->toArray();
 
         //Is Mentor
         $data['isMentor'] = $user->roles->where("facility", $user->facility)
