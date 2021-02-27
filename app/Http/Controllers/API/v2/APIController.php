@@ -43,6 +43,7 @@ use \App\Http\Controllers\Controller as BaseController;
  *     @SWG\Tag(name="email",description="User email addresses for staff members"),
  *     @SWG\Tag(name="exam",description="Exam center actions"),
  *     @SWG\Tag(name="facility",description="Facility management actions"),
+ *     @SWG\Tag(name="public",description="Public feeds of events and news"),
  *     @SWG\Tag(name="transfer",description="Transfer request submission and handling actions"),
  *     @SWG\Tag(name="rating",description="Rating changes"),
  *     @SWG\Tag(name="role",description="Role handling"),
@@ -50,7 +51,7 @@ use \App\Http\Controllers\Controller as BaseController;
  *     @SWG\Tag(name="stats",description="Division statistics"),
  *     @SWG\Tag(name="support",description="Support Center"),
  *     @SWG\Tag(name="survey", description="Survey management"),
- *     @SWG\Tag(name="training", description="Centralized training notes - Coming soon."),
+ *     @SWG\Tag(name="training", description="Centralized training records"),
  *     @SWG\Tag(name="user",description="User account management actions"),
  *     @SWG\Tag(name="tmu",description="Traffic Management Unit - Notices (NTOS)"),
  * )
