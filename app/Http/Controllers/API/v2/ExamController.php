@@ -10,6 +10,7 @@ use App\ExamResults;
 use App\ExamResultsData;
 use App\Helpers\EmailHelper;
 use App\Helpers\RoleHelper;
+use App\Helpers\AuthHelper;
 use App\TrainingBlock;
 use App\User;
 use Carbon\Carbon;
@@ -962,5 +963,81 @@ class ExamController extends APIController
         }
 
         return response()->api(['status' => 'OK']);
+    }
+
+    /**
+     *
+     * @SWG\Get(
+     *     path="/exam/result/(id)",
+     *     summary="Get exam results by ID. [Key]",
+     *     description="Get Exam Results filtered specifically by CERT ID.",
+     *     tags={"user","exam"},
+     *     produces={"application/json"},
+     *     @SWG\Parameter(name="id", in="path", type="integer", description="Exam ID"),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden -- needs to have role of INS, ATM, DATM, TA, or VATUSA Division staff member",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","message"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             ref="#/definitions/OK"
+     *         ),
+     *         examples={"application/json":{{
+     *              "id"=0,
+     *              "exam_id"=0,
+     *              "exam_name"="string",
+     *              "cid"=0,
+     *              "score"=0,
+     *              "passed"=0,
+     *              "date"="string",
+     *              "questions"={}
+     *         },
+     *         "status"="OK",
+     *         "testing"=false
+     *         }
+     *         },
+     *     )
+     * )
+     * @param \Illuminate\Http\Request $request
+     * @param                          $id
+     *
+     * @return \Illuminate\Http\Response
+     * @throws \Exception
+     */
+    public function getResult(Request $request, $id) 
+    {
+        $apikey = AuthHelper::validApiKeyv2($request->input('apikey', null));
+        if (!$apikey && !\Auth::check()) {
+            return response()->api(generate_error("Unauthorized"), 401);
+        }
+
+        if (\Auth::check() && !(RoleHelper::isSeniorStaff() ||
+                RoleHelper::isVATUSAStaff() ||
+                RoleHelper::isInstructor())) {
+            return response()->api(generate_error("Forbidden"), 403);
+        }
+
+        $results = ExamResults::find($id)->toArray();
+        if (!$results) {
+            return response()->api(generate_error("Not found"), 404);
+        }
+
+        if (\Auth::check() && (RoleHelper::isSeniorStaff() || RoleHelper::isVATUSAStaff() || RoleHelper::isInstructor())) {
+            $questions = ExamResultsData::where("result_id", $id)->get()->toArray();
+        } else {
+            $questions = null;
+        }
+
+        return response()->ok([array_merge($results, ["questions" => $questions])]);
     }
 }
