@@ -687,7 +687,7 @@ class FacilityController extends APIController
      * @SWG\Post(
      *     path="/facility/{id}/roster/manageVisitor/{cid}",
      *     summary="Add member to visiting roster. [Key]",
-     *     description="Add member to visiting roster.  JWT or Session Cookie required (required role: ATM,
+     *     description="Add member to visiting roster.  API Key, JWT, or Session Cookie required (required role: ATM,
     DATM, WM, VATUSA STAFF)",
      * produces={"application/json"},
      * tags={"facility"},
@@ -806,7 +806,7 @@ class FacilityController extends APIController
      * @SWG\Delete(
      *     path="/facility/{id}/roster/manageVisitor/{cid}",
      *     summary="Delete member from visiting roster. [Key]",
-     *     description="Delete member from visiting roster.  JWT or Session Cookie required (required role: ATM,
+     *     description="Delete member from visiting roster.  API Key, JWT, or Session Cookie required (required role: ATM,
     DATM, VATUSA STAFF)",
      * produces={"application/json"},
      * tags={"facility"},

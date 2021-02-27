@@ -373,7 +373,7 @@ class ExamController extends APIController
      *
      * @SWG\Get(
      *     path="/exams/{facility}",
-     *     summary="Get list of exams",
+     *     summary="Get list of exams. [Key]",
      *     description="Generates list of exams.",
      *     produces={"application/json"},
      *     tags={"exam"},
@@ -399,6 +399,12 @@ class ExamController extends APIController
      */
     public function getExams(Request $request, $facility = null)
     {
+        if (\Auth::check() && !(RoleHelper::isSeniorStaff() ||
+                RoleHelper::isVATUSAStaff() ||
+                RoleHelper::isInstructor())) {
+            return response()->api(generate_error("Forbidden"), 403);
+        }
+
         if ($facility) {
             $exams = Exam::where('facility_id', $facility);
         } else {
@@ -412,8 +418,8 @@ class ExamController extends APIController
     /**
      *
      * @SWG\Get(
-     *     path="/exams/{examid}",
-     *     summary="Get exam details",
+     *     path="/exam/{examid}",
+     *     summary="Get exam details. [Key]",
      *     description="Get exam details by ID",
      *     produces={"application/json"},
      *     tags={"exam"},
@@ -444,6 +450,11 @@ class ExamController extends APIController
      */
     public function getExambyId(Request $request, $id)
     {
+        if (\Auth::check() && !(RoleHelper::isSeniorStaff() ||
+                RoleHelper::isVATUSAStaff() ||
+                RoleHelper::isInstructor())) {
+            return response()->api(generate_error("Forbidden"), 403);
+        }
         $exam = Exam::find($id);
         if (!$exam) {
             return response()->api(generate_error("Not found"), 404);
@@ -803,7 +814,7 @@ class ExamController extends APIController
      *     path="/exam/(id)/assign/(cid)",
      *     summary="Assign exam. [Auth]",
      *     description="Assign exam to specified controller. Requires JWT or Session Cookie. Must be instructor, senior
-           staff or VATUSA staff.", tags={"user","exam"}, produces={"application/json"},
+            staff or VATUSA staff.", tags={"user","exam"}, produces={"application/json"},
      *     @SWG\Parameter(name="id", in="path", type="integer", description="Exam ID"),
      *     @SWG\Parameter(name="cid", in="path", type="integer", description="VATSIM ID"),
      *     @SWG\Parameter(name="expire", in="formData", type="integer", description="Days until expiration, 7
@@ -968,10 +979,10 @@ class ExamController extends APIController
     /**
      *
      * @SWG\Get(
-     *     path="/exam/result/(id)",
+     *     path="/exams/result/(id)",
      *     summary="Get exam results by ID. [Key]",
      *     description="Get Exam Results filtered specifically by CERT ID.",
-     *     tags={"user","exam"},
+     *     tags={"exam"},
      *     produces={"application/json"},
      *     @SWG\Parameter(name="id", in="path", type="integer", description="Exam ID"),
      *     @SWG\Response(
@@ -1014,7 +1025,7 @@ class ExamController extends APIController
      * @return \Illuminate\Http\Response
      * @throws \Exception
      */
-    public function getResult(Request $request, $id) 
+    public function getResult(Request $request, $id)
     {
         $apikey = AuthHelper::validApiKeyv2($request->input('apikey', null));
         if (!$apikey && !\Auth::check()) {
@@ -1032,7 +1043,7 @@ class ExamController extends APIController
             return response()->api(generate_error("Not found"), 404);
         }
 
-        if (\Auth::check() && (RoleHelper::isSeniorStaff() || RoleHelper::isVATUSAStaff() || RoleHelper::isInstructor())) {
+        if (\Auth::check() && (RoleHelper::isSeniorStaff() || RoleHelper::isVATUSAStaff() || RoleHelper::isInstructor()) || $apikey) {
             $questions = ExamResultsData::where("result_id", $id)->get()->toArray();
         } else {
             $questions = null;
