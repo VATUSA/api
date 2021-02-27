@@ -373,8 +373,8 @@ class ExamController extends APIController
      *
      * @SWG\Get(
      *     path="/exams/{facility}",
-     *     summary="Get list of exams. [Key]",
-     *     description="Generates list of exams.",
+     *     summary="Get list of active exams. [Key]",
+     *     description="Generates list of active exams.",
      *     produces={"application/json"},
      *     tags={"exam"},
      *     @SWG\Parameter(name="facility", in="path", type="string", description="(OPTIONAL) Filter list by Facility
@@ -410,7 +410,7 @@ class ExamController extends APIController
         } else {
             $exams = Exam::where('facility_id', 'LIKE', '%');
         }
-        $exams = $exams->orderBy('name')->get();
+        $exams = $exams->where('is_active', 1)->orderBy('name')->get();
 
         return response()->api($exams->toArray());
     }
