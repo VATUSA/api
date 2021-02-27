@@ -71,9 +71,12 @@ Route::group(['middleware' => ['private', 'auth:web,jwt'], 'prefix' => '/email']
  * Exam functions
  */
 
-Route::get('/exam', 'ExamController@getExams');
-Route::get('/exam/{facility}', 'ExamController@getExams')->where('facility', '[A-Z]{3}');
-Route::get('/exam/{id}', 'ExamController@getExambyId')->where('id', '[0-9]+');
+Route::group(['middleware' => 'semiprivate', 'prefix' => 'exams'], function () {
+    Route::get('/', 'ExamController@getExams');
+    Route::get('{facility}', 'ExamController@getExams')->where('facility', '[A-Z]{3}');
+    Route::get('{id}', 'ExamController@getExambyId')->where('id', '[0-9]+');
+    Route::get('result/{id}', 'ExamController@getResult')->where('id', '[0-9]+');
+});
 
 Route::group(['middleware' => ['auth:web,jwt', 'private'], 'prefix' => '/exam'], function () {
     Route::get('{id}/questions', 'ExamController@getExamQuestions')->where('id', '[0-9]+');
@@ -86,10 +89,6 @@ Route::group(['middleware' => ['private', 'auth:jwt,web'], 'prefix' => '/exam'],
     Route::post('queue/{id}', 'ExamController@postQueue');
     Route::get('request', 'ExamController@getRequest');
     Route::post('submit', 'ExamController@postSubmit');
-});
-
-Route::group([['middleware' => 'semiprivate'], 'prefix' => '/exam'], function () {
-    Route::get('result/{id}', 'ExamController@getResult')->where('id', '[0-9]+');
 });
 
 /******************************************************************************************
@@ -302,7 +301,7 @@ Route::group(['prefix' => 'training'], function () {
         Route::delete('record/{record}', 'TrainingController@deleteRecord')->where('record', '[0-9]+');
         Route::put('record/{record}', 'TrainingController@editRecord')->where('record', '[0-9]+');
     });
-    Route::group(['middleware' => 'private'], function() {
+    Route::group(['middleware' => 'private'], function () {
         Route::get('records', 'TrainingController@getAllRecords');
         Route::get('otsEval/{eval}', 'TrainingController@getOTSEval')->where('eval', '[0-9]+');
         Route::get('record/{record}/otsEval', 'TrainingController@getOTSTrainingEval')->where('record', '[0-9]+');
@@ -314,7 +313,7 @@ Route::group(['prefix' => 'training'], function () {
  * Public functions
  */
 
-Route::group(['prefix' => 'public'], function() {
+Route::group(['prefix' => 'public'], function () {
     Route::get('events/{limit}', 'PublicController@getEvents')->where('limit', '[0-9]+');
     Route::get('news/{limit}', 'PublicController@getNews')->where('limit', '[0-9]+');
 });
