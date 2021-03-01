@@ -52,7 +52,7 @@ class SSOController extends Controller
                 $return = env('SSO_RETURN_HOME');
             }
 
-            if(app()->environment('staging')) {
+            if (app()->environment('staging')) {
                 return redirect("https://forums.staging.vatusa.net/api.php?logout=1&return=$return");
             }
 
@@ -117,22 +117,40 @@ class SSOController extends Controller
 
             return $isULS ? response($error, 403) : redirect(env('SSO_RETURN_HOME_ERROR'))->with('error', $error);
         }
-        if (app()->environment("livedev") && !RoleHelper::isVATUSAStaff($user->cid, false, true) && !in_array($user->cid,
+        if (app()->environment("livedev") && !RoleHelper::isVATUSAStaff($user->cid, false,
+                true) && !in_array($user->cid,
                 explode(',', env("LIVEDEV_CIDS", "")))) {
             $error = "You are not authorized to access the live development website.";
 
             return $isULS ? response($error, 403) : redirect(env('SSO_RETURN_HOME_ERROR'))->with('error', $error);
         }
+
+        $member = User::find($user->cid);
+        $updateName = true;
+
+        //Process Preferred Name
+        if ($member && $member->prefname) {
+            if (Carbon::now()->subDays(14)->greaterThanOrEqualTo($member->prefname_date)) {
+                //Expired
+                $member->prefname = 0;
+                $member->prefname_date = null;
+                $member->save();
+            } else {
+                $updateName = false;
+            }
+        }
+
         // Check if user is registered in forums...
         if (!app()->environment('dev') && !app()->environment('livedev')) {
             if (SMFHelper::isRegistered($user->cid)) {
-                SMFHelper::updateData($user->cid, $user->personal->name_last, $user->personal->name_first,
+                SMFHelper::updateData($user->cid, $updateName ? $user->personal->name_last : $member->lname,
+                    $updateName ? $user->personal->name_first : $member->fname,
                     $user->personal->email);
                 SMFHelper::setPermissions($user->cid);
             } else {
                 $regOptions = [
                     'member_name'        => $user->cid,
-                    'real_name'          => $user->personal->name_first . " " . $user->personal->name_last,
+                    'real_name'          => $updateName ? $user->personal->name_first . " " . $user->personal->name_last : $member->fname . " " . $member->lname,
                     'email'              => $user->personal->email,
                     'send_welcome_email' => false,
                     'require'            => 'nothing'
@@ -144,13 +162,13 @@ class SSOController extends Controller
                 if ($data != "OK") {
                     $error = "Unable to create forum data. Please try again later or contact VATUSA12.";
 
-                    return $isULS ? response($error, 401) : redirect(env('SSO_RETURN_HOME_ERROR'))->with('error', $error);
+                    return $isULS ? response($error, 401) : redirect(env('SSO_RETURN_HOME_ERROR'))->with('error',
+                        $error);
 
                 }
             }
         }
 
-        $member = User::find($user->cid);
         if (!$member) {
             $member = new User();
             $member->cid = $user->cid;
@@ -176,8 +194,10 @@ class SSOController extends Controller
             }
         } else {
             //Update data
-            $member->fname = $user->personal->name_first;
-            $member->lname = $user->personal->name_last;
+            if($updateName) {
+                $member->fname = $user->personal->name_first;
+                $member->lname = $user->personal->name_last;
+            }
             $member->email = $user->personal->email;
             $member->rating = $user->vatsim->rating->id;
             $member->lastactivity = Carbon::now();
@@ -263,7 +283,8 @@ class SSOController extends Controller
         return ULSHelper::doHandleLogin($user->cid, $return);
     }
 
-    public function moodleLogin(Request $request) {
+    public function moodleLogin(Request $request)
+    {
 
     }
 }

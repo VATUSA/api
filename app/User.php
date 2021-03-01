@@ -74,7 +74,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     /**
      * @var array
      */
-    public $timestamps = ["created_at", "updated_at"];
+    public $timestamps = ["created_at", "updated_at", "prefname_date"];
     /**
      * @var array
      */
@@ -85,7 +85,9 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         "access_token",
         "refresh_token",
         "token_expires",
-        "discord_id"
+        "discord_id",
+        "prefname",
+        "prefname_date"
     ];
 
     protected $fillable = ["access_token", "refresh_token", "token_expires"];
