@@ -39,7 +39,8 @@ class PublicController extends APIController
     public function getEvents(Request $request, $limit = 100)
     {
         $data = ForumCalendar::limit($limit)
-            ->orderByDesc('start_date')
+            ->where('end_date', '>=', Carbon::now())
+            ->orderBy('start_date')
             ->get()
             ->toArray();
 
@@ -72,7 +73,8 @@ class PublicController extends APIController
      */
     public function getNews(Request $request, $limit = 100)
     {
-        $data = ForumMessages::where('id_board', 47)
+        $data = ForumMessages::where('smf_messages.id_board', 47)
+            ->join("smf_topics", "id_msg", "id_first_msg")
             ->orderByDesc('id_msg')
             ->limit($limit)
             ->get()
