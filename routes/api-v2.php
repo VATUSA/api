@@ -316,4 +316,5 @@ Route::group(['prefix' => 'training'], function () {
 Route::group(['prefix' => 'public'], function () {
     Route::get('events/{limit}', 'PublicController@getEvents')->where('limit', '[0-9]+');
     Route::get('news/{limit}', 'PublicController@getNews')->where('limit', '[0-9]+');
+    Route::get('planes', 'PublicController@getPlanes')->where('limit', '[0-9]+');
 });

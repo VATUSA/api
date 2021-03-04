@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\v2;
 
 use App\ForumCalendar;
 use App\ForumMessages;
+use Cache;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -62,7 +63,8 @@ class PublicController extends APIController
      *         @SWG\Schema(
      *             ref="#/definitions/OK"
      *         ),
-     *         examples={"application/json":{"id_msg":45163,"id_topic":10004,"id_board":47,"poster_time":1614395041,"id_member":2906,"id_msg_modified":45163,"subject":"Position Posting: VATUSA Web Team","poster_name":1275302,"poster_email":"","poster_ip":"","smileys_enabled":1,"modified_time":0,"modified_name":"","body":"","icon":"xx","approved":1}}
+     *         examples={"application/json":{"id_msg":45163,"id_topic":10004,"id_board":47,"poster_time":1614395041,"id_member":2906,"id_msg_modified":45163,"subject":"Position
+               Posting: VATUSA Web Team","poster_name":1275302,"poster_email":"","poster_ip":"","smileys_enabled":1,"modified_time":0,"modified_name":"","body":"","icon":"xx","approved":1}}
      *     )
      * )
      * @param \Illuminate\Http\Request $request
@@ -84,4 +86,31 @@ class PublicController extends APIController
         return response()->api($data);
     }
 
+    /**
+     *
+     * @SWG\Get(
+     *     path="/public/planes",
+     *     summary="Get planes for TMU.",
+     *     description="Get online planes, used for TMU",
+     *     tags={"public"},
+     *     produces={"application/json"},
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             ref="#/definitions/OK"
+     *         ),
+     *         examples={"application/json":{"callsign":"KLM910","cid":1544867,"type":"","dep":"","arr":"","route":"","lat":39.13393,"lon":-75.48326,"hdg":210,"spd":0,"alt":37}}
+     *     )
+     * )
+     * @return \Illuminate\Http\Response
+     */
+    public function getPlanes()
+    {
+        if (Cache::has('vatsim.data')) {
+            return response()->api(json_decode(Cache::get('vatsim.data')));
+        } else {
+            return response()->api([]);
+        }
+    }
 }
