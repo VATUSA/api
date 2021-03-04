@@ -92,7 +92,7 @@ class ResponseServiceProvider extends ServiceProvider
                     $algorithmManager
                 );
 
-                $payload = $jsonConverter->encode(array_merge(['testing' => isTest(), $data]));
+                $payload = $jsonConverter->encode(array_merge(['data' => $data], $data, ['testing' => isTest()]));
                 $jws = $jwsBuilder->create()->withPayload($payload)->addSignature($jwk,
                     ['alg' => json_decode($fjwk, true)['alg']])->build();
                 $serializer = new JSONFlattenedSerializer($jsonConverter);
@@ -101,7 +101,7 @@ class ResponseServiceProvider extends ServiceProvider
                     array_merge($headers, ['Content-Type' => 'application/json']));
             }
 
-            return $factory->make(encode_json(array_merge($data, ['data' => $data], $sig, ['testing' => isTest()])), $status,
+            return $factory->make(encode_json(array_merge(['data' => $data], $data, ['testing' => isTest()])),
                 array_merge($headers, ['Content-Type' => 'application/json']));
         });
     }
