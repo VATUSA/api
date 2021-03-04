@@ -101,7 +101,7 @@ class ResponseServiceProvider extends ServiceProvider
                     array_merge($headers, ['Content-Type' => 'application/json']));
             }
 
-            return $factory->make(encode_json(array_merge($data, $sig, ['testing' => isTest()])), $status,
+            return $factory->make(encode_json(array_merge($data, ['data' => $data], $sig, ['testing' => isTest()])), $status,
                 array_merge($headers, ['Content-Type' => 'application/json']));
         });
     }
