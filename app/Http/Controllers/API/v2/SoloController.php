@@ -130,7 +130,7 @@ class SoloController extends APIController
 
         $exp = $request->input("expDate", null);
         try {
-            $cExp = \Illuminate\Support\Carbon::createFromFormat('Y-m-d', $exp);
+            $cExp = \Illuminate\Support\Carbon::createFromFormat('Y-m-d', $exp, "UTC");
         } catch (InvalidArgumentException $e) {
             return response()->api(generate_error("Malformed request, invalid expire date format (Y-m-d)."),
                 400);
