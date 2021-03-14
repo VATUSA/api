@@ -40,7 +40,7 @@ class PublicController extends APIController
     public function getEvents(Request $request, $limit = 100)
     {
         $data = ForumCalendar::limit($limit)
-            ->where('end_date', '>=', Carbon::now())
+            ->where('start_date', '>=', Carbon::now()->subHours(24))
             ->orderBy('start_date')
             ->get()
             ->toArray();
