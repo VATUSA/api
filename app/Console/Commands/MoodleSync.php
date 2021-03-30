@@ -93,15 +93,8 @@ class MoodleSync extends Command
         $this->moodle->assignCohort($id, Helper::ratingShortFromInt($user->rating));
         $this->moodle->assignCohort($id, $user->facility);
 
-        //Clear Roles
-        $this->moodle->clearUserRoles($id);
-
-        //Assign Student Role
-        $this->moodle->assignRole($id, VATUSAMoodle::CATEGORY_CONTEXT_VATUSA, "STU", "coursecat");
-        $this->moodle->assignRole($id, $this->moodle->getCategoryFromShort($user->facility, true), "STU", "coursecat");
-
         //Assign Category Permissions
-        if (RoleHelper::isVATUSAStaff() || RoleHelper::has($user->cid, $user->facility, "TA")) {
+        if (RoleHelper::has($user->cid, $user->facility, "TA")) {
             $this->moodle->assignRole($id, VATUSAMoodle::CATEGORY_CONTEXT_VATUSA, "INS", "coursecat");
         }
         if (RoleHelper::isVATUSAStaff() || RoleHelper::isSeniorStaff($user->cid, $user->facility, true)) {
@@ -124,22 +117,28 @@ class MoodleSync extends Command
         if (RoleHelper::isVATUSAStaff() || RoleHelper::has($user->cid, $user->facility, "MTR")) {
             for ($i = 1; $i <= $user->rating; $i++) {
                 $category = "CATEGORY_CONTEXT_" . Helper::ratingShortFromInt($i);
-                $this->moodle->assignRole($id, $this->moodle->getConstant($category), "MTR", "course");
+                $this->moodle->assignRole($id, $this->moodle->getConstant($category), "MTR", "coursecat");
             }
         }
 
-        //Enrol User in Courses within Academy and ARTCC
+        //Enrol User in Courses within Academy
         $vatusaCategories = $this->moodle->getAcademyCategoryIds();
-        $artccCategoryParent = $this->moodle->getCategoryFromShort("ZAB");
-        $artccCategories = $this->moodle->getAllSubcategories($artccCategoryParent, true);
+        //$artccCategoryParent = $this->moodle->getCategoryFromShort($user->facility);
+        //$artccCategories = $this->moodle->getAllSubcategories($artccCategoryParent, true);
 
-        $allCategories = array_merge($vatusaCategories, $artccCategories);
-        foreach ($allCategories as $category) {
+        //$allCategories = array_merge($vatusaCategories, $artccCategories);
+        foreach ($vatusaCategories as $category) {
             $courses = $this->moodle->getCoursesInCategory($category);
             foreach ($courses as $course) {
                 $this->moodle->enrolUser($id, $course["id"]);
             }
         }
 
+        //Clear Roles
+        $this->moodle->clearUserRoles($id);
+
+        //Assign Student Role
+        $this->moodle->assignRole($id, VATUSAMoodle::CATEGORY_CONTEXT_VATUSA, "STU", "coursecat");
+        $this->moodle->assignRole($id, $this->moodle->getCategoryFromShort($user->facility, true), "STU", "coursecat");
     }
 }

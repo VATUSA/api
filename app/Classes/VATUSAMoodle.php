@@ -50,6 +50,7 @@ class VATUSAMoodle extends MoodleRest
     public const CATEGORY_ID_S2 = 72;
     public const CATEGORY_ID_S3 = 6;
     public const CATEGORY_ID_C1 = 7;
+    public const CATEGORY_ID_EXAMS = 74;
 
     /** @var int Context Levels */
     public const CONTEXT_SYSTEM = 10;
@@ -74,6 +75,7 @@ class VATUSAMoodle extends MoodleRest
 
     /**
      * Set token type
+     *
      * @param bool $isSSO
      */
     public function setSSO(bool $isSSO = true)
@@ -482,12 +484,16 @@ class VATUSAMoodle extends MoodleRest
         return $this->request("core_course_get_courses_by_field", $params)["courses"];
     }
 
-    public function getAcademyCategoryIds()
+    public function getAcademyCategoryIds($includeExams = false): array
     {
-        return $this->getAllSubcategories(self::CATEGORY_ID_VATUSA, true);
+        return collect($this->getAllSubcategories(self::CATEGORY_ID_VATUSA, true))->reject(function ($val) use (
+            $includeExams
+        ) {
+            return !$includeExams && $val === self::CATEGORY_ID_EXAMS;
+        })->toArray();
     }
 
-    public function getConstants()
+    public function getConstants(): array
     {
         return (new ReflectionClass(self::class))->getConstants();
     }
