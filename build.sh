@@ -14,7 +14,6 @@ chown application:application /run/secrets/*.key
 
 if [[ "$WWW_ENV" == "prod" ]] || [[ "$WWW_ENV" == "livedev" ]] || [[ "$WWW_ENV" == "staging" ]]; then
   echo "*    *    *     *     *    cd /www && php artisan schedule:run" >> /etc/crontabs/application
-  echo "*    *    *     *     *    cd /www && php artisan vatsim:flights" >> /etc/crontabs/application
   cd /www && php artisan migrate --force
   chown -R application:application /www/storage/logs
   chmod -R 777 /www/storage/logs
