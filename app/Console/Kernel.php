@@ -13,7 +13,9 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        'App\Console\Commands\MoodleSync'
+        'App\Console\Commands\MoodleSync',
+        'App\Console\Commands\StatsMonthly',
+        'App\Console\Commands\VATSIMFlights',
     ];
 
     /**
@@ -26,6 +28,7 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('stats:monthly')->monthlyOn(1, '00:00');
         $schedule->command('moodle:sync')->twiceDaily();
+        $schedule->command('vatsim:flights')->everyMinute();
     }
 
     /**
