@@ -178,6 +178,7 @@ return [
         App\Providers\RouteServiceProvider::class,
         App\Providers\FacilityServiceProvider::class,
         App\Providers\ResponseServiceProvider::class,
+        App\Providers\CloudflareServiceProvider::class,
         Aws\Laravel\AwsServiceProvider::class,
     ],
 
