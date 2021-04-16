@@ -79,7 +79,7 @@ class ULSHelper
                 $moodle->updateUser(Auth::user(), $id);
             } else {
                 //Create User
-                $moodle->createUser(Auth::user())[0]["id"];
+                $moodle->createUser(Auth::user());
             }
             Artisan::queue("moodle:sync", ["user" => $cid]);
 
