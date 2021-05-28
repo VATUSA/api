@@ -96,32 +96,13 @@ Route::group(['middleware' => ['private', 'auth:jwt,web'], 'prefix' => '/exam'],
  * Facility functions
  */
 
-Route::get('facility', 'FacilityController@getIndex');
-Route::get('facility/{id}', 'FacilityController@getFacility')->where('id', '[A-Za-z]{3}');
-Route::get('facility/{id}/roster/{membership?}', 'FacilityController@getRoster')->where('id', '[A-Za-z]{3}');
-Route::group(['middleware' => 'auth:web,jwt'], function () {
-    Route::put('facility/{id}', 'FacilityController@putFacility')->where('id', '[A-Za-z]{3}');
-    Route::delete('facility/{id}/roster/{cid}', 'FacilityController@deleteRoster')->where([
-        'id'  => '[A-Za-z]{3}',
-        'cid' => '\d+'
-    ]);
-    Route::put('facility/{id}/transfers/{transferId}', 'FacilityController@putTransfer')->where([
-        'id'         => '[A-Za-z]{3}',
-        'transferId' => '\d+'
-    ]);
-    Route::post('facility/{id}/email/{templateName}', 'FacilityController@postEmailTemplate');
-});
 Route::group(['prefix' => 'facility'], function () {
     Route::get('/', 'FacilityController@getIndex');
     Route::get('{id}', 'FacilityController@getFacility')->where('id', '[A-Za-z]{3}');
     Route::get('{id}/staff', 'FacilityController@getStaff')->where('id', '[A-Za-z]{3}');
-    Route::get('{id}/roster', 'FacilityController@getRoster')->where('id', '[A-Za-z]{3}');
+    Route::get('{id}/roster/{membership?}', 'FacilityController@getRoster')->where('id', '[A-Za-z]{3}');
     Route::group(['middleware' => 'auth:web,jwt'], function () {
         Route::put('{id}', 'FacilityController@putFacility')->where('id', '[A-Za-z]{3}');
-        Route::delete('{id}/roster/{cid}', 'FacilityController@deleteRoster')->where([
-            'id'  => '[A-Za-z]{3}',
-            'cid' => '\d+'
-        ]);
         Route::put('{id}/transfers/{transferId}', 'FacilityController@putTransfer')->where([
             'id'         => '[A-Za-z]{3}',
             'transferId' => '\d+'
@@ -129,6 +110,10 @@ Route::group(['prefix' => 'facility'], function () {
         Route::post('{id}/email/{templateName}', 'FacilityController@postEmailTemplate');
     });
     Route::group(['middleware' => 'semiprivate'], function () {
+        Route::delete('{id}/roster/{cid}', 'FacilityController@deleteRoster')->where([
+            'id'  => '[A-Za-z]{3}',
+            'cid' => '\d+'
+        ]);
         Route::get('{id}/transfers', 'FacilityController@getTransfers')->where('id', '[A-Za-z]{3}');
         Route::get('{id}/email/{templateName}', 'FacilityController@getemailTemplate');
         Route::get('{id}/ulsReturns', 'FacilityController@getUlsReturns');
