@@ -98,8 +98,6 @@ class trainingtimeavg extends Command
             }
             $this->log($facilityResult->to, $row->cid, $row->to, $row->from, $row->created_at, $totalDays);
         }
-        
-        return 0;
     }
 
     public function log($facility, $cid, $rating, $ratingFrom, $date, $days) {

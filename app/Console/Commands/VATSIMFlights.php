@@ -41,19 +41,19 @@ class VATSIMFlights extends Command
         if (!$status) {
             Log::notice("There was an error retrieving VATSIM data from server... received header:" . json_encode($http_response_header));
 
-            return 1;
+            return;
         }
         $server = json_decode($status, true)["data"]["v3"][0] ?? null;
         if (!$server) {
             Log::notice("There was an error retrieving VATSIM data from server. The array is invalid.");
 
-            return 1;
+            return;
         }
         $data = file_get_contents($server);
         if (!$data) {
             Log::notice("There was an error retrieving VATSIM data from server... received header:" . json_encode($http_response_header));
 
-            return 1;
+            return;
         }
         $vdata = json_decode($data, true);
         $pilots = $vdata["pilots"];
@@ -77,6 +77,5 @@ class VATSIMFlights extends Command
         }
 
         \Cache::put("vatsim.data", json_encode($planes ?? [], JSON_NUMERIC_CHECK), 60);      // Keep 1 minute
-        return 0;
     }
 }

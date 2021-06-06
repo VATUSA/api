@@ -4,7 +4,6 @@ namespace App\Exceptions;
 
 use App\Classes\OAuth\SSOException;
 use Exception;
-use Throwable;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Auth\AuthenticationException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -44,7 +43,7 @@ class Handler extends ExceptionHandler
      * @return void
      * @throws \Exception
      */
-    public function report(Throwable $exception)
+    public function report(Exception $exception)
     {
         if (app()->bound('sentry') && $this->shouldReport($exception)) {
             app('sentry')->captureException($exception);
@@ -61,7 +60,7 @@ class Handler extends ExceptionHandler
      *
      * @return bool|\Illuminate\Http\JsonResponse|\Symfony\Component\HttpFoundation\Response
      */
-    public function render($request, Throwable $exception)
+    public function render($request, Exception $exception)
     {
         if ($exception instanceof AuthenticationException) {
             return response()->unauthenticated();

@@ -102,7 +102,5 @@ class StatsMonthly extends Command
             'date' => Carbon::today(),
             'data' => encode_json($summary)
         ]);
-
-        return 0;
     }
 }
