@@ -90,7 +90,7 @@ class ExamController extends APIController
         }
 
         if (!isTest()) {
-            \Cache::put('exam.queue.' . $ea->cid, $examId, 60);
+            \Cache::put('exam.queue.' . $ea->cid, $examId, 60 * 60);
         }
 
         return response()->ok();

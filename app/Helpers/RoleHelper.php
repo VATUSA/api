@@ -25,7 +25,7 @@ class RoleHelper
             return Cache::get("role.$facility.$role");
         }
         $role = Role::where("facility", $facility)->where("role", $role)->get();
-        Cache::put("role.$facility.$role", 24 * 60);
+        Cache::put("role.$facility.$role", 24 * 60 * 60);
 
         return $role;
     }

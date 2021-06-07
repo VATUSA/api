@@ -144,7 +144,7 @@ class FacilityController extends APIController
                 $data['notices'][$tmu->id] = $tmu->tmuNotices()->get()->toArray();
             }
         }
-        \Cache::put("facility.$id.info", encode_json($data), 60);
+        \Cache::put("facility.$id.info", encode_json($data), 60 * 60);
 
         return response()->api($data);
     }
