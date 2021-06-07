@@ -66,7 +66,7 @@ class RouteServiceProvider extends ServiceProvider
     protected function mapApiRoutes()
     {
         if (env('APP_ENV') == "dev") {
-            Route::domain("api.vatusa.hawton.dev")
+            Route::domain(env("DEV_URL", "api.vatusa.local"))
                 ->middleware(["web","api"])
                 ->namespace($this->namespaceapi)
                 ->group(base_path("routes/api.php"));
@@ -91,7 +91,7 @@ class RouteServiceProvider extends ServiceProvider
     protected function mapLoginRoutes()
     {
         if (env('APP_ENV') == "dev") {
-            Route::domain("login.vatusa.hawton.dev")
+            Route::domain(env("DEV_LOGIN_URL", "login.vatusa.local"))
                 ->namespace($this->namespacelogin)
                 ->middleware("web")
                 ->group(base_path("routes/login.php"));
