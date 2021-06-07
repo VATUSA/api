@@ -9,6 +9,7 @@
         "ext-json": "*",
         "aws/aws-sdk-php-laravel": "^3.1",
         "bonroyage/oauth": "1.*",
+        "darkaonline/l5-swagger": "6.*",
         "doctrine/dbal": "^2.5",
         "fideloper/proxy": "~4.0",
         "fruitcake/laravel-cors": "^2.0",
@@ -28,7 +29,8 @@
         "tymon/jwt-auth": "^1.0",
         "web-token/jwt-core": "^0.4.1",
         "web-token/jwt-key-mgmt": "^0.4.1",
-        "web-token/jwt-signature": "^0.4.1"
+        "web-token/jwt-signature": "^0.4.1",
+        "zircote/swagger-php": "2.*"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^2.6",
