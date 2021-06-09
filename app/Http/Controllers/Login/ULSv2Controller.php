@@ -168,7 +168,8 @@ class ULSv2Controller extends Controller
                 'id'   => $facility->id,
                 'name' => $facility->name
             ],
-            'roles'     => []
+            'roles'     => [],
+            'visiting_facilities'  => $user->visits->toArray();,
         ];
         foreach (Role::where('cid', $user->cid)->where('facility', $facility->id)->get() as $role) {
             $data['roles'][] = $role->role;
