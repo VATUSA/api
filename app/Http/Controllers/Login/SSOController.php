@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Login;
 
 use App\Action;
 use App\Classes\OAuth\VatsimConnect;
-use App\Classes\VATUSAMoodle;
 use App\Helpers\RoleHelper;
 use App\Helpers\SMFHelper;
 use App\Helpers\EmailHelper;
@@ -140,35 +139,6 @@ class SSOController extends Controller
             }
         }
 
-        // Check if user is registered in forums...
-        if (!app()->environment('dev') && !app()->environment('livedev')) {
-            if (SMFHelper::isRegistered($user->cid)) {
-                SMFHelper::updateData($user->cid, $updateName ? $user->personal->name_last : $member->lname,
-                    $updateName ? $user->personal->name_first : $member->fname,
-                    $user->personal->email);
-                SMFHelper::setPermissions($user->cid);
-            } else {
-                $regOptions = [
-                    'member_name'        => $user->cid,
-                    'real_name'          => $updateName ? $user->personal->name_first . " " . $user->personal->name_last : $member->fname . " " . $member->lname,
-                    'email'              => $user->personal->email,
-                    'send_welcome_email' => false,
-                    'require'            => 'nothing'
-                ];
-                $token = ULSHelper::base64url_encode(json_encode($regOptions));
-                $signature = hash_hmac("sha512", $token, base64_decode(env("FORUM_SECRET")));
-                $signature = ULSHelper::base64url_encode($signature);
-                $data = file_get_contents("https://forums.vatusa.net/api.php?register=1&data=$token&signature=$signature");
-                if ($data != "OK") {
-                    $error = "Unable to create forum data. Please try again later or contact VATUSA12.";
-
-                    return $isULS ? response($error, 401) : redirect(env('SSO_RETURN_HOME_ERROR'))->with('error',
-                        $error);
-
-                }
-            }
-        }
-
         if (!$member) {
             $member = new User();
             $member->cid = $user->cid;
@@ -194,7 +164,7 @@ class SSOController extends Controller
             }
         } else {
             //Update data
-            if($updateName) {
+            if ($updateName) {
                 $member->fname = $user->personal->name_first;
                 $member->lname = $user->personal->name_last;
             }
@@ -279,12 +249,35 @@ class SSOController extends Controller
 
             $member->save();
         }
+        // Check if user is registered in forums...
+        if (!app()->environment('dev') && !app()->environment('livedev')) {
+            if (SMFHelper::isRegistered($user->cid)) {
+                SMFHelper::updateData($user->cid, $updateName ? $user->personal->name_last : $member->lname,
+                    $updateName ? $user->personal->name_first : $member->fname,
+                    $user->personal->email);
+                SMFHelper::setPermissions($user->cid);
+            } else {
+                $regOptions = [
+                    'member_name'        => $user->cid,
+                    'real_name'          => $updateName ? $user->personal->name_first . " " . $user->personal->name_last : $member->fname . " " . $member->lname,
+                    'email'              => $user->personal->email,
+                    'send_welcome_email' => false,
+                    'require'            => 'nothing'
+                ];
+                $token = ULSHelper::base64url_encode(json_encode($regOptions));
+                $signature = hash_hmac("sha512", $token, base64_decode(env("FORUM_SECRET")));
+                $signature = ULSHelper::base64url_encode($signature);
+                $data = file_get_contents("https://forums.vatusa.net/api.php?register=1&data=$token&signature=$signature");
+                if ($data != "OK") {
+                    $error = "Unable to create forum data. Please try again later or contact VATUSA12.";
+
+                    return $isULS ? response($error, 401) : redirect(env('SSO_RETURN_HOME_ERROR'))->with('error',
+                        $error);
+
+                }
+            }
+        }
 
         return ULSHelper::doHandleLogin($user->cid, $return);
-    }
-
-    public function moodleLogin(Request $request)
-    {
-
     }
 }
