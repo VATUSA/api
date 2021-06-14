@@ -34,7 +34,7 @@ class ULSv2Controller extends Controller
     public function getLogin(Request $request)
     {
         $fac = $request->input('fac', null);
-        $test = $request->has('test');
+        $test = $request->input('test', false);
         $rfc7519_compliance = $request->has("rfc7519_compliance");
 
         $url = $request->input('url', 1);
@@ -70,10 +70,10 @@ class ULSv2Controller extends Controller
 
     public function getRedirect(Request $request)
     {
-        $fac = $request->session()->has('fac') ? $request->session()->get('fac') : null;
-        $url = $request->session()->has('url') ? $request->session()->get('url') : null;
-        $test = $request->session()->has('test') ? $request->session()->get('test') : null;
-        $rfc7519_compliance = $request->session()->has("rfc7519_compliance") ? $request->session()->has("rfc7519_compliance") : null;
+        $fac = $request->session()->get('fac');
+        $url = $request->session()->get('url');
+        $test = $request->session()->get('test', false);
+        $rfc7519_compliance = $request->session()->has("rfc7519_compliance");
 
         if (!$fac || !$url) {
             abort(400, "Malformed request");
@@ -100,7 +100,7 @@ class ULSv2Controller extends Controller
         );
 
         $data = ULSHelper::generatev2Token(!$test ? \Auth::user() : factory(User::class)->make(['facility' => "ZXX"]),
-            $facility, $rfc7519_compliance ? true : false);
+            $facility, $rfc7519_compliance);
         $payload = $jsonConverter->encode($data);
         $jws = $jwsBuilder->create()->withPayload($payload)->addSignature($jwk,
             ['alg' => $facility_jwk['alg']])->build();
@@ -110,6 +110,7 @@ class ULSv2Controller extends Controller
         $request->session()->forget("fac");
         $request->session()->forget("url");
         $request->session()->forget("test");
+        $request->session()->forget("rfc7519_compliance");
 
         if ($redirect) {
             return redirect("$redirect?token=$token");

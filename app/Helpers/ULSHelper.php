@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ULSHelper
 {
-    public static function generateToken($facility = "")
+    public static function generateToken($facility = ""): string
     {
         if (!isset($_SERVER['REMOTE_ADDR']) || $_SERVER['REMOTE_ADDR'] == "") {
             header('HTTP/1.1 500 Internal Server Error');
@@ -38,13 +38,13 @@ class ULSHelper
         return $token;
     }
 
-    public static function generatev2Token(User $user, Facility $facility, bool $rfc7519)
+    public static function generatev2Token(User $user, Facility $facility, bool $rfc7519): ?array
     {
         $data = [
             'iss' => 'VATUSA',
             'aud' => $facility->id,
-            'sub' => $rfc7519 ? string($user->cid) : $user->cid,
-            'ip'  => isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'not available',
+            'sub' => $rfc7519 ? strval($user->cid) : $user->cid,
+            'ip'  => $_SERVER['REMOTE_ADDR'] ?? 'not available',
             'iat' => time(),
             'nbf' => time(),
             'exp' => time() + 20
@@ -53,7 +53,7 @@ class ULSHelper
         return static::generatev2Signature($data);
     }
 
-    public static function generatev2Signature(array $data)
+    public static function generatev2Signature(array $data): ?array
     {
         if ($data === null) {
             return null;
@@ -114,7 +114,7 @@ class ULSHelper
         return redirect(env('SSO_RETURN_HOME'));
     }
 
-    public static function base64url_encode($data, $use_padding = false)
+    public static function base64url_encode($data, $use_padding = false): string
     {
         $encoded = strtr(base64_encode($data), '+/', '-_');
 
