@@ -38,12 +38,12 @@ class ULSHelper
         return $token;
     }
 
-    public static function generatev2Token(User $user, Facility $facility)
+    public static function generatev2Token(User $user, Facility $facility, bool $rfc7519)
     {
         $data = [
             'iss' => 'VATUSA',
             'aud' => $facility->id,
-            'sub' => $user->cid,
+            'sub' => $rfc7519 ? string($user->cid) : $user->cid,
             'ip'  => isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'not available',
             'iat' => time(),
             'nbf' => time(),
