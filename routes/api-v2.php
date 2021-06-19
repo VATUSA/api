@@ -7,6 +7,16 @@ if (env('APP_ENV', 'prod') == "dev") {
     });
 }
 
+/** Readiness for Kubernetes Health Check */
+Route::get('readiness', function() {
+    try {
+        DB::connection()->getPdo();
+    } catch (Exception $e) {
+        return response('Not Ready', 500);
+    }
+    return 'Ready';
+});
+
 /******************************************************************************************
  * /auth
  * Auth functions
