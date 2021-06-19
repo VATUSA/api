@@ -100,7 +100,7 @@ class ULSHelper
             if (str_contains(config('app.url'), "staging")) {
                 $forumsUrl = str_replace("staging", "forums.staging", config('app.url'));
             } else {
-                $forumsUrl = str_replace("www", "forums", config('app.url'));
+                $forumsUrl = str_replace("api", "forums", config('app.url'));
             }
 
             return redirect($url . "&wantsurl=" . urlencode("$forumsUrl/api.php?login=1&token=$token&signature=$signature"));
