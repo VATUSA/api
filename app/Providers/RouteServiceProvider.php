@@ -52,8 +52,8 @@ class RouteServiceProvider extends ServiceProvider
     protected function mapWebRoutes()
     {
         Route::middleware('web')
-             ->namespace($this->namespace)
-             ->group(base_path('routes/web.php'));
+            ->namespace($this->namespace)
+            ->group(base_path('routes/web.php'));
     }
 
     /**
@@ -65,51 +65,18 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected function mapApiRoutes()
     {
-        if (env('APP_ENV') == "dev") {
-            Route::domain(env("DEV_URL", "api.vatusa.local"))
-                ->middleware(["web","api"])
-                ->namespace($this->namespaceapi)
-                ->group(base_path("routes/api.php"));
-        } elseif (env('APP_ENV') == "livedev") {
-            Route::domain("api.dev.vatusa.net")
-                ->middleware(["web","api"])
-                ->namespace($this->namespaceapi)
-                ->group(base_path("routes/api.php"));
-        } elseif (env('APP_ENV') == "staging") {
-            Route::domain("api.staging.vatusa.net")
-                ->middleware(["web","api"])
-                ->namespace($this->namespaceapi)
-                ->group(base_path("routes/api.php"));
-        } else {
-            Route::domain("api.vatusa.net")
-                ->middleware(["web","api"])
-                ->namespace($this->namespaceapi)
-                ->group(base_path("routes/api.php"));
-        }
+        Route::domain(config("app.url"))
+            ->middleware(["web", "api"])
+            ->namespace($this->namespaceapi)
+            ->group(base_path("routes/api.php"));
     }
 
-    protected function mapLoginRoutes()
+    protected
+    function mapLoginRoutes()
     {
-        if (env('APP_ENV') == "dev") {
-            Route::domain(env("DEV_LOGIN_URL", "login.vatusa.local"))
-                ->namespace($this->namespacelogin)
-                ->middleware("web")
-                ->group(base_path("routes/login.php"));
-        } elseif (env('APP_ENV') == "livedev") {
-            Route::domain("login.dev.vatusa.net")
-                ->namespace($this->namespacelogin)
-                ->middleware("web")
-                ->group(base_path("routes/login.php"));
-        } elseif (env('APP_ENV') == "staging") {
-            Route::domain("login.staging.vatusa.net")
-                ->namespace($this->namespacelogin)
-                ->middleware("web")
-                ->group(base_path("routes/login.php"));
-        } else {
-            Route::domain("login.vatusa.net")
-                ->namespace($this->namespacelogin)
-                ->middleware("web")
-                ->group(base_path("routes/login.php"));
-        }
+        Route::domain(config("app.loginUrl"))
+            ->namespace($this->namespacelogin)
+            ->middleware("web")
+            ->group(base_path("routes/login.php"));
     }
 }
