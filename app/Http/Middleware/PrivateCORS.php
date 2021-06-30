@@ -38,10 +38,7 @@ class PrivateCORS
                 if (!isset($_SERVER['HTTP_ORIGIN'])
                     || (
                         !preg_match(
-                        "~^(http|https)://[^/]+\.vatusa\.net(:\d{2,4})?~i",
-                        $_SERVER['HTTP_ORIGIN'])
-                        && !preg_match(
-                        "~^(http|https)://[^/]+\.vatusa\.devel(:\d{2,4})?~i",
+                        "~^(http|https)://[^/]+\.vatusa\.(net|devel|cloud)(:\d{2,4})?~i",
                         $_SERVER['HTTP_ORIGIN'])
                     )
                 ) {
