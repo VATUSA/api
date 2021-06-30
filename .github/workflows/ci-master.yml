@@ -64,7 +64,7 @@ jobs:
         env:
           KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
         with:
-          args: set image cronjob/api-cron *=vatusa/www:${{ steps.vars.outputs.sha_short }} -n web
+          args: set image cronjob/api-cron *=vatusa/api:${{ steps.vars.outputs.sha_short }} -n web
           
           
       - name: Deploy to Kubernetes Cluster - Update Queue Worker
@@ -73,4 +73,4 @@ jobs:
         env:
           KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
         with:
-          args: set image deployment/api-queue *=vatusa/www:${{ steps.vars.outputs.sha_short }} -n web
+          args: set image deployment/api-queue *=vatusa/api:${{ steps.vars.outputs.sha_short }} -n web
