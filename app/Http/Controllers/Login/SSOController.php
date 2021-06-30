@@ -53,10 +53,10 @@ class SSOController extends Controller
             }
 
             if (app()->environment('staging')) {
-                return redirect("https://forums.staging.vatusa.net/api.php?logout=1&return=$return");
+                return redirect(env('SSO_RETURN_FORUMS', 'https://forums.staging.vatusa.net/') . "api.php?logout=1&return=$return");
             }
 
-            return redirect(app()->environment('dev') || app()->environment('livedev') ? $return : "https://forums.vatusa.net/api.php?logout=1&return=$return");
+            return redirect(app()->environment('dev') || app()->environment('livedev') ? $return : env('SSO_RETURN_FORUMS', 'https://forums.dev.vatusa.net/') . "api.php?logout=1&return=$return");
         }
 
         /* Lots to check here ... but this is our multi-point redirect */
