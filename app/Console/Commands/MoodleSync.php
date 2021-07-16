@@ -90,8 +90,9 @@ class MoodleSync extends Command
 
         //Assign Cohorts
         $this->moodle->clearUserCohorts($id);
-        $this->moodle->assignCohort($id, Helper::ratingShortFromInt($user->rating));
-        $this->moodle->assignCohort($id, $user->facility);
+        $this->moodle->assignCohort($id, Helper::ratingShortFromInt($user->rating)); //VATUSA level rating
+        $this->moodle->assignCohort($id, $user->facility); //Facility
+        $this->moodle->assignCohort($id, "$user->facility-" . Helper::ratingShortFromInt($user->rating)); //Facility level rating
 
         //Clear Roles
         $this->moodle->clearUserRoles($id);
