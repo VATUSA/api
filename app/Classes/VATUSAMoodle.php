@@ -69,8 +69,6 @@ class VATUSAMoodle extends MoodleRest
     {
         parent::__construct(config('services.moodle.url') . '/webservice/rest/server.php',
             $isSSO ? config('services.moodle.token_sso') : config('services.moodle.token'));
-
-        $this->categories = $this->getCategories();
     }
 
     /**
@@ -143,7 +141,7 @@ class VATUSAMoodle extends MoodleRest
             return null;
         }
 
-        foreach ($this->categories as $category) {
+        foreach ($this->getCategories() as $category) {
             if ($category["idnumber"] === $short) {
                 if ($full) {
                     return $context ? array_merge($category,
