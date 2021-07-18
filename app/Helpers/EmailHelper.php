@@ -25,7 +25,7 @@ class EmailHelper {
      */
     public static function sendEmail($email, $subject, $template, $data)
     {
-        Mail::queue($template, $data, function ($msg) use ($data, $email, $subject) {
+        Mail::send($template, $data, function ($msg) use ($data, $email, $subject) {
             $msg->from('no-reply@vatusa.net', "VATUSA Web Services");
             $msg->to($email);
             $msg->subject("[VATUSA] $subject");
@@ -44,7 +44,7 @@ class EmailHelper {
      */
     public static function sendEmailBCC($fromEmail, $fromName, $emails, $subject, $template, $data)
     {
-        Mail::queue($template, $data, function ($msg) use ($data, $fromEmail, $emails, $fromName, $subject) {
+        Mail::send($template, $data, function ($msg) use ($data, $fromEmail, $emails, $fromName, $subject) {
             $msg->from("no-reply@vatusa.net", "VATUSA Web Services");
             $msg->to($fromEmail, $fromName);
             $msg->subject("[VATUSA] $subject");
@@ -62,7 +62,7 @@ class EmailHelper {
      */
     public static function sendEmailFrom($email, $from_email, $from_name, $subject, $template, $data)
     {
-        Mail::queue("emails.$template", $data, function ($msg) use ($data, $from_email, $from_name, $email, $subject) {
+        Mail::send("emails.$template", $data, function ($msg) use ($data, $from_email, $from_name, $email, $subject) {
             $msg->from("no-reply@vatusa.net", "$from_name");
             $msg->replyTo($from_email, $from_name);
             $msg->to($email);
@@ -87,7 +87,7 @@ class EmailHelper {
         fwrite($fp, $t->body);
         fclose($fp);
 
-        Mail::queue("emails.$tpl", $data, function ($msg) use ($data, $email, $subject) {
+        Mail::send("emails.$tpl", $data, function ($msg) use ($data, $email, $subject) {
             $msg->from('no-reply@vatusa.net', "VATUSA Web Services");
             $msg->to($email);
             $msg->subject("[VATUSA] $subject");
@@ -112,7 +112,7 @@ class EmailHelper {
         $transport->setPassword(env("SUPPORT_EMAIL_PASSWORD"));
         $support = new \Swift_Mailer($transport);
         Mail::setSwiftMailer($support);
-        Mail::queue($template, $data, function($msg) use ($data, $email, $subject, $ticket) {
+        Mail::send($template, $data, function($msg) use ($data, $email, $subject, $ticket) {
             $msg->from('support@vatusa.net', 'VATUSA Help Desk');
             $msg->bcc($email);
             $msg->subject("[VATUSA Help Desk] (Ticket #$ticket) $subject");
