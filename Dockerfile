@@ -32,6 +32,7 @@ RUN	addgroup -S application && adduser -SG application application && \
 		php7-mbstring \
 		php7-fpm \
 		php7-simplexml \
+		php7-memcached \
 		php7 \
 		nginx \
 		supervisor \
