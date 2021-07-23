@@ -4,11 +4,11 @@ namespace App\Http\Controllers\Login;
 
 use App\Action;
 use App\Classes\OAuth\VatsimConnect;
-use App\Classes\VATUSAMoodle;
 use App\Helpers\RoleHelper;
 use App\Helpers\SMFHelper;
 use App\Helpers\EmailHelper;
 use App\Helpers\ULSHelper;
+use App\ExamResults;
 use App\Transfer;
 use App\User;
 use Illuminate\Http\RedirectResponse;
@@ -53,10 +53,10 @@ class SSOController extends Controller
             }
 
             if (app()->environment('staging')) {
-                return redirect("https://forums.staging.vatusa.net/api.php?logout=1&return=$return");
+                return redirect(env('SSO_RETURN_FORUMS', 'https://forums.staging.vatusa.net/') . "api.php?logout=1&return=$return");
             }
 
-            return redirect(app()->environment('dev') || app()->environment('livedev') ? $return : "https://forums.vatusa.net/api.php?logout=1&return=$return");
+            return redirect(app()->environment('dev') || app()->environment('livedev') ? $return : env('SSO_RETURN_FORUMS', 'https://forums.dev.vatusa.net/') . "api.php?logout=1&return=$return");
         }
 
         /* Lots to check here ... but this is our multi-point redirect */
@@ -140,35 +140,6 @@ class SSOController extends Controller
             }
         }
 
-        // Check if user is registered in forums...
-        if (!app()->environment('dev') && !app()->environment('livedev')) {
-            if (SMFHelper::isRegistered($user->cid)) {
-                SMFHelper::updateData($user->cid, $updateName ? $user->personal->name_last : $member->lname,
-                    $updateName ? $user->personal->name_first : $member->fname,
-                    $user->personal->email);
-                SMFHelper::setPermissions($user->cid);
-            } else {
-                $regOptions = [
-                    'member_name'        => $user->cid,
-                    'real_name'          => $updateName ? $user->personal->name_first . " " . $user->personal->name_last : $member->fname . " " . $member->lname,
-                    'email'              => $user->personal->email,
-                    'send_welcome_email' => false,
-                    'require'            => 'nothing'
-                ];
-                $token = ULSHelper::base64url_encode(json_encode($regOptions));
-                $signature = hash_hmac("sha512", $token, base64_decode(env("FORUM_SECRET")));
-                $signature = ULSHelper::base64url_encode($signature);
-                $data = file_get_contents("https://forums.vatusa.net/api.php?register=1&data=$token&signature=$signature");
-                if ($data != "OK") {
-                    $error = "Unable to create forum data. Please try again later or contact VATUSA12.";
-
-                    return $isULS ? response($error, 401) : redirect(env('SSO_RETURN_HOME_ERROR'))->with('error',
-                        $error);
-
-                }
-            }
-        }
-
         if (!$member) {
             $member = new User();
             $member->cid = $user->cid;
@@ -182,6 +153,7 @@ class SSOController extends Controller
             $member->flag_needbasic = 1;
             $member->flag_xferOverride = 0;
             $member->flag_homecontroller = (($user->vatsim->division->id == "USA") ? 1 : 0);
+            $member->cert_update = 1;
             $member->save();
 
             if ($member->flag_homecontroller) {
@@ -194,9 +166,9 @@ class SSOController extends Controller
             }
         } else {
             //Update data
-            if($updateName) {
-                $member->fname = $user->personal->name_first;
-                $member->lname = $user->personal->name_last;
+            if ($updateName) {
+                $member->fname = ucfirst(trim($user->personal->name_first));
+                $member->lname = ucwords(trim($user->personal->name_last));
             }
             $member->email = $user->personal->email;
             $member->rating = $user->vatsim->rating->id;
@@ -205,10 +177,10 @@ class SSOController extends Controller
             if (!$member->flag_homecontroller && $user->vatsim->division->id == "USA") {
                 //User is rejoining
                 $transfers = Transfer::where('cid', $member->cid)->where('actiontext', "Left division")
-                    ->where('created_at', '>=', Carbon::now()->subHours(48))
+                    ->where('created_at', '>=', Carbon::now()->subHours(72))
                     ->orderBy('created_at', 'DESC');
                 if ($transfers->count()) {
-                    //Within last 48 hours
+                    //Within last 72 hours
                     $t = $transfers->first();
                     $member->addToFacility($t->from);
                     $member->flag_needbasic = 0;
@@ -224,13 +196,13 @@ class SSOController extends Controller
 
                     $log = new Action();
                     $log->to = $member->cid;
-                    $log->log = "Rejoined division within 48 hours, facility set to " . $member->facility;
+                    $log->log = "Rejoined division within 72 hours, facility set to " . $member->facility;
                     $log->save();
                 } elseif (Transfer::where('cid', $member->cid)->where('actiontext', "Left division")
                     ->where('created_at', '>=', Carbon::now()->subMonths(6))
                     ->orderBy('created_at', 'DESC')->count()
                 ) {
-                    //Within last 6 months but more than 48 hours
+                    //Within last 6 months but more than 72 hours
                     $member->facility = "ZAE";
                     $member->facility_join = Carbon::now();
                     $member->flag_needbasic = 0;
@@ -267,10 +239,13 @@ class SSOController extends Controller
                     $log->to = $member->cid;
                     $log->log = "Rejoined division after more than 6 months, facility set to ZAE";
                     $log->save();
+
+                    EmailHelper::sendEmail($member->email, "Welcome to VATUSA", "emails.user.join", []);
                 }
                 // Now let us check to see if they have ever been in a facility.. if not, we need to override the need basic flag.
                 if (!Transfer::where('cid', $member->cid)->where('to', 'NOT LIKE', 'ZAE')->where('to',
-                    'NOT LIKE', 'ZZN')->exists()) {
+                    'NOT LIKE', 'ZZN')->exists() && !ExamResults::where('cid', $member->cid)->where('exam_id', config('exams.BASIC'))->where('passed',
+                    1)->where('date','>=', Carbon::now()->subMonths(6))->count()) {
                     $member->flag_needbasic = 1;
                 }
 
@@ -279,12 +254,34 @@ class SSOController extends Controller
 
             $member->save();
         }
+        // Check if user is registered in forums...
+        if (!app()->environment('dev') && !app()->environment('livedev')) {
+            if (SMFHelper::isRegistered($user->cid)) {
+                SMFHelper::updateData($user->cid, $updateName ? $user->personal->name_last : $member->lname,
+                    $updateName ? $user->personal->name_first : $member->fname,
+                    $user->personal->email);
+                SMFHelper::setPermissions($user->cid);
+            } else {
+                $regOptions = [
+                    'member_name'        => $user->cid,
+                    'real_name'          => $updateName ? $user->personal->name_first . " " . $user->personal->name_last : $member->fname . " " . $member->lname,
+                    'email'              => $user->personal->email,
+                    'send_welcome_email' => false,
+                    'require'            => 'nothing'
+                ];
+                $token = ULSHelper::base64url_encode(json_encode($regOptions));
+                $signature = hash_hmac("sha512", $token, base64_decode(env("FORUM_SECRET")));
+                $signature = ULSHelper::base64url_encode($signature);
+                $data = file_get_contents(env('SSO_RETURN_FORUMS', 'https://forums.vatusa.net/') . "api.php?register=1&data=$token&signature=$signature");
+                if ($data != "OK") {
+                    $error = "Unable to create forum data. Please try again later or contact VATUSA12.";
+
+                    return $isULS ? response($error, 401) : redirect(env("SSO_RETURN_HOME_ERROR"))->with('error',
+                        $error);
+                }
+            }
+        }
 
         return ULSHelper::doHandleLogin($user->cid, $return);
-    }
-
-    public function moodleLogin(Request $request)
-    {
-
     }
 }

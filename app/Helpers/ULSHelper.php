@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ULSHelper
 {
-    public static function generateToken($facility = "")
+    public static function generateToken($facility = ""): string
     {
         if (!isset($_SERVER['REMOTE_ADDR']) || $_SERVER['REMOTE_ADDR'] == "") {
             header('HTTP/1.1 500 Internal Server Error');
@@ -38,13 +38,13 @@ class ULSHelper
         return $token;
     }
 
-    public static function generatev2Token(User $user, Facility $facility)
+    public static function generatev2Token(User $user, Facility $facility, bool $rfc7519): ?array
     {
         $data = [
             'iss' => 'VATUSA',
             'aud' => $facility->id,
-            'sub' => $user->cid,
-            'ip'  => isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'not available',
+            'sub' => $rfc7519 ? strval($user->cid) : $user->cid,
+            'ip'  => $_SERVER['REMOTE_ADDR'] ?? 'not available',
             'iat' => time(),
             'nbf' => time(),
             'exp' => time() + 20
@@ -53,7 +53,7 @@ class ULSHelper
         return static::generatev2Signature($data);
     }
 
-    public static function generatev2Signature(array $data)
+    public static function generatev2Signature(array $data): ?array
     {
         if ($data === null) {
             return null;
@@ -70,8 +70,7 @@ class ULSHelper
         //smfapi_login($cid, 14400);
         \Auth::loginUsingId($cid, true);
 
-        if (!in_array(app()->environment(), ["livedev", "dev", "staging"])) {
-
+        if (in_array(app()->environment(), ["prod", "staging"])) {
             //Sync Moodle Roles
             $moodle = new VATUSAMoodle(false);
             if ($id = $moodle->getUserId($cid)) {
@@ -87,18 +86,9 @@ class ULSHelper
             $response = $moodle->request("auth_userkey_request_login_url",
                 ['user' => ['idnumber' => Auth::user()->cid]]);
             $url = $response["loginurl"];
-
-            $token = [
-                "cid"    => (string)$cid,
-                "nlt"    => time() + 7,
-                "return" => $return
-            ];
-            $token = static::base64url_encode(json_encode($token));
-            $signature = static::base64url_encode(hash_hmac("sha512", $token, base64_decode(env("FORUM_SECRET"))));
-
-            return redirect($url . "&wantsurl=" . urlencode("https://forums.vatusa.net/api.php?login=1&token=$token&signature=$signature"));
         }
-        if (app()->environment("staging")) {
+
+        if (!in_array(app()->environment(), ["dev", "local"])) {
             $token = [
                 "cid"    => (string)$cid,
                 "nlt"    => time() + 7,
@@ -107,14 +97,19 @@ class ULSHelper
             $token = static::base64url_encode(json_encode($token));
             $signature = static::base64url_encode(hash_hmac("sha512", $token, base64_decode(env("FORUM_SECRET"))));
 
-            return redirect("https://forums.staging.vatusa.net/api.php?login=1&token=$token&signature=$signature");
+            if (str_contains(config('app.url'), "staging")) {
+                $forumsUrl = str_replace("staging", "forums.staging", config('app.url'));
+            } else {
+                $forumsUrl = str_replace("api", "forums", config('app.url'));
+            }
 
+            return redirect($url . "&wantsurl=" . urlencode("$forumsUrl/api.php?login=1&token=$token&signature=$signature"));
         }
 
         return redirect(env('SSO_RETURN_HOME'));
     }
 
-    public static function base64url_encode($data, $use_padding = false)
+    public static function base64url_encode($data, $use_padding = false): string
     {
         $encoded = strtr(base64_encode($data), '+/', '-_');
 

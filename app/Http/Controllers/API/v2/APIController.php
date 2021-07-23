@@ -33,10 +33,10 @@ use \App\Http\Controllers\Controller as BaseController;
              if both Sandbox JWK and Dev URL are configured, and the domains match, the response will be formatted according to JSON Web Signature, RFC 7515. </p>",
  *         x={
  *           "logo": {
- *             "url": "https://www.vatusa.net/img/logo-light.png",
+ *             "url": "https://www.vatusa.net/img/logo-full.png",
  *           },
  *         },
- *         @SWG\Contact(name="Blake Nahin", url="https://www.vatusa.net"),
+ *         @SWG\Contact(name="Blake Nahin", url="https://www.vatusa.net/info/members"),
  *     ),
  *     @SWG\Tag(name="auth",description="Internal authentication handling commands for use by VATUSA Web Systems to translate Laravel Sessions into JSON Web Tokens"),
  *     @SWG\Tag(name="cbt",description="Computer Based Training actions"),

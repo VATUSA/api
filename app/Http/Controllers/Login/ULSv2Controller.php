@@ -34,7 +34,8 @@ class ULSv2Controller extends Controller
     public function getLogin(Request $request)
     {
         $fac = $request->input('fac', null);
-        $test = $request->has('test');
+        $test = $request->input('test', false);
+        $rfc7519_compliance = $request->has("rfc7519_compliance");
 
         $url = $request->input('url', 1);
         if ($request->has('dev') && !$request->has('url')) {
@@ -61,7 +62,7 @@ class ULSv2Controller extends Controller
                 "Facility is not ready for ULSv2. Please contact the facility webmaster at " . strtolower($facility->id) . "-wm@vatusa.net");
         }
 
-        session(compact('fac', 'url', 'test'));
+        session(compact('fac', 'url', 'test', 'rfc7519_compliance'));
 
         return redirect(env(!$test ? 'ULSv2_LOGIN' : 'SSO_RETURN_ULSv2'));
         //Testing: return test user using dev JWK key
@@ -69,9 +70,10 @@ class ULSv2Controller extends Controller
 
     public function getRedirect(Request $request)
     {
-        $fac = $request->session()->has('fac') ? $request->session()->get('fac') : null;
-        $url = $request->session()->has('url') ? $request->session()->get('url') : null;
-        $test = $request->session()->has('test') ? $request->session()->get('test') : null;
+        $fac = $request->session()->get('fac');
+        $url = $request->session()->get('url');
+        $test = $request->session()->get('test', false);
+        $rfc7519_compliance = $request->session()->has("rfc7519_compliance");
 
         if (!$fac || !$url) {
             abort(400, "Malformed request");
@@ -98,7 +100,7 @@ class ULSv2Controller extends Controller
         );
 
         $data = ULSHelper::generatev2Token(!$test ? \Auth::user() : factory(User::class)->make(['facility' => "ZXX"]),
-            $facility);
+            $facility, $rfc7519_compliance);
         $payload = $jsonConverter->encode($data);
         $jws = $jwsBuilder->create()->withPayload($payload)->addSignature($jwk,
             ['alg' => $facility_jwk['alg']])->build();
@@ -108,6 +110,7 @@ class ULSv2Controller extends Controller
         $request->session()->forget("fac");
         $request->session()->forget("url");
         $request->session()->forget("test");
+        $request->session()->forget("rfc7519_compliance");
 
         if ($redirect) {
             return redirect("$redirect?token=$token");
@@ -168,7 +171,8 @@ class ULSv2Controller extends Controller
                 'id'   => $facility->id,
                 'name' => $facility->name
             ],
-            'roles'     => []
+            'roles'     => [],
+            'visiting_facilities'  => $user->visits->toArray(),
         ];
         foreach (Role::where('cid', $user->cid)->where('facility', $facility->id)->get() as $role) {
             $data['roles'][] = $role->role;

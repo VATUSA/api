@@ -1,6 +1,7 @@
 <?php
 
 use App\Action;
+use App\Helpers\AuthHelper;
 
 /**
  * Generate standardized JSON output
@@ -9,7 +10,7 @@ use App\Action;
  *
  * @return string
  */
-function encode_json($data)
+function encode_json($data): string
 {
     return json_encode($data, JSON_NUMERIC_CHECK);
 }
@@ -32,7 +33,7 @@ function decode_json($data)
  *
  * @return string|array
  */
-function generate_error($msg, $asArray = true)
+function generate_error(string $msg, bool $asArray = true)
 {
     if ($asArray) {
         return [
@@ -65,13 +66,13 @@ function log_action($cid, $msg)
  *
  * @return bool
  */
-function isTest(Request $request = null)
+function isTest(Request $request = null): bool
 {
     if (!$request) {
         $request = request();
     }
-    if ($request->has('test') ||
-        \App\Helpers\AuthHelper::isSandboxKey($request->input('apikey', null))) {
+    if ($request->get('test', false) ||
+        AuthHelper::isSandboxKey($request->input('apikey'))) {
         return true;
     }
 
@@ -83,7 +84,7 @@ function isTest(Request $request = null)
  *
  * @return string
  */
-function randomPassword($length = 24)
+function randomPassword($length = 24): string
 {
     $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
     $pass = [];

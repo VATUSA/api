@@ -32,6 +32,7 @@ RUN	addgroup -S application && adduser -SG application application && \
 		php7-mbstring \
 		php7-fpm \
 		php7-simplexml \
+		php7-memcached \
 		php7 \
 		nginx \
 		supervisor \
@@ -46,7 +47,6 @@ RUN	addgroup -S application && adduser -SG application application && \
     sed -i "s|;*post_max_size =.*|post_max_size = ${PHP_MAX_POST}|i" /etc/php7/php.ini && \
     sed -i "s|;*cgi.fix_pathinfo=.*|cgi.fix_pathinfo= 0|i" /etc/php7/php.ini && \
     mkdir /etc/supervisor.d && \
-    mkdir /var/run/nginx && \
 	mkdir /www && \
 	chown application:application /www && \
 	apk del tzdata && \

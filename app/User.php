@@ -1,5 +1,6 @@
 <?php namespace App;
 
+use App\Classes\OAuth\VatsimConnect;
 use App\Helpers\CERTHelper;
 use App\Helpers\Helper;
 use App\Helpers\EmailHelper;
@@ -10,8 +11,8 @@ use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Carbon\Carbon;
-use App\Classes\OAuth\VatsimOAuthController;
 use League\OAuth2\Client\Token\AccessToken;
+use Illuminate\Support\Str;
 
 /**
  * Class User
@@ -346,7 +347,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
                     'msg'         => $msg,
                     'facid'       => $old_facility,
                     'region'      => $region,
-                    'obsInactive' => $this->rating == 1 && str_contains($msg,
+                    'obsInactive' => $this->rating == 1 && Str::contains($msg,
                             ['inactive', 'inactivity', 'Inactive', 'Inactivity', 'activity', 'Activity'])
                 ]
             );
@@ -710,7 +711,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
                 'expires'       => $this->token_expires,
             ]);
             if ($token->hasExpired()) {
-                $token = VatsimOAuthController::updateToken($token);
+                $token = VatsimConnect::updateToken($token);
             }
 
             $this->update([

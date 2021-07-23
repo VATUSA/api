@@ -90,8 +90,9 @@ class MoodleSync extends Command
 
         //Assign Cohorts
         $this->moodle->clearUserCohorts($id);
-        $this->moodle->assignCohort($id, Helper::ratingShortFromInt($user->rating));
-        $this->moodle->assignCohort($id, $user->facility);
+        $this->moodle->assignCohort($id, Helper::ratingShortFromInt($user->rating)); //VATUSA level rating
+        $this->moodle->assignCohort($id, $user->facility); //Facility
+        $this->moodle->assignCohort($id, "$user->facility-" . Helper::ratingShortFromInt($user->rating)); //Facility level rating
 
         //Clear Roles
         $this->moodle->clearUserRoles($id);
@@ -111,6 +112,9 @@ class MoodleSync extends Command
         if (RoleHelper::isVATUSAStaff() || RoleHelper::has($user->cid, "ZAE", "CBT")) {
             $this->moodle->assignRole($id, VATUSAMoodle::CATEGORY_CONTEXT_VATUSA, "CBT", "coursecat");
         }
+        if (RoleHelper::isVATUSAStaff() || RoleHelper::has($user->cid, $user->facility, "CBT")) {
+            $this->moodle->assignRole($id, $this->moodle->getCategoryFromShort($user->facility, true), "FACCBT", "coursecat");
+        }
         if ($user->flag_homecontroller && (
                 $user->rating >= Helper::ratingIntFromShort("I1")
                 && $user->rating < Helper::ratingIntFromShort("SUP")
@@ -127,6 +131,8 @@ class MoodleSync extends Command
                 $this->moodle->assignRole($id, $this->moodle->getConstant($category), "MTR", "course");
             }
         }
+        
+        /* Enrolments to be done through Cohort Sync
 
         //Enrol User in Courses within Academy and ARTCC
         $vatusaCategories = $this->moodle->getAcademyCategoryIds();
@@ -140,6 +146,7 @@ class MoodleSync extends Command
                 $this->moodle->enrolUser($id, $course["id"]);
             }
         }
+        */
 
     }
 }

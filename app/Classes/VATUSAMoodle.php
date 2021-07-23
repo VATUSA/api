@@ -32,7 +32,8 @@ class VATUSAMoodle extends MoodleRest
         'INS' => 4,
         'STU' => 5,
         'MTR' => 9,
-        'CBT' => 10
+        'CBT' => 10,
+        'FACCBT' => 11
     ];
 
     /** @var int Category Contexts */
@@ -68,8 +69,6 @@ class VATUSAMoodle extends MoodleRest
     {
         parent::__construct(config('services.moodle.url') . '/webservice/rest/server.php',
             $isSSO ? config('services.moodle.token_sso') : config('services.moodle.token'));
-
-        $this->categories = $this->getCategories();
     }
 
     /**
@@ -142,7 +141,7 @@ class VATUSAMoodle extends MoodleRest
             return null;
         }
 
-        foreach ($this->categories as $category) {
+        foreach ($this->getCategories() as $category) {
             if ($category["idnumber"] === $short) {
                 if ($full) {
                     return $context ? array_merge($category,

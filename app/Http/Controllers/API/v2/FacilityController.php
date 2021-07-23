@@ -144,7 +144,7 @@ class FacilityController extends APIController
                 $data['notices'][$tmu->id] = $tmu->tmuNotices()->get()->toArray();
             }
         }
-        \Cache::put("facility.$id.info", encode_json($data), 60);
+        \Cache::put("facility.$id.info", encode_json($data), 60 * 60);
 
         return response()->api($data);
     }
@@ -921,8 +921,8 @@ class FacilityController extends APIController
      *
      * @SWG\Delete(
      *     path="/facility/{id}/roster/{cid}",
-     *     summary="Delete member from facility roster. [Auth]",
-     *     description="Delete member from facility roster.  JWT or Session Cookie required (required role: ATM,
+     *     summary="Delete member from facility roster. [Key]",
+     *     description="Delete member from facility roster.  API Key, JWT, or Session Cookie required (required role: ATM,
     DATM, VATUSA STAFF)",
      * produces={"application/json"},
      * tags={"facility"},
@@ -930,6 +930,7 @@ class FacilityController extends APIController
      * @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
      * @SWG\Parameter(name="cid", in="query", description="CID of controller", required=true, type="integer"),
      * @SWG\Parameter(name="reason", in="formData", description="Reason for deletion", required=true, type="string"),
+     * @SWG\Parameter(name="by", in="formData", description="Staff member responsible for deletion - only required with API Key", required=false, type="integer"),
      * @SWG\Response(
      *         response="400",
      *         description="Malformed request, missing required parameter",
@@ -974,11 +975,21 @@ class FacilityController extends APIController
                 generate_error("Facility not found or not active"), 404);
         }
 
-        if (!RoleHelper::isVATUSAStaff() && !RoleHelper::isSeniorStaff(Auth::user()->cid, $id, false)) {
+        if (!AuthHelper::validApiKeyv2($id) && !RoleHelper::isVATUSAStaff() && (Auth::check() && !RoleHelper::isSeniorStaff(Auth::user()->cid, $id, false))) {
             return response()->api(generate_error("Forbidden"), 403);
         }
 
-        $user = User::where('cid', $cid)->first();
+        if(!Auth::check() && !$request->has('by')) {
+            return response()->api(
+                generate_error("Missing staff CID (by)"), 400);
+        }
+        else if($request->has('by') && (!User::find($request->by) || User::find($request->by)->facility != $facility->id)) {
+            return response()->api(
+                generate_error("Invalid staff CID"), 400);
+        }
+        $by = Auth::check() ? Auth::user()->cid : $request->by;
+
+        $user = User::find($cid);
         if (!$user || $user->facility != $facility->id) {
             return response()->api(
                 generate_error("User not found or not in facility"), 404
@@ -986,12 +997,12 @@ class FacilityController extends APIController
         }
 
         if (!$request->has("reason") || !$request->filled("reason")) {
-            return response()->api(generate_error("Malformed request"), 400);
+            return response()->api(generate_error("Malformed request, missing reason"), 400);
         }
 
         if (!isTest()) {
             $user->removeFromFacility(
-                Auth::user()->cid, $request->input("reason")
+                $by, $request->input("reason")
             );
         }
 
