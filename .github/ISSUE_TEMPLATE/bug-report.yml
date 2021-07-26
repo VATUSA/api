@@ -1,0 +1,51 @@
+name: Bug Report
+description: Submit a bug report for the VATUSA API.
+title: "[BUG] "
+labels: [bug]
+assignees:
+  - bnahin
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Do not repeat a bug report or include a new feature request.
+  - type: input
+    id: contact
+    attributes:
+      label: Contact Details
+      description: How can we get in touch with you if we need more info?
+      placeholder: ex. email@example.com
+    validations:
+      required: false
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Please include a clear and concise description of what the bug is.
+      placeholder: A description of what happened...
+    validations:
+      required: true
+  - type: input
+    id: endpoint
+    attributes:
+      label: What endpoint was being used?
+      description: The URI used.
+      placeholder: https://api.vatusa.net/v2/...
+    validations:
+      required: true
+  - type: input
+    id: error
+    attributes:
+      label: What error response was returned (if applicable)?
+      description: The error response.
+      placeholder: "{status: error, ...}"
+    validations:
+      required: false
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Link to screenshots, if applicable.
+      placeholder: Screenshot links...
+    validations:
+      required: false
