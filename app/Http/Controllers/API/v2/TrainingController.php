@@ -73,17 +73,17 @@ class TrainingController extends Controller
         if ($this->canView($request, $record)) {
 
             return response()->api(array_merge($record->load('facility:id,name')->toArray(), [
-                'instructor' => [
+                'instructor' => $record->instructor ? [
                     'cid'   => $record->instructor->cid,
                     'fname' => $record->instructor->fname,
                     'lname' => $record->instructor->lname,
-                ],
+                ] : [],
                 'student'    => [
                     'cid'   => $record->student->cid,
                     'fname' => $record->student->fname,
                     'lname' => $record->student->lname,
                 ],
-                'editor'     => ($record->editor) ? [
+                'editor'     => $record->editor ? [
                     'cid'   => $record->editor->cid,
                     'fname' => $record->editor->fname,
                     'lname' => $record->editor->lname,
