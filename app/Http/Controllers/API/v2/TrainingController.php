@@ -1139,9 +1139,8 @@ class TrainingController extends Controller
                 true) && ($record && $record->student->visits()->where('facility',
                     Auth::user()->facility)->exists() || $user && $user->visits()->where('facility',
                     Auth::user()->facility)->exists());
-
         $isTrainingStaff = Auth::user() && RoleHelper::isTrainingStaff(Auth::user()->cid, true,
-                $facility ?? Auth::user()->facility) && (!$record || $record && $record->student->facility == Auth::user()->facility);
+                $facility ?? Auth::user()->facility) && (!$record || ($record && ($record->student->facility == Auth::user()->facility || $record->facility->id == Auth::user()->facility)));
         $isVATUSAStaff = Auth::user() && RoleHelper::isVATUSAStaff();
         $ownsRecord = $record && Auth::user() && $record->student_id === Auth::user()->cid;
         $isOwnUser = Auth::user() && $user && $user->cid === Auth::user()->cid;
