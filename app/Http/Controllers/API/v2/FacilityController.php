@@ -1715,7 +1715,7 @@ class FacilityController extends APIController
             return response()->api(generate_error("Forbidden"), 403);
         }
 
-        $clients = OAuthClient::where('facility_id', $id)->get()->toArray();
+        $clients = OAuthClient::where('name', $id)->get()->toArray();
 
         foreach($clients as $index => $client) {
             $clients[$index]['redirect_uris'] = json_decode($client['redirect_uris']);
