@@ -1642,7 +1642,7 @@ class FacilityController extends APIController
             return false;
         } else {
             foreach ($redirect as $value) {
-                if (typeOf($value) !== "string") {
+                if (gettype($value) != "string") {
                     return false;
                 }
             }
@@ -1715,7 +1715,13 @@ class FacilityController extends APIController
             return response()->api(generate_error("Forbidden"), 403);
         }
 
-        return response()->ok(["clients" => $facility->oauthClients()->get()]);
+        $clients = OAuthClient::where('facility_id', $id)->get()->toArray();
+
+        foreach($clients as $index => $client) {
+            $clients[$index]['redirect_uris'] = json_decode($client['redirect_uris']);
+        }
+
+        return response()->ok(["clients" => $clients]);
     }
 
     /**
@@ -2021,7 +2027,7 @@ class FacilityController extends APIController
      *         @SWG\Schema(
      *             type="object",
      *             @SWG\Property(property="status", type="string"),
-     *             @SWG\Property(property="client", type="object", @SWG\Schema(ref="#/definitions/oauth_client"))
+     *             @SWG\Property(property="secret", type="string", description="New OAuth Client Secret")
      *         )
      *     )
      *   )
@@ -2053,6 +2059,8 @@ class FacilityController extends APIController
         $client->client_secret = $nanoid->generateId(32, NanoidClient::MODE_DYNAMIC);
         $client->save();
 
-        return response()->ok(["client"], 200);
+        return response()->ok(["secret" => [
+            "client_secret" => $client->client_secret
+        ]], 200);
     }
 }
