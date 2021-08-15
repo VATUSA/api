@@ -77,6 +77,11 @@ class Facility extends Model
         return $this->hasMany(ReturnPaths::class);
     }
 
+    public function oauthClients()
+    {
+        return $this->hasMany(OAuthClient::class, "name", "name");
+    }
+
     public function trainingRecords() {
         return $this->hasMany(TrainingRecord::class);
     }
