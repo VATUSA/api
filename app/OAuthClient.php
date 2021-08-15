@@ -25,4 +25,9 @@ class OAuthClient extends Model
         'id',
         'client_secret'
     ];
+
+    public function getDateFormat()
+    {
+        return 'Y-m-d H:i:s.u';
+    } 
 }
