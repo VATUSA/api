@@ -16,12 +16,14 @@ class Kernel extends ConsoleKernel
         'App\Console\Commands\MoodleSync',
         'App\Console\Commands\StatsMonthly',
         'App\Console\Commands\VATSIMFlights',
+        'App\Console\Commands\SendAcademyRatingExamEmails'
     ];
 
     /**
      * Define the application's command schedule.
      *
-     * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
+     * @param \Illuminate\Console\Scheduling\Schedule $schedule
+     *
      * @return void
      */
     protected function schedule(Schedule $schedule)
@@ -29,6 +31,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('stats:monthly')->monthlyOn(1, '00:00');
         $schedule->command('moodle:sync')->twiceDaily();
         $schedule->command('vatsim:flights')->everyMinute();
+        $schedule->command('moodle:sendexamemails')->everyFifteenMinutes();
     }
 
     /**
@@ -38,7 +41,7 @@ class Kernel extends ConsoleKernel
      */
     protected function commands()
     {
-        $this->load(__DIR__.'/Commands');
+        $this->load(__DIR__ . '/Commands');
 
         require base_path('routes/console.php');
     }

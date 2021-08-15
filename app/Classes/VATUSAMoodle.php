@@ -539,6 +539,25 @@ class VATUSAMoodle extends MoodleRest
     }
 
     /**
+     * Unenrol User from Course
+     *
+     * @param int      $uid User ID
+     * @param int      $cid Course ID
+     * @param int|null $rid Role ID
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    public function unenrolUser(int $uid, int $cid, ?int $rid = null)
+    {
+        if (is_null($rid)) {
+            $rid = $this->roleIds['STU'];
+        }
+
+        return $this->request("enrol_manual_unenrol_users",
+            ["enrolments" => [0 => ["roleid" => $rid, "userid" => $uid, "courseid" => $cid]]]);
+    }
+    /**
      * Get quiz attempts
      *
      * @param int      $quizid The Quiz ID
@@ -556,7 +575,7 @@ class VATUSAMoodle extends MoodleRest
             }
 
             return $this->request("mod_quiz_get_user_attempts",
-                ["quizid" => $quizid, "userid" => $userid])['attempts'];
+                ["quizid" => $quizid, "userid" => $userid])['attempts'] ?? [];
         } catch (Exception $e) {
             return [];
         }
