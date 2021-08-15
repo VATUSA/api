@@ -2,6 +2,7 @@
 
 use App\Classes\OAuth\VatsimConnect;
 use App\Helpers\CERTHelper;
+use App\Helpers\ExamHelper;
 use App\Helpers\Helper;
 use App\Helpers\EmailHelper;
 use App\Helpers\RatingHelper;
@@ -189,58 +190,41 @@ class User extends Model implements AuthenticatableContract, JWTSubject
      */
     public function isS1Eligible()
     {
-        if ($this->rating > RatingHelper::shortToInt("OBS")) {
+        if ($this->rating > Helper::ratingIntFromShort("OBS")) {
             return false;
         }
 
-
-        $er2 = ExamResults::where('cid', $this->cid)->where('exam_id', config('exams.BASIC'))->where('passed',
-            1)->count();
-        $er = ExamResults::where('cid', $this->cid)->where('exam_id', config('exams.S1'))->where('passed', 1)->count();
-
-        return ($er >= 1 || $er2 >= 1);
+        return ExamResults::where('cid', $this->cid)->where('exam_id', config('exams.BASIC.legacyId'))->where('passed',
+                1)->exists() || ExamHelper::academyPassedExam($this->cid, "BASIC");
     }
 
-    /**
-     * @return bool
-     */
     public function isS2Eligible()
     {
-        if ($this->rating != RatingHelper::shortToInt("S1")) {
+        if ($this->rating != Helper::ratingIntFromShort("S1")) {
             return false;
         }
 
-        $er = ExamResults::where('cid', $this->cid)->where('exam_id', config('exams.S2'))->where('passed', 1)->count();
-
-        return ($er >= 1);
+        return ExamResults::where('cid', $this->cid)->where('exam_id', config('exams.S2.legacyId'))->where('passed', 1)->exists() || ExamHelper::academyPassedExam($this->cid, "S2");
     }
 
-    /**
-     * @return bool
-     */
     public function isS3Eligible()
     {
-        if ($this->rating != RatingHelper::shortToInt("S2")) {
+        if ($this->rating != Helper::ratingIntFromShort("S2")) {
             return false;
         }
 
-        $er = ExamResults::where('cid', $this->cid)->where('exam_id', config('exams.S3'))->where('passed', 1)->count();
+        return ExamResults::where('cid', $this->cid)->where('exam_id', config('exams.S3.legacyId'))->where('passed', 1)->exists() || ExamHelper::academyPassedExam($this->cid, "S3");
 
-        return ($er >= 1);
     }
 
-    /**
-     * @return bool
-     */
     public function isC1Eligible()
     {
-        if ($this->rating != RatingHelper::shortToInt("S3")) {
+        if ($this->rating != Helper::ratingIntFromShort("S3")) {
             return false;
         }
 
-        $er = ExamResults::where('cid', $this->cid)->where('exam_id', config('exams.C1'))->where('passed', 1)->count();
+        return ExamResults::where('cid', $this->cid)->where('exam_id', config('exams.C1.legacyId'))->where('passed', 1)->exists() || ExamHelper::academyPassedExam($this->cid, "C1");
 
-        return ($er >= 1);
     }
 
     /**
@@ -554,9 +538,12 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             $checks['homecontroller'] = false;
         }
 
-        if ($this->flag_needbasic == false) {
+
+        if (!$this->flag_needbasic || ExamHelper::academyPassedExam($this->cid, "basic", 0, 6)) {
             $checks['needbasic'] = true;
-        } // true = check passed
+        }
+
+        // true = check passed
 
         // Pending transfer request
         $transfer = Transfer::where('cid', $this->cid)->where('status', 0)->count();

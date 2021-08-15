@@ -247,7 +247,7 @@ class ExamController extends APIController
                 $fac = \Auth::user()->facility;
             }
             EmailHelper::sendEmailFacilityTemplate($to, "Exam Passed", $fac, "exampassed", $data);
-            if ($exam->id == config('exams.BASIC')) {
+            if ($exam->id == config('exams.BASIC.legacyId')) {
                 \Auth::user()->flag_needbasic = 0;
                 \Auth::user()->save();
             }
@@ -865,6 +865,14 @@ class ExamController extends APIController
         $exam = Exam::find($examid);
         if (!$exam) {
             return response()->api(generate_error("Not found"), 404);
+        }
+        if(in_array($exam->id, [
+            config('exams.BASIC.legacyId'),
+            config('exams.S2.legacyId'),
+            config('exams.S3.legacyId'),
+            config('exams.C1.legacyId')
+        ])) {
+            return response()->api(generate_error("Cannot assign Academy exam"), 409);
         }
 
         if (ExamAssignment::hasAssignment($cid, $examid)) {
