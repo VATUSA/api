@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
  * @package App
  *
  * @SWG\Definition(
+ *     definition="oauth_client",
  *     type="object",
  *     @SWG\Property(property="name", type="string", description="Facility identifier"),
  *     @SWG\Property(property="client_id", type="string", description="OAuth Client ID"),

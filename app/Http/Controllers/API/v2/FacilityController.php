@@ -1740,7 +1740,7 @@ class FacilityController extends APIController
      *     tags={"facility"},
      *     security={"session"},
      * @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
-     * @SWG\Parameter(name="redirect", in="body", description="Redirect URIs as array of strings", required="true", type="array", @SWG\Items(type="string")))
+     * @SWG\Parameter(name="redirect", in="formData", description="Redirect URIs as array of strings", required=true, type="array", @SWG\Items(type="string")),
      *
      * @SWG\Response(
      *   response="400",
@@ -1833,7 +1833,7 @@ class FacilityController extends APIController
      *     security={"session"},
      * @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
      * @SWG\Parameter(name="client", in="path", description="OAuth Client ID", required=true, type="string"),
-     * @SWG\Parameter(name="redirect", in="body", description="Redirect URIs as array of strings", required="true", type="array", @SWG\Items(type="string")))
+     * @SWG\Parameter(name="redirect", in="formData", description="Redirect URIs as array of strings", required=true, type="array", @SWG\Items(type="string")),
      *
      * @SWG\Response(
      *   response="400",
@@ -1864,7 +1864,6 @@ class FacilityController extends APIController
      *         description="OK"
      *     )
      *   )
-     * )
      */
     public
     function patchOAuthClient(
