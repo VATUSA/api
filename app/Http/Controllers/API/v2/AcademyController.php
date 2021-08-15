@@ -63,7 +63,7 @@ class AcademyController extends APIController
             );
         }
 
-        if (!RoleHelper::isInstructor($user->facility)) {
+        if (!RoleHelper::isInstructor($user->facility) && !RoleHelper::isSeniorStaff($user->facility)) {
             return response()->forbidden();
         }
 
