@@ -38,6 +38,7 @@ use \App\Http\Controllers\Controller as BaseController;
  *         },
  *         @SWG\Contact(name="Blake Nahin", url="https://www.vatusa.net/info/members"),
  *     ),
+ *     @SWG\Tag(name="academy",description="Interaction with Moodle (Academy)"),
  *     @SWG\Tag(name="auth",description="Internal authentication handling commands for use by VATUSA Web Systems to translate Laravel Sessions into JSON Web Tokens"),
  *     @SWG\Tag(name="cbt",description="Computer Based Training actions"),
  *     @SWG\Tag(name="email",description="User email addresses for staff members"),

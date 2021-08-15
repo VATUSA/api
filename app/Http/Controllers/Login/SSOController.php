@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Login;
 
 use App\Action;
 use App\Classes\OAuth\VatsimConnect;
+use App\Helpers\ExamHelper;
 use App\Helpers\RoleHelper;
 use App\Helpers\SMFHelper;
 use App\Helpers\EmailHelper;
@@ -53,10 +54,12 @@ class SSOController extends Controller
             }
 
             if (app()->environment('staging')) {
-                return redirect(env('SSO_RETURN_FORUMS', 'https://forums.staging.vatusa.net/') . "api.php?logout=1&return=$return");
+                return redirect(env('SSO_RETURN_FORUMS',
+                        'https://forums.staging.vatusa.net/') . "api.php?logout=1&return=$return");
             }
 
-            return redirect(app()->environment('dev') || app()->environment('livedev') ? $return : env('SSO_RETURN_FORUMS', 'https://forums.dev.vatusa.net/') . "api.php?logout=1&return=$return");
+            return redirect(app()->environment('dev') || app()->environment('livedev') ? $return : env('SSO_RETURN_FORUMS',
+                    'https://forums.dev.vatusa.net/') . "api.php?logout=1&return=$return");
         }
 
         /* Lots to check here ... but this is our multi-point redirect */
@@ -165,6 +168,7 @@ class SSOController extends Controller
                 $log->save();
             }
         } else {
+            $passedBasic = ExamHelper::academyPassedExam($member->cid, "basic", 0, 6);
             //Update data
             if ($updateName) {
                 $member->fname = ucfirst(trim($user->personal->name_first));
@@ -173,6 +177,11 @@ class SSOController extends Controller
             $member->email = $user->personal->email;
             $member->rating = $user->vatsim->rating->id;
             $member->lastactivity = Carbon::now();
+
+            if ($passedBasic && $member->flag_needbasic) {
+                $member->flag_needbasic = 0;
+                $member->save();
+            }
 
             if (!$member->flag_homecontroller && $user->vatsim->division->id == "USA") {
                 //User is rejoining
@@ -183,7 +192,7 @@ class SSOController extends Controller
                     //Within last 72 hours
                     $t = $transfers->first();
                     $member->addToFacility($t->from);
-                    $member->flag_needbasic = 0;
+                    //$member->flag_needbasic = 0;
 
                     $trans = new Transfer();
                     $trans->cid = $member->cid;
@@ -205,7 +214,7 @@ class SSOController extends Controller
                     //Within last 6 months but more than 72 hours
                     $member->facility = "ZAE";
                     $member->facility_join = Carbon::now();
-                    $member->flag_needbasic = 0;
+                    //$member->flag_needbasic = 0;
 
                     $trans = new Transfer();
                     $trans->cid = $member->cid;
@@ -244,8 +253,9 @@ class SSOController extends Controller
                 }
                 // Now let us check to see if they have ever been in a facility.. if not, we need to override the need basic flag.
                 if (!Transfer::where('cid', $member->cid)->where('to', 'NOT LIKE', 'ZAE')->where('to',
-                    'NOT LIKE', 'ZZN')->exists() && !ExamResults::where('cid', $member->cid)->where('exam_id', config('exams.BASIC'))->where('passed',
-                    1)->where('date','>=', Carbon::now()->subMonths(6))->count()) {
+                        'NOT LIKE', 'ZZN')->exists() && !$passedBasic && !ExamResults::where('cid',
+                        $member->cid)->where('exam_id', config('exams.BASIC.legacyId'))->where('passed',
+                        1)->where('date', '>=', Carbon::now()->subMonths(6))->exists()) {
                     $member->flag_needbasic = 1;
                 }
 
@@ -272,7 +282,8 @@ class SSOController extends Controller
                 $token = ULSHelper::base64url_encode(json_encode($regOptions));
                 $signature = hash_hmac("sha512", $token, base64_decode(env("FORUM_SECRET")));
                 $signature = ULSHelper::base64url_encode($signature);
-                $data = file_get_contents(env('SSO_RETURN_FORUMS', 'https://forums.vatusa.net/') . "api.php?register=1&data=$token&signature=$signature");
+                $data = file_get_contents(env('SSO_RETURN_FORUMS',
+                        'https://forums.vatusa.net/') . "api.php?register=1&data=$token&signature=$signature");
                 if ($data != "OK") {
                     $error = "Unable to create forum data. Please try again later or contact VATUSA12.";
 

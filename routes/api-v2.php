@@ -101,6 +101,9 @@ Route::group(['middleware' => ['private', 'auth:jwt,web'], 'prefix' => '/exam'],
     Route::post('submit', 'ExamController@postSubmit');
 });
 
+Route::group(['middleware' => ['auth:web,jwt', 'private'], 'prefix' => '/academy'], function () {
+    Route::post('enroll/{courseId}', 'AcademyController@postEnroll')->where('courseId', '[0-9]+');
+});
 /******************************************************************************************
  * /facility
  * Facility functions
