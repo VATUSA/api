@@ -14,10 +14,13 @@ use App\Transfer;
 use App\User;
 use App\Promotion;
 use App\Visit;
+use App\OAuthClient;
 use Auth;
 use Illuminate\Http\Request;
 use App\Facility;
 use Jose\Component\KeyManagement\JWKFactory;
+use Hidehalo\Nanoid\Client as NanoidClient;
+use Hidehalo\Nanoid\GeneratorInterface;
 
 /**
  * Class FacilityController
@@ -1620,5 +1623,444 @@ class FacilityController extends APIController
         }
 
         return response()->ok();
+    }
+
+    private function hasValidOAuthPerms($facilityId) {
+        if (
+            !RoleHelper::isSeniorStaff(Auth::user()->cid, $facilityId, false)
+            && !RoleHelper::has(Auth::user()->cid, $facilityId, "WM")
+            && !RoleHelper::isVATUSAStaff(Auth::user()->cid)
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function isRedirectValid($redirect) {
+        if (!is_array($redirect)) {
+            return false;
+        } else {
+            foreach ($redirect as $value) {
+                if (gettype($value) != "string") {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @param string                   $id
+     *
+     * @param int                      $order
+     *
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @SWG\Get(
+     *     path="/facility/{id}/oauth",
+     *     summary="Get OAuth Clients [Private]",
+     *     description="Get OAuth clients associated with facility.",
+     *     produces={"application/json"},
+     *     tags={"facility"},
+     *     security={"session"},
+     * @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
+     *
+     * @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     *    @SWG\Response(
+     *         response="403",
+     *         description="Forbidden -- needs to be a staff member, other than mentor",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","message"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="404",
+     *         description="Not found or not active",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *     ),
+     * @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(property="status", type="string"),
+     *             @SWG\Property(property="clients", type="array", @SWG\Items(ref="#/definitions/oauth_client"))
+     *         )
+     *     )
+     *   )
+     * )
+     */
+    public
+    function getOAuth(
+        Request $request,
+        string $id
+    ) {
+        $facility = Facility::find($id);
+        if (!$facility || !$facility->active) {
+            return response()->api(
+                generate_error("Facility not found or not active"),
+                404
+            );
+        }
+
+        if (!$this->hasValidOAuthPerms($id)) {
+            return response()->api(generate_error("Forbidden"), 403);
+        }
+
+        $clients = OAuthClient::where('facility_id', $id)->get()->toArray();
+
+        foreach($clients as $index => $client) {
+            $clients[$index]['redirect_uris'] = json_decode($client['redirect_uris']);
+        }
+
+        return response()->ok(["clients" => $clients]);
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @param string                   $id
+     *
+     * @param int                      $order
+     *
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @SWG\Post(
+     *     path="/facility/{id}/oauth",
+     *     summary="Create OAuth client [Private]",
+     *     description="Create new OAuth Client",
+     *     produces={"application/json"},
+     *     tags={"facility"},
+     *     security={"session"},
+     * @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
+     * @SWG\Parameter(name="redirect", in="body", description="Redirect URIs as array of strings", required="true", type="array", @SWG\Items(type="string")))
+     *
+     * @SWG\Response(
+     *   response="400",
+     *   @SWG\Schema(ref="#/definitions/error"),
+     *   description="Bad Request",
+     *   examples={"application/json":{"status"="error","msg"="Bad Request"}},
+     * ),
+     * @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     *    @SWG\Response(
+     *         response="403",
+     *         description="Forbidden -- needs to be a staff member, other than mentor",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","message"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="404",
+     *         description="Not found or not active",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *     ),
+     * @SWG\Response(
+     *         response="201",
+     *         description="Created",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(property="status", type="string"),
+     *             @SWG\Property(property="clients", type="array", @SWG\Items(ref="#/definitions/oauth_client"))
+     *         )
+     *     )
+     *   )
+     * )
+     */
+    public
+    function postOAuth(
+        Request $request,
+        string $id
+    ) {
+        $facility = Facility::find($id);
+        if (!$facility || !$facility->active) {
+            return response()->api(
+                generate_error("Facility not found or not active"),
+                404
+            );
+        }
+
+        if (!$this->hasValidOAuthPerms($id)) {
+            return response()->api(generate_error("Forbidden"), 403);
+        }
+
+        $redirect = $request->input("redirect", []);
+        if (!$this->isRedirectValid($redirect)) {
+            return response()->api(generate_error("Invalid redirect"), 400);
+        }
+
+        $nanoid = new NanoidClient();
+
+        $client = new OAuthClient();
+        $client->name = $facility->id;
+        $client->client_id = $nanoid->generateId(21, NanoidClient::MODE_DYNAMIC);
+        $client->client_secret = $nanoid->generateId(32, NanoidClient::MODE_DYNAMIC);
+        $client->redirect_uris = json_encode($redirect);
+        $client->save();
+
+        return response()->created(["client" => [
+            "client_id" => $client->client_id,
+            "client_secret" => $client->client_secret,
+            "redirect_uris" => $redirect,
+        ]]);
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @param string                   $id
+     *
+     * @param int                      $order
+     *
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @SWG\Patch(
+     *     path="/facility/{id}/oauth/{client}",
+     *     summary="Edit OAuth client [Private]",
+     *     description="Edit OAuth Client",
+     *     produces={"application/json"},
+     *     tags={"facility"},
+     *     security={"session"},
+     * @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
+     * @SWG\Parameter(name="client", in="path", description="OAuth Client ID", required=true, type="string"),
+     * @SWG\Parameter(name="redirect", in="body", description="Redirect URIs as array of strings", required="true", type="array", @SWG\Items(type="string")))
+     *
+     * @SWG\Response(
+     *   response="400",
+     *   @SWG\Schema(ref="#/definitions/error"),
+     *   description="Bad Request",
+     *   examples={"application/json":{"status"="error","msg"="Bad Request"}},
+     * ),
+     * @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     *    @SWG\Response(
+     *         response="403",
+     *         description="Forbidden -- needs to be a staff member, other than mentor",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","message"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="404",
+     *         description="Not found or not active",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *     ),
+     * @SWG\Response(
+     *         response="200",
+     *         description="OK"
+     *     )
+     *   )
+     * )
+     */
+    public
+    function patchOAuthClient(
+        Request $request,
+        string $id,
+        string $clientid
+    ) {
+        $facility = Facility::find($id);
+        if (!$facility || !$facility->active) {
+            return response()->api(
+                generate_error("Facility not found or not active"),
+                404
+            );
+        }
+
+        if (!$this->hasValidOAuthPerms($id)) {
+            return response()->api(generate_error("Forbidden"), 403);
+        }
+
+        $redirect = $request->input("redirect", []);
+        if (!$this->isRedirectValid($redirect)) {
+            return response()->api(generate_error("Invalid redirect"), 400);
+        }
+
+        $client = OAuthClient::where("client_id", $clientid)->first();
+        if (!$client) {
+            return response()->api(generate_error("Client not found"), 404);
+        }
+        $client->redirect_uris = json_encode($redirect);
+        $client->save();
+
+        return response()->ok([], 200);
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @param string                   $id
+     *
+     * @param int                      $order
+     *
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @SWG\Delete(
+     *     path="/facility/{id}/oauth/{client}",
+     *     summary="Delete OAuth client [Private]",
+     *     description="Delete OAuth Client",
+     *     produces={"application/json"},
+     *     tags={"facility"},
+     *     security={"session"},
+     * @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
+     * @SWG\Parameter(name="client", in="path", description="OAuth Client ID", required=true, type="string"),
+     *
+     * @SWG\Response(
+     *   response="400",
+     *   @SWG\Schema(ref="#/definitions/error"),
+     *   description="Bad Request",
+     *   examples={"application/json":{"status"="error","msg"="Bad Request"}},
+     * ),
+     * @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     *    @SWG\Response(
+     *         response="403",
+     *         description="Forbidden -- needs to be a staff member, other than mentor",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","message"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="404",
+     *         description="Not found or not active",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Not found"}},
+     *     ),
+     * @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(property="status", type="string")
+     *         )
+     *     )
+     *   )
+     * )
+     */
+    public
+    function deleteOAuthClient(
+        Request $request,
+        string $id,
+        string $clientid
+    ) {
+        $facility = Facility::find($id);
+        if (!$facility || !$facility->active) {
+            return response()->api(
+                generate_error("Facility not found or not active"),
+                404
+            );
+        }
+
+        if (!$this->hasValidOAuthPerms($id)) {
+            return response()->api(generate_error("Forbidden"), 403);
+        }
+
+        $client = OAuthClient::where("client_id", $clientid)->first();
+        if (!$client) {
+            return response()->api(generate_error("Client not found"), 404);
+        }
+        $client->delete();
+
+        return response()->ok([], 200);
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @param string                   $id
+     *
+     * @param int                      $order
+     *
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @SWG\Put(
+     *     path="/facility/{id}/oauth/{client}/secret",
+     *     summary="Regenerate OAuth Client Secret [Private]",
+     *     description="Regenerate OAuth Client Secret",
+     *     produces={"application/json"},
+     *     tags={"facility"},
+     *     security={"session"},
+     * @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
+     * @SWG\Parameter(name="client", in="path", description="OAuth Client ID", required=true, type="string"),
+     *
+     * @SWG\Response(
+     *   response="400",
+     *   @SWG\Schema(ref="#/definitions/error"),
+     *   description="Bad Request",
+     *   examples={"application/json":{"status"="error","msg"="Bad Request"}},
+     * ),
+     * @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     *    @SWG\Response(
+     *         response="403",
+     *         description="Forbidden -- needs to be a staff member, other than mentor",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","message"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="404",
+     *         description="Not found or not active",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Not found"}},
+     *     ),
+     * @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(property="status", type="string"),
+     *             @SWG\Property(property="secret", type="string", description="New OAuth Client Secret")
+     *         )
+     *     )
+     *   )
+     * )
+     */
+    public
+    function putOAuthClientSecret(
+        string $id,
+        string $clientid
+    ) {
+        $facility = Facility::find($id);
+        if (!$facility || !$facility->active) {
+            return response()->api(
+                generate_error("Facility not found or not active"),
+                404
+            );
+        }
+
+        if (!$this->hasValidOAuthPerms($id)) {
+            return response()->api(generate_error("Forbidden"), 403);
+        }
+
+        $client = OAuthClient::where("client_id", $clientid)->first();
+        if (!$client) {
+            return response()->api(generate_error("Client not found"), 404);
+        }
+
+        $nanoid = new NanoidClient();
+        $client->client_secret = $nanoid->generateId(32, NanoidClient::MODE_DYNAMIC);
+        $client->save();
+
+        return response()->ok(["secret" => [
+            "client_secret" => $client->client_secret
+        ]], 200);
     }
 }
