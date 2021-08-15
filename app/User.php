@@ -24,17 +24,22 @@ use Illuminate\Support\Str;
  *     @SWG\Property(property="cid", type="integer"),
  *     @SWG\Property(property="fname", type="string", description="First name"),
  *     @SWG\Property(property="lname", type="string", description="Last name"),
- *     @SWG\Property(property="email", type="string", description="Email address of user, will be null if API Key or necessary roles are not available (ATM, DATM, TA, WM, INS)"),
+ *     @SWG\Property(property="email", type="string", description="Email address of user, will be null if API Key or
+                                       necessary roles are not available (ATM, DATM, TA, WM, INS)"),
  *     @SWG\Property(property="facility", type="string", description="Facility ID"),
- *     @SWG\Property(property="rating", type="integer", description="Rating based off array where 1=OBS, S1, S2, S3, C1, C2, C3, I1, I2, I3, SUP, ADM"),
+ *     @SWG\Property(property="rating", type="integer", description="Rating based off array where 1=OBS, S1, S2, S3,
+                                        C1, C2, C3, I1, I2, I3, SUP, ADM"),
  *     @SWG\Property(property="rating_short", type="string", description="String representation of rating"),
  *     @SWG\Property(property="created_at", type="string", description="Date added to database"),
  *     @SWG\Property(property="updated_at", type="string"),
  *     @SWG\Property(property="flag_needbasic", type="integer", description="1 needs basic exam"),
  *     @SWG\Property(property="flag_xferOverride", type="integer", description="Has approved transfer override"),
- *     @SWG\Property(property="flag_broadcastOptedIn", type="integer", description="Has opted in to receiving broadcast emails"),
- *     @SWG\Property(property="flag_preventStaffAssign", type="integer", description="Ineligible for staff role assignment"),
- *     @SWG\Property(property="facility_join", type="string", description="Date joined facility (YYYY-mm-dd hh:mm:ss)"),
+ *     @SWG\Property(property="flag_broadcastOptedIn", type="integer", description="Has opted in to receiving broadcast
+                                                       emails"),
+ *     @SWG\Property(property="flag_preventStaffAssign", type="integer", description="Ineligible for staff role
+                                                         assignment"),
+ *     @SWG\Property(property="facility_join", type="string", description="Date joined facility (YYYY-mm-dd
+                                               hh:mm:ss)"),
  *     @SWG\Property(property="promotion_eligible", type="boolean", description="Is member eligible for promotion?"),
  *     @SWG\Property(property="transfer_eligible", type="boolean", description="Is member is eligible for transfer?"),
  *     @SWG\Property(property="last_promotion", type="string", description="Date last promoted"),
@@ -204,7 +209,8 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             return false;
         }
 
-        return ExamResults::where('cid', $this->cid)->where('exam_id', config('exams.S2.legacyId'))->where('passed', 1)->exists() || ExamHelper::academyPassedExam($this->cid, "S2");
+        return ExamResults::where('cid', $this->cid)->where('exam_id', config('exams.S2.legacyId'))->where('passed',
+                1)->exists() || ExamHelper::academyPassedExam($this->cid, "S2");
     }
 
     public function isS3Eligible()
@@ -213,7 +219,8 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             return false;
         }
 
-        return ExamResults::where('cid', $this->cid)->where('exam_id', config('exams.S3.legacyId'))->where('passed', 1)->exists() || ExamHelper::academyPassedExam($this->cid, "S3");
+        return ExamResults::where('cid', $this->cid)->where('exam_id', config('exams.S3.legacyId'))->where('passed',
+                1)->exists() || ExamHelper::academyPassedExam($this->cid, "S3");
 
     }
 
@@ -223,7 +230,8 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             return false;
         }
 
-        return ExamResults::where('cid', $this->cid)->where('exam_id', config('exams.C1.legacyId'))->where('passed', 1)->exists() || ExamHelper::academyPassedExam($this->cid, "C1");
+        return ExamResults::where('cid', $this->cid)->where('exam_id', config('exams.C1.legacyId'))->where('passed',
+                1)->exists() || ExamHelper::academyPassedExam($this->cid, "C1");
 
     }
 
@@ -663,12 +671,20 @@ class User extends Model implements AuthenticatableContract, JWTSubject
 
     public function getPromotionEligibleAttribute()
     {
-        return $this->promotionEligible();
+        if (Helper::testCORS()) {
+            return $this->promotionEligible();
+        } else {
+            return null;
+        }
     }
 
     public function getTransferEligibleAttribute()
     {
-        return $this->transferEligible();
+        if (Helper::testCORS()) {
+            return $this->transferEligible();
+        } else {
+            return null;
+        }
     }
 
     /**

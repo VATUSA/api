@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Helpers;
 
 use App\Rating;
@@ -79,5 +80,41 @@ class Helper
         $facility = Facility::find($fac);
 
         return ($facility != null ? $facility->name : 'Unknown');
+    }
+
+    public static function testCORS()
+    {
+        if (env('APP_ENV', 'prod') === "prod") {
+            if (in_array(
+                $_SERVER['REQUEST_METHOD'], ["GET", "PUT", "DELETE", "POST"]
+            )
+            ) {
+                if (!isset($_SERVER['HTTP_ORIGIN'])
+                    || !preg_match(
+                        "~^(http|https)://[^/]+\.vatusa\.net(:\d{2,4})?~i",
+                        $_SERVER['HTTP_ORIGIN']
+                    )
+                ) {
+                    return false;
+                }
+            }
+        } else {
+            if (in_array(
+                $_SERVER['REQUEST_METHOD'], ["GET", "PUT", "DELETE", "POST"]
+            )
+            ) {
+                if (!isset($_SERVER['HTTP_ORIGIN'])
+                    || (
+                    !preg_match(
+                        "~^(http|https)://[^/]+\.vatusa\.(net|devel|cloud)(:\d{2,4})?~i",
+                        $_SERVER['HTTP_ORIGIN'])
+                    )
+                ) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 }
