@@ -44,6 +44,10 @@ class ResponseServiceProvider extends ServiceProvider
             return response()->api(array_merge(['status' => 'OK'], $data), 200);
         });
 
+        $factory->macro("created", function($data = []) use ($factory) {
+            return response()->api(array_merge(['status' => 'Created'], $data), 201);
+        });
+
         $factory->macro('api', function ($data, $status = 200, $headers = []) use ($factory) {
             $showsig = false;
             $fjwk = null;
