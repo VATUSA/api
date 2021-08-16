@@ -6,7 +6,7 @@
 # chmod 600 /run/secrets/*.key
 # chown application:application /run/secrets/*.key
 
-chown application:application /www/.env
+# chown application:application /www/.env
 
 mkdir /www/storage/logs
 chown -R application:application /www/storage/logs
