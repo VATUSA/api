@@ -1,23 +1,21 @@
 #!/bin/sh
 
-cat /run/secrets/key > /www/.env
-cat /run/secrets/*.env >> /www/.env
-cat /run/secrets/sso.rsa >> /www/.sso.rsa
+# cat /run/secrets/key > /www/.env
+# cat /run/secrets/*.env >> /www/.env
+# cat /run/secrets/sso.rsa >> /www/.sso.rsa
+# chmod 600 /run/secrets/*.key
+# chown application:application /run/secrets/*.key
 
 chown application:application /www/.env
 
 mkdir /www/storage/logs
-chown application:application /www/storage/logs
+chown -R application:application /www/storage/logs
 
-chmod 600 /run/secrets/*.key
-chown application:application /run/secrets/*.key
-
-if [[ "$WWW_ENV" == "prod" ]] || [[ "$WWW_ENV" == "livedev" ]] || [[ "$WWW_ENV" == "staging" ]]; then
+if [[ "$ENV" == "prod" ]] || [[ "$ENV" == "livedev" ]] || [[ "$ENV" == "staging" ]]; then
   # echo "*    *    *     *     *    cd /www && php artisan schedule:run" >> /etc/crontabs/application
-  cd /www && php artisan migrate --force
-  chown -R application:application /www/storage/logs
-  chmod -R 777 /www/storage/logs
-  chmod -R 777 /www/storage/app/purifier/ # HTML Purifier
+  cd /www && php artisan migrate
+  chmod -R 775 /www/storage/logs
+  chmod -R 775 /www/storage/app/purifier/ # HTML Purifier
 fi
 
 /usr/bin/supervisord --nodaemon --configuration /etc/supervisord.conf
