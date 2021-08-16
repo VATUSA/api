@@ -53,6 +53,7 @@ class MakeCohorts extends Command
      * Execute the console command.
      *
      * @return mixed
+     * @throws \Exception
      */
     public function handle()
     {
@@ -60,9 +61,7 @@ class MakeCohorts extends Command
         //IDs = 51-71 Alphabetically by name
         $i = 51;
         foreach (Facility::where('active', 1)->orderBy('name')->get() as $facility) {
-            foreach ($this->ratings as $rating => $name) {
-                $this->moodle->createCohort("$facility->id-$rating", $name, "id", $i);
-            }
+            $this->moodle->createCohort("$facility->id-V", "ARTCC Visitors", "id", $i);
             $i++;
         }
     }
