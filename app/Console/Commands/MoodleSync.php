@@ -132,6 +132,13 @@ class MoodleSync extends Command
         if (RoleHelper::isVATUSAStaff() || RoleHelper::isSeniorStaff($user->cid, $user->facility, true)) {
             $this->moodle->assignRole($id, $this->moodle->getCategoryFromShort($user->facility, true), "TA",
                 "coursecat");
+            $artccCategories = $this->moodle->getAllSubcategories($this->moodle->getCategoryFromShort($user->facility), true);
+            foreach ($artccCategories as $category) {
+                $courses = $this->moodle->getCoursesInCategory($category);
+                foreach ($courses as $course) {
+                    $this->moodle->enrolUser($id, $course["id"]);
+                }
+            }
         }
         if (RoleHelper::isVATUSAStaff() || RoleHelper::has($user->cid, "ZAE", "CBT")) {
             $this->moodle->assignRole($id, VATUSAMoodle::CATEGORY_CONTEXT_VATUSA, "CBT", "coursecat");
