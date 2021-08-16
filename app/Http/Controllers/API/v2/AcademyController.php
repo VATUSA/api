@@ -3,11 +3,19 @@
 namespace App\Http\Controllers\API\v2;
 
 
+use App\AcademyExamAssignment;
+use App\Action;
 use App\Classes\VATUSAMoodle;
+use App\Helpers\EmailHelper;
+use App\Helpers\Helper;
 use App\Helpers\RoleHelper;
+use App\Mail\AcademyRatingCourseEnrolled;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 /**
  * Class AcademyController
@@ -74,15 +82,45 @@ class AcademyController extends APIController
             );
         }
 
-
         $moodle = new VATUSAMoodle();
         try {
-            $result = $moodle->enrolUser($moodle->getUserId($user->cid), $courseId);
+            $uid = $moodle->getUserId($user->cid);
+            $result = $moodle->enrolUser($uid, $courseId);
         } catch (\Exception $e) {
             return response()->api(
                 generate_error("Unable to enroll user. " . $e->getMessage(), true), 500
             );
         }
+
+        $assignment = new AcademyExamAssignment();
+        $assignment->student_id = $user->cid;
+        $assignment->instructor_id = Auth::user()->cid;
+        $assignment->course_id = $courseId;
+        $assignment->moodle_uid = $uid;
+        $assignment->course_name = DB::connection('moodle')->table('course')
+            ->where('id', $courseId)
+            ->first()->fullname;
+        if ($courseId == config('exams.S2.courseId')) {
+            $assignment->quiz_id = config('exams.S2.id');
+            $assignment->rating_id = Helper::ratingIntFromShort("S2");
+        } elseif ($courseId == config('exams.S3.courseId')) {
+            $assignment->quiz_id = config('exams.S3.id');
+            $assignment->rating_id = Helper::ratingIntFromShort("S3");
+        } else {
+            $assignment->quiz_id = config('exams.C1.id');
+            $assignment->rating_id = Helper::ratingIntFromShort("C1");
+        }
+        $assignment->save();
+
+        Mail::to($user->email)
+            ->cc(Auth::user()->email)
+            ->queue(new AcademyRatingCourseEnrolled($assignment));
+
+        $log = new Action();
+        $log->to = $user->cid;
+        $log->log = "Academy Rating Course (" . $assignment->course_name . ") " .
+            " assigned by " . Auth::user()->fullname();
+        $log->save();
 
         return response()->ok();
     }

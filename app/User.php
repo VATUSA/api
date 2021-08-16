@@ -687,6 +687,14 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         }
     }
 
+    public function getNameAttribute() {
+        return $this->fullname();
+    }
+
+    public function getFullNameAttribute() {
+        return $this->fullname();
+    }
+
     /**
      * Return a key value array, containing any custom claims to be added to the JWT.
      *
