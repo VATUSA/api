@@ -11,7 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 class AcademyRatingCourseEnrolled extends Mailable
 {
     use Queueable, SerializesModels;
-    
+
     public $assignment;
 
     /**
@@ -31,7 +31,8 @@ class AcademyRatingCourseEnrolled extends Mailable
      */
     public function build()
     {
-        return $this->subject('[VATUSA] Enrolled in Academy Rating Course')
+        return $this->from('no-reply@academy.vatusa.net', 'VATUSA Academy')
+            ->subject('[VATUSA] Enrolled in Academy Rating Course')
             ->view('emails.academy.enrolled');
     }
 }

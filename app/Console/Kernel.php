@@ -31,7 +31,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('stats:monthly')->monthlyOn(1, '00:00');
         $schedule->command('moodle:sync')->twiceDaily();
         $schedule->command('vatsim:flights')->everyMinute();
-        $schedule->command('moodle:sendexamemails')->everyFifteenMinutes();
+        $schedule->command('moodle:sendexamemails')->everyFiveMinutes();
     }
 
     /**
