@@ -2,12 +2,15 @@
 
 namespace App\Console\Commands;
 
+use App\AcademyBasicExamEmail;
 use App\AcademyExamAssignment;
 use App\Classes\VATUSAMoodle;
 use App\Http\Middleware\PrivateCORS;
 use App\Mail\AcademyExamSubmitted;
+use App\User;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
 class SendAcademyRatingExamEmails extends Command
@@ -43,6 +46,7 @@ class SendAcademyRatingExamEmails extends Command
      * Execute the console command.
      *
      * @return mixed
+     * @throws \Exception
      */
     public function handle()
     {
@@ -54,7 +58,8 @@ class SendAcademyRatingExamEmails extends Command
             $attemptEmailsSent = $assignment->attempt_emails_sent ? explode(',', $assignment->attempt_emails_sent) : [];
 
             if ($assignment->created_at->diffInDays(Carbon::now()) > 30) {
-                log_action($assignment->student->cid, "Academy exam course enrollment expired - $assignment->course_name - greater than 30 days");
+                log_action($assignment->student->cid,
+                    "Academy exam course enrollment expired - $assignment->course_name - greater than 30 days");
                 $assignment->delete();
                 continue;
             }
@@ -92,9 +97,11 @@ class SendAcademyRatingExamEmails extends Command
                 $result = compact('testName', 'studentName', 'attemptNum', 'numCorrect', 'totalQuestions', 'grade',
                     'passed', 'passingGrade', 'attemptId');
 
-                Mail::to($student)
-                    ->cc($instructor)
-                    ->queue(new AcademyExamSubmitted($result));
+                $mail = Mail::to($student)->cc($instructor);
+                if ($attemptNum == 3 && !$passed) {
+                    $mail->bcc(['vatusa3@vatusa.net', 'vatusa13@vatusa.net']);
+                }
+                $mail->queue(new AcademyExamSubmitted($result));
 
                 if ($passed) {
                     $assignment->delete();
@@ -103,18 +110,65 @@ class SendAcademyRatingExamEmails extends Command
                     $assignment->attempt_emails_sent = implode(',', $attemptEmailsSent);
                     $assignment->save();
                 }
-                log_action($student->cid, "Academy exam submitted - $testName - Attempt $attemptNum - $numCorrect/$totalQuestions ($grade%)");
+
+                log_action($student->cid,
+                    "Academy exam submitted - $testName - Attempt $attemptNum - $numCorrect/$totalQuestions ($grade%)");
             }
         }
-        //TODO: Send emails and add action log on passing of Basic ATC Exam.
+
+        //Send emails and add action log on passing of Basic ATC Exam.
         //Use DB only.
         //Get all quiz attempts with quiz ID from config and where timefinish is within the last week.
         //Skip if ID exists in academy_basic_exam_emails table.
         //Send results to controller, same as above.
         //Add to action log, same as above.
         //Add to academy_basic_exam_emails table.
-            //Tracks attempt ID of attempts already processed
+        //Tracks attempt ID of attempts already processed
         //Delete from academy_basic_exam_emails more than a week old.
+
+        $weekInterval = Carbon::now()->subWeek();
+
+        $attempts = DB::connection('moodle')->table('quiz_attempts')
+            ->where('quiz', config('exams.BASIC.id'))
+            ->where('state', 'finished')
+            ->where('timefinish', '>=', $weekInterval->timestamp)
+            ->get();
+        foreach ($attempts as $attempt) {
+            if (!AcademyBasicExamEmail::where('attempt_id', $attempt->id)->exists()) {
+                //Email not sent yet. Send now.
+                $student = User::find($this->moodle->getCidFromUserId($attempt->userid));
+                if (!$student) {
+                    continue;
+                }
+                $record = new AcademyBasicExamEmail();
+                $record->attempt_id = $attempt->id;
+                $record->student_id = $student->cid;
+                $record->save();
+
+                $studentName = $student->fullname;
+                $numCorrect = round($attempt->sumgrades);
+                $attemptNum = $attempt->attempt;
+                $attemptId = $attempt->id;
+                $totalQuestions = config('exams.BASIC.numQuestions');
+                $passingGrade = config('exams.BASIC.passingPercent');
+                $testName = "Basic ATC/S1 Exam";
+                $grade = round($numCorrect / $totalQuestions * 100);
+                $passed = $grade >= $passingGrade;
+
+                $result = compact('testName', 'studentName', 'attemptNum', 'numCorrect', 'totalQuestions', 'grade',
+                    'passed', 'passingGrade', 'attemptId');
+                $mail = Mail::to($student);
+                if ($attemptNum == 3 && !$passed) {
+                    $mail->bcc(['vatusa3@vatusa.net', 'vatusa13@vatusa.net']);
+                }
+                $mail->queue(new AcademyExamSubmitted($result));
+
+                log_action($student->cid,
+                    "Academy exam submitted - $testName - Attempt $attemptNum - $numCorrect/$totalQuestions ($grade%)");
+            }
+        }
+        AcademyBasicExamEmail::where('created_at', '<', $weekInterval->subDays(2))->delete();
+
         exit(1);
     }
 }
