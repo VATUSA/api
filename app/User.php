@@ -199,8 +199,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             return false;
         }
 
-        return ExamResults::where('cid', $this->cid)->where('exam_id', config('exams.BASIC.legacyId'))->where('passed',
-                1)->exists() || ExamHelper::academyPassedExam($this->cid, "BASIC");
+        return !$this->flag_needbasic;
     }
 
     public function isS2Eligible()

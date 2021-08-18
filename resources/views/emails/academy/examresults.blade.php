@@ -6,7 +6,7 @@
     <br><br>
     <strong>Attempt:</strong> {{ $result['attemptNum'] }}
     <br>
-    <strong>Score:</strong> {{ $result['numCorrect'] }}/{{ $result['totalQuestions'] }} ({{ $result['grade'] }}%)
+    <strong>Grade:</strong> {{ $result['grade'] }}%
     <br>
     <strong>Outcome: <span
             style="color: {{ $result['passed'] ? 'green':'red' }}">{{ $result['passed'] ? 'Pass' : 'Fail' }}</span></strong>
@@ -19,7 +19,7 @@
                 href="https://www.vatusa.net/help/ticket/new">open a support ticket</a>.
         @endif
     @else
-        Congratulations! You have passed your exam. You will not receive a promotion to the new rating until an OTS has been conducted and passed.
+        Congratulations! You have passed your exam. You will not receive a promotion to the new rating until you have passed an OTS (Over-the-shoulder practical exam) conducted by your ARTCC's training staff.
     @endif
     <br><br>
     <table class="button success float-center" align="center"

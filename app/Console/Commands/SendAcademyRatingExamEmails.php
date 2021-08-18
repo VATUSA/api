@@ -75,26 +75,22 @@ class SendAcademyRatingExamEmails extends Command
                     continue;
                 }
 
-                $numCorrect = $attempt['sumgrades'];
                 $attemptNum = $attempt['attempt'];
                 $attemptId = $attempt['id'];
                 if ($attempt['quiz'] == config('exams.S2.id')) {
-                    $totalQuestions = config('exams.S2.numQuestions');
                     $passingGrade = config('exams.S2.passingPercent');
                     $testName = "S2 Rating (TWR) Controller";
                 } elseif ($attempt['quiz'] == config('exams.S3.id')) {
-                    $totalQuestions = config('exams.S3.numQuestions');
                     $passingGrade = config('exams.S3.passingPercent');
                     $testName = "S3 Rating (APP/DEP) Controller";
                 } else {
-                    $totalQuestions = config('exams.C1.numQuestions');
                     $passingGrade = config('exams.C1.passingPercent');
                     $testName = "C1 Rating (CTR) Controller";
                 }
-                $grade = round($numCorrect / $totalQuestions * 100);
+                $grade = $attempt['grade'];
                 $passed = $grade >= $passingGrade;
 
-                $result = compact('testName', 'studentName', 'attemptNum', 'numCorrect', 'totalQuestions', 'grade',
+                $result = compact('testName', 'studentName', 'attemptNum', 'grade',
                     'passed', 'passingGrade', 'attemptId');
 
                 $mail = Mail::to($student)->cc($instructor);
@@ -112,7 +108,7 @@ class SendAcademyRatingExamEmails extends Command
                 }
 
                 log_action($student->cid,
-                    "Academy exam submitted - $testName - Attempt $attemptNum - $numCorrect/$totalQuestions ($grade%)");
+                    "Academy exam submitted - $testName - Attempt $attemptNum - $grade%");
             }
         }
 
@@ -146,16 +142,21 @@ class SendAcademyRatingExamEmails extends Command
                 $record->save();
 
                 $studentName = $student->fullname;
-                $numCorrect = round($attempt->sumgrades);
                 $attemptNum = $attempt->attempt;
                 $attemptId = $attempt->id;
-                $totalQuestions = config('exams.BASIC.numQuestions');
                 $passingGrade = config('exams.BASIC.passingPercent');
                 $testName = "Basic ATC/S1 Exam";
-                $grade = round($numCorrect / $totalQuestions * 100);
+
+                $review = $this->moodle->request("mod_quiz_get_attempt_review",
+                        ["attemptid" => $attemptId]) ?? [];
+                if (empty($review)) {
+                    continue;
+                }
+                $grade = round(floatval($review['grade']));
+
                 $passed = $grade >= $passingGrade;
 
-                $result = compact('testName', 'studentName', 'attemptNum', 'numCorrect', 'totalQuestions', 'grade',
+                $result = compact('testName', 'studentName', 'attemptNum', 'grade',
                     'passed', 'passingGrade', 'attemptId');
                 $mail = Mail::to($student);
                 if ($attemptNum == 3 && !$passed) {
@@ -163,8 +164,12 @@ class SendAcademyRatingExamEmails extends Command
                 }
                 $mail->queue(new AcademyExamSubmitted($result));
 
+                if($passed) {
+                    $student->flag_needsbasic = 0;
+                    $student->save();
+                }
                 log_action($student->cid,
-                    "Academy exam submitted - $testName - Attempt $attemptNum - $numCorrect/$totalQuestions ($grade%)");
+                    "Academy exam submitted - $testName - Attempt $attemptNum - $grade%");
             }
         }
         AcademyBasicExamEmail::where('created_at', '<', $weekInterval->subDays(2))->delete();
