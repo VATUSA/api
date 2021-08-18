@@ -93,9 +93,13 @@ class MoodleSync extends Command
 
         //Assign Cohorts
         $this->moodle->clearUserCohorts($id);
-        $this->moodle->assignCohort($id, Helper::ratingShortFromInt($user->rating)); //VATUSA level rating
+        if ($user->flag_homecontroller) {
+            $this->moodle->assignCohort($id,
+                Helper::ratingShortFromInt($user->rating)); //VATUSA level rating (home controllers)
+            $this->moodle->assignCohort($id,
+                "$user->facility-" . Helper::ratingShortFromInt($user->rating)); //Facility level rating
+        }
         $this->moodle->assignCohort($id, $user->facility); //Home Facility
-        $this->moodle->assignCohort($id, "$user->facility-" . Helper::ratingShortFromInt($user->rating)); //Facility level rating
 
         foreach ($user->visits->pluck('facility') as $facility) {
             //Visiting Facilities
@@ -120,7 +124,9 @@ class MoodleSync extends Command
         $this->moodle->clearUserRoles($id);
 
         //Assign Student Role
-        $this->moodle->assignRole($id, VATUSAMoodle::CATEGORY_CONTEXT_VATUSA, "STU", "coursecat");
+        if ($user->flag_homecontroller) {
+            $this->moodle->assignRole($id, VATUSAMoodle::CATEGORY_CONTEXT_VATUSA, "STU", "coursecat");
+        }
         foreach ($facilities as $facility) {
             $this->moodle->assignRole($id, $this->moodle->getCategoryFromShort($facility, true), "STU", "coursecat");
         }
@@ -132,7 +138,8 @@ class MoodleSync extends Command
         if (RoleHelper::isVATUSAStaff() || RoleHelper::isSeniorStaff($user->cid, $user->facility, true)) {
             $this->moodle->assignRole($id, $this->moodle->getCategoryFromShort($user->facility, true), "TA",
                 "coursecat");
-            $artccCategories = $this->moodle->getAllSubcategories($this->moodle->getCategoryFromShort($user->facility), true);
+            $artccCategories = $this->moodle->getAllSubcategories($this->moodle->getCategoryFromShort($user->facility),
+                true);
             foreach ($artccCategories as $category) {
                 $courses = $this->moodle->getCoursesInCategory($category);
                 foreach ($courses as $course) {
@@ -164,7 +171,8 @@ class MoodleSync extends Command
             }
         }
         if (Role::where("cid", $user->cid)->where("facility", $user->facility)->where("role", "MTR")->exists()) {
-            $this->moodle->assignRole($id, $this->moodle->getCategoryFromShort($user->facility, true), "MTR", "coursecat");
+            $this->moodle->assignRole($id, $this->moodle->getCategoryFromShort($user->facility, true), "MTR",
+                "coursecat");
         }
 
         /* Enrolments to be done through Cohort Sync
