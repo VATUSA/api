@@ -136,10 +136,6 @@ class SendAcademyRatingExamEmails extends Command
                 if (!$student) {
                     continue;
                 }
-                $record = new AcademyBasicExamEmail();
-                $record->attempt_id = $attempt->id;
-                $record->student_id = $student->cid;
-                $record->save();
 
                 $studentName = $student->fullname;
                 $attemptNum = $attempt->attempt;
@@ -168,8 +164,14 @@ class SendAcademyRatingExamEmails extends Command
                     $student->flag_needsbasic = 0;
                     $student->save();
                 }
+
                 log_action($student->cid,
                     "Academy exam submitted - $testName - Attempt $attemptNum - $grade%");
+
+                $record = new AcademyBasicExamEmail();
+                $record->attempt_id = $attempt->id;
+                $record->student_id = $student->cid;
+                $record->save();
             }
         }
         AcademyBasicExamEmail::where('created_at', '<', $weekInterval->subDays(2))->delete();
