@@ -160,7 +160,7 @@ class SendAcademyRatingExamEmails extends Command
                 $mail->queue(new AcademyExamSubmitted($result));
 
                 if($passed) {
-                    $student->flag_needsbasic = 0;
+                    $student->flag_needbasic = 0;
                     $student->save();
                 }
 
