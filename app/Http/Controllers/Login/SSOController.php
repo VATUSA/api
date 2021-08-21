@@ -168,7 +168,11 @@ class SSOController extends Controller
                 $log->save();
             }
         } else {
-            $passedBasic = ExamHelper::academyPassedExam($member->cid, "basic", 0, 6);
+            $passedBasic = ExamResults::where('cid',
+                    $member->cid)->where('exam_id', config('exams.BASIC.legacyId'))->where('passed',
+                    1)->where('date', '>=',
+                    Carbon::now()->subMonths(6))->exists() || ExamHelper::academyPassedExam($member->cid, "basic", 0,
+                    6);
             //Update data
             if ($updateName) {
                 $member->fname = ucfirst(trim($user->personal->name_first));
@@ -178,9 +182,12 @@ class SSOController extends Controller
             $member->rating = $user->vatsim->rating->id;
             $member->lastactivity = Carbon::now();
 
-            if ($passedBasic && $member->flag_needbasic) {
+            if ($member->facility == "ZAE" && $member->facility_join->diffInMonths(Carbon::now()) > 6 && !$passedBasic) {
+                $member->flag_needbasic = 1;
+            }
+
+            if ($passedBasic) {
                 $member->flag_needbasic = 0;
-                $member->save();
             }
 
             if (!$member->flag_homecontroller && $user->vatsim->division->id == "USA") {
@@ -253,9 +260,7 @@ class SSOController extends Controller
                 }
                 // Now let us check to see if they have ever been in a facility.. if not, we need to override the need basic flag.
                 if (!Transfer::where('cid', $member->cid)->where('to', 'NOT LIKE', 'ZAE')->where('to',
-                        'NOT LIKE', 'ZZN')->exists() && !$passedBasic && !ExamResults::where('cid',
-                        $member->cid)->where('exam_id', config('exams.BASIC.legacyId'))->where('passed',
-                        1)->where('date', '>=', Carbon::now()->subMonths(6))->exists()) {
+                        'NOT LIKE', 'ZZN')->exists() && !$passedBasic) {
                     $member->flag_needbasic = 1;
                 }
 
