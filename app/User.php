@@ -81,7 +81,10 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     /**
      * @var array
      */
-    public $timestamps = ["created_at", "updated_at", "prefname_date", "facility_join"];
+    //public $timestamps = ["created_at", "updated_at", "prefname_date", "facility_join"];
+
+    protected $dates = ["lastactivity", "facility_join", "prefname_date"];
+   
     /**
      * @var array
      */
@@ -109,13 +112,6 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         'flag_preventStaffAssign' => 'boolean'
     ];
 
-    /**
-     * @return array
-     */
-    public function getDates()
-    {
-        return ["created_at", "updated_at", "lastactivity"];
-    }
 
     /**
      * @return string
