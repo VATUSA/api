@@ -62,7 +62,7 @@ class StatsMonthly extends Command
             foreach(User::where('facility', $facility->id)->get() as $user) {
                 switch($user->rating) {
                     case RatingHelper::shortToInt("OBS"):
-                        if(Carbon::createFromFormat("Y-m-d H:i:s", $user->facility_join)
+                        if($user->facility_join
                             ->addDays(30)->isFuture()) {
                             $data['OBS']++;
                         } else {

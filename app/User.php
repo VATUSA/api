@@ -81,7 +81,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     /**
      * @var array
      */
-    public $timestamps = ["created_at", "updated_at", "prefname_date"];
+    public $timestamps = ["created_at", "updated_at", "prefname_date", "facility_join"];
     /**
      * @var array
      */
@@ -562,7 +562,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         if (!in_array($this->facility, ["ZAE", "ZZN", "ZHQ"])) {
             if (Transfer::where('cid', $this->cid)->where('to', 'NOT LIKE', 'ZAE')->where('to', 'NOT LIKE',
                     'ZZN')->where('status', 1)->count() == 1) {
-                if (Carbon::createFromFormat('Y-m-d H:i:s', $this->facility_join)->diffInDays(new Carbon()) <= 30) {
+                if ($this->facility_join->diffInDays(Carbon::now()) <= 30) {
                     $checks['initial'] = true;
                 }
             } else {
