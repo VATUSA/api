@@ -125,7 +125,7 @@ class MoodleSync extends Command
 
         //Assign Student Role
         if ($user->flag_homecontroller) {
-            $this->moodle->assignRole($id, VATUSAMoodle::CATEGORY_CONTEXT_VATUSA, "STU", "coursecat");
+        //    $this->moodle->assignRole($id, VATUSAMoodle::CATEGORY_CONTEXT_VATUSA, "STU", "coursecat");
         }
         foreach ($facilities as $facility) {
             $this->moodle->assignRole($id, $this->moodle->getCategoryFromShort($facility, true), "STU", "coursecat");

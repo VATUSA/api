@@ -490,7 +490,9 @@ class VATUSAMoodle extends MoodleRest
             $assignments = DB::connection('moodle')->table('role_assignments')->selectRaw(config('database.connections.moodle.prefix') . 'role_assignments.id')
                 ->leftJoin('context', 'role_assignments.contextid', '=', 'context.id')
                 ->where('role_assignments.userid', $uid)
-                ->where('context.contextlevel', self::CONTEXT_COURSECAT)->get()->pluck('id');
+                ->where('context.contextlevel', self::CONTEXT_COURSECAT)
+                ->where('role_assignments.component', '!=', 'enrol_cohort')
+                ->get()->pluck('id');
             foreach ($assignments as $id) {
                 DB::connection('moodle')->table('role_assignments')->where('id', $id)->delete();
             }
