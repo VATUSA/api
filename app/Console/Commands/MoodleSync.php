@@ -165,15 +165,15 @@ class MoodleSync extends Command
                 "coursecat");
         }
         if (RoleHelper::isVATUSAStaff() || RoleHelper::has($user->cid, $user->facility, "MTR")) {
-            for ($i = 1; $i <= $user->rating; $i++) {
-                $category = "CATEGORY_CONTEXT_" . Helper::ratingShortFromInt($i);
-                $this->moodle->assignRole($id, $this->moodle->getConstant($category), "MTR", "course");
+            for ($i = Helper::ratingIntFromShort("S1"); $i <= $user->rating; $i++) {
+                $context = "EXAM_CONTEXT_" . Helper::ratingShortFromInt($i);
+                $this->moodle->assignRole($id, $this->moodle->getConstant($context), "MTR", "course");
             }
         }
-        if (Role::where("cid", $user->cid)->where("facility", $user->facility)->where("role", "MTR")->exists()) {
+        /*if (Role::where("cid", $user->cid)->where("facility", $user->facility)->where("role", "MTR")->exists()) {
             $this->moodle->assignRole($id, $this->moodle->getCategoryFromShort($user->facility, true), "MTR",
                 "coursecat");
-        }
+        }*/
 
         /* Enrolments to be done through Cohort Sync
 
