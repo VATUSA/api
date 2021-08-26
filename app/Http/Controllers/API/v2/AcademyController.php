@@ -71,7 +71,7 @@ class AcademyController extends APIController
             );
         }
 
-        if (!RoleHelper::isInstructor($user->facility) && !RoleHelper::isSeniorStaff($user->facility) && !RoleHelper::isMentor(Auth::user()->cid,
+        if (!RoleHelper::isInstructor(Auth::user()->cid, $user->facility) && !RoleHelper::isSeniorStaff(Auth::user()->cid, $user->facility) && !RoleHelper::isMentor(Auth::user()->cid,
                 $user->facility)) {
             return response()->forbidden();
         }
