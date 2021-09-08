@@ -62,12 +62,13 @@ class MoodleSync extends Command
         }
 
         //Syncronize Users
-        $users = User::all();
-        foreach ($users as $user) {
-            if ($this->moodle->getUserId($user->cid)) {
-                $this->sync($user);
+        $users = User::chunk(1000, function ($users) {
+            foreach ($users as $user) {
+                if ($this->moodle->getUserId($user->cid)) {
+                    $this->sync($user);
+                }
             }
-        }
+        });
 
         return 0;
     }
