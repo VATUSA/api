@@ -95,7 +95,7 @@ class SendAcademyRatingExamEmails extends Command
 
                 $mail = Mail::to($student)->cc($instructor);
                 //if ($attemptNum == 3 && !$passed) {
-                $mail->bcc(['vatusa3@vatusa.net', 'vatusa13@vatusa.net', 'vatusa12@vatusa.net']);
+                $mail->bcc(['vatusa3@vatusa.net', 'vatusa13@vatusa.net']);
                 //}
                 $mail->queue(new AcademyExamSubmitted($result));
 
