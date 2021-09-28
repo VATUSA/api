@@ -649,11 +649,11 @@ class FacilityController extends APIController
             $rosterArr[$i]['rating_short'] = RatingHelper::intToShort($member->rating);
 
             //Is Mentor
-            $rosterArr[$i]['isMentor'] = $member->roles->where("facility", $member->facility)
+            $rosterArr[$i]['isMentor'] = $membership !== 'visit' && $member->roles->where("facility", $member->facility)
                     ->where("role", "MTR")->count() > 0;
 
             //Has Ins Perms
-            $rosterArr[$i]['isSupIns'] = $roster[$i]['rating_short'] === "SUP" &&
+            $rosterArr[$i]['isSupIns'] = $membership !== 'visit' && $roster[$i]['rating_short'] === "SUP" &&
                 $member->roles->where("facility", $member->facility)
                     ->where("role", "INS")->count() > 0;
 
