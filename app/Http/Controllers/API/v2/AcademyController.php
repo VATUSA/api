@@ -26,9 +26,45 @@ class AcademyController extends APIController
 {
     /**
      * @SWG\Get(
+     *     path="/academy/identifiers",
+     *     summary="Get of list course IDs.",
+     *     description="Get list of Academy Rating course IDs.",
+     *     produces={"application/json"},
+     *     tags={"academy"},
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *             type="array",
+     *             @SWG\Items(
+     *                 type="object",
+     *                 @SWG\Property(property="BASIC", type="integer", description="Basic ATC/S1 exam course ID."),
+     *                 @SWG\Property(property="S2",type="integer",description="S2 exam course ID."),
+     *                 @SWG\Property(property="S3",type="integer",description="S3 exam course ID."),
+     *                 @SWG\Property(property="C1",type="integer",description="C1 exam course ID."),
+     *             ),
+     *         ),
+     *     )
+     * ),
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getIdentifiers(Request $request)
+    {
+        return response()->api([
+            'BASIC' => config('exams.BASIC.id'),
+            'S2'    => config('exams.S2.id'),
+            'S3'    => config('exams.S3.id'),
+            'C1'    => config('exams.C1.id')
+        ]);
+    }
+
+    /**
+     * @SWG\Post(
      *     path="/academy/enroll/{courseID}",
-     *     summary="Enroll controller in course. [Private]",
-     *     description="Enroll controller in ratings exam course. CORS Restricted.",
+     *     summary="Enroll controller in course. [Auth]",
+     *     description="Enroll controller in ratings exam course. Requires Mentor (at or above requested rating), Instructor, or Senior Staff role.",
      *     produces={"application/json"},
      *     tags={"academy"},
      *     security={"session", "jwt"},
@@ -85,7 +121,7 @@ class AcademyController extends APIController
         if (!in_array($courseId,
             [config('exams.S2.courseId'), config('exams.S3.courseId'), config('exams.C1.courseId')])) {
             return response()->api(
-                generate_error("Invalid course ID - must be a ratings exam course.", true), 400
+                generate_error("Invalid course ID - must be a ratings exam course above Basic.", true), 400
             );
         }
 
@@ -137,7 +173,7 @@ class AcademyController extends APIController
      *     path="/academy/transcript/{cid}",
      *     summary="Retrieve the Academy transcript for a user. [Key]",
      *     description="Retrieve the Academy transcript for a user, including all attempts for each rating exam. The
-           outer array keys are the ratings (ex. S1) and the inner arrays are the attempts. Requires at least an API key.",
+                        outer array keys are the ratings (ex. S1) and the inner arrays are the attempts. Requires at least an API key.",
      *     produces={"application/json"}, tags={"academy"},
      *     security={"apikey","session", "jwt"},
      * @SWG\Response(
@@ -168,7 +204,8 @@ class AcademyController extends APIController
      *         response="200",
      *         description="OK",
      *         @SWG\Schema(ref="#/definitions/OK"),
-     *         examples={"application/json":{"Basic":{{ "attempt": 1, "time_finished": 1632633706, "grade": 79 }, { "attempt": 2, "time_finished": 1632635241, "grade": 91 }}, "S2": {}, "S3": {}, "C1": {} }},
+     *         examples={"application/json":{"BASIC":{{ "attempt": 1, "time_finished": 1632633706, "grade": 79 }, {
+     *         "attempt": 2, "time_finished": 1632635241, "grade": 91 }}, "S2": {}, "S3": {}, "C1": {} }},
      *     )
      * )
      *
@@ -186,7 +223,7 @@ class AcademyController extends APIController
         $results = [];
         $moodle = new VATUSAMoodle();
         $exams = [
-            'Basic' => config('exams.BASIC.id'),
+            'BASIC' => config('exams.BASIC.id'),
             'S2'    => config('exams.S2.id'),
             'S3'    => config('exams.S3.id'),
             'C1'    => config('exams.C1.id')

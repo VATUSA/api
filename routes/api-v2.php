@@ -103,13 +103,15 @@ Route::group(['middleware' => ['private', 'auth:jwt,web'], 'prefix' => '/exam'],
 });
 
 Route::group(['prefix' => '/academy'], function () {
-    Route::group(['middleware' => ['auth:web,jwt', 'private']], function () {
+    Route::group(['middleware' => ['auth:web,jwt']], function () {
         Route::post('enroll/{courseId}', 'AcademyController@postEnroll')->where('courseId', '[0-9]+');
     });
 
     Route::group(['middleware' => 'semiprivate'], function () {
         Route::get('transcript/{user}', 'AcademyController@getTranscript')->where('user', '[0-9]+');
     });
+
+    Route::get('identifiers', 'AcademyController@getIdentifiers');
 });
 /******************************************************************************************
  * /facility
