@@ -6,6 +6,7 @@ namespace App\Http\Controllers\API\v2;
 use App\AcademyExamAssignment;
 use App\Action;
 use App\Classes\VATUSAMoodle;
+use App\Helpers\AuthHelper;
 use App\Helpers\EmailHelper;
 use App\Helpers\Helper;
 use App\Helpers\RoleHelper;
@@ -71,7 +72,9 @@ class AcademyController extends APIController
             );
         }
 
-        if (!RoleHelper::isInstructor(Auth::user()->cid, $user->facility) && !RoleHelper::isSeniorStaff(Auth::user()->cid, $user->facility) && !RoleHelper::isMentor(Auth::user()->cid,
+        if (!RoleHelper::isInstructor(Auth::user()->cid,
+                $user->facility) && !RoleHelper::isSeniorStaff(Auth::user()->cid,
+                $user->facility) && !RoleHelper::isMentor(Auth::user()->cid,
                 $user->facility)) {
             return response()->forbidden();
         }
@@ -127,5 +130,83 @@ class AcademyController extends APIController
         $log->save();
 
         return response()->ok();
+    }
+
+    /**
+     * @SWG\Get(
+     *     path="/academy/transcript/{cid}",
+     *     summary="Retrieve the Academy transcript for a user. [Key]",
+     *     description="Retrieve the Academy transcript for a user, including all attempts for each rating exam. The
+           outer array keys are the ratings (ex. S1) and the inner arrays are the attempts. Requires at least an API key.",
+     *     produces={"application/json"}, tags={"academy"},
+     *     security={"apikey","session", "jwt"},
+     * @SWG\Response(
+     *         response="400",
+     *         description="Malformed request",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={{"application/json":{"status"="error","message"="Invalid controller"}}}
+     *     ),
+     *     * @SWG\Response(
+     *         response="404",
+     *         description="Not found",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={{"application/json":{"status"="error","message"="Not found"}}}
+     *     ),
+     * @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     * @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     * @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(ref="#/definitions/OK"),
+     *         examples={"application/json":{"Basic":{{ "attempt": 1, "time_finished": 1632633706, "grade": 79 }, { "attempt": 2, "time_finished": 1632635241, "grade": 91 }}, "S2": {}, "S3": {}, "C1": {} }},
+     *     )
+     * )
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param \App\User                $user
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function getTranscript(Request $request, User $user)
+    {
+        if (!AuthHelper::validApiKeyv2($request->apikey ?? null, $user->facility)) {
+            return response()->forbidden();
+        }
+
+        $results = [];
+        $moodle = new VATUSAMoodle();
+        $exams = [
+            'Basic' => config('exams.BASIC.id'),
+            'S2'    => config('exams.S2.id'),
+            'S3'    => config('exams.S3.id'),
+            'C1'    => config('exams.C1.id')
+        ];
+
+        foreach ($exams as $rating => $id) {
+            $result = [];
+            $attempts = $moodle->getQuizAttempts($id, $user->cid);
+            for ($i = 0; $i < count($attempts); $i++) {
+                $result[$i] = [
+                    'attempt'       => $attempts[$i]['attempt'],
+                    'time_finished' => $attempts[$i]['timefinish'],
+                    'grade'         => $attempts[$i]['grade']
+                ];
+            }
+
+            $results[$rating] = $result;
+        }
+
+
+        return response()->api($results);
     }
 }

@@ -8,12 +8,13 @@ if (env('APP_ENV', 'prod') == "dev") {
 }
 
 /** Readiness for Kubernetes Health Check */
-Route::get('readiness', function() {
+Route::get('readiness', function () {
     try {
         DB::connection()->getPdo();
     } catch (Exception $e) {
         return response('Not Ready', 500);
     }
+
     return 'Ready';
 });
 
@@ -101,8 +102,14 @@ Route::group(['middleware' => ['private', 'auth:jwt,web'], 'prefix' => '/exam'],
     Route::post('submit', 'ExamController@postSubmit');
 });
 
-Route::group(['middleware' => ['auth:web,jwt', 'private'], 'prefix' => '/academy'], function () {
-    Route::post('enroll/{courseId}', 'AcademyController@postEnroll')->where('courseId', '[0-9]+');
+Route::group(['prefix' => '/academy'], function () {
+    Route::group(['middleware' => ['auth:web,jwt', 'private']], function () {
+        Route::post('enroll/{courseId}', 'AcademyController@postEnroll')->where('courseId', '[0-9]+');
+    });
+
+    Route::group(['middleware' => 'semiprivate'], function () {
+        Route::get('transcript/{user}', 'AcademyController@getTranscript')->where('user', '[0-9]+');
+    });
 });
 /******************************************************************************************
  * /facility
