@@ -64,7 +64,7 @@ class AcademyController extends APIController
      * @SWG\Post(
      *     path="/academy/enroll/{courseID}",
      *     summary="Enroll controller in course. [Auth]",
-     *     description="Enroll controller in ratings exam course. Requires Mentor (at or above requested rating), Instructor, or Senior Staff role.",
+     *     description="Enroll controller in ratings exam course (S2+). Requires Mentor (at or above requested rating), Instructor, or Senior Staff role.",
      *     produces={"application/json"},
      *     tags={"academy"},
      *     security={"session", "jwt"},
