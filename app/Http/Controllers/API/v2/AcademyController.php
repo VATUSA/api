@@ -6,6 +6,7 @@ namespace App\Http\Controllers\API\v2;
 use App\AcademyExamAssignment;
 use App\Action;
 use App\Classes\VATUSAMoodle;
+use App\Facility;
 use App\Helpers\AuthHelper;
 use App\Helpers\EmailHelper;
 use App\Helpers\Helper;
@@ -64,11 +65,10 @@ class AcademyController extends APIController
      * @SWG\Post(
      *     path="/academy/enroll/{courseID}",
      *     summary="Enroll controller in course. [Auth]",
-     *     description="Enroll controller in ratings exam course (S2+). Requires Mentor (at or above requested rating), Instructor, or Senior Staff role.",
-     *     produces={"application/json"},
-     *     tags={"academy"},
-     *     security={"session", "jwt"},
-     *     @SWG\Parameter(name="cid", in="formData", type="integer", description="Controller CID"),
+     *     description="Enroll controller in ratings exam course (S2+). Requires Mentor (at or above requested rating),
+     *     Instructor, or Senior Staff role.", produces={"application/json"}, tags={"academy"}, security={"session",
+     *     "jwt"},
+     * @SWG\Parameter(name="cid", in="formData", type="integer", description="Controller CID"),
      * @SWG\Response(
      *         response="400",
      *         description="Malformed request",
@@ -94,6 +94,7 @@ class AcademyController extends APIController
      *         examples={"application/json":{"status"="OK"}},
      *     )
      * )
+     *
      * @param \Illuminate\Http\Request $request
      * @param int                      $courseId
      *
@@ -173,7 +174,7 @@ class AcademyController extends APIController
      *     path="/academy/transcript/{cid}",
      *     summary="Retrieve the Academy transcript for a user. [Key]",
      *     description="Retrieve the Academy transcript for a user, including all attempts for each rating exam. The
-                        outer array keys are the ratings (ex. S1) and the inner arrays are the attempts. Requires at least an API key.",
+    outer array keys are the ratings (ex. S1) and the inner arrays are the attempts. Requires at least an API key.",
      *     produces={"application/json"}, tags={"academy"},
      *     security={"apikey","session", "jwt"},
      * @SWG\Response(
@@ -216,7 +217,16 @@ class AcademyController extends APIController
      */
     public function getTranscript(Request $request, User $user)
     {
-        if (!AuthHelper::validApiKeyv2($request->apikey ?? null, $user->facility)) {
+        $validKeyVisit = $validKeyHome = false;
+        if ($request->has('apikey')) {
+            $validKeyHome = AuthHelper::validApiKeyv2($request->apikey, $user->facility);
+            $facility = Facility::where('apikey', $request->apikey)->orWhere('api_sandbox_key',
+                $request->apikey)->first();
+            $validKeyVisit = $user->visits()->where('facility', $facility->id)->exists();
+        }
+
+        if (!$validKeyHome && !$validKeyVisit && !(Auth::check() && ($user->facility == Auth::user()->facility || $user->visits()->where('facility',
+                    Auth::user()->facility)->exists()) && (RoleHelper::isMentor() || RoleHelper::isInstructor() || RoleHelper::isSeniorStaff()))) {
             return response()->forbidden();
         }
 
