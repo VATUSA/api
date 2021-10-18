@@ -11,11 +11,14 @@ use App\ExamResultsData;
 use App\Helpers\EmailHelper;
 use App\Helpers\RoleHelper;
 use App\Helpers\AuthHelper;
+use App\Mail\ExamAssigned;
+use App\Mail\LegacyExamResult;
 use App\TrainingBlock;
 use App\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Exam;
+use Illuminate\Support\Facades\Mail;
 
 class ExamController extends APIController
 {
@@ -246,7 +249,7 @@ class ExamController extends APIController
             if ($fac == "ZAE") {
                 $fac = \Auth::user()->facility;
             }
-            EmailHelper::sendEmailFacilityTemplate($to, "Exam Passed", $fac, "exampassed", $data);
+            Mail::to($to)->queue(new LegacyExamResult($data, true));
             if ($exam->id == config('exams.BASIC.legacyId')) {
                 \Auth::user()->flag_needbasic = 0;
                 \Auth::user()->save();
@@ -270,7 +273,7 @@ class ExamController extends APIController
             if ($fac == "ZAE") {
                 $fac = \Auth::user()->facility;
             }
-            EmailHelper::sendEmailFacilityTemplate($to, "Exam Not Passed", $fac, "examfailed", $data);
+            Mail::to($to)->queue(new LegacyExamResult($data, false));
 
             return response()->api(['results' => "Not Passed."]);
         }
@@ -908,6 +911,9 @@ class ExamController extends APIController
             if ($exam->facility_id != "ZAE") {
                 $to[] = $exam->facility_id . "-TA@vatusa.net";
             }
+
+
+            Mail::to($to)->queue(new ExamAssigned($data));
 
             EmailHelper::sendEmailFacilityTemplate($to, "Exam Assigned", $exam->facility_id, "examassigned", $data);
 
