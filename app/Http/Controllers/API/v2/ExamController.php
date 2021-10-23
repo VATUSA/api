@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\API\v2;
 
 use App\Action;
+use App\Classes\VATUSADiscord;
 use App\ExamAssignment;
 use App\ExamQuestions;
 use App\ExamReassignment;
 use App\ExamResults;
 use App\ExamResultsData;
+use App\Facility;
 use App\Helpers\EmailHelper;
 use App\Helpers\RoleHelper;
 use App\Helpers\AuthHelper;
@@ -18,6 +20,7 @@ use App\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Exam;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 
 class ExamController extends APIController
@@ -215,44 +218,79 @@ class ExamController extends APIController
         $result->save();
 
         // Done... let's send some emails
-        $to[] = \Auth::user()->email;
+        $to = [];
+        $facility = Facility::find($exam->facility_id);
+        $instructor = null;
+        $ta = $facility->ta();
+        if (!$ta) {
+            $ta = $facility->datm();
+        }
+        if (!$ta) {
+            $ta = $facility->atm();
+        }
+
+        $notify = new VATUSADiscord();
+        if ($notify->userWantsNotification(Auth::user(), "legacyExamResult", "email")) {
+            $to[] = Auth::user()->email;
+        }
         if ($assign->instructor_id > 111111) {
             $instructor = User::find($assign->instructor_id);
             if ($instructor) {
-                $to[] = $instructor->email;
+                if ($notify->userWantsNotification($instructor, "legacyExamResult", "email")) {
+                    $to[] = $instructor->email;
+                }
             }
         }
-        if ($exam->facility_id != "ZAE") {
-            $to[] = $exam->facility_id . "-TA@vatusa.net";
+        if ($exam->facility_id != "ZAE" && $ta && $notify->userWantsNotification($ta, "legacyExamResult", "email")) {
+            $to[] = $ta->email;
         }
 
         $log = new Action();
-        $log->to = \Auth::user()->cid;
+        $log->to = Auth::user()->cid;
         $log->log = "Exam (" . $exam->facility_id . ") " . $exam->name . " completed.  Score $correct/$possible ($score%).";
         $log->log .= ($result->passed) ? " Passed." : " Not Passed.";
         $log->save();
 
         $data = [
+            'passed'          => $result->passed,
             'exam_name'       => "(" . $exam->facility_id . ") " . $exam->name,
-            'instructor_name' => (isset($instructor)) ? $instructor->fullname() : 'N/A',
+            'result_id'       => $result->id,
+            'instructor_name' => $instructor ? $instructor->fullname() : 'N/A',
             'correct'         => $correct,
             'possible'        => $possible,
             'score'           => $score,
-            'student_name'    => \Auth::user()->fullname(),
+            'student_name'    => Auth::user()->fullname(),
             'reassign'        => 0,
             'reassign_date'   => null
         ];
+        $studentId = $notify->userWantsNotification(Auth::user(), "legacyExamResult",
+            "discord") ? Auth::user()->discord_id : 0;
+        $instructorId = $instructor && $notify->userWantsNotification($instructor, "legacyExamResult",
+            "discord") ? $instructor->discord_id : 0;
+        $taId = $ta && (!$instructor || $ta->cid !== $instructor->cid) && $notify->userWantsNotification($ta,
+            "legacyExamResult",
+            "discord") ? $ta->discord_id : 0;
+        if ($studentId || $instructorId || $taId) {
+            $notify->sendNotification("legacyExamResult", "dm",
+                array_merge($data, compact('studentId', 'instructorId', 'taId')));
+        }
+
+        if ($channel = $notify->getFacilityNotificationChannel($facility, "legacyExamResult")) {
+            $notify->sendNotification("legacyExamResult", "channel", $data, $facility->discord_guild, $channel);
+        }
 
         if ($result->passed) {
             $assign->delete();
             $fac = $exam->facility_id;
             if ($fac == "ZAE") {
-                $fac = \Auth::user()->facility;
+                $fac = Auth::user()->facility;
             }
-            Mail::to($to)->queue(new LegacyExamResult($data, true));
+            if (count($to)) {
+                Mail::to($to)->queue(new LegacyExamResult($data, true));
+            }
             if ($exam->id == config('exams.BASIC.legacyId')) {
-                \Auth::user()->flag_needbasic = 0;
-                \Auth::user()->save();
+                Auth::user()->flag_needbasic = 0;
+                Auth::user()->save();
             }
 
             return response()->api(['results' => "Passed."]);
@@ -271,9 +309,11 @@ class ExamController extends APIController
             $assign->delete();
             $fac = $exam->facility_id;
             if ($fac == "ZAE") {
-                $fac = \Auth::user()->facility;
+                $fac = Auth::user()->facility;
             }
-            Mail::to($to)->queue(new LegacyExamResult($data, false));
+            if (count($to)) {
+                Mail::to($to)->queue(new LegacyExamResult($data, false));
+            }
 
             return response()->api(['results' => "Not Passed."]);
         }
@@ -311,8 +351,10 @@ class ExamController extends APIController
      *     )
      * )
      */
-    public function getRequest(Request $request)
-    {
+    public
+    function getRequest(
+        Request $request
+    ) {
         if (!\Cache::has('exam.queue.' . \Auth::user()->cid)) {
             return response()->api(generate_error("No exam queued", true), 404);
         }
@@ -400,8 +442,11 @@ class ExamController extends APIController
      *
      * @return \Illuminate\Http\Response
      */
-    public function getExams(Request $request, $facility = null)
-    {
+    public
+    function getExams(
+        Request $request,
+        $facility = null
+    ) {
         if (\Auth::check() && !(RoleHelper::isSeniorStaff() ||
                 RoleHelper::isVATUSAStaff() ||
                 RoleHelper::isInstructor())) {
@@ -451,8 +496,11 @@ class ExamController extends APIController
      *
      * @return \Illuminate\Http\Response
      */
-    public function getExambyId(Request $request, $id)
-    {
+    public
+    function getExambyId(
+        Request $request,
+        $id
+    ) {
         if (\Auth::check() && !(RoleHelper::isSeniorStaff() ||
                 RoleHelper::isVATUSAStaff() ||
                 RoleHelper::isInstructor())) {
@@ -500,8 +548,11 @@ class ExamController extends APIController
      *
      * @return \Illuminate\Http\Response
      */
-    public function getExamQuestions(Request $request, $id)
-    {
+    public
+    function getExamQuestions(
+        Request $request,
+        $id
+    ) {
         $exam = Exam::find($id);
         if (!$exam) {
             return response()->api(generate_error("Not found"), 404);
@@ -573,8 +624,11 @@ class ExamController extends APIController
      *
      * @return \Illuminate\Http\Response
      */
-    public function putExam(Request $request, string $id)
-    {
+    public
+    function putExam(
+        Request $request,
+        string $id
+    ) {
         if (!\Auth::check()) {
             return response()->api(generate_error("Unauthorized"), 401);
         }
@@ -682,8 +736,11 @@ class ExamController extends APIController
      *
      * @return \Illuminate\Http\Response
      */
-    public function postExamQuestion(Request $request, $examid)
-    {
+    public
+    function postExamQuestion(
+        Request $request,
+        $examid
+    ) {
         if (!\Auth::check()) {
             return response()->api(generate_error("Unauthorized"), 401);
         }
@@ -764,8 +821,12 @@ class ExamController extends APIController
      *
      * @return
      */
-    public function putExamQuestion(Request $request, $examid, $questionid)
-    {
+    public
+    function putExamQuestion(
+        Request $request,
+        $examid,
+        $questionid
+    ) {
         if (!\Auth::check()) {
             return response()->api(generate_error("Unauthorized"), 401);
         }
@@ -817,7 +878,7 @@ class ExamController extends APIController
      *     path="/exam/(id)/assign/(cid)",
      *     summary="Assign exam. [Auth]",
      *     description="Assign exam to specified controller. Requires JWT or Session Cookie. Must be instructor, senior
-            staff or VATUSA staff.", tags={"user","exam"}, produces={"application/json"},
+    staff or VATUSA staff.", tags={"user","exam"}, produces={"application/json"},
      *     @SWG\Parameter(name="id", in="path", type="integer", description="Exam ID"),
      *     @SWG\Parameter(name="cid", in="path", type="integer", description="VATSIM ID"),
      *     @SWG\Parameter(name="expire", in="formData", type="integer", description="Days until expiration, 7
@@ -854,8 +915,12 @@ class ExamController extends APIController
      *
      * @return \Illuminate\Http\Response
      */
-    public function postExamAssign(Request $request, $examid, $cid)
-    {
+    public
+    function postExamAssign(
+        Request $request,
+        $examid,
+        $cid
+    ) {
         if (!\Auth::check()) {
             return response()->api(generate_error("Unauthorized"), 401);
         }
@@ -869,7 +934,7 @@ class ExamController extends APIController
         if (!$exam) {
             return response()->api(generate_error("Not found"), 404);
         }
-        if(in_array($exam->id, [
+        if (in_array($exam->id, [
             config('exams.BASIC.legacyId'),
             config('exams.S2.legacyId'),
             config('exams.S3.legacyId'),
@@ -961,8 +1026,12 @@ class ExamController extends APIController
      * @return \Illuminate\Http\Response
      * @throws \Exception
      */
-    public function deleteExamAssignment(Request $request, $examid, $cid)
-    {
+    public
+    function deleteExamAssignment(
+        Request $request,
+        $examid,
+        $cid
+    ) {
         if (!\Auth::check()) {
             return response()->api(generate_error("Unauthorized"), 401);
         }
@@ -1039,8 +1108,11 @@ class ExamController extends APIController
      * @return \Illuminate\Http\Response
      * @throws \Exception
      */
-    public function getResult(Request $request, $id)
-    {
+    public
+    function getResult(
+        Request $request,
+        $id
+    ) {
         $apikey = AuthHelper::validApiKeyv2($request->input('apikey', null));
         if (!$apikey && !\Auth::check()) {
             return response()->api(generate_error("Unauthorized"), 401);
