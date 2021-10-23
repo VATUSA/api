@@ -4,8 +4,9 @@ namespace App\Console\Commands;
 
 use App\AcademyBasicExamEmail;
 use App\AcademyExamAssignment;
+use App\Classes\VATUSADiscord;
 use App\Classes\VATUSAMoodle;
-use App\Http\Middleware\PrivateCORS;
+use App\Facility;
 use App\Mail\AcademyExamSubmitted;
 use App\User;
 use Carbon\Carbon;
@@ -30,6 +31,7 @@ class SendAcademyRatingExamEmails extends Command
     protected $description = 'Checks for final exam attempts and sends emails.';
 
     private $moodle;
+    private $notify;
 
     /**
      * Create a new command instance.
@@ -40,6 +42,7 @@ class SendAcademyRatingExamEmails extends Command
     {
         parent::__construct();
         $this->moodle = new VATUSAMoodle();
+        $this->notify = new VATUSADiscord();
     }
 
     /**
@@ -54,6 +57,7 @@ class SendAcademyRatingExamEmails extends Command
             $student = $assignment->student;
             $studentName = $student->name;
             $instructor = $assignment->instructor;
+            $instructorName = $instructor->fullname();
             $quizId = $assignment->quiz_id;
             $attemptEmailsSent = $assignment->attempt_emails_sent ? explode(',', $assignment->attempt_emails_sent) : [];
 
@@ -90,14 +94,30 @@ class SendAcademyRatingExamEmails extends Command
                 $grade = $attempt['grade'];
                 $passed = $grade >= $passingGrade;
 
-                $result = compact('testName', 'studentName', 'attemptNum', 'grade',
+                $result = compact('testName', 'studentName', 'instructorName', 'attemptNum', 'grade',
                     'passed', 'passingGrade', 'attemptId');
+                $mail = Mail::bcc(['vatusa3@vatusa.net', 'vatusa13@vatusa.net']);
+                if ($hasUser = $this->notify->userWantsNotification($student, "academyExamResult", "email")) {
+                    $mail->to($student);
+                }
+                if ($this->notify->userWantsNotification($instructor, "academyExamResult", "email")) {
+                    $hasUser ? $mail->cc($instructor) : $mail->to($instructor);
+                }
 
-                $mail = Mail::to($student)->cc($instructor);
-                //if ($attemptNum == 3 && !$passed) {
-                $mail->bcc(['vatusa3@vatusa.net', 'vatusa13@vatusa.net']);
-                //}
                 $mail->queue(new AcademyExamSubmitted($result));
+                $studentId = $this->notify->userWantsNotification($student, "academyExamResult",
+                    "discord") ? $student->discord_id : 0;
+                $instructorId = $this->notify->userWantsNotification($instructor, "academyExamResult",
+                    "discord") ? $instructor->discord_id : 0;
+                if ($studentId || $instructorId) {
+                    $this->notify->sendNotification("academyExamResult", "dm",
+                        array_merge($result, compact('studentId', 'instructorId')));
+                }
+                if ($channel = $this->notify->getFacilityNotificationChannel(Facility::find($student->facility),
+                    "academyExamResult")) {
+                    $this->notify->sendNotification("academyExamResult", "channel", $result,
+                        $student->facility->discord_guild, $channel);
+                }
 
                 if ($passed) {
                     $assignment->delete();
@@ -159,7 +179,7 @@ class SendAcademyRatingExamEmails extends Command
                 //}
                 $mail->queue(new AcademyExamSubmitted($result));
 
-                if($passed) {
+                if ($passed) {
                     $student->flag_needbasic = 0;
                     $student->save();
                 }
