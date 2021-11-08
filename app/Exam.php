@@ -24,19 +24,19 @@ class Exam extends Model
     protected $table = "exams";
 
     public function questions() {
-        return $this->hasMany('App\ExamQuestions', 'exam_id');
+        return $this->hasMany(ExamQuestions::class, 'exam_id');
     }
 
     public function facility() {
-        return $this->hasOne('App\Facility', 'id', 'facility_id');
+        return $this->hasOne(Facility::class, 'id', 'facility_id');
     }
 
     public function results() {
-        return $this->hasMany('App\ExamResults', 'exam_id', 'id');
+        return $this->hasMany(ExamResults::class, 'exam_id', 'id');
     }
 
     public function CBT() {
-        return $this->hasOne("App\TrainingBlock", "id", "cbt_required");
+        return $this->hasOne(TrainingBlock::class, 'id', 'cbt_required');
     }
 
     public function CBTComplete(User $user = null) {

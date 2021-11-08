@@ -54,7 +54,7 @@ class Facility extends Model
 
     public function ta()
     {
-        return $this->hasOne('App\User', 'cid', 'ta')->first();
+        return $this->hasOne(User::class, 'cid', 'ta')->first();
     }
 
     public function ec()

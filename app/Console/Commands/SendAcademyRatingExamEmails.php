@@ -48,7 +48,7 @@ class SendAcademyRatingExamEmails extends Command
     /**
      * Execute the console command.
      *
-     * @return mixed
+     * @return void
      * @throws \Exception
      */
     public function handle()
@@ -60,6 +60,13 @@ class SendAcademyRatingExamEmails extends Command
             $instructorName = $instructor->fullname();
             $quizId = $assignment->quiz_id;
             $attemptEmailsSent = $assignment->attempt_emails_sent ? explode(',', $assignment->attempt_emails_sent) : [];
+            $ta = $assignment->student->facilityObj->ta();
+            if (!$ta) {
+                $ta = $assignment->student->facilityObj->datm();
+            }
+            if (!$ta) {
+                $ta = $assignment->student->facilityObj->atm();
+            }
 
             if ($assignment->created_at->diffInDays(Carbon::now()) > 30) {
                 log_action($assignment->student->cid,
@@ -102,6 +109,10 @@ class SendAcademyRatingExamEmails extends Command
                 }
                 if ($this->notify->userWantsNotification($instructor, "academyExamResult", "email")) {
                     $hasUser ? $mail->cc($instructor) : $mail->to($instructor);
+                    $hasUser = true;
+                }
+                if ($ta && $this->notify->userWantsNotification($ta, "academyExamResult", "email")) {
+                    $hasUser ? $mail->cc($instructor) : $mail->to($ta);
                 }
 
                 $mail->queue(new AcademyExamSubmitted($result));
@@ -109,14 +120,20 @@ class SendAcademyRatingExamEmails extends Command
                     "discord") ? $student->discord_id : 0;
                 $instructorId = $this->notify->userWantsNotification($instructor, "academyExamResult",
                     "discord") ? $instructor->discord_id : 0;
+                $taId = $ta && $this->notify->userWantsNotification($instructor, "academyExamResult",
+                    "discord") ? $ta->discord_id : 0;
                 if ($studentId || $instructorId) {
                     $this->notify->sendNotification("academyExamResult", "dm",
                         array_merge($result, compact('studentId', 'instructorId')));
                 }
+                if ($taId) {
+                    $this->notify->sendNotification("academyExamResult", "dm",
+                        array_merge($result, ['instructorId' => $taId]));
+                }
                 if ($channel = $this->notify->getFacilityNotificationChannel(Facility::find($student->facility),
                     "academyExamResult")) {
                     $this->notify->sendNotification("academyExamResult", "channel", $result,
-                        $student->facility->discord_guild, $channel);
+                        $student->facilityObj->discord_guild, $channel);
                 }
 
                 if ($passed) {
@@ -173,12 +190,22 @@ class SendAcademyRatingExamEmails extends Command
 
                 $result = compact('testName', 'studentName', 'attemptNum', 'grade',
                     'passed', 'passingGrade', 'attemptId');
-                $mail = Mail::to($student);
-                //if ($attemptNum == 3 && !$passed) {
-                $mail->bcc(['vatusa3@vatusa.net', 'vatusa13@vatusa.net']);
-                //}
+                $mail = Mail::bcc(['vatusa3@vatusa.net', 'vatusa13@vatusa.net']);
+                if ($hasUser = $this->notify->userWantsNotification($student, "academyExamResult", "email")) {
+                    $mail->to($student);
+                }
                 $mail->queue(new AcademyExamSubmitted($result));
-
+                $studentId = $this->notify->userWantsNotification($student, "academyExamResult",
+                    "discord") ? $student->discord_id : 0;
+                if ($studentId) {
+                    $this->notify->sendNotification("academyExamResult", "dm",
+                        array_merge($result, compact('studentId')));
+                }
+                if ($channel = $this->notify->getFacilityNotificationChannel(Facility::find($student->facility),
+                    "academyExamResult")) {
+                    $this->notify->sendNotification("academyExamResult", "channel", $result,
+                        $student->facilityObj->discord_guild, $channel);
+                }
                 if ($passed) {
                     $student->flag_needbasic = 0;
                     $student->save();

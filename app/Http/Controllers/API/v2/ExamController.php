@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\API\v2;
 
-use App\Action;
+use App\Classes\Helper;
 use App\Classes\VATUSADiscord;
 use App\ExamAssignment;
 use App\ExamQuestions;
@@ -185,7 +185,7 @@ class ExamController extends APIController
         $result->exam_id = $questions['id'];
         $result->exam_name = $questions['name'];
         $result->cid = \Auth::user()->cid;
-        $result->date = \Carbon\Carbon::now();
+        $result->date = Carbon::now();
         $result->save();
 
         foreach ($questions['questions'] as $question) {
@@ -233,27 +233,21 @@ class ExamController extends APIController
         if ($notify->userWantsNotification(Auth::user(), "legacyExamResult", "email")) {
             $to[] = Auth::user()->email;
         }
-        if ($assign->instructor_id > 111111) {
-            $instructor = User::find($assign->instructor_id);
-            if ($instructor) {
-                if ($notify->userWantsNotification($instructor, "legacyExamResult", "email")) {
-                    $to[] = $instructor->email;
-                }
+        if ($instructor = User::find($assign->instructor_id)) {
+            if ($notify->userWantsNotification($instructor, "legacyExamResult", "email")) {
+                $to[] = $instructor->email;
             }
         }
         if ($exam->facility_id != "ZAE" && $ta && $notify->userWantsNotification($ta, "legacyExamResult", "email")) {
             $to[] = $ta->email;
         }
 
-        $log = new Action();
-        $log->to = Auth::user()->cid;
-        $log->log = "Exam (" . $exam->facility_id . ") " . $exam->name . " completed.  Score $correct/$possible ($score%).";
-        $log->log .= ($result->passed) ? " Passed." : " Not Passed.";
-        $log->save();
+        log_action(Auth::user()->cid,
+            "Exam ($exam->facility_id) $exam->name completed. Score $correct/$possible ($score%). " . ($result->passed ? " Passed." : " Not Passed."));
 
         $data = [
             'passed'          => $result->passed,
-            'exam_name'       => "(" . $exam->facility_id . ") " . $exam->name,
+            'exam_name'       => "($exam->facility_id) $exam->name",
             'result_id'       => $result->id,
             'instructor_name' => $instructor ? $instructor->fullname() : 'N/A',
             'correct'         => $correct,
@@ -270,9 +264,13 @@ class ExamController extends APIController
         $taId = $ta && (!$instructor || $ta->cid !== $instructor->cid) && $notify->userWantsNotification($ta,
             "legacyExamResult",
             "discord") ? $ta->discord_id : 0;
-        if ($studentId || $instructorId || $taId) {
+        if ($studentId || $instructorId) {
             $notify->sendNotification("legacyExamResult", "dm",
-                array_merge($data, compact('studentId', 'instructorId', 'taId')));
+                array_merge($data, compact('studentId', 'instructorId')));
+        }
+        if ($taId) {
+            $notify->sendNotification("legacyExamResult", "dm",
+                array_merge($data, compact(['instructorId' => $taId])));
         }
 
         if ($channel = $notify->getFacilityNotificationChannel($facility, "legacyExamResult")) {
@@ -300,7 +298,7 @@ class ExamController extends APIController
                 $reassign->cid = $assign->cid;
                 $reassign->instructor_id = $assign->instructor_id;
                 $reassign->exam_id = $assign->exam_id;
-                $reassign->reassign_date = \Carbon\Carbon::now()->addDays($exam->retake_period);
+                $reassign->reassign_date = Carbon::now()->addDays($exam->retake_period);
                 $reassign->save();
 
                 $data['reassign'] = $exam->retake_period;
@@ -921,7 +919,7 @@ class ExamController extends APIController
         $examid,
         $cid
     ) {
-        if (!\Auth::check()) {
+        if (!Auth::check()) {
             return response()->api(generate_error("Unauthorized"), 401);
         }
         if (!RoleHelper::isSeniorStaff() &&
@@ -948,14 +946,17 @@ class ExamController extends APIController
         }
 
         $days = $request->input("expire", 7);
+        $instructor = Auth::user();
+        $student = User::find($cid);
+        $facility = $exam->facility;
 
         if (!isTest()) {
             $ea = new ExamAssignment();
             $ea->cid = $cid;
-            $ea->instructor_id = \Auth::user()->cid;
+            $ea->instructor_id = $instructor->cid;
             $ea->exam_id = $examid;
             $ea->assigned_date = Carbon::now();
-            $ea->expire_date = Carbon::create()->addDays($days);
+            $ea->expire_date = $endDate = Carbon::now()->addDays($days);
             $ea->save();
 
             if ($exam->cbt_required > 0) {
@@ -963,27 +964,59 @@ class ExamController extends APIController
             }
 
             $data = [
-                'exam_name'       => "(" . $exam->facility_id . ") " . $exam->name,
-                'instructor_name' => \Auth::user()->fullname(),
-                'end_date'        => Carbon::create()->addDays($days)->toDayDateTimeString(),
-                'student_name'    => User::find($cid)->fullname(),
+                'exam_name'       => "(" . $exam->facility->id . ") " . $exam->name,
+                'instructor_name' => $instructor->fullname(),
+                'end_date'        => $endDate,
+                'student_name'    => $student->fullname(),
                 'cbt_required'    => $exam->cbt_required,
                 'cbt_facility'    => (isset($cbt)) ? $cbt->facility_id : null,
                 'cbt_block'       => (isset($cbt)) ? $exam->cbt_reuqired : null
             ];
-            $to[] = User::find($cid)->email;
-            $to[] = \Auth::user()->email;
-            if ($exam->facility_id != "ZAE") {
-                $to[] = $exam->facility_id . "-TA@vatusa.net";
+
+            $notify = new VATUSADiscord();
+            $to = array();
+
+            $ta = $facility->ta();
+            if (!$ta) {
+                $ta = $facility->datm();
+            }
+            if (!$ta) {
+                $ta = $facility->atm();
+            }
+            if (!$ta || $ta->cid == $instructor->cid) {
+                $ta = null;
             }
 
+            if ($notify->userWantsNotification($student, "legacyExamAssigned", "email")) {
+                $to[] = $student->email;
+            }
+            if ($notify->userWantsNotification($instructor, "legacyExamAssigned", "email")) {
+                $to[] = $instructor->email;
+            }
+            if ($exam->facility_id != "ZAE") {
+                if ($ta && $notify->userWantsNotification($ta, "legacyExamAssigned", "email")) {
+                    $to[] = $ta->email;
+                }
+            }
 
-            Mail::to($to)->queue(new ExamAssigned($data));
+            if (count($to)) {
+                Mail::to($to)->queue(new ExamAssigned($data));
+            }
 
-            EmailHelper::sendEmailFacilityTemplate($to, "Exam Assigned", $exam->facility_id, "examassigned", $data);
+            $student_id = $notify->userWantsNotification($student, "legacyExamAssigned",
+                "discord") ? $student->discord_id : 0;
+            $staff_id = $ta && $notify->userWantsNotification($ta, "legacyExamAssigned",
+                "discord") ? $ta->discord_id : 0;
+            if ($student_id || $staff_id) {
+                $notify->sendNotification('legacyExamAssigned', "dm",
+                    array_merge($data, compact('staff_id', 'student_id')));
+            }
+            if ($channel = $notify->getFacilityNotificationChannel($facility, "legacyExamAssigned")) {
+                $notify->sendNotification("legacyExamAssigned", "channel", $data, $facility->discord_guild, $channel);
+            }
 
-            log_action($cid, "Exam (" . $exam->facility_id . ") " . $exam->name .
-                " assigned by " . \Auth::user()->fullname() . ", expires " . $data['end_date']);
+            log_action($cid,
+                "Exam {$data['exam_name']} assigned by {$data['instructor_name']}, expires {$endDate->format('m/d/Y H:i')}.");
         }
 
         return response()->api(['status' => 'OK']);
