@@ -88,9 +88,7 @@ class FacilityController extends APIController
      *         @SWG\Schema(
      *             type="object",
      *             @SWG\Property(property="facility", ref="#/definitions/Facility"),
-     *             @SWG\Property(
-     *                 property="roles",
-     *                 type="array",
+     *             @SWG\Property(property="roles", type="array",
      *                 @SWG\Items(
      *                     ref="#/definitions/Role",
      *                 ),
@@ -177,7 +175,7 @@ class FacilityController extends APIController
     for facility"),
      *     @SWG\Parameter(name="ulsSecret", in="formData", type="string", description="Request new ULS Secret, role
     restricted"),
-    @SWG\Parameter(name="ulsReturn", in="formData", type="string", description="Set new ULS return point, role
+     *     @SWG\Parameter(name="ulsReturn", in="formData", type="string", description="Set new ULS return point, role
     restricted"),
      *     @SWG\Parameter(name="ulsDevReturn", in="formData", type="string", description="Set new ULS developmental
     return point"),
@@ -466,7 +464,7 @@ class FacilityController extends APIController
      *     tags={"facility","email"},
      *     @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
      *     @SWG\Parameter(name="templateName", in="path", description="Name of template (welcome, examassigned,
-     *                                         examfailed, exampassed)", required=true, type="string"),
+                                               examfailed, exampassed)", required=true, type="string"),
      * @SWG\Parameter(name="body", in="formData", description="Text of template", required=true, type="string"),
      * @SWG\Response(
      *         response="401",
@@ -574,35 +572,35 @@ class FacilityController extends APIController
      *             @SWG\Property(property="fname", type="string", description="First name"),
      *             @SWG\Property(property="lname", type="string", description="Last name"),
      *             @SWG\Property(property="email", type="string", description="Email address of user, will be null if
-     *                                             API Key or necessary roles are not available (ATM, DATM, TA, WM,
-     *                                             INS)"),
+                                                   API Key or necessary roles are not available (ATM, DATM, TA, WM,
+                                                   INS)"),
      *             @SWG\Property(property="facility", type="string", description="Facility ID"),
      *             @SWG\Property(property="rating", type="integer", description="Rating based off array where 1=OBS,
-     *                                              S1, S2, S3, C1, C2, C3, I1, I2, I3, SUP, ADM"),
+                                                    S1, S2, S3, C1, C2, C3, I1, I2, I3, SUP, ADM"),
      *             @SWG\Property(property="rating_short", type="string", description="String representation of
-     *                                                    rating"),
+                                                          rating"),
      *             @SWG\Property(property="created_at", type="string", description="Date added to database"),
      *             @SWG\Property(property="updated_at", type="string"),
      *             @SWG\Property(property="flag_needbasic", type="integer", description="1 needs basic exam"),
      *             @SWG\Property(property="flag_xferOverride", type="integer", description="Has approved transfer
-     *                                                         override"),
+                                                               override"),
      *             @SWG\Property(property="flag_broadcastOptedIn", type="integer", description="Has opted in to
-     *                                                             receiving broadcast emails"),
+                                                                   receiving broadcast emails"),
      *             @SWG\Property(property="flag_preventStaffAssign", type="integer", description="Ineligible for staff
-     *                                                               role assignment"),
+                                                                     role assignment"),
      *             @SWG\Property(property="facility_join", type="string", description="Date joined facility (YYYY-mm-dd
-     *                                                     hh:mm:ss)"),
+                                                           hh:mm:ss)"),
      *             @SWG\Property(property="promotion_eligible", type="boolean", description="Is member eligible for
-     *                                                          promotion?"),
+                                                                promotion?"),
      *             @SWG\Property(property="transfer_eligible", type="boolean", description="Is member is eligible for
-     *                                                         transfer?"),
+                                                               transfer?"),
      *             @SWG\Property(property="last_promotion", type="string", description="Date last promoted"),
      *             @SWG\Property(property="flag_homecontroller", type="boolean", description="1-Belongs to VATUSA"),
      *             @SWG\Property(property="lastactivity", type="string", description="Date last seen on website"),
      *             @SWG\Property(property="isMentor", type="boolean", description="Has Mentor role"),
      *             @SWG\Property(property="isSupIns", type="boolean", description="Is a SUP and has INS role"),
      *             @SWG\Property(property="membership", type="string", description="'Home' or 'visit' depending on
-     *                                                  facility membership."),
+                                                        facility membership."),
      *             @SWG\Property(property="roles", type="array",
      *                 @SWG\Items(type="object",
      *                     @SWG\Property(property="facility", type="string"),
