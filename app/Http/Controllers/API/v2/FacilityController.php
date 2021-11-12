@@ -18,6 +18,7 @@ use App\OAuthClient;
 use Auth;
 use Illuminate\Http\Request;
 use App\Facility;
+use Illuminate\Support\Facades\Cache;
 use Jose\Component\KeyManagement\JWKFactory;
 use Hidehalo\Nanoid\Client as NanoidClient;
 use Hidehalo\Nanoid\GeneratorInterface;
@@ -550,7 +551,8 @@ class FacilityController extends APIController
     Broadcast opt-in status requires API key or staff member authentication. Prevent Staff Assignment field requires
     authentication as senior staff.", produces={"application/json"}, tags={"facility"},
      * @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
-     * @SWG\Parameter(name="membership", in="query", description="Membership type (home, visit, both)", default="home", type="string"),
+     * @SWG\Parameter(name="membership", in="query", description="Membership type (home, visit, both)", default="home",
+     *                                   type="string"),
      * @SWG\Response(
      *         response="400",
      *         description="Malformed request, invalid role parameter",
@@ -571,25 +573,36 @@ class FacilityController extends APIController
      *             @SWG\Property(property="cid", type="integer"),
      *             @SWG\Property(property="fname", type="string", description="First name"),
      *             @SWG\Property(property="lname", type="string", description="Last name"),
-     *             @SWG\Property(property="email", type="string", description="Email address of user, will be null if API Key or necessary roles are not available (ATM, DATM, TA, WM, INS)"),
+     *             @SWG\Property(property="email", type="string", description="Email address of user, will be null if
+     *                                             API Key or necessary roles are not available (ATM, DATM, TA, WM,
+     *                                             INS)"),
      *             @SWG\Property(property="facility", type="string", description="Facility ID"),
-     *             @SWG\Property(property="rating", type="integer", description="Rating based off array where 1=OBS, S1, S2, S3, C1, C2, C3, I1, I2, I3, SUP, ADM"),
-     *             @SWG\Property(property="rating_short", type="string", description="String representation of rating"),
+     *             @SWG\Property(property="rating", type="integer", description="Rating based off array where 1=OBS,
+     *                                              S1, S2, S3, C1, C2, C3, I1, I2, I3, SUP, ADM"),
+     *             @SWG\Property(property="rating_short", type="string", description="String representation of
+     *                                                    rating"),
      *             @SWG\Property(property="created_at", type="string", description="Date added to database"),
      *             @SWG\Property(property="updated_at", type="string"),
      *             @SWG\Property(property="flag_needbasic", type="integer", description="1 needs basic exam"),
-     *             @SWG\Property(property="flag_xferOverride", type="integer", description="Has approved transfer override"),
-     *             @SWG\Property(property="flag_broadcastOptedIn", type="integer", description="Has opted in to receiving broadcast emails"),
-     *             @SWG\Property(property="flag_preventStaffAssign", type="integer", description="Ineligible for staff role assignment"),
-     *             @SWG\Property(property="facility_join", type="string", description="Date joined facility (YYYY-mm-dd hh:mm:ss)"),
-     *             @SWG\Property(property="promotion_eligible", type="boolean", description="Is member eligible for promotion?"),
-     *             @SWG\Property(property="transfer_eligible", type="boolean", description="Is member is eligible for transfer?"),
+     *             @SWG\Property(property="flag_xferOverride", type="integer", description="Has approved transfer
+     *                                                         override"),
+     *             @SWG\Property(property="flag_broadcastOptedIn", type="integer", description="Has opted in to
+     *                                                             receiving broadcast emails"),
+     *             @SWG\Property(property="flag_preventStaffAssign", type="integer", description="Ineligible for staff
+     *                                                               role assignment"),
+     *             @SWG\Property(property="facility_join", type="string", description="Date joined facility (YYYY-mm-dd
+     *                                                     hh:mm:ss)"),
+     *             @SWG\Property(property="promotion_eligible", type="boolean", description="Is member eligible for
+     *                                                          promotion?"),
+     *             @SWG\Property(property="transfer_eligible", type="boolean", description="Is member is eligible for
+     *                                                         transfer?"),
      *             @SWG\Property(property="last_promotion", type="string", description="Date last promoted"),
      *             @SWG\Property(property="flag_homecontroller", type="boolean", description="1-Belongs to VATUSA"),
      *             @SWG\Property(property="lastactivity", type="string", description="Date last seen on website"),
      *             @SWG\Property(property="isMentor", type="boolean", description="Has Mentor role"),
      *             @SWG\Property(property="isSupIns", type="boolean", description="Is a SUP and has INS role"),
-     *             @SWG\Property(property="membership", type="string", description="'Home' or 'visit' depending on facility membership."),
+     *             @SWG\Property(property="membership", type="string", description="'Home' or 'visit' depending on
+     *                                                  facility membership."),
      *             @SWG\Property(property="roles", type="array",
      *                 @SWG\Items(type="object",
      *                     @SWG\Property(property="facility", type="string"),
@@ -616,6 +629,10 @@ class FacilityController extends APIController
         $isSeniorStaff = Auth::check() && RoleHelper::isSeniorStaff(Auth::user()->cid, Auth::user()->facility);
 
         $rosterArr = [];
+
+        if ($cache = Cache::get("roster-$id-$membership")) {
+            return response()->api($cache);
+        }
 
         if ($membership == 'both') {
             $home = $facility->members;
@@ -676,6 +693,8 @@ class FacilityController extends APIController
 
             $i++;
         }
+
+        Cache::put("roster-$id-$membership", $rosterArr, 60 * 10);
 
         return response()->api($rosterArr);
     }
@@ -782,7 +801,7 @@ class FacilityController extends APIController
             );
         }
 
-        if(!isTest()) {
+        if (!isTest()) {
             $visitor = new Visit();
             $visitor->cid = $user->cid;
             $visitor->facility = $facility->id;
@@ -809,7 +828,8 @@ class FacilityController extends APIController
      * @SWG\Delete(
      *     path="/facility/{id}/roster/manageVisitor/{cid}",
      *     summary="Delete member from visiting roster. [Key]",
-     *     description="Delete member from visiting roster.  API Key, JWT, or Session Cookie required (required role: ATM,
+     *     description="Delete member from visiting roster.  API Key, JWT, or Session Cookie required (required role:
+     *     ATM,
     DATM, VATUSA STAFF)",
      * produces={"application/json"},
      * tags={"facility"},
@@ -899,7 +919,7 @@ class FacilityController extends APIController
             );
         }
 
-        if(!isTest()) {
+        if (!isTest()) {
             $visit->delete();
 
             if (Auth::check()) {
@@ -925,7 +945,8 @@ class FacilityController extends APIController
      * @SWG\Delete(
      *     path="/facility/{id}/roster/{cid}",
      *     summary="Delete member from facility roster. [Key]",
-     *     description="Delete member from facility roster.  API Key, JWT, or Session Cookie required (required role: ATM,
+     *     description="Delete member from facility roster.  API Key, JWT, or Session Cookie required (required role:
+     *     ATM,
     DATM, VATUSA STAFF)",
      * produces={"application/json"},
      * tags={"facility"},
@@ -933,7 +954,8 @@ class FacilityController extends APIController
      * @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
      * @SWG\Parameter(name="cid", in="query", description="CID of controller", required=true, type="integer"),
      * @SWG\Parameter(name="reason", in="formData", description="Reason for deletion", required=true, type="string"),
-     * @SWG\Parameter(name="by", in="formData", description="Staff member responsible for deletion - only required with API Key", required=false, type="integer"),
+     * @SWG\Parameter(name="by", in="formData", description="Staff member responsible for deletion - only required with
+     *                           API Key", required=false, type="integer"),
      * @SWG\Response(
      *         response="400",
      *         description="Malformed request, missing required parameter",
@@ -978,17 +1000,19 @@ class FacilityController extends APIController
                 generate_error("Facility not found or not active"), 404);
         }
 
-        if (!AuthHelper::validApiKeyv2($id) && !RoleHelper::isVATUSAStaff() && (Auth::check() && !RoleHelper::isSeniorStaff(Auth::user()->cid, $id, false))) {
+        if (!AuthHelper::validApiKeyv2($id) && !RoleHelper::isVATUSAStaff() && (Auth::check() && !RoleHelper::isSeniorStaff(Auth::user()->cid,
+                    $id, false))) {
             return response()->api(generate_error("Forbidden"), 403);
         }
 
-        if(!Auth::check() && !$request->has('by')) {
+        if (!Auth::check() && !$request->has('by')) {
             return response()->api(
                 generate_error("Missing staff CID (by)"), 400);
-        }
-        else if($request->has('by') && (!User::find($request->by) || User::find($request->by)->facility != $facility->id)) {
-            return response()->api(
-                generate_error("Invalid staff CID"), 400);
+        } else {
+            if ($request->has('by') && (!User::find($request->by) || User::find($request->by)->facility != $facility->id)) {
+                return response()->api(
+                    generate_error("Invalid staff CID"), 400);
+            }
         }
         $by = Auth::check() ? Auth::user()->cid : $request->by;
 
@@ -1625,7 +1649,8 @@ class FacilityController extends APIController
         return response()->ok();
     }
 
-    private function hasValidOAuthPerms($facilityId) {
+    private function hasValidOAuthPerms($facilityId)
+    {
         if (
             !RoleHelper::isSeniorStaff(Auth::user()->cid, $facilityId, false)
             && !RoleHelper::has(Auth::user()->cid, $facilityId, "WM")
@@ -1637,7 +1662,8 @@ class FacilityController extends APIController
         return true;
     }
 
-    public function isRedirectValid($redirect) {
+    public function isRedirectValid($redirect)
+    {
         if (!is_array($redirect)) {
             return false;
         } else {
@@ -1717,7 +1743,7 @@ class FacilityController extends APIController
 
         $clients = OAuthClient::where('name', $id)->get()->toArray();
 
-        foreach($clients as $index => $client) {
+        foreach ($clients as $index => $client) {
             $clients[$index]['redirect_uris'] = json_decode($client['redirect_uris']);
         }
 
@@ -1740,7 +1766,8 @@ class FacilityController extends APIController
      *     tags={"facility"},
      *     security={"session"},
      * @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
-     * @SWG\Parameter(name="redirect", in="formData", description="Redirect URIs as array of strings", required=true, type="array", @SWG\Items(type="string")),
+     * @SWG\Parameter(name="redirect", in="formData", description="Redirect URIs as array of strings", required=true,
+     *                                 type="array", @SWG\Items(type="string")),
      *
      * @SWG\Response(
      *   response="400",
@@ -1809,11 +1836,13 @@ class FacilityController extends APIController
         $client->redirect_uris = json_encode($redirect);
         $client->save();
 
-        return response()->created(["client" => [
-            "client_id" => $client->client_id,
-            "client_secret" => $client->client_secret,
-            "redirect_uris" => $redirect,
-        ]]);
+        return response()->created([
+            "client" => [
+                "client_id"     => $client->client_id,
+                "client_secret" => $client->client_secret,
+                "redirect_uris" => $redirect,
+            ]
+        ]);
     }
 
     /**
@@ -1833,7 +1862,8 @@ class FacilityController extends APIController
      *     security={"session"},
      * @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
      * @SWG\Parameter(name="client", in="path", description="OAuth Client ID", required=true, type="string"),
-     * @SWG\Parameter(name="redirect", in="formData", description="Redirect URIs as array of strings", required=true, type="array", @SWG\Items(type="string")),
+     * @SWG\Parameter(name="redirect", in="formData", description="Redirect URIs as array of strings", required=true,
+     *                                 type="array", @SWG\Items(type="string")),
      *
      * @SWG\Response(
      *   response="400",
@@ -2058,8 +2088,10 @@ class FacilityController extends APIController
         $client->client_secret = $nanoid->generateId(32, NanoidClient::MODE_DYNAMIC);
         $client->save();
 
-        return response()->ok(["secret" => [
-            "client_secret" => $client->client_secret
-        ]], 200);
+        return response()->ok([
+            "secret" => [
+                "client_secret" => $client->client_secret
+            ]
+        ], 200);
     }
 }
