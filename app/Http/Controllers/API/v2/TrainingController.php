@@ -681,6 +681,7 @@ class TrainingController extends Controller
                         $otsEval->save();
                         $record->save();
                     }
+                    $user->promotionEligible();
                 }
             }
         } catch (Exception $e) {
@@ -827,6 +828,8 @@ class TrainingController extends Controller
                 return response()->api(generate_error("Unable to save submission. $e"), 400);
             }
         }
+
+        $user->promotionEligible();
 
         return response()->ok(['id' => $eval->id]);
     }

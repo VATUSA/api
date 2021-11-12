@@ -10,6 +10,7 @@ use App\Helpers\RoleHelper;
 use App\Helpers\SMFHelper;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Support\Facades\Cache;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Carbon\Carbon;
 use League\OAuth2\Client\Token\AccessToken;
@@ -84,7 +85,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     //public $timestamps = ["created_at", "updated_at", "prefname_date", "facility_join"];
 
     protected $dates = ["lastactivity", "facility_join", "prefname_date"];
-   
+
     /**
      * @var array
      */
@@ -166,24 +167,29 @@ class User extends Model implements AuthenticatableContract, JWTSubject
      */
     public function promotionEligible()
     {
-        if ($this->flag_homecontroller == 0) {
+        if (!$this->flag_homecontroller) {
+            Cache::set("promotionEligible-$this->cid", false);
+
             return false;
         }
 
+        $result = false;
         if ($this->rating == RatingHelper::shortToInt("OBS")) {
-            return $this->isS1Eligible();
+            $result = $this->isS1Eligible();
         }
         if ($this->rating == RatingHelper::shortToInt("S1")) {
-            return $this->isS2Eligible();
+            $result = $this->isS2Eligible();
         }
         if ($this->rating == RatingHelper::shortToInt("S2")) {
-            return $this->isS3Eligible();
+            $result = $this->isS3Eligible();
         }
         if ($this->rating == RatingHelper::shortToInt("S3")) {
-            return $this->isC1Eligible();
+            $result = $this->isC1Eligible();
         }
 
-        return false;
+        Cache::set("promotionEligible-$this->cid", $result);
+
+        return $result;
     }
 
     /**
@@ -666,11 +672,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
 
     public function getPromotionEligibleAttribute()
     {
-        if (Helper::testCORS()) {
-            return $this->promotionEligible();
-        } else {
-            return null;
-        }
+        return Cache::get("promotionEligible-$this->cid");
     }
 
     public function getTransferEligibleAttribute()
@@ -682,11 +684,13 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         }
     }
 
-    public function getNameAttribute() {
+    public function getNameAttribute()
+    {
         return $this->fullname();
     }
 
-    public function getFullNameAttribute() {
+    public function getFullNameAttribute()
+    {
         return $this->fullname();
     }
 
