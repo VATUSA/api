@@ -416,6 +416,9 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         $t->actiontext = $msg;
         $t->save();
 
+        Cache::forget("roster-$old_facility-home");
+        Cache::forget("roster-$old_facility-both");
+
         if ($this->rating >= RatingHelper::shortToInt("I1")) {
             SMFHelper::createPost(7262, 82,
                 "User Removal: " . $this->fullname() . " (" . RatingHelper::intToShort($this->rating) . ") from " . $old_facility,
@@ -490,6 +493,8 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             ]);
 
             $this->visits()->where('facility', $fac)->delete();
+            Cache::forget("roster-$fac-home");
+            Cache::forget("roster-$fac-both");
         }
     }
 

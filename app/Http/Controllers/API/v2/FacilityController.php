@@ -811,6 +811,9 @@ class FacilityController extends APIController
             } else {
                 log_action($user->cid, "User added to {$facility->id} visiting roster");
             }
+
+            Cache::forget("roster-$facility->id-visit");
+            Cache::forget("roster-$facility->id-both");
         }
 
         return response()->ok();
@@ -928,6 +931,10 @@ class FacilityController extends APIController
                 log_action($user->cid,
                     "User removed from {$facility->id} visiting roster: " . $request->input("reason"));
             }
+
+
+            Cache::forget("roster-$facility->id-visit");
+            Cache::forget("roster-$facility->id-both");
         }
 
         return response()->ok();
