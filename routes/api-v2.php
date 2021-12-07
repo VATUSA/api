@@ -200,9 +200,17 @@ Route::group(['prefix' => '/stats'], function () {
  */
 
 Route::group(['prefix' => '/support'], function () {
-    Route::get('/support/kb', 'SupportController@getKBs');
-    Route::get('/tickets/depts', 'SupportController@getTicketDepts');
-    Route::get('/tickets/depts/{dept}/staff', 'SupportController@getTicketDeptStaff');
+    Route::get('kb', 'SupportController@getKBs');
+    Route::group(['prefix' => '/tickets'], function () {
+        Route::group(['middleware' => 'botkey'], function () {
+            Route::put('{ticket}/close', 'SupportController@closeTicket');
+        });
+
+        Route::group(['prefix' => '/depts'], function () {
+            Route::get('/', 'SupportController@getTicketDepts');
+            Route::get('{dept}/staff', 'SupportController@getTicketDeptStaff');
+        });
+    });
 
     Route::group(['middleware' => 'auth:web,jwt'], function () {
         Route::post('/kb', 'SupportController@postKB');
