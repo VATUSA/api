@@ -6,6 +6,7 @@ use App\Facility;
 use Cache;
 use App\Role;
 use App\User;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Class RoleHelper
@@ -137,12 +138,20 @@ class RoleHelper
      */
     public static function isSeniorStaff($cid = null, $facility = null, $includeTA = false)
     {
+        if (!$cid && !Auth::check()) {
+            return false;
+        }
         if (!$cid) {
-            $cid = \Auth::user()->cid;
+            $cid = Auth::user()->cid;
+        }
+        $user = User::find($cid);
+        if (!$user) {
+            return false;
         }
         if (!$facility) {
-            $facility = \Auth::user()->facility;
+            $facility = $user->facility;
         }
+
         if (($includeTA && static::has($cid, $facility, ['ATM', 'DATM', 'TA'])) ||
             static::has($cid, $facility, ['ATM', 'DATM'])) {
 
@@ -157,11 +166,18 @@ class RoleHelper
 
     public static function isFacilityStaff($cid = null, $facility = null)
     {
+        if (!$cid && !Auth::check()) {
+            return false;
+        }
         if (!$cid) {
-            $cid = \Auth::user()->cid;
+            $cid = Auth::user()->cid;
+        }
+        $user = User::find($cid);
+        if (!$user) {
+            return false;
         }
         if (!$facility) {
-            $facility = \Auth::user()->facility;
+            $facility = $user->facility;
         }
         if (static::has($cid, $facility, ['ATM', 'DATM', 'TA', 'WM', 'FE', 'EC'])) {
             return true;
@@ -175,32 +191,37 @@ class RoleHelper
 
     public static function isInstructor($cid = null, $facility = null)
     {
-        if (!\Auth::check()) {
+        if (!$cid && !Auth::check()) {
             return false;
         }
-        if (($cid == null || $cid == 0)) {
-            $cid = \Auth::user()->cid;
+        if (!$cid) {
+            $cid = Auth::user()->cid;
         }
-        if ($facility == null) {
-            $facility = \Auth::user()->facility;
+        if (!$facility && Auth::check()) {
+            $facility = Auth::user()->facility;
         }
 
-        if($facility instanceof Facility) {
+        if ($facility instanceof Facility) {
             $facility = $facility->id;
         }
 
+        $user = User::find($cid);
+        if (!$facility) {
+            $facility = $user->facility;
+        }
+
         // Check home controller, if no always assume no
-        if (!\Auth::user()->flag_homecontroller) {
+        if (!$user->flag_homecontroller) {
             return false;
         }
 
         // First check home facility and rating (excluding SUP)
-        if (\Auth::user()->facility == $facility && \Auth::user()->rating >= Helper::ratingIntFromShort("I1") && \Auth::user()->rating < Helper::ratingIntFromShort("SUP")) {
+        if ($user->facility == $facility && $user->rating >= Helper::ratingIntFromShort("I1") && $user->rating < Helper::ratingIntFromShort("SUP")) {
             return true;
         }
 
         //ADMs have INS Access
-        if (\Auth::user()->rating == Helper::ratingIntFromShort("ADM")) {
+        if ($user->rating == Helper::ratingIntFromShort("ADM")) {
             return true;
         }
 
@@ -219,20 +240,24 @@ class RoleHelper
 
     public static function isMentor($cid = null, $facility = null)
     {
-        if (!\Auth::check()) {
+        if (!$cid && !Auth::check()) {
             return false;
         }
-        if ($cid == null || $cid == 0) {
-            $cid = \Auth::user()->cid;
+        if (!$cid) {
+            $cid = Auth::user()->cid;
         }
 
-        if (!$facility || !Facility::find($facility)) {
-            $facility = \Auth::user()->facilityObj;
-        } elseif (is_string($facility)) {
+        if (!$facility && Auth::check()) {
+            $facility = Auth::user()->facilityObj;
+        }
+        if (!($facility instanceof Facility)) {
             $facility = Facility::find($facility);
         }
 
         $user = User::find($cid);
+        if (!$facility) {
+            $facility = $user->facilityObj;
+        }
         if (!$user->flag_homecontroller) {
             return false;
         }
