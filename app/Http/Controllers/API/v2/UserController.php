@@ -1158,7 +1158,8 @@ class UserController extends APIController
      *                 @SWG\Property(property="lname", type="string"),
      *             )
      *         ),
-     *         examples={"application/json":{"0":{"cid":1391803,"fname":"Michael","lname":"Romashov"},"1":{"cid":1391802,"fname":"Sankara","lname":"Narayanan "}}}
+     *         examples={"application/json":{"0":{"cid":1391803,"fname":"Michael","lname":"Romashov"},"1":{"cid":1391802,"fname":"Sankara","lname":"Narayanan
+     *         "}}}
      *     )
      * )
      */
@@ -1239,5 +1240,26 @@ class UserController extends APIController
         }
 
         return response()->api($return);
+    }
+
+    /**
+     *
+     * @SWG\Get(
+     *     path="/user/getAllDiscord",
+     *     summary="Get all users with a Discord account linked. [Bot]",
+     *     description="Get all users with a Discord account linked.",
+     *     produces={"application/json"}, tags={"user"}, security={"jwt"}
+     * @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(ref="#/definitions/User")
+     *     )
+     * )
+     */
+    public function getAllDiscord(Request $request)
+    {
+        $users = User::where('discord_id', '!=', null)->get();
+
+        return response()->json($users->pluck('discord_id'));
     }
 }

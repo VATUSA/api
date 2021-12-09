@@ -26,41 +26,28 @@
 namespace App\Helpers;
 
 
-class RatingHelper {
-    public static $ratings = [
-        "", "OBS", "S1", "S2", "S3", "C1", "C2", "C3", "I1", "I2", "I3", "SUP", "ADM"
-    ];
-    public static $rating_titles = [
-        "",
-        "Observer",
-        "Student 1",
-        "Student 2",
-        "Student 3",
-        "Controller",
-        "not used",
-        "Senior Controller",
-        "Instructor",
-        "not used",
-        "Senior Instructor",
-        "Supervisor",
-        "Administrator"
-    ];
+use App\Rating;
 
-    public static function intToShort($rating) {
-        if (isset(static::$ratings[$rating])) { return static::$ratings[$rating]; }
-        else { return false; }
+class RatingHelper
+{
+    public static function intToShort(int $rating): ?string
+    {
+        $rating = Rating::find($rating);
+
+        return $rating ? $rating->short : null;
     }
 
-    public static function intToLong($rating) {
-        if (isset(static::$rating_titles[$rating])) { return static::$rating_titles[$rating]; }
-        else { return false; }
+    public static function intToLong(int $rating): ?string
+    {
+        $rating = Rating::find($rating);
+
+        return $rating ? $rating->long : null;
     }
 
-    public static function shortToInt($short) {
-        foreach (static::$ratings as $key => $value) {
-            if ($short == $value) { return $key; }
-        }
+    public static function shortToInt($short): ?int
+    {
+        $rating = Rating::where('short', $short)->first();
 
-        return false;
+        return $rating ? $rating->id : null;
     }
 }

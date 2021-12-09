@@ -84,7 +84,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     //public $timestamps = ["created_at", "updated_at", "prefname_date", "facility_join"];
 
     protected $dates = ["lastactivity", "facility_join", "prefname_date"];
-   
+
     /**
      * @var array
      */
@@ -109,7 +109,8 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         'flag_xferOverride'       => 'boolean',
         'flag_homecontroller'     => 'boolean',
         'flag_broadcastOptedIn'   => 'boolean',
-        'flag_preventStaffAssign' => 'boolean'
+        'flag_preventStaffAssign' => 'boolean',
+        'discord_id'              => 'string'
     ];
 
 
@@ -682,11 +683,13 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         }
     }
 
-    public function getNameAttribute() {
+    public function getNameAttribute()
+    {
         return $this->fullname();
     }
 
-    public function getFullNameAttribute() {
+    public function getFullNameAttribute()
+    {
         return $this->fullname();
     }
 
