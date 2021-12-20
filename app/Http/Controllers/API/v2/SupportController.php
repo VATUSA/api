@@ -732,13 +732,41 @@ class SupportController extends APIController
         }
 
         $aUser = User::find($request->cid);
-        if (!$aUser) {
+        if (!$aUser && $request->cid) {
             return response()->api(generate_error("Invalid user."), 404);
         }
 
         if(RoleHelper::isFacilityStaff($user->cid,
                 $ticket->facility) || RoleHelper::isInstructor($user->cid, $ticket->facility)) {
             //Assign ticket
+            if($aUser) {
+                $ticket->assigned_to = $aUser->cid;
+                $ticket->save();
+
+                $history = new TicketHistory();
+                $history->ticket_id = $ticket->id;
+                $history->entry = $user->fullname() . " (" . $user->cid . ") assigned the ticket to " . $aUser->fullname() . " (" . $aUser->cid . ") [Discord].";
+                $history->save();
+
+                $discord = new VATUSADiscord();
+                if ($discord->userWantsNotification($aUser, "ticketAssigned", "email")) {
+                    Mail::to($aUser)->queue(new TicketAssigned($ticket));
+                }
+                if ($discord->userWantsNotification($aUser, "ticketAssigned", "discord")) {
+                    $discord->sendNotification("ticketAssigned", "dm",
+                        array_merge($ticket->toArray(), ['userId' => $aUser->discord_id]));
+                }
+            }
+            else {
+                //Unassign ticket
+                $ticket->assigned_to = 0;
+                $ticket->save();
+
+                $history = new TicketHistory();
+                $history->ticket_id = $ticket->id;
+                $history->entry = $user->fullname() . " (" . $user->cid . ") set ticket to unassigned [Discord].";
+                $history->save();
+            }
 
         }
 
