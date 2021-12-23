@@ -204,6 +204,7 @@ Route::group(['prefix' => '/support'], function () {
     Route::group(['prefix' => '/tickets'], function () {
         Route::group(['middleware' => 'botkey'], function () {
             Route::put('{ticket}/close', 'SupportController@closeTicket');
+            Route::post('{ticket}/assign', 'SupportController@assignTicket');
         });
 
         Route::group(['prefix' => '/depts'], function () {

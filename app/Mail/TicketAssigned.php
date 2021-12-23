@@ -8,7 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class TicketClosed extends Mailable
+class TicketAssigned extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -32,7 +32,7 @@ class TicketClosed extends Mailable
     public function build()
     {
         return $this->from('support@vatusa.net', 'VATUSA Help Desk')
-            ->subject("(Ticket #{$this->ticket->id}) Ticket Closed")
-            ->view('emails.help.closed');
+            ->subject("(Ticket #{$this->ticket->id}) Ticket Assigned to You")
+            ->view('emails.help.assigned');
     }
 }

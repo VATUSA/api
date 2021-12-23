@@ -7,11 +7,12 @@ use App\Classes\VATUSADiscord;
 use App\Facility;
 use App\Helpers\RoleHelper;
 use App\KnowledgebaseQuestions;
-use App\Mail\TicketClosed;
+use App\Mail\TicketAssigned;
 use App\Role;
 use App\Ticket;
 use App\TicketHistory;
 use App\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\KnowledgebaseCategories;
 use Illuminate\Support\Facades\Mail;
@@ -669,7 +670,7 @@ class SupportController extends APIController
 
             $discord = new VATUSADiscord();
             if ($discord->userWantsNotification($ticket->submitter, "ticketClosed", "email")) {
-                Mail::to($ticket->submitter->email)->queue(new TicketClosed($ticket));
+                Mail::to($ticket->submitter->email)->queue(new TicketAssigned($ticket));
             }
             if ($discord->userWantsNotification($ticket->submitter, "ticketClosed", "discord")) {
                 $discord->sendNotification("ticketClosed", "dm",
@@ -736,10 +737,10 @@ class SupportController extends APIController
             return response()->api(generate_error("Invalid user."), 404);
         }
 
-        if(RoleHelper::isFacilityStaff($user->cid,
+        if (RoleHelper::isVATUSAStaff($user->cid, false, true) || RoleHelper::isFacilityStaff($user->cid,
                 $ticket->facility) || RoleHelper::isInstructor($user->cid, $ticket->facility)) {
             //Assign ticket
-            if($aUser) {
+            if ($aUser) {
                 $ticket->assigned_to = $aUser->cid;
                 $ticket->save();
 
@@ -756,8 +757,7 @@ class SupportController extends APIController
                     $discord->sendNotification("ticketAssigned", "dm",
                         array_merge($ticket->toArray(), ['userId' => $aUser->discord_id]));
                 }
-            }
-            else {
+            } else {
                 //Unassign ticket
                 $ticket->assigned_to = 0;
                 $ticket->save();
@@ -768,6 +768,7 @@ class SupportController extends APIController
                 $history->save();
             }
 
+            return response()->ok();
         }
 
         return response()->api(generate_error("You do not have permission to assign this ticket."), 403);
