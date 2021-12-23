@@ -2,25 +2,24 @@
 
 namespace App\Mail;
 
-use App\Transfer;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class TransferRequested extends Mailable
+class ExamAssigned extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $transfer;
+    public $data;
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct(Transfer $transfer)
+    public function __construct(array $data)
     {
-        $this->transfer = $transfer;
+        $this->data = $data;
     }
 
     /**
@@ -30,6 +29,6 @@ class TransferRequested extends Mailable
      */
     public function build()
     {
-        return $this->view("emails.transfers.internalpending");
+        return $this->subject('[VATUSA] Exam Assigned')->view('emails.exam.assign');
     }
 }

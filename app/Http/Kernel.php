@@ -2,6 +2,14 @@
 
 namespace App\Http;
 
+use App\Http\Middleware\APIKey;
+use App\Http\Middleware\APIKeyv2;
+use App\Http\Middleware\BotJWT;
+use App\Http\Middleware\PrivateCORS;
+use App\Http\Middleware\PublicCORS;
+use App\Http\Middleware\RedirectIfAuthenticated;
+use App\Http\Middleware\SemiPrivateCORS;
+use App\Http\Middleware\Subdomain;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
@@ -29,7 +37,7 @@ class Kernel extends HttpKernel
      */
     protected $middlewareGroups = [
         'web' => [
-           // \App\Http\Middleware\EncryptCookies::class,
+            // \App\Http\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             //\Illuminate\Session\Middleware\AuthenticateSession::class,
             \Illuminate\Session\Middleware\StartSession::class,
@@ -42,24 +50,24 @@ class Kernel extends HttpKernel
         ],
 
         'APIKey' => [
-            \App\Http\Middleware\APIKey::class
+            APIKey::class
         ],
 
         'semiprivate' => [
-            \App\Http\Middleware\SemiPrivateCORS::class,
+            SemiPrivateCORS::class,
         ],
 
         'public' => [
-            \App\Http\Middleware\PublicCORS::class,
+            PublicCORS::class,
         ],
 
         'private' => [
-            \App\Http\Middleware\PrivateCORS::class,
+            PrivateCORS::class,
         ],
 
         'api' => [
-            \App\Http\Middleware\Subdomain::class,
-           // 'throttle:60,1',
+            Subdomain::class,
+            // 'throttle:60,1',
             'bindings',
         ],
     ];
@@ -72,12 +80,13 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $routeMiddleware = [
-        'auth' => \Illuminate\Auth\Middleware\Authenticate::class,
+        'auth'       => \Illuminate\Auth\Middleware\Authenticate::class,
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
-        'bindings' => \Illuminate\Routing\Middleware\SubstituteBindings::class,
-        'can' => \Illuminate\Auth\Middleware\Authorize::class,
-        'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
-        'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-        'apikeyv2' => Middleware\APIKeyv2::class,
+        'bindings'   => \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        'botkey'     => BotJWT::class,
+        'can'        => \Illuminate\Auth\Middleware\Authorize::class,
+        'guest'      => RedirectIfAuthenticated::class,
+        'throttle'   => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+        'apikeyv2'   => APIKeyv2::class,
     ];
 }

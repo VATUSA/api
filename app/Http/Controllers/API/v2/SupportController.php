@@ -2,12 +2,20 @@
 
 namespace App\Http\Controllers\API\v2;
 
+use App\Classes\EmailHelper;
+use App\Classes\VATUSADiscord;
 use App\Facility;
 use App\Helpers\RoleHelper;
 use App\KnowledgebaseQuestions;
+use App\Mail\TicketAssigned;
 use App\Role;
+use App\Ticket;
+use App\TicketHistory;
+use App\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\KnowledgebaseCategories;
+use Illuminate\Support\Facades\Mail;
 
 /**
  * Class SupportController
@@ -38,7 +46,8 @@ class SupportController extends APIController
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getKBs(Request $request) {
+    public function getKBs(Request $request)
+    {
         return response()->ok(KnowledgebaseCategories::orderBy('name')->get()->toArray());
     }
 
@@ -55,7 +64,8 @@ class SupportController extends APIController
      *         response="400",
      *         description="Malformed request, check format of position, expDate",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","message"="Invalid position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
+     *         examples={{"application/json":{"status"="error","message"="Invalid
+     *         position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
      *     ),
      *     @SWG\Response(
      *         response="401",
@@ -81,10 +91,17 @@ class SupportController extends APIController
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function postKB(Request $request) {
-        if (!$request->has("name")) return response()->malformed();
-        if (!\Auth::check()) return response()->unauthorized();
-        if (!RoleHelper::isVATUSAStaff()) return response()->forbidden();
+    public function postKB(Request $request)
+    {
+        if (!$request->has("name")) {
+            return response()->malformed();
+        }
+        if (!\Auth::check()) {
+            return response()->unauthorized();
+        }
+        if (!RoleHelper::isVATUSAStaff()) {
+            return response()->forbidden();
+        }
 
         $cat = new KnowledgebaseCategories();
         $cat->name = $request->input("name");
@@ -107,7 +124,8 @@ class SupportController extends APIController
      *         response="400",
      *         description="Malformed request, check format of position, expDate",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","message"="Invalid position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
+     *         examples={{"application/json":{"status"="error","message"="Invalid
+     *         position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
      *     ),
      *     @SWG\Response(
      *         response="401",
@@ -136,13 +154,22 @@ class SupportController extends APIController
      *     )
      * )
      */
-    public function putKB(Request $request, int $id) {
-        if (!$request->has("name")) return response()->malformed();
-        if (!\Auth::check()) return response()->unauthorized();
-        if (!RoleHelper::isVATUSAStaff()) return response()->forbidden();
+    public function putKB(Request $request, int $id)
+    {
+        if (!$request->has("name")) {
+            return response()->malformed();
+        }
+        if (!\Auth::check()) {
+            return response()->unauthorized();
+        }
+        if (!RoleHelper::isVATUSAStaff()) {
+            return response()->forbidden();
+        }
 
         $cat = KnowledgebaseCategories::find($id);
-        if (!$cat) return response()->notfound();
+        if (!$cat) {
+            return response()->notfound();
+        }
 
         $cat->name = $request->input("name");
         $cat->save();
@@ -198,18 +225,27 @@ class SupportController extends APIController
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
      */
-    public function deleteKB(Request $request, int $id) {
-        if (!$request->has("name")) return response()->malformed();
-        if (!\Auth::check()) return response()->unauthorized();
-        if (!RoleHelper::isVATUSAStaff()) return response()->forbidden();
+    public function deleteKB(Request $request, int $id)
+    {
+        if (!$request->has("name")) {
+            return response()->malformed();
+        }
+        if (!\Auth::check()) {
+            return response()->unauthorized();
+        }
+        if (!RoleHelper::isVATUSAStaff()) {
+            return response()->forbidden();
+        }
 
         $cat = KnowledgebaseCategories::find($id);
 
-        foreach($cat->questions as $q) {
+        foreach ($cat->questions as $q) {
             $q->delete();
         }
 
-        if (!$cat) return response()->notfound();
+        if (!$cat) {
+            return response()->notfound();
+        }
 
         $cat->delete();
 
@@ -231,7 +267,8 @@ class SupportController extends APIController
      *         response="400",
      *         description="Malformed request, check format of position, expDate",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","message"="Invalid position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
+     *         examples={{"application/json":{"status"="error","message"="Invalid
+     *         position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
      *     ),
      *     @SWG\Response(
      *         response="401",
@@ -264,12 +301,21 @@ class SupportController extends APIController
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function postKBQuestion(Request $request, $id) {
-        if (!$request->has("name")) return response()->malformed();
-        if (!\Auth::check()) return response()->unauthorized();
-        if (!RoleHelper::isVATUSAStaff()) return response()->forbidden();
+    public function postKBQuestion(Request $request, $id)
+    {
+        if (!$request->has("name")) {
+            return response()->malformed();
+        }
+        if (!\Auth::check()) {
+            return response()->unauthorized();
+        }
+        if (!RoleHelper::isVATUSAStaff()) {
+            return response()->forbidden();
+        }
         $cat = KnowledgebaseCategories::find($id);
-        if (!$cat) return response()->notfound();
+        if (!$cat) {
+            return response()->notfound();
+        }
 
         $lastQ = KnowledgebaseQuestions::where('category_id', $cat->id)->orderBy('order', 'DESC')->first();
 
@@ -302,7 +348,8 @@ class SupportController extends APIController
      *         response="400",
      *         description="Malformed request, check format of position, expDate",
      *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","message"="Invalid position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
+     *         examples={{"application/json":{"status"="error","message"="Invalid
+     *         position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
      *     ),
      *     @SWG\Response(
      *         response="401",
@@ -336,14 +383,25 @@ class SupportController extends APIController
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function putKBQuestion(Request $request, int $cid, int $qid) {
-        if (!$request->has("name")) return response()->malformed();
-        if (!\Auth::check()) return response()->unauthorized();
-        if (!RoleHelper::isVATUSAStaff()) return response()->forbidden();
+    public function putKBQuestion(Request $request, int $cid, int $qid)
+    {
+        if (!$request->has("name")) {
+            return response()->malformed();
+        }
+        if (!\Auth::check()) {
+            return response()->unauthorized();
+        }
+        if (!RoleHelper::isVATUSAStaff()) {
+            return response()->forbidden();
+        }
         $cat = KnowledgebaseCategories::find($cid);
-        if (!$cat) return response()->notfound();
+        if (!$cat) {
+            return response()->notfound();
+        }
         $q = KnowledgebaseQuestions::find($qid);
-        if (!$q || $q->category_id != $cat->id) return response()->notFound();
+        if (!$q || $q->category_id != $cat->id) {
+            return response()->notFound();
+        }
 
         if ($request->has("question")) {
             $q->question = $request->input("question");
@@ -355,7 +413,9 @@ class SupportController extends APIController
 
         if ($request->has("category")) {
             $nc = KnowledgebaseCategories::find($request->input("category"));
-            if (!$nc) return response()->notfound();
+            if (!$nc) {
+                return response()->notfound();
+            }
             $q->cat_id = $nc->id;
         }
 
@@ -418,15 +478,26 @@ class SupportController extends APIController
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
      */
-    public function deleteKBQuestion(Request $request, int $categoryid, int $questionid) {
-        if (!$request->has("name")) return response()->malformed();
-        if (!\Auth::check()) return response()->unauthorized();
-        if (!RoleHelper::isVATUSAStaff()) return response()->forbidden();
+    public function deleteKBQuestion(Request $request, int $categoryid, int $questionid)
+    {
+        if (!$request->has("name")) {
+            return response()->malformed();
+        }
+        if (!\Auth::check()) {
+            return response()->unauthorized();
+        }
+        if (!RoleHelper::isVATUSAStaff()) {
+            return response()->forbidden();
+        }
 
         $cat = KnowledgebaseCategories::find($categoryid);
-        if (!$cat) return response()->notfound();
+        if (!$cat) {
+            return response()->notfound();
+        }
         $q = KnowledgebaseQuestions::find($questionid);
-        if (!$q || $q->category_id != $cat->id) return response()->notfound();
+        if (!$q || $q->category_id != $cat->id) {
+            return response()->notfound();
+        }
 
         $q->delete();
 
@@ -462,7 +533,8 @@ class SupportController extends APIController
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getTicketDepts(Request $request) {
+    public function getTicketDepts(Request $request)
+    {
         $depts = [
             ["id" => "ZHQ", "name" => "VATUSA Headquarters"]
         ];
@@ -470,7 +542,7 @@ class SupportController extends APIController
         $f = Facility::where('active', 1)->orderBy('name')->get();
         foreach ($f as $fac) {
             $depts[] = [
-                "id" => $fac->id,
+                "id"   => $fac->id,
                 "name" => $fac->name
             ];
         }
@@ -508,21 +580,26 @@ class SupportController extends APIController
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getTicketDeptStaff(Request $request, string $dept) {
+    public function getTicketDeptStaff(Request $request, string $dept)
+    {
         $fac = Facility::find($dept);
-        if (!$fac) return response()->notfound();
+        if (!$fac) {
+            return response()->notfound();
+        }
 
-        $staff = []; $chked = []; $i = 0;
+        $staff = [];
+        $chked = [];
+        $i = 0;
         foreach (
             Role::where('facility', $fac->id)
-            ->orderBy(\DB::raw('field(role, "ATM","DATM","TA","EC","FE","WM","INS","MTR")'))
-            ->orderBy('role')->get()
+                ->orderBy(\DB::raw('field(role, "ATM","DATM","TA","EC","FE","WM","INS","MTR")'))
+                ->orderBy('role')->get()
 
             as $role) {
 
             if (!isset($chked[$role->cid])) {
                 $staff[$i] = [
-                    'cid' => $role->cid,
+                    'cid'  => $role->cid,
                     'role' => $role->role,
                     'name' => $role->user->fullname()
                 ];
@@ -537,4 +614,163 @@ class SupportController extends APIController
         return response()->ok(["staff" => $staff]);
     }
     // </editor-fold>
+
+
+    /**
+     * @SWG\Delete(
+     *     path="/support/tickets/{id}",
+     *     summary="Close ticket. [Bot]",
+     *     description="Close ticket.",
+     *     produces={"application/json"},
+     *     tags={"support"},
+     *     security={"bot"},
+     *     @SWG\Parameter(in="path", name="id", type="integer", description="Ticket ID"),
+     *     @SWG\Parameter(in="formData", name="user_id", type="integer", description="User ID"),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *           ref="#/definitions/OK",
+     *         ),
+     *     )
+     * )
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Ticket              $ticket
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function closeTicket(Request $request, Ticket $ticket)
+    {
+        $userId = $request->user_id;
+        $user = User::where('discord_id', $userId)->first();
+        if (!$user) {
+            return response()->api(generate_error("Your Discord account is not linked to a VATUSA account."), 403);
+        }
+
+        if ($ticket->submitter->cid == $user->cid || RoleHelper::isFacilityStaff($user->cid,
+                $ticket->facility) || RoleHelper::isInstructor($user->cid, $ticket->facility)) {
+            $ticket->status = "Closed";
+            $history = new TicketHistory();
+            $history->ticket_id = $ticket->id;
+            $history->entry = $user->fullname() . " (" . $user->cid . ") closed the ticket [via Discord].";
+            $history->save();
+            $ticket->save();
+
+            $discord = new VATUSADiscord();
+            if ($discord->userWantsNotification($ticket->submitter, "ticketClosed", "email")) {
+                Mail::to($ticket->submitter->email)->queue(new TicketAssigned($ticket));
+            }
+            if ($discord->userWantsNotification($ticket->submitter, "ticketClosed", "discord")) {
+                $discord->sendNotification("ticketClosed", "dm",
+                    array_merge($ticket->toArray(), ['userId' => $ticket->submitter->discord_id]));
+            }
+            if ($channel = $discord->getFacilityNotificationChannel($ticket->facility()->first(), "ticketClosed")) {
+                $discord->sendNotification("ticketClosed", "channel", $ticket->toArray(),
+                    $ticket->facility === "ZHQ" ? config('services.discord.guildId') : $ticket->facility()->discord_guild_id,
+                    $channel);
+            }
+
+            return response()->ok();
+        }
+
+        return response()->api(generate_error("You do not have permission to close this ticket."), 403);
+    }
+
+    /**
+     * @SWG\Put(
+     *     path="/support/tickets/{id}",
+     *     summary="Assign ticket. [Bot]",
+     *     description="Assign ticket.",
+     *     produces={"application/json"},
+     *     tags={"support"},
+     *     security={"bot"},
+     *     @SWG\Parameter(in="path", name="id", type="integer", description="Ticket ID"),
+     *     @SWG\Parameter(in="formData", name="cid", type="integer", description="CID to assign ticket to"),
+     *     @SWG\Parameter(in="formData", name="user_id", type="integer", description="User ID"),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="403",
+     *         description="Forbidden",
+     *         @SWG\Schema(ref="#/definitions/error"),
+     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *     ),
+     *     @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(
+     *           ref="#/definitions/OK",
+     *         ),
+     *     )
+     * )
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Ticket              $ticket
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function assignTicket(Request $request, Ticket $ticket)
+    {
+        $userId = $request->user_id;
+        $user = User::where('discord_id', $userId)->first();
+        if (!$user) {
+            return response()->api(generate_error("Your Discord account is not linked to a VATUSA account."), 403);
+        }
+
+        $aUser = User::find($request->cid);
+        if (!$aUser && $request->cid) {
+            return response()->api(generate_error("Invalid user."), 404);
+        }
+
+        if (RoleHelper::isVATUSAStaff($user->cid, false, true) || RoleHelper::isFacilityStaff($user->cid,
+                $ticket->facility) || RoleHelper::isInstructor($user->cid, $ticket->facility)) {
+            //Assign ticket
+            if ($aUser) {
+                $ticket->assigned_to = $aUser->cid;
+                $ticket->save();
+
+                $history = new TicketHistory();
+                $history->ticket_id = $ticket->id;
+                $history->entry = $user->fullname() . " (" . $user->cid . ") assigned the ticket to " . $aUser->fullname() . " (" . $aUser->cid . ") [Discord].";
+                $history->save();
+
+                $discord = new VATUSADiscord();
+                if ($discord->userWantsNotification($aUser, "ticketAssigned", "email")) {
+                    Mail::to($aUser)->queue(new TicketAssigned($ticket));
+                }
+                if ($discord->userWantsNotification($aUser, "ticketAssigned", "discord")) {
+                    $discord->sendNotification("ticketAssigned", "dm",
+                        array_merge($ticket->toArray(), ['userId' => $aUser->discord_id]));
+                }
+            } else {
+                //Unassign ticket
+                $ticket->assigned_to = 0;
+                $ticket->save();
+
+                $history = new TicketHistory();
+                $history->ticket_id = $ticket->id;
+                $history->entry = $user->fullname() . " (" . $user->cid . ") set ticket to unassigned [Discord].";
+                $history->save();
+            }
+
+            return response()->ok();
+        }
+
+        return response()->api(generate_error("You do not have permission to assign this ticket."), 403);
+    }
 }

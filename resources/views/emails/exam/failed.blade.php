@@ -1,15 +1,15 @@
 @extends('emails.layout')
 @section('title','Exam Failed')
 @section('content')
-    Dear {{ $student_name }},
+    Dear {{ $data['student_name'] }},
     <br><br>
     This email is to notify you that you <strong>did not pass</strong> your assigned exam.
     <br><br>
-    Exam: {{ $exam_name }}<br>
-    Score: {{ $correct }}/{{ $possible }} ({{$score}}%)
+    Exam: {{ $data['exam_name'] }}<br>
+    Score: {{ $data['correct'] }}/{{ $data['possible'] }} ({{$data['score']}}%)
     <br><br>
-    @if($reassign > 0)
-        Your exam will be reassigned in {{$reassign}} day(s).
+    @if($data['reassign'] > 0)
+        Your exam will be reassigned in {{$data['reassign']}} day(s).
     @else
         Your exam will be reassigned by your training staff.
     @endif

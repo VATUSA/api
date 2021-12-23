@@ -23,6 +23,7 @@ use \App\Http\Controllers\Controller as BaseController;
             <p>Method security, if applicable, is indicated in brackets at the end of each endpoint title.</p>
             <p>Security classification: <ul>
                 <li><strong>Private:</strong> CORS Restricted (Internal)</li>
+                <li><strong>Bot:</strong> Restricted to the Discord Bot by JWT</li>
                 <li><strong>Auth:</strong> Accepts Session Cookie or JWT</li>
                 <li><strong>Key:</strong> Accepts API Key, Session Cookie, or JWT</li>
             </ul></p>
@@ -71,6 +72,15 @@ class APIController extends BaseController {
  *   in="header",
  *   name="JSON Web Token",
  *   description="JSON Web Token translated from Laravel session"
+ * )
+ */
+/**
+ * @SWG\SecurityScheme(
+ *   securityDefinition="bot",
+ *   type="apiKey",
+ *   in="header",
+ *   name="JSON Web Token for Discord Bot",
+ *   description="JSON Web Token issued to the Discord Bot"
  * )
  */
 /**

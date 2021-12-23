@@ -33,9 +33,10 @@ class UserController extends APIController
      *     path="/user/(cid)",
      *     summary="Get user's information.",
      *     description="Get user's information. Email field, broadcast opt-in status, and visiting facilities require authentication as staff member or API key.
-    Prevent staff assigment flag requires authentication as senior staff.",
+    Prevent staff assigment flag requires authentication as senior staff. If the "d" QSP is included, the user will be retrieved by Discord ID.",
      *     produces={"application/json"}, tags={"user"},
      * @SWG\Parameter(name="cid",in="path",required=true,type="string",description="Cert ID"),
+     * @SWG\Parameter(name="d",in="query",required=false,type="string",description="The id given is a Discord ID"),
      * @SWG\Response(
      *         response="404",
      *         description="Not found",
@@ -1158,7 +1159,8 @@ class UserController extends APIController
      *                 @SWG\Property(property="lname", type="string"),
      *             )
      *         ),
-     *         examples={"application/json":{"0":{"cid":1391803,"fname":"Michael","lname":"Romashov"},"1":{"cid":1391802,"fname":"Sankara","lname":"Narayanan "}}}
+     *         examples={"application/json":{"0":{"cid":1391803,"fname":"Michael","lname":"Romashov"},"1":{"cid":1391802,"fname":"Sankara","lname":"Narayanan
+     *         "}}}
      *     )
      * )
      */
@@ -1239,5 +1241,26 @@ class UserController extends APIController
         }
 
         return response()->api($return);
+    }
+
+    /**
+     *
+     * @SWG\Get(
+     *     path="/user/getAllDiscord",
+     *     summary="Get all users with a Discord account linked. [Bot]",
+     *     description="Get all users with a Discord account linked.",
+     *     produces={"application/json"}, tags={"user"}, security={"jwt"}
+     * @SWG\Response(
+     *         response="200",
+     *         description="OK",
+     *         @SWG\Schema(ref="#/definitions/User")
+     *     )
+     * )
+     */
+    public function getAllDiscord(Request $request)
+    {
+        $users = User::where('discord_id', '!=', null)->get();
+
+        return response()->json($users->pluck('discord_id'));
     }
 }

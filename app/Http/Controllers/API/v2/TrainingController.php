@@ -1157,7 +1157,7 @@ class TrainingController extends Controller
         User $user
     ) {
         $hasApiKey = AuthHelper::validApiKeyv2($request->input('apikey', null), $user->facility);
-        
+
         //Check Visiting Facilities
         $apiKeyVisitor = false;
         $keyFac = Facility::where("apikey", $request->apikey)

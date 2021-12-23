@@ -5,10 +5,10 @@ namespace App\Http\Controllers\API\v2;
 
 use App\AcademyExamAssignment;
 use App\Action;
+use App\Classes\VATUSADiscord;
 use App\Classes\VATUSAMoodle;
 use App\Facility;
 use App\Helpers\AuthHelper;
-use App\Helpers\EmailHelper;
 use App\Helpers\Helper;
 use App\Helpers\RoleHelper;
 use App\Mail\AcademyRatingCourseEnrolled;
@@ -156,9 +156,46 @@ class AcademyController extends APIController
         }
         $assignment->save();
 
-        Mail::to($user->email)
-            ->cc(Auth::user()->email)
-            ->queue(new AcademyRatingCourseEnrolled($assignment));
+        $notify = new VATUSADiscord();
+        $to = [];
+        $facility = Auth::user()->facility();
+        $ta = $facility->ta();
+        if (!$ta) {
+            $ta = $facility->datm();
+        }
+        if (!$ta) {
+            $ta = $facility->atm();
+        }
+        if (!$ta || $ta->cid == Auth::user()->cid) {
+            $ta = null;
+        }
+        if ($notify->userWantsNotification($user, "academyExamCourseEnrolled", "email")) {
+            $to[] = $user->email;
+        }
+        if ($notify->userWantsNotification(Auth::user(), "academyExamCourseEnrolled", "email")) {
+            $to[] = Auth::user()->email;
+        }
+        if ($ta && $notify->userWantsNotification($ta, "academyExamCourseEnrolled", "email")) {
+            $to[] = $ta->email;
+        }
+        if (count($to)) {
+            Mail::to($to)->queue(new AcademyRatingCourseEnrolled($assignment));
+        }
+
+        $studentId = $notify->userWantsNotification($user, "academyExamCourseEnrolled",
+            "discord") ? $user->discord_id : 0;
+        $staffId = $ta && $notify->userWantsNotification($ta, "academyExamCourseEnrolled",
+            "discord") ? $ta->discord_id : 0;
+        if ($studentId || $staffId) {
+            $notify->sendNotification("academyExamCourseEnrolled", "dm",
+                array_merge($assignment->load(['rating', 'student', 'instructor'])->toArray(),
+                    compact('studentId', 'staffId')));
+        }
+        if ($channel = $notify->getFacilityNotificationChannel($facility, "academyExamCourseEnrolled")) {
+            $notify->sendNotification("academyExamCourseEnrolled", "channel", $assignment->toArray(),
+                $facility->discord_guild,
+                $channel);
+        }
 
         $log = new Action();
         $log->to = $user->cid;
@@ -226,7 +263,7 @@ class AcademyController extends APIController
         }
 
         if (!$validKeyHome && !$validKeyVisit && !(Auth::check() && ($user->facility == Auth::user()->facility || $user->visits()->where('facility',
-                    Auth::user()->facility)->exists()) && (RoleHelper::isMentor() || RoleHelper::isInstructor() || RoleHelper::isSeniorStaff()) || RoleHelper::isVATUSAStaff())) {
+                        Auth::user()->facility)->exists()) && (RoleHelper::isMentor() || RoleHelper::isInstructor() || RoleHelper::isSeniorStaff()) || RoleHelper::isVATUSAStaff())) {
             return response()->forbidden();
         }
 
