@@ -103,7 +103,7 @@ class AcademyController extends APIController
     public function postEnroll(Request $request, int $courseId): Response
     {
         $user = User::find($request->input('cid'));
-        if (!$user) {
+        if (!$user || !$user->flag_homecontroller) {
             return response()->api(
                 generate_error("Invalid controller", true), 400
             );
