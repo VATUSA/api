@@ -9,10 +9,8 @@ use App\Helpers\RoleHelper;
 use App\ReturnPaths;
 use App\Role;
 use App\TMUFacility;
-use App\TMUNotice;
 use App\Transfer;
 use App\User;
-use App\Promotion;
 use App\Visit;
 use App\OAuthClient;
 use Auth;
@@ -21,7 +19,6 @@ use App\Facility;
 use Illuminate\Support\Facades\Cache;
 use Jose\Component\KeyManagement\JWKFactory;
 use Hidehalo\Nanoid\Client as NanoidClient;
-use Hidehalo\Nanoid\GeneratorInterface;
 
 /**
  * Class FacilityController
@@ -127,8 +124,8 @@ class FacilityController extends APIController
             );
         }
 
-        if (\Cache::has("facility.$id.info")) {
-            return response()->api(json_decode(\Cache::get("facility.$id.info"), true));
+        if (Cache::has("facility.$id.info")) {
+            return response()->api(json_decode(Cache::get("facility.$id.info"), true));
         }
 
         $data['facility'] = [
@@ -146,7 +143,7 @@ class FacilityController extends APIController
                 $data['notices'][$tmu->id] = $tmu->tmuNotices()->get()->toArray();
             }
         }
-        \Cache::put("facility.$id.info", encode_json($data), 60 * 60);
+        Cache::put("facility.$id.info", encode_json($data), 60 * 60);
 
         return response()->api($data);
     }
@@ -464,7 +461,7 @@ class FacilityController extends APIController
      *     tags={"facility","email"},
      *     @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
      *     @SWG\Parameter(name="templateName", in="path", description="Name of template (welcome, examassigned,
-                                               examfailed, exampassed)", required=true, type="string"),
+    examfailed, exampassed)", required=true, type="string"),
      * @SWG\Parameter(name="body", in="formData", description="Text of template", required=true, type="string"),
      * @SWG\Response(
      *         response="401",
@@ -627,36 +624,40 @@ class FacilityController extends APIController
         $isSeniorStaff = Auth::check() && RoleHelper::isSeniorStaff(Auth::user()->cid, Auth::user()->facility);
 
         $rosterArr = [];
+        $isCached = false;
 
         if ($cache = Cache::get("roster-$id-$membership")) {
-            return response()->api($cache);
-        }
-
-        if ($membership == 'both') {
+            $roster = $cache;
+            $isCached = true;
+        } elseif ($membership == 'both') {
             $home = $facility->members;
             $visiting = $facility->visitors();
             $roster = $home->merge($visiting);
+        } elseif ($membership == 'home') {
+            $roster = $facility->members;
+        } elseif ($membership == 'visit') {
+            $roster = $facility->visitors();
         } else {
-            if ($membership == 'home') {
-                $roster = $facility->members;
-            } else {
-                if ($membership == 'visit') {
-                    $roster = $facility->visitors();
-                } else {
-                    return response()->api(generate_error("Malformed request"), 400);
-                }
-            }
+            return response()->api(generate_error("Malformed request"), 400);
         }
+
         $i = 0;
         foreach ($roster as $member) {
             $rosterArr[$i] = $member;
             if (!$hasAPIKey && !$isFacStaff) {
                 $rosterArr[$i]['flag_broadcastOptedIn'] = null;
                 $rosterArr[$i]['email'] = null;
+            } elseif ($isCached) {
+                //Override cache
+                $rosterArr[$i]['flag_broadcastOptedIn'] = User::find($member->cid)->flag_broadcastOptedIn;
+                $rosterArr[$i]['email'] = User::find($member->cid)->email;
             }
             if (!$isSeniorStaff) {
                 //Senior Staff Only
                 $rosterArr[$i]['flag_preventStaffAssign'] = null;
+            } elseif ($isCached) {
+                //Override cache
+                $rosterArr[$i]['flag_preventStaffAssign'] = User::find($member->cid)->flag_preventStaffAssign;
             }
 
 
