@@ -182,10 +182,10 @@ class VATUSAMoodle extends MoodleRest
         if ($includeParent) {
             return $full ? array_merge($this->getCategory($parent), $categories) : array_merge([$parent],
                 collect($categories)->pluck($context ? "context" : "id")->toArray());
-        } else {
-            return $full ? $categories :
-                collect($categories)->pluck($context ? "context" : "id")->toArray();
         }
+
+        return $full ? $categories :
+            collect($categories)->pluck($context ? "context" : "id")->toArray();
     }
 
     /**
@@ -272,7 +272,7 @@ class VATUSAMoodle extends MoodleRest
     {
         $user = DB::connection('moodle')->table('user')->where('id', $uid)->first();
 
-        return $user ? $user->idnumber : null;
+        return $user->idnumber ?? null;
     }
 
     /**
@@ -464,6 +464,29 @@ class VATUSAMoodle extends MoodleRest
                 ]
             ]
         ]);
+    }
+
+    /**
+     * Remove user from all Mentor roles.
+     *
+     * @param int      $cid
+     * @param int|null $uid User ID
+     *
+     * @return int
+     */
+    public function unassignMentorRoles(int $cid, ?int $uid = null): int
+    {
+        try {
+            $userid = $uid ?? $this->getUserId($cid);
+            if (!$userid) {
+                return 0;
+            }
+        } catch (Exception $e) {
+            return 0;
+        }
+
+        return DB::connection('moodle')->table('role_assignments')->where('userid', $userid)->where('roleid',
+            $this->roleIds['MTR'])->delete();
     }
 
     /**

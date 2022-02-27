@@ -1,8 +1,10 @@
 <?php
+
 namespace App;
 
-use App\User;
+use App\Classes\VATUSAMoodle;
 use App\Helpers\EmailHelper;
+use Exception;
 
 /**
  * Class Transfer
@@ -52,8 +54,18 @@ class Transfer extends Model
         $this->actionby = $by;
         $this->save();
 
-        $user = User::where('cid',$this->cid)->first();
+        $user = User::where('cid', $this->cid)->first();
         $user->addToFacility($this->to);
+
+        /** Remove Mentor/INS Role */
+        Role::where("cid", $this->cid)->where("facility", $this->from)->where("role", "MTR")->orWhere("role",
+            "INS")->delete();
+        $moodle = new VATUSAMoodle();
+        try {
+            $moodle->unassignMentorRoles($this->cid);
+        } catch (Exception $e) {
+        }
+
         EmailHelper::sendEmail(
             [
                 $this->to . "-atm@vatusa.net",
@@ -68,15 +80,16 @@ class Transfer extends Model
             [
                 'fname' => $this->user->fname,
                 'lname' => $this->user->lname,
-                'cid' => $this->user->cid,
-                'to' => $this->to,
-                'from' => $this->from,
+                'cid'   => $this->user->cid,
+                'to'    => $this->to,
+                'from'  => $this->from,
             ]
         );
 
         $by = User::where('cid', $by)->first();
 
-        log_action($this->cid, "Transfer request to " . $this->to . " accepted by " . $by->fullname() . " (" . $by->cid . ")");
+        log_action($this->cid,
+            "Transfer request to " . $this->to . " accepted by " . $by->fullname() . " (" . $by->cid . ")");
     }
 
     public function reject($by, $msg)
@@ -99,19 +112,20 @@ class Transfer extends Model
             "Transfer request rejected",
             "emails.transfers.rejected",
             [
-                'fname' => $this->user->fname,
-                'lname' => $this->user->lname,
-                'cid' => $this->cid,
+                'fname'   => $this->user->fname,
+                'lname'   => $this->user->lname,
+                'cid'     => $this->cid,
                 'facname' => $this->toFac->name,
-                'facid' => $this->toFac->id,
-                'region' => $this->toFac->region,
-                'by' => User::findName($by),
-                'msg' => $msg
+                'facid'   => $this->toFac->id,
+                'region'  => $this->toFac->region,
+                'by'      => User::findName($by),
+                'msg'     => $msg
             ]
         );
 
         $by = User::where('cid', $by)->first();
 
-        log_action($this->cid, "Transfer request to " . $this->to . " rejected by " . $by->fullname() . " (" . $by->cid . "): $msg");
+        log_action($this->cid,
+            "Transfer request to " . $this->to . " rejected by " . $by->fullname() . " (" . $by->cid . "): $msg");
     }
 }
