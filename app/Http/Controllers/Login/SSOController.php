@@ -192,8 +192,9 @@ class SSOController extends Controller
 
             if (!$member->flag_homecontroller && $user->vatsim->division->id == "USA") {
                 //User is rejoining
-                $transfers = Transfer::where('cid', $member->cid)->where('actiontext', "Left division")
-                    ->where('created_at', '>=', Carbon::now()->subHours(72))
+                $transfers = Transfer::where('cid', $member->cid)->where(function ($query) {
+                    $query->where('actiontext', 'Suspended/Inactive')->orWhere('actiontext', 'Left division');
+                })->where('created_at', '>=', Carbon::now()->subHours(72))
                     ->orderBy('created_at', 'DESC');
                 if ($transfers->count()) {
                     //Within last 72 hours
@@ -214,8 +215,9 @@ class SSOController extends Controller
                     $log->to = $member->cid;
                     $log->log = "Rejoined division within 72 hours, facility set to " . $member->facility;
                     $log->save();
-                } elseif (Transfer::where('cid', $member->cid)->where('actiontext', "Left division")
-                    ->where('created_at', '>=', Carbon::now()->subMonths(6))
+                } elseif (Transfer::where('cid', $member->cid)->where(function ($query) {
+                    $query->where('actiontext', 'Suspended/Inactive')->orWhere('actiontext', 'Left division');
+                })->where('created_at', '>=', Carbon::now()->subMonths(6))
                     ->orderBy('created_at', 'DESC')->count()
                 ) {
                     //Within last 6 months but more than 72 hours
