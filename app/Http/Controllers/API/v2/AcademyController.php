@@ -54,10 +54,10 @@ class AcademyController extends APIController
     public function getIdentifiers(Request $request)
     {
         return response()->api([
-            'BASIC' => config('exams.BASIC.id'),
-            'S2'    => config('exams.S2.id'),
-            'S3'    => config('exams.S3.id'),
-            'C1'    => config('exams.C1.id')
+            'BASIC' => config('exams.BASIC.courseId'),
+            'S2'    => config('exams.S2.courseId'),
+            'S3'    => config('exams.S3.courseId'),
+            'C1'    => config('exams.C1.courseId')
         ]);
     }
 
