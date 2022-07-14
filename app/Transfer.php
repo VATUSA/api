@@ -58,8 +58,9 @@ class Transfer extends Model
         $user->addToFacility($this->to);
 
         /** Remove Mentor/INS Role */
-        Role::where("cid", $this->cid)->where("facility", $this->from)->where("role", "MTR")->orWhere("role",
-            "INS")->delete();
+        Role::where("cid", $this->cid)->where("facility", $this->from)->where(function ($query) {
+            $query->where("role", "MTR")->orWhere("role", "INS");
+        })->delete();
         $moodle = new VATUSAMoodle();
         try {
             $moodle->unassignMentorRoles($this->cid);
