@@ -27,7 +27,8 @@ class Facility extends Model
         'api_sandbox_key',
         'apiv2_jwk',
         'apiv2_jwk_dev',
-        'uls_jwk_dev'
+        'uls_jwk_dev',
+        'welcome_text'
     ];
 
     public function members()
