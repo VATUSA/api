@@ -1065,7 +1065,7 @@ class TrainingController extends Controller
         //DELETE /training/record/8
 
         if ($this->canModify($request, $record)) {
-            if (in_array($record->ots_status, [1, 2])) {
+            if (in_array($record->ots_status, [1, 2]) && !RoleHelper::isVATUSAStaff()) {
                 return response()->api(generate_error("Unable to delete record because it is an OTS exam. Please contact VATUSA3 or 13 for assistance."),
                     500);
             }
