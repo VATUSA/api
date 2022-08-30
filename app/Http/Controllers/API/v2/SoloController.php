@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\API\v2;
 
+use App\Action;
 use App\Helpers\AuthHelper;
 use App\Helpers\RoleHelper;
 use App\User;
 use Exception;
 use Illuminate\Http\Request;
 use App\SoloCert;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Class SoloController
@@ -149,6 +151,11 @@ class SoloController extends APIController
                 ['cid' => $cid, 'position' => $position],
                 ['expires' => $exp]
             );
+
+            $log = new Action();
+            $log->to = $cid;
+            $log->log = "Solo Cert issued for " . $position . " by " . (Auth::user()) ? Auth::user()->fullname() : "API";
+            $log->save();
         }
 
         return response()->ok();
@@ -209,7 +216,12 @@ class SoloController extends APIController
         if (!isTest()) {
             if ($request->input("id", null)) {
                 try {
-                    SoloCert::findOrFail($request->id)->delete();
+                    $cert = SoloCert::findOrFail($request->id);
+                    $log = new Action();
+                    $log->to = $cert->cid;
+                    $log->log = "Solo Cert issued for " . $cert->position . " by " . (Auth::user()) ? Auth::user()->fullname() : "API";
+                    $log->save();
+                    $cert->delete();
                 } catch (Exception $e) {
                     return response()->api(generate_error("Certification not found"), 404);
                 }
@@ -219,6 +231,10 @@ class SoloController extends APIController
                 if (!$cert->count()) {
                     return response()->api(generate_error("Certification not found"), 404);
                 } else {
+                    $log = new Action();
+                    $log->to = $cert->cid;
+                    $log->log = "Solo Cert issued for " . $cert->position . " by " . (Auth::user()) ? Auth::user()->fullname() : "API";
+                    $log->save();
                     $cert->delete();
                 }
             }
