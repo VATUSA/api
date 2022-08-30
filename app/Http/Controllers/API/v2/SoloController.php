@@ -154,7 +154,7 @@ class SoloController extends APIController
 
             $log = new Action();
             $log->to = $cid;
-            $log->log = "Solo Cert issued for " . $position . " by " . (Auth::user()) ? Auth::user()->fullname() : "API";
+            $log->log = "Solo Cert issued for " . $position . " by " . ((Auth::user()) ? Auth::user()->fullname() : "API");
             $log->save();
         }
 
@@ -219,7 +219,7 @@ class SoloController extends APIController
                     $cert = SoloCert::findOrFail($request->id);
                     $log = new Action();
                     $log->to = $cert->cid;
-                    $log->log = "Solo Cert issued for " . $cert->position . " by " . (Auth::user()) ? Auth::user()->fullname() : "API";
+                    $log->log = "Solo Cert revoked for " . $cert->position . " by " . ((Auth::user()) ? Auth::user()->fullname() : "API");
                     $log->save();
                     $cert->delete();
                 } catch (Exception $e) {
@@ -233,7 +233,7 @@ class SoloController extends APIController
                 } else {
                     $log = new Action();
                     $log->to = $cert->cid;
-                    $log->log = "Solo Cert issued for " . $cert->position . " by " . (Auth::user()) ? Auth::user()->fullname() : "API";
+                    $log->log = "Solo Cert revoked for " . $cert->position . " by " . ((Auth::user()) ? Auth::user()->fullname() : "API");
                     $log->save();
                     $cert->delete();
                 }
