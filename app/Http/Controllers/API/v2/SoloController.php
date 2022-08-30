@@ -154,7 +154,7 @@ class SoloController extends APIController
 
             $log = new Action();
             $log->to = $cid;
-            $log->log = "Solo Cert issued for " . $position . " by " . ((Auth::user()) ? Auth::user()->fullname() : "API");
+            $log->log = "Solo Cert issued for " . $position . " by " . ((Auth::user()) ? Auth::user()->fullname() : "API") . ". Expires: " . $exp;
             $log->save();
         }
 
