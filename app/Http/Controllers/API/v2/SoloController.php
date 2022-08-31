@@ -227,8 +227,8 @@ class SoloController extends APIController
                 }
             } else {
                 $cert = SoloCert::where('cid', $request->input("cid", null))
-                    ->where("position", strtoupper($request->input("position", null)));
-                if (!$cert->count()) {
+                    ->where("position", strtoupper($request->input("position", null)))->first();
+                if (!$cert) {
                     return response()->api(generate_error("Certification not found"), 404);
                 } else {
                     $log = new Action();
