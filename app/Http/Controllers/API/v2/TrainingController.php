@@ -585,7 +585,7 @@ class TrainingController extends Controller
         $isCBT = $request->input("is_cbt", false);
         $soloGranted = $request->input("solo_granted", false);
 
-        if (RoleHelper::isVATUSAStaff() && $request->input('facility', null)) {
+        if ($request->input('facility', null)) {
             $facility = $request->input('facility');
         } else {
             if (Auth::check()) {
