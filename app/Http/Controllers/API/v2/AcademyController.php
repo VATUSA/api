@@ -109,13 +109,15 @@ class AcademyController extends APIController
             );
         }
 
-        if (!RoleHelper::isInstructor(Auth::user()->cid,
-                $user->facility) && !RoleHelper::isSeniorStaff(Auth::user()->cid,
-                $user->facility) && !RoleHelper::isMentor(Auth::user()->cid,
-                $user->facility)) {
+        if (!AuthHelper::validApiKeyv2($request->input('apikey', null))
+            && !RoleHelper::isInstructor(Auth::user()->cid, $user->facility)
+            && !RoleHelper::isSeniorStaff(Auth::user()->cid, $user->facility)
+            && !RoleHelper::isMentor(Auth::user()->cid, $user->facility)) {
             return response()->forbidden();
         }
-        if (RoleHelper::isMentor(Auth::user()->cid, $user->facility) && $user->rating >= Auth::user()->rating) {
+        if (!AuthHelper::validApiKeyv2($request->input('apikey', null))
+            && RoleHelper::isMentor(Auth::user()->cid, $user->facility)
+            && $user->rating >= Auth::user()->rating) {
             return response()->forbidden();
         }
 

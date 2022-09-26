@@ -1174,8 +1174,8 @@ class FacilityController extends APIController
      *
      * @SWG\Put(
      *     path="/facility/{id}/transfers/{transferId}",
-     *     summary="Modify transfer request.  [Auth]",
-     *     description="Modify transfer request.  JWT or Session cookie required. (required role: ATM, DATM,
+     *     summary="Modify transfer request.  [Key]",
+     *     description="Modify transfer request. Requires API Key, Session Cookie, or JWT (required role: ATM, DATM,
     VATUSA STAFF)", produces={"application/json"}, tags={"facility"}, security={"jwt","session"},
      * @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
      * @SWG\Parameter(name="transferId", in="query", description="Transfer ID", type="integer", required=true),
@@ -1229,11 +1229,12 @@ class FacilityController extends APIController
             );
         }
 
-        if (!Auth::check()) {
+        if (!AuthHelper::validApiKeyv2($request->input('apikey', null)) && !Auth::check()) {
             return response()->api(generate_error("Unauthorized"), 401);
         }
 
-        if (!RoleHelper::isSeniorStaff(Auth::user()->cid, $facility->id, false)
+        if (!AuthHelper::validApiKeyv2($request->input('apikey', null))
+            && !RoleHelper::isSeniorStaff(Auth::user()->cid, $id)
             && !RoleHelper::isVATUSAStaff(Auth::user()->cid)
         ) {
             return response()->api(generate_error("Forbidden"), 403);
