@@ -1184,6 +1184,7 @@ class FacilityController extends APIController
     approve,reject"),
      * @SWG\Parameter(name="reason", in="formData", type="string", description="Reason for transfer request rejection
     [required for rejections]"),
+     * @SWG\Parameter(name="by", in="formData", type="integer", description="Staff member responsible for trasnfer [required for API Key]"),
      * @SWG\Response(
      *         response="400",
      *         description="Malformed request, missing required parameter",
@@ -1229,6 +1230,17 @@ class FacilityController extends APIController
             );
         }
 
+        if (Auth::check()) {
+            $staff = Auth::user();
+        } else {
+            $staff = User::find($request->input('by'));
+            if (!$staff || !RoleHelper::isSeniorStaff($request->input('by'), $id)) {
+                return response()->api(
+                    generate_error("Invalid staff", true), 400
+                );
+            }
+        }
+
         if (!AuthHelper::validApiKeyv2($request->input('apikey', null)) && !Auth::check()) {
             return response()->api(generate_error("Unauthorized"), 401);
         }
@@ -1268,9 +1280,9 @@ class FacilityController extends APIController
 
         if (!isTest()) {
             if ($request->input("action") === "accept") {
-                $transfer->accept(Auth::user()->cid);
+                $transfer->accept($staff->cid);
             } else {
-                $transfer->reject(Auth::user()->cid, $request->input("reason"));
+                $transfer->reject($staff->cid, $request->input("reason"));
             }
         }
 
