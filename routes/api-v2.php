@@ -103,12 +103,9 @@ Route::group(['middleware' => ['private', 'auth:jwt,web'], 'prefix' => '/exam'],
 });
 
 Route::group(['prefix' => '/academy'], function () {
-    Route::group(['middleware' => ['auth:web,jwt']], function () {
-        Route::post('enroll/{courseId}', 'AcademyController@postEnroll')->where('courseId', '[0-9]+');
-    });
-
     Route::group(['middleware' => 'semiprivate'], function () {
         Route::get('transcript/{user}', 'AcademyController@getTranscript')->where('user', '[0-9]+');
+        Route::post('enroll/{courseId}', 'AcademyController@postEnroll')->where('courseId', '[0-9]+');
     });
 
     Route::get('identifiers', 'AcademyController@getIdentifiers');
@@ -125,10 +122,6 @@ Route::group(['prefix' => 'facility'], function () {
     Route::get('{id}/roster/{membership?}', 'FacilityController@getRoster')->where('id', '[A-Za-z]{3}');
     Route::group(['middleware' => 'auth:web,jwt'], function () {
         Route::put('{id}', 'FacilityController@putFacility')->where('id', '[A-Za-z]{3}');
-        Route::put('{id}/transfers/{transferId}', 'FacilityController@putTransfer')->where([
-            'id'         => '[A-Za-z]{3}',
-            'transferId' => '\d+'
-        ]);
         Route::post('{id}/email/{templateName}', 'FacilityController@postEmailTemplate');
     });
     Route::middleware(['private', 'auth:web,jwt'])->group(function () {
@@ -144,6 +137,10 @@ Route::group(['prefix' => 'facility'], function () {
             'cid' => '\d+'
         ]);
         Route::get('{id}/transfers', 'FacilityController@getTransfers')->where('id', '[A-Za-z]{3}');
+        Route::put('{id}/transfers/{transferId}', 'FacilityController@putTransfer')->where([
+            'id'         => '[A-Za-z]{3}',
+            'transferId' => '\d+'
+        ]);
         Route::get('{id}/email/{templateName}', 'FacilityController@getemailTemplate');
         Route::get('{id}/ulsReturns', 'FacilityController@getUlsReturns');
         Route::post('{id}/ulsReturns', 'FacilityController@addUlsReturn');
