@@ -69,7 +69,7 @@ class AcademyController extends APIController
      *     Instructor, or Senior Staff role.", produces={"application/json"}, tags={"academy"}, security={"session",
      *     "jwt"},
      * @SWG\Parameter(name="cid", in="formData", type="integer", description="Controller CID"),
-     * @SWG\Parameter(name="instructor", in="formData", type="integer", description="Instructor CID"),
+     * @SWG\Parameter(name="instructor", in="formData", type="integer", description="Instructor CID [required for API Key]"),
      * @SWG\Response(
      *         response="400",
      *         description="Malformed request",
