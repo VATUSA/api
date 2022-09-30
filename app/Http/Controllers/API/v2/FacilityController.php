@@ -1230,16 +1230,16 @@ class FacilityController extends APIController
             );
         }
 
-        if (Auth::check()) {
-            $staff = Auth::user();
+        if (!Auth::check() && !$request->has('by')) {
+            return response()->api(
+                generate_error("Missing staff CID (by)"), 400);
         } else {
-            $staff = User::find($request->input('by'));
-            if (!$staff || !RoleHelper::isSeniorStaff($request->input('by'), $id)) {
+            if ($request->has('by') && (!User::find($request->by) || User::find($request->by)->facility != $facility->id)) {
                 return response()->api(
-                    generate_error("Invalid staff", true), 400
-                );
+                    generate_error("Invalid staff CID"), 400);
             }
         }
+        $by = Auth::check() ? Auth::user()->cid : $request->by;
 
         if (!AuthHelper::validApiKeyv2($request->input('apikey', null)) && !Auth::check()) {
             return response()->api(generate_error("Unauthorized"), 401);
@@ -1280,9 +1280,9 @@ class FacilityController extends APIController
 
         if (!isTest()) {
             if ($request->input("action") === "accept") {
-                $transfer->accept($staff->cid);
+                $transfer->accept($by->cid);
             } else {
-                $transfer->reject($staff->cid, $request->input("reason"));
+                $transfer->reject($by->cid, $request->input("reason"));
             }
         }
 
