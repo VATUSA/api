@@ -69,6 +69,7 @@ class AcademyController extends APIController
      *     Instructor, or Senior Staff role.", produces={"application/json"}, tags={"academy"}, security={"session",
      *     "jwt"},
      * @SWG\Parameter(name="cid", in="formData", type="integer", description="Controller CID"),
+     * @SWG\Parameter(name="instructor", in="formData", type="integer", description="Instructor CID [required for API Key]"),
      * @SWG\Response(
      *         response="400",
      *         description="Malformed request",
@@ -109,6 +110,21 @@ class AcademyController extends APIController
             );
         }
 
+        if (Auth::check()) {
+            $instructor = Auth::user();
+        } else {
+            $instructor = User::find($request->input('instructor'));
+            if (!$instructor || !$instructor->flag_homecontroller) {
+                return response()->api(
+                    generate_error("Invalid instructor", true), 400
+                );
+            }
+        }
+
+        if (!AuthHelper::validApiKeyv2($request->input('apikey', null))
+            && !Auth::check()) {
+            return response()->forbidden();
+        }
         if (!AuthHelper::validApiKeyv2($request->input('apikey', null))
             && !RoleHelper::isInstructor(Auth::user()->cid, $user->facility)
             && !RoleHelper::isSeniorStaff(Auth::user()->cid, $user->facility)
@@ -140,7 +156,7 @@ class AcademyController extends APIController
 
         $assignment = new AcademyExamAssignment();
         $assignment->student_id = $user->cid;
-        $assignment->instructor_id = Auth::user()->cid;
+        $assignment->instructor_id = $instructor->cid;
         $assignment->course_id = $courseId;
         $assignment->moodle_uid = $uid;
         $assignment->course_name = DB::connection('moodle')->table('course')
@@ -159,13 +175,13 @@ class AcademyController extends APIController
         $assignment->save();
 
         Mail::to($user->email)
-            ->cc(Auth::user()->email)
+            ->cc($instructor->email)
             ->queue(new AcademyRatingCourseEnrolled($assignment));
 
         $log = new Action();
         $log->to = $user->cid;
         $log->log = "Academy Rating Course (" . $assignment->course_name . ") " .
-            " assigned by " . Auth::user()->fullname();
+            " assigned by " . $instructor->fullname();
         $log->save();
 
         return response()->ok();
