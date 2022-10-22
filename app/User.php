@@ -446,7 +446,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
 
         if ($oldfac->id != "ZZN" && $oldfac->id != "ZAE") {
             if (RoleHelper::has($this->cid, $oldfac->id, "ATM") || RoleHelper::has($this->cid, $oldfac->id, "DATM")) {
-                EmailHelper::sendEmail(["vatusa" . $oldfac->region . "@vatusa.net"], "ATM or DATM discrepancy",
+                EmailHelper::sendEmail(["vatusa2@vatusa.net"], "ATM or DATM discrepancy",
                     "emails.transfers.atm", ["user" => $this, "oldfac" => $oldfac]);
                 $fc = 1;
             } elseif (RoleHelper::has($this->cid, $oldfac->id, "TA")) {
@@ -483,7 +483,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             EmailHelper::sendEmail([
                 "$fac-atm@vatusa.net",
                 "$fac-datm@vatusa.net",
-                "vatusa" . $facility->region . "@vatusa.net"
+                "vatusa2@vatusa.net"
             ], "User added to facility", "emails.user.addedtofacility", [
                 "name"     => $this->fullname(),
                 "cid"      => $this->cid,

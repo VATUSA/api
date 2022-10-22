@@ -291,7 +291,7 @@ class UserController extends APIController
                             $destination = "$facility-atm@vatusa.net";
                         }
                         if ($role === "atm") {
-                            $destination = "vatusa" . $fac->region . "@vatusa.net";
+                            $destination = "vatusa2@vatusa.net";
                         }
                         EmailHelper::setForward("$facility-$role@vatusa.net", $destination);
                     }
@@ -398,11 +398,11 @@ class UserController extends APIController
             $emails = [];
             if ($transfer->to != "ZAE" && $transfer->to != "ZHQ") {
                 $emails[] = $transfer->to . "-sstf@vatusa.net";
-                $emails[] = "vatusa" . $transfer->toFac->region() . "@vatusa.net";
+                $emails[] = "vatusa2@vatusa.net";
             }
             if ($transfer->from != "ZAE" && $transfer->from != "ZHQ") {
                 $emails[] = $transfer->to . "-sstf@vatusa.net";
-                $emails[] = "vatusa" . $transfer->fromFac->region() . "@vatusa.net";
+                $emails[] = "vatusa2@vatusa.net";
             }
 
             \Mail::to($emails)->send(new \App\Mail\TransferRequested($transfer));
