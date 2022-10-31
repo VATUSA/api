@@ -329,7 +329,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
                     $this->email,
                     "$old_facility-atm@vatusa.net",
                     "$old_facility-datm@vatusa.net",
-                    "vatusa$region@vatusa.net"
+                    "vatusa2@vatusa.net"
                 ],
                 "Removal from $facname",
                 "emails.user.removed",
