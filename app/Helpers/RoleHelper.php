@@ -327,7 +327,7 @@ class RoleHelper
         if (!$user) {
             return false;
         }
-        if (static::has($cid, "ZHQ", "US12")) {
+        if (static::has($cid, "ZHQ", "US6")) {
             return true;
         }
         if (Role::where("facility", "ZHQ")->where("cid", $cid)->where("role", "USWT")->count() >= 1) {
