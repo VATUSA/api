@@ -216,7 +216,7 @@ class SoloController extends APIController
         if (!isTest()) {
             if ($request->input("id", null)) {
                 try {
-                    $cert = SoloCert::findOrFail($request->id);
+                    $cert = SoloCert::findOrFail($request->input("id", null));
                     $log = new Action();
                     $log->to = $cert->cid;
                     $log->log = "Solo Cert revoked for " . $cert->position . " by " . ((Auth::user()) ? Auth::user()->fullname() : "API");
