@@ -55,6 +55,11 @@ class ULSv2Controller extends Controller
             throw new ReturnPathNotFoundException("Invalid return URL");
         }
 
+        // Disabling ULS
+        abort(400,
+            "ULS has been disabled. Please contact the facility webmaster at "
+            . strtolower($facility->id) . "-wm@vatusa.net");
+
         if($test && $facility->uls_jwk_dev == "")
             abort(400, "Sandbox JWK has not been generated.");
         if ($facility->uls_jwk == "" || ($test && $facility->uls_jwk_dev == "")) {

@@ -33,6 +33,11 @@ class ULSController extends Controller
             throw new FacilityNotFoundException("Invalid facility");
         }
 
+        // Disabling ULS
+        abort(400,
+            "ULS has been disabled. Please contact the facility webmaster at "
+            . strtolower($facility->id) . "-wm@vatusa.net");
+
         session(['fac' => strtoupper($request->input('fac'))]);
         if ($request->has('dev')) {
             session(['dev' => true]);
