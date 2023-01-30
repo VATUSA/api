@@ -11,8 +11,6 @@ use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
 use App\Promotion;
 use App\Role;
-use App\TrainingChapter;
-use App\TrainingProgress;
 use App\Transfer;
 use App\User;
 use Auth;

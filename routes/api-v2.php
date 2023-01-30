@@ -71,13 +71,6 @@ Route::group(['prefix' => 'facility'], function () {
         Route::put('{id}', 'FacilityController@putFacility')->where('id', '[A-Za-z]{3}');
         Route::post('{id}/email/{templateName}', 'FacilityController@postEmailTemplate');
     });
-    Route::middleware(['private', 'auth:web,jwt'])->group(function () {
-        Route::get("{id}/oauth", 'FacilityController@getOAuth');
-        Route::post("{id}/oauth", 'FacilityController@postOAuth');
-        Route::patch("{id}/oauth/{client}", 'FacilityController@patchOAuthClient');
-        Route::delete("{id}/oauth/{client}", 'FacilityController@deleteOAuthClient');
-        Route::put("{id}/oauth/{client}/secret", "FacilityController@putOAuthClientSecret");
-    });
     Route::group(['middleware' => 'semiprivate'], function () {
         Route::delete('{id}/roster/{cid}', 'FacilityController@deleteRoster')->where([
             'id'  => '[A-Za-z]{3}',

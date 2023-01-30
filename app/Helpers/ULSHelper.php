@@ -4,8 +4,6 @@ namespace App\Helpers;
 
 use App\Classes\VATUSAMoodle;
 use App\Facility;
-use App\ReturnPaths;
-use App\Role;
 use App\User;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
@@ -119,13 +117,5 @@ class ULSHelper
     public static function base64url_decode($data)
     {
         return base64_decode(strtr($data, '-_', '+/'));
-    }
-
-    public static function getReturnFromOrder($facility, $order)
-    {
-        $return = ReturnPaths::where(
-            ['facility_id' => $facility, 'order' => $order]);
-
-        return $return->exists() ? $return->pluck('url')->first() : false;
     }
 }
