@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\API\v2;
 
 use App\Action;
-use App\ExamResults;
 use App\Helpers\AuthHelper;
 use App\Helpers\CERTHelper;
 use App\Helpers\EmailHelper;

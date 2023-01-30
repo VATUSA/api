@@ -80,14 +80,12 @@ class VatsimConnect extends GenericProvider
     {
         $code = $request->input('code', null);
         $state = $request->input('state', null);
-        $isULS = $request->session()->has(['uls', 'ulsv2']);
 
         if (!$code/* || !$state || $state !== $request->get('oauthstate')*/) {
             $request->session()->forget("return");
             $error = "Invalid response from VATSIM, please try again. If this error persists, contact VATUSA12.";
 
-            return $isULS ? response($error, 401) : redirect(env('SSO_RETURN_HOME_ERROR'))->with('error',
-                $error);
+            return redirect(env('SSO_RETURN_HOME_ERROR'))->with('error', $error);
         }
 
         $request->session()->forget('oauthstate');
@@ -101,8 +99,7 @@ class VatsimConnect extends GenericProvider
                 $request->session()->forget("return");
                 $error = "An error occurred while logging in with VATSIM, please try again. If this error persists, contact VATUSA12.";
 
-                return $isULS ? response($error, 401) : redirect(env('SSO_RETURN_HOME_ERROR'))->with('error',
-                    $error);
+                return redirect(env('SSO_RETURN_HOME_ERROR'))->with('error', $error);
             }
         }
         $resource = json_decode(json_encode($this->getResourceOwner($token)->toArray()));
@@ -114,8 +111,7 @@ class VatsimConnect extends GenericProvider
             $error = "Insufficient user data provided. In order to login, you must allow us to continuously recieve all of your VATSIM data: full name, email, and rating information.
              Please try again. If this error persists, contact VATUSA12.";
 
-            return $isULS ? response($error, 401) : redirect(env('SSO_RETURN_HOME_ERROR'))->with('error',
-                $error);
+            return redirect(env('SSO_RETURN_HOME_ERROR'))->with('error', $error);
         }
 
         $user = User::find($resource->data->cid);

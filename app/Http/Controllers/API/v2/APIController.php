@@ -18,12 +18,11 @@ use \App\Http\Controllers\Controller as BaseController;
  *         description="VATUSA APIv2 Documentation.
             Authentication methods are: <ul>
             <li> JSON Web Tokens (Translated from Laravel session)</li>
-            <li> Session Cookies (Client-side credentials with ULS)</li>
             <li> API Keys (Issued to facilities)</li></ul>
             <p>Method security, if applicable, is indicated in brackets at the end of each endpoint title.</p>
             <p>Security classification: <ul>
                 <li><strong>Private:</strong> CORS Restricted (Internal)</li>
-                <li><strong>Auth:</strong> Accepts Session Cookie or JWT</li>
+                <li><strong>Auth:</strong> Accepts JWT</li>
                 <li><strong>Key:</strong> Accepts API Key, Session Cookie, or JWT</li>
             </ul></p>
             <p>Facilities that have a APIv2 JWK defined in facility settings will have the data encapsulated in a
@@ -40,15 +39,12 @@ use \App\Http\Controllers\Controller as BaseController;
  *     ),
  *     @SWG\Tag(name="academy",description="Interaction with Moodle (Academy)"),
  *     @SWG\Tag(name="auth",description="Internal authentication handling commands for use by VATUSA Web Systems to translate Laravel Sessions into JSON Web Tokens"),
- *     @SWG\Tag(name="cbt",description="Computer Based Training actions"),
  *     @SWG\Tag(name="email",description="User email addresses for staff members"),
- *     @SWG\Tag(name="exam",description="Exam center actions"),
  *     @SWG\Tag(name="facility",description="Facility management actions"),
  *     @SWG\Tag(name="public",description="Public feeds of events and news"),
  *     @SWG\Tag(name="rating",description="Rating changes"),
  *     @SWG\Tag(name="role",description="Role handling"),
  *     @SWG\Tag(name="solo",description="Solo certifications"),
- *     @SWG\Tag(name="stats",description="Division statistics"),
  *     @SWG\Tag(name="support",description="Support Center"),
  *     @SWG\Tag(name="survey", description="Survey management"),
  *     @SWG\Tag(name="tmu",description="Traffic Management Unit - Notices (NTOS)"),

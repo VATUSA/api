@@ -42,26 +42,6 @@ Route::group(['middleware' => ['private', 'auth:jwt,web'], 'prefix' => '/bucket'
 });
 
 /******************************************************************************************
- * /cbt
- * CBT Functions
- */
-
-Route::group(['middleware' => ['public'], 'prefix' => '/cbt'], function () {
-    Route::get('/', 'CBTController@getBlocks');
-    Route::get('/{id}', 'CBTController@getChapters')->where("id", "[0-9]+");
-    Route::group(['middleware' => ['auth:web,jwt']], function () {
-        Route::post('/', 'CBTController@postBlock');
-        Route::put('/{blockId}', 'CBTController@putBlock');
-        Route::delete('/{blockId}', 'CBTController@deleteBlock');
-
-        Route::post('/{blockId}', 'CBTController@postChapter')->where("blockId", "[0-9]+");
-        Route::put('/{blockId}/{chapterId}', 'CBTController@putChapter');
-        Route::delete('/{blockId}/{chapterId}', 'CBTController@deleteChapter');
-
-    });
-});
-
-/******************************************************************************************
  * /email
  * Email functions
  */
@@ -77,39 +57,6 @@ Route::group(['middleware' => ['private', 'auth:web,jwt'], 'prefix' => '/email']
     Route::post('/', 'EmailController@putIndex');  // Alias for now
 });
 
-/******************************************************************************************
- * /exam
- * Exam functions
- */
-
-Route::group(['middleware' => 'semiprivate', 'prefix' => 'exams'], function () {
-    Route::get('/', 'ExamController@getExams');
-    Route::get('{facility}', 'ExamController@getExams')->where('facility', '[A-Z]{3}');
-    Route::get('{id}', 'ExamController@getExambyId')->where('id', '[0-9]+');
-    Route::get('result/{id}', 'ExamController@getResult')->where('id', '[0-9]+');
-});
-
-Route::group(['middleware' => ['auth:web,jwt', 'private'], 'prefix' => '/exam'], function () {
-    Route::get('{id}/questions', 'ExamController@getExamQuestions')->where('id', '[0-9]+');
-    Route::put('{id}', 'ExamController@putExam')->where('id', '[0-9]+');
-    Route::post('{id}/assign/{cid}', 'ExamController@postExamAssign');
-    Route::delete('{id}/assign/{cid}', 'ExamController@deleteExamAssignment');
-});
-
-Route::group(['middleware' => ['private', 'auth:jwt,web'], 'prefix' => '/exam'], function () {
-    Route::post('queue/{id}', 'ExamController@postQueue');
-    Route::get('request', 'ExamController@getRequest');
-    Route::post('submit', 'ExamController@postSubmit');
-});
-
-Route::group(['prefix' => '/academy'], function () {
-    Route::group(['middleware' => 'semiprivate'], function () {
-        Route::get('transcript/{user}', 'AcademyController@getTranscript')->where('user', '[0-9]+');
-        Route::post('enroll/{courseId}', 'AcademyController@postEnroll')->where('courseId', '[0-9]+');
-    });
-
-    Route::get('identifiers', 'AcademyController@getIdentifiers');
-});
 /******************************************************************************************
  * /facility
  * Facility functions
@@ -142,10 +89,6 @@ Route::group(['prefix' => 'facility'], function () {
             'transferId' => '\d+'
         ]);
         Route::get('{id}/email/{templateName}', 'FacilityController@getemailTemplate');
-        Route::get('{id}/ulsReturns', 'FacilityController@getUlsReturns');
-        Route::post('{id}/ulsReturns', 'FacilityController@addUlsReturn');
-        Route::delete('{id}/ulsReturns/{order}', 'FacilityController@removeUlsReturn');
-        Route::put('{id}/ulsReturns/{order}', 'FacilityController@putUlsReturn');
         Route::get('{facility}/training/records', 'TrainingController@getFacilityRecords');
         Route::post('{id}/roster/manageVisitor/{cid}', 'FacilityController@addVisitor')->where([
             'id'  => '[A-Za-z]{3}',
@@ -179,16 +122,6 @@ Route::group(['prefix' => '/solo'], function () {
         Route::post('/', 'SoloController@postSolo');
         Route::delete('/', 'SoloController@deleteSolo');
     });
-});
-
-
-/******************************************************************************************
- * /stats
- * Statistics functions
- */
-
-Route::group(['prefix' => '/stats'], function () {
-    Route::get('/exams/{facility}', 'StatsController@getExams')->middleware('semiprivate');
 });
 
 /******************************************************************************************
@@ -250,19 +183,6 @@ Route::group(['prefix' => '/user'], function () {
     ])->middleware('auth:web,jwt');
 
     Route::group(['middleware' => 'semiprivate'], function () {
-        Route::get('/{cid}/cbt/history', 'UserController@getCBTHistory')->where('cid', '[0-9]+');
-        Route::get('/{cid}/cbt/progress/{blockId}', 'UserController@getCBTProgress')->where([
-            'cid'     => '[0-9]+',
-            'blockId' => '[0-9]+'
-        ]);
-        Route::put('/{cid}/cbt/progress/{blockId}/{chapterId}', 'UserController@getCBTProgress')->where([
-            'cid'       => '[0-9]+',
-            'blockId'   => '[0-9]+',
-            'chapterId' => '[0-9]+'
-        ]);
-
-        Route::get('/{cid}/exam/history', 'UserController@getExamHistory')->where('cid', '[0-9]+');
-
         Route::get('/{cid}/transfer/checklist', 'UserController@getTransferChecklist')->where('cid', '[0-9]+');
         Route::get('/{cid}/transfer/history', 'UserController@getTransferHistory')->where('cid', '[0-9]+');
         Route::get('/{user}/training/records', 'TrainingController@getUserRecords')->where('user', '[0-9]+');
