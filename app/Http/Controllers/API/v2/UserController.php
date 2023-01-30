@@ -1066,63 +1066,6 @@ class UserController extends APIController
     }
 
     /**
-     * @param $cid
-     *
-     * @return array|string
-     *
-     * @SWG\Get(
-     *     path="/user/(cid)/exam/history",
-     *     summary="Get user's exam history. [Key]",
-     *     description="Get user's exam history. Requires API Key, JWT, or Session Cookie (required role: [N/A
-    for API Key] ATM, DATM, TA, INS, VATUSA STAFF)", produces={"application/json"}, tags={"user","exam"},
-     *     security={"jwt","session","apikey"},
-     * @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
-     * @SWG\Response(
-     *         response="401",
-     *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
-     *     ),
-     * @SWG\Response(
-     *         response="403",
-     *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
-     *     ),
-     * @SWG\Response(
-     *         response="200",
-     *         description="OK",
-     *         @SWG\Schema(
-     *             type="array",
-     *             @SWG\Items(
-     *                 ref="#/definitions/ExamResults"
-     *             )
-     *         ),
-     *         examples={"application/json":{{"id":18307,"exam_id":7,"exam_name":"VATUSA - Basic ATC
-               Quiz","cid":876594,"score":88,"passed":1,"date":"2009-09-14T04:17:37+00:00"}}},
-     *     )
-     * )
-     */
-    public function getExamHistory($cid)
-    {
-        $hasValidApiKey = AuthHelper::validApiKeyv2(request()->input('apikey', null));
-        if (!Auth::check() && !$hasValidApiKey) {
-            return response()->api(generate_error("Unauthenticated"), 401);
-        }
-
-        if (!$hasValidApiKey && $cid != Auth::user()->cid &&
-            !RoleHelper::isVATUSAStaff() &&
-            !RoleHelper::isFacilityStaff() &&
-            !RoleHelper::isInstructor()) {
-            return response()->api(generate_error("Forbidden"), 403);
-        }
-
-        $results = ExamResults::where('cid', $cid)->orderBy('date', 'desc')->get()->toArray();
-
-        return response()->api($results);
-    }
-
-    /**
      * @param $partialCid
      *
      * @return array|string
