@@ -58,6 +58,20 @@ Route::group(['middleware' => ['private', 'auth:web,jwt'], 'prefix' => '/email']
 });
 
 /******************************************************************************************
+ * /academy
+ * Academy functions
+ */
+
+Route::group(['prefix' => '/academy'], function () {
+    Route::group(['middleware' => 'semiprivate'], function () {
+        Route::get('transcript/{user}', 'AcademyController@getTranscript')->where('user', '[0-9]+');
+        Route::post('enroll/{courseId}', 'AcademyController@postEnroll')->where('courseId', '[0-9]+');
+    });
+
+    Route::get('identifiers', 'AcademyController@getIdentifiers');
+});
+
+/******************************************************************************************
  * /facility
  * Facility functions
  */
