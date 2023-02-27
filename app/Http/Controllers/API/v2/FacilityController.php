@@ -1133,7 +1133,7 @@ class FacilityController extends APIController
      * @SWG\Parameter(name="transferId", in="query", description="Transfer ID", type="integer", required=true),
      * @SWG\Parameter(name="action", in="formData", type="string", required=true, enum={"approve","reject"},
      *                                   description="Action to take on transfer request. Valid values:
-    approve,reject"),
+    accept,reject"),
      * @SWG\Parameter(name="reason", in="formData", type="string", description="Reason for transfer request rejection
     [required for rejections]"),
      * @SWG\Parameter(name="by", in="formData", type="integer", description="Staff member responsible for trasnfer [required for API Key]"),
