@@ -22,10 +22,10 @@ use Illuminate\Database\Eloquent\Model;
  *     @SWG\Property(property="score", type="integer", description="Overall score/rating out of 5"),
  *     @SWG\Property(property="notes", type="string", description="Training notes content"),
  *     @SWG\Property(property="location", type="integer", description="0 = Classroom; 1 = Live; 2 = Sweatbox"),
- *     @SWG\Property(property="ots_status", type="boolean", description="OTS Status: 0 = Not OTS, 1 = OTS Pass, 2 = OTS Fail, 3 = OTS Recommended"),
+ *     @SWG\Property(property="ots_status", type="integer", description="OTS Status: 0 = Not OTS, 1 = OTS Pass, 2 = OTS Fail, 3 = OTS Recommended"),
  *     @SWG\Property(property="is_cbt", type="boolean", description="System - CBT Completion"),
  *     @SWG\Property(property="solo_granted", type="boolean", description="Solo was granted during the session"),
- *     @SWG\Property(property="modified_by", type="boolean", description="Editor CID"),
+ *     @SWG\Property(property="modified_by", type="integer", description="Editor CID"),
  * )
  */
 class TrainingRecord extends Model
