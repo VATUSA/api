@@ -7,6 +7,7 @@ use Cache;
 use App\Role;
 use App\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Class RoleHelper
@@ -331,6 +332,32 @@ class RoleHelper
             return true;
         }
         if (Role::where("facility", "ZHQ")->where("cid", $cid)->where("role", "USWT")->count() >= 1) {
+            return true;
+        }
+
+        return false;
+    }
+
+
+
+    /**
+     * @param      $cid
+     * @param      $facility
+     * @param      $role
+     *
+     * @return bool
+     */
+    public static function hasRole($cid, $facility, $role, $isApi = false)
+    {
+        if (Schema::hasColumn('facilities', strtolower($role))) {
+            $c = Facility::where(strtolower($role), $cid)->where('id', $facility)->count();
+            if ($c) {
+                return true;
+            }
+        }
+
+        $c = Role::where('role', $role)->where('cid', $cid)->where('facility', $facility)->count();
+        if ($c) {
             return true;
         }
 
