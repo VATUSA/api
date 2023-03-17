@@ -68,7 +68,7 @@ class SMFHelper
         $user = User::find($cid);
 
         if ($user->rating == Helper::ratingIntFromShort("ADM")) {
-            if (!RoleHelper::isVATUSAStaff()) {
+            if (!RoleHelper::isVATUSAStaff($cid, true, true)) {
                 static::setGroups($cid, static::findGroup("VATSIM Leadership"));
 
                 return;
@@ -107,7 +107,7 @@ class SMFHelper
             $secondary[] = static::findGroup($role);
         }
 
-        if (RoleHelper::isVATUSAStaff($cid, true)) {
+        if (RoleHelper::isVATUSAStaff($cid, true, true)) {
             $primary = static::findGroup("VATUSA Staff");
             if (RoleHelper::hasRole($user->cid, "ZHQ", "US1")
                 || RoleHelper::hasRole($user->cid, "ZHQ", "US6")) {
