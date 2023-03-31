@@ -1197,10 +1197,7 @@ class FacilityController extends APIController
             return response()->api(generate_error("Unauthorized"), 401);
         }
 
-        if (!AuthHelper::validApiKeyv2($request->input('apikey', null))
-            && !RoleHelper::isSeniorStaff(Auth::user()->cid, $id)
-            && !RoleHelper::isVATUSAStaff(Auth::user()->cid)
-        ) {
+        if (!RoleHelper::isSeniorStaff($by, $id)) {
             return response()->api(generate_error("Forbidden"), 403);
         }
 
