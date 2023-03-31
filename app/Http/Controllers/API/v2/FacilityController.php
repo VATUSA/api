@@ -1229,9 +1229,9 @@ class FacilityController extends APIController
 
         if (!isTest()) {
             if ($request->input("action") === "accept") {
-                $transfer->accept($by->cid);
+                $transfer->accept($by);
             } else {
-                $transfer->reject($by->cid, $request->input("reason"));
+                $transfer->reject($by, $request->input("reason"));
             }
         }
 
