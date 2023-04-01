@@ -612,7 +612,7 @@ class TrainingController extends Controller
         if (!User::find($instructorId)) {
             return response()->api(generate_error("Invalid instructor."), 400);
         }
-        if (!preg_match("/^([A-Z]{2,3})(_([A-Z]{1,3}))?_(DEL|GND|TWR|APP|DEP|CTR|FSS)$/", $position)) {
+        if (!preg_match("/^([A-Z]{2,3})(_([A-Z0-9]{1,3}))?_(DEL|GND|TWR|APP|DEP|CTR|FSS)$/", $position)) {
             return response()->api(generate_error("Invalid position."), 400);
         }
         if (!in_array(intval($location), [0, 1, 2])) {
