@@ -325,11 +325,11 @@ class VATUSAMoodle extends MoodleRest
     /**
      * Update user.
      *
-     * @param \App\User $user
-     * @param int       $id
+     * @param User $user
+     * @param int $id
      *
-     * @return bool|null
-     * @throws \Exception
+     * @return mixed
+     * @throws Exception
      */
     public function updateUser(User $user, int $id)
     {
