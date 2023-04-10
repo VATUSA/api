@@ -51,6 +51,8 @@ class VATUSAMoodle extends MoodleRest
     public const CONTEXT_MODULE = 70;
     public const CONTEXT_BLOCK = 80;
 
+    private $isTest;
+
     /**
      * VATUSAMoodle constructor.
      *
@@ -58,11 +60,18 @@ class VATUSAMoodle extends MoodleRest
      *
      * @throws \Exception
      */
-    public function __construct(bool $isSSO = false)
+    public function __construct(bool $isSSO = false, bool $isTest = false)
     {
-        if (in_array(app()->environment(), ["livedev", "staging", "prod", "dev"])) {
+        $this->isTest = $isTest;
+        if (!in_array(app()->environment(), ["livedev", "staging", "prod", "dev"]))
+            return;
+
+        if (!$isTest) {
             parent::__construct(config('services.moodle.url') . '/webservice/rest/server.php',
                 $isSSO ? config('services.moodle.token_sso') : config('services.moodle.token'));
+        } else {
+            parent::__construct(config('services.moodle_test.url') . '/webservice/rest/server.php',
+                $isSSO ? config('services.moodle_test.token_sso') : config('services.moodle_test.token'));
         }
     }
 
@@ -73,7 +82,13 @@ class VATUSAMoodle extends MoodleRest
      */
     public function setSSO(bool $isSSO = true)
     {
-        $this->setToken($isSSO ? config('services.moodle.token_sso') : config('services.moodle.token'));
+        if ($this->isTest) {
+            $this->setToken($isSSO ?
+                config('services.moodle_test.token_sso') : config('services.moodle_test.token'));
+        } else {
+            $this->setToken($isSSO ?
+                config('services.moodle.token_sso') : config('services.moodle.token'));
+        }
     }
 
     /**

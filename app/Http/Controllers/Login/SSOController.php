@@ -73,6 +73,8 @@ class SSOController extends Controller
             $request->session()->put('return', env('SSO_RETURN_FORUMS'));
         } elseif ($request->has('moodle')) {
             $request->session()->put('return', env('SSO_RETURN_MOODLE'));
+        } elseif ($request->has('moodle-test')) {
+            $request->session()->put('return', env('SSO_RETURN_MOODLE_TEST'));
         } elseif ($request->has('localdev')) {
             $request->session()->put('return', env('SSO_RETURN_LOCALDEV'));
         } else {
@@ -83,8 +85,8 @@ class SSOController extends Controller
         if (Auth::check()) {
             $return = $request->session()->get("return");
             $request->session()->forget("return");
-
-            return ULSHelper::doHandleLogin(Auth::user()->cid, $return);
+            $isTest = $request->has('moodle-test');
+            return ULSHelper::doHandleLogin(Auth::user()->cid, $return, $isTest);
         }
 
         return $this->sso->redirect($request);

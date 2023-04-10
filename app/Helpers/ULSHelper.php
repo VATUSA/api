@@ -62,7 +62,7 @@ class ULSHelper
         return $data;
     }
 
-    public static function doHandleLogin($cid, $return)
+    public static function doHandleLogin($cid, $return, $isTest = false)
     {
         //require_once(config('sso.forumapi', ''));
         //smfapi_login($cid, 14400);
@@ -70,7 +70,7 @@ class ULSHelper
 
         if (in_array(app()->environment(), ["prod", "staging"])) {
             //Sync Moodle Roles
-            $moodle = new VATUSAMoodle(false);
+            $moodle = new VATUSAMoodle(false, $isTest);
             if ($id = $moodle->getUserId($cid)) {
                 //Update Information
                 $moodle->updateUser(Auth::user(), $id);
