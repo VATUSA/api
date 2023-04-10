@@ -331,7 +331,7 @@ class VATUSAMoodle extends MoodleRest
      * @return bool|null
      * @throws \Exception
      */
-    public function updateUser(User $user, int $id): ?bool
+    public function updateUser(User $user, int $id)
     {
         if (!$user) {
             return false;
