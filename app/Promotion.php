@@ -1,4 +1,5 @@
 <?php namespace App;
+use App\Helpers\Helper;
 use App\Helpers\RatingHelper;
 
 /**
@@ -37,6 +38,10 @@ class Promotion extends Model {
         $p->position = $position;
         $p->eval_id = $evalId;
         $p->save();
+
+
+        log_action($cid, "Rating Change: " . RatingHelper::intToShort($p->from) . " to " .
+            RatingHelper::intToShort($to) . " issued by " . Helper::nameFromCID($grantor));
 
         return $p;
     }

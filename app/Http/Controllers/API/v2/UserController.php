@@ -4,11 +4,11 @@ namespace App\Http\Controllers\API\v2;
 
 use App\Action;
 use App\Helpers\AuthHelper;
-use App\Helpers\CERTHelper;
 use App\Helpers\EmailHelper;
 use App\Helpers\Helper;
 use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
+use App\Helpers\VATSIMApi2Helper;
 use App\Promotion;
 use App\Role;
 use App\Transfer;
@@ -578,7 +578,7 @@ class UserController extends APIController
                     $query->where("role", "MTR")->orWhere("role", "INS");
                 });
 
-            $changeRatingReturn = CERTHelper::changeRating($cid, $rating, true);
+            $changeRatingReturn = VATSIMApi2Helper::updateRating($cid, $rating);
             if ($mtr_ins_query->count()) {
                 try {
                     $mtr_ins_query->delete();
@@ -626,7 +626,7 @@ class UserController extends APIController
 
         Promotion::process($user->cid, Auth::user()->cid, $user->rating + 1, $user->rating, $examDate, $examiner,
             $position, $evalId);
-        $changeRatingReturn = CERTHelper::changeRating($cid, $rating, true);
+        $changeRatingReturn = VATSIMApi2Helper::updateRating($cid, $rating);
         if ($changeRatingReturn) {
             return response()->ok();
         } else {

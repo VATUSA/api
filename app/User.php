@@ -1,13 +1,13 @@
 <?php namespace App;
 
 use App\Classes\OAuth\VatsimConnect;
-use App\Helpers\CERTHelper;
 use App\Helpers\ExamHelper;
 use App\Helpers\Helper;
 use App\Helpers\EmailHelper;
 use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
 use App\Helpers\SMFHelper;
+use App\Helpers\VATSIMApi2Helper;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Support\Facades\Cache;
@@ -376,7 +376,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
                 $dm->from = RatingHelper::shortToInt("I1");
                 $dm->to = $original_rating;
                 $dm->save();
-                CERTHelper::changeRating($this->cid, $original_rating, false);
+                VATSIMApi2Helper::updateRating($this->cid, $original_rating);
                 $this->rating = $original_rating; // save within this function, not using CERTHelper
                 log_action($this->cid,
                     "Demoted to " . RatingHelper::intToShort($original_rating) . " on transfer to ZAE");
