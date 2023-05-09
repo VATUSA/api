@@ -25,11 +25,15 @@ class EmailHelper {
      */
     public static function sendEmail($email, $subject, $template, $data)
     {
-        Mail::send($template, $data, function ($msg) use ($data, $email, $subject) {
-            $msg->from('no-reply@vatusa.net', "VATUSA Web Services");
-            $msg->to($email);
-            $msg->subject("[VATUSA] $subject");
-        });
+        try {
+            Mail::send($template, $data, function ($msg) use ($data, $email, $subject) {
+                $msg->from('no-reply@vatusa.net', "VATUSA Web Services");
+                $msg->to($email);
+                $msg->subject("[VATUSA] $subject");
+            });
+        } catch (\Exception $exception) {
+            // Don't do anything - temporary workaround due to mail host failures
+        }
     }
 
     /**
