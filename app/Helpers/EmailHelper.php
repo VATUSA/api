@@ -48,12 +48,16 @@ class EmailHelper {
      */
     public static function sendEmailBCC($fromEmail, $fromName, $emails, $subject, $template, $data)
     {
-        Mail::send($template, $data, function ($msg) use ($data, $fromEmail, $emails, $fromName, $subject) {
-            $msg->from("no-reply@vatusa.net", "VATUSA Web Services");
-            $msg->to($fromEmail, $fromName);
-            $msg->subject("[VATUSA] $subject");
-            $msg->bcc($emails);
-        });
+        try {
+            Mail::send($template, $data, function ($msg) use ($data, $fromEmail, $emails, $fromName, $subject) {
+                $msg->from("no-reply@vatusa.net", "VATUSA Web Services");
+                $msg->to($fromEmail, $fromName);
+                $msg->subject("[VATUSA] $subject");
+                $msg->bcc($emails);
+            });
+        } catch (\Exception $exception) {
+            // Don't do anything - temporary workaround due to mail host failures
+        }
     }
 
     /**
@@ -66,12 +70,16 @@ class EmailHelper {
      */
     public static function sendEmailFrom($email, $from_email, $from_name, $subject, $template, $data)
     {
-        Mail::send("emails.$template", $data, function ($msg) use ($data, $from_email, $from_name, $email, $subject) {
-            $msg->from("no-reply@vatusa.net", "$from_name");
-            $msg->replyTo($from_email, $from_name);
-            $msg->to($email);
-            $msg->subject("[VATUSA] $subject");
-        });
+        try {
+            Mail::send("emails.$template", $data, function ($msg) use ($data, $from_email, $from_name, $email, $subject) {
+                $msg->from("no-reply@vatusa.net", "$from_name");
+                $msg->replyTo($from_email, $from_name);
+                $msg->to($email);
+                $msg->subject("[VATUSA] $subject");
+            });
+        } catch (\Exception $exception) {
+            // Don't do anything - temporary workaround due to mail host failures
+        }
     }
 
     /**
@@ -91,11 +99,15 @@ class EmailHelper {
         fwrite($fp, $t->body);
         fclose($fp);
 
-        Mail::send("emails.$tpl", $data, function ($msg) use ($data, $email, $subject) {
-            $msg->from('no-reply@vatusa.net', "VATUSA Web Services");
-            $msg->to($email);
-            $msg->subject("[VATUSA] $subject");
-        });
+        try {
+            Mail::send("emails.$tpl", $data, function ($msg) use ($data, $email, $subject) {
+                $msg->from('no-reply@vatusa.net', "VATUSA Web Services");
+                $msg->to($email);
+                $msg->subject("[VATUSA] $subject");
+            });
+        } catch (\Exception $exception) {
+            // Don't do anything - temporary workaround due to mail host failures
+        }
 
         unlink(resource_path("views/emails/$tpl.blade.php"));
     }
@@ -116,11 +128,15 @@ class EmailHelper {
         $transport->setPassword(env("SUPPORT_EMAIL_PASSWORD"));
         $support = new \Swift_Mailer($transport);
         Mail::setSwiftMailer($support);
-        Mail::send($template, $data, function($msg) use ($data, $email, $subject, $ticket) {
-            $msg->from('support@vatusa.net', 'VATUSA Help Desk');
-            $msg->bcc($email);
-            $msg->subject("[VATUSA Help Desk] (Ticket #$ticket) $subject");
-        });
+        try {
+            Mail::send($template, $data, function($msg) use ($data, $email, $subject, $ticket) {
+                $msg->from('support@vatusa.net', 'VATUSA Help Desk');
+                $msg->bcc($email);
+                $msg->subject("[VATUSA Help Desk] (Ticket #$ticket) $subject");
+            });
+        } catch (\Exception $exception) {
+            // Don't do anything - temporary workaround due to mail host failures
+        }
         Mail::setSwiftMailer($backup);
     }
 
