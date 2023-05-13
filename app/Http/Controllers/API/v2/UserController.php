@@ -589,6 +589,8 @@ class UserController extends APIController
             }
 
             if ($changeRatingReturn) {
+                $user->rating = $rating;
+                $user->save();
                 return response()->api(["status" => "OK"]);
             } else {
                 return response()->api(["status" => "Internal server error"], 500);
