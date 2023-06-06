@@ -15,8 +15,6 @@ RUN	addgroup -S application && adduser -SG application application && \
 	cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime && \
 	echo "${TIMEZONE}" > /etc/timezone && \
 	apk add --update \
-        php81-pdo_mysql \
-        php81-mysqli \
 		nginx \
 		supervisor \
 		openssh-client && \
@@ -35,6 +33,8 @@ RUN	addgroup -S application && adduser -SG application application && \
 	chown application:application /www && \
 	apk del tzdata && \
     rm -rf /var/cache/apk/*
+
+RUN docker-php-ext-install pdo_mysql
 
 WORKDIR /www
 COPY . /www
