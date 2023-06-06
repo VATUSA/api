@@ -566,7 +566,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         if (!in_array($this->facility, ["ZAE", "ZZN", "ZHQ"])) {
             if (Transfer::where('cid', $this->cid)->where('to', 'NOT LIKE', 'ZAE')->where('to', 'NOT LIKE',
                     'ZZN')->where('status', 1)->count() == 1) {
-                if ($this->facility_join->diffInDays(Carbon::now()) <= 30) {
+                if (Carbon::createFromFormat('Y-m-d H:i:s', $this->facility_join)->diffInDays(Carbon::now()) <= 30) {
                     $checks['initial'] = true;
                 }
             } else {
