@@ -16,6 +16,7 @@ RUN	addgroup -S application && adduser -SG application application && \
 	echo "${TIMEZONE}" > /etc/timezone && \
 	apk add --update \
         php81-pdo_mysql \
+        php81-mysqli \
 		nginx \
 		supervisor \
 		openssh-client && \
