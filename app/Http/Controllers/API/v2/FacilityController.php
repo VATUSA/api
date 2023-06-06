@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API\v2;
 
+use App\Classes\APIHelper;
 use App\Helpers\AuthHelper;
 use App\Helpers\FacilityHelper;
 use App\Helpers\RatingHelper;
@@ -1090,26 +1091,25 @@ class FacilityController extends APIController
             return response()->api(generate_error("Forbidden"), 403);
         }
 
-        $transfers = Transfer::where("to", $facility->id)->where(
-            "status", Transfer::$pending
-        )->get();
+        $transfers = APIHelper::getPendingTransfers($facility->id);
         $data = [];
+        /* @var $transfer \App\APIModels\Transfer */
         foreach ($transfers as $transfer) {
             $data[] = [
                 'id'        => $transfer->id,
-                'cid'       => $transfer->cid,
-                'fname'     => $transfer->user->fname,
-                'lname'     => $transfer->user->lname,
+                'cid'       => $transfer->controller->cid,
+                'display_name' => $transfer->controller->display_name,
+                'fname'     => $transfer->controller->first_name,
+                'lname'     => $transfer->controller->last_name,
                 'email'     => (AuthHelper::validApiKeyv2($request->input('apikey',
                         null)) || (Auth::check() && RoleHelper::isFacilityStaff(Auth::user()->cid)))
-                    ? $transfer->user->email : null,
+                    ? $transfer->controller->email : null,
                 'reason'    => (Auth::check() && RoleHelper::isSeniorStaff(Auth::user()->cid)) ? $transfer->reason : null,
                 'fromFac'   => [
-                    'id'   => $transfer->from,
-                    'name' => $transfer->fromFac->name
+                    'id'   => $transfer->from_facility,
                 ],
                 'rating'    => RatingHelper::intToShort($transfer->user->rating),
-                'intRating' => $transfer->user->rating,
+                'intRating' => $transfer->controller->rating,
                 'date'      => $transfer->created_at->format('Y-m-d')
             ];
         }

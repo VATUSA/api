@@ -5,6 +5,8 @@ namespace App\APIModels;
 class Controller {
     public int $cid;
     public string $display_name;
+    public string $first_name;
+    public string $last_name;
     public string $email;
     public string $facility;
     public int $rating;
