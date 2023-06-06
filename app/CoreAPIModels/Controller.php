@@ -1,6 +1,6 @@
 <?php
 
-namespace App\APIModels;
+namespace App\CoreAPIModels;
 
 class Controller {
     public int $cid;

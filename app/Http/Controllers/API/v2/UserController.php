@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API\v2;
 
 use App\Action;
+use App\Classes\CoreApiHelper;
 use App\Helpers\AuthHelper;
 use App\Helpers\EmailHelper;
 use App\Helpers\Helper;
@@ -381,24 +382,15 @@ class UserController extends APIController
         }
 
         if (!isTest()) {
-            $transfer = new Transfer();
-            $transfer->cid = $cid;
-            $transfer->to = $facility;
-            $transfer->from = $user->facility;
-            $transfer->reason = $reason;
-            $transfer->save();
-
-            if ($user->flag_xferoverride) {
-                $user->setTransferOverride(0);
-            }
+            $transfer = CoreApiHelper::createTransferRequest($cid, $facility, $reason, $cid);
 
             $emails = [];
-            if ($transfer->to != "ZAE" && $transfer->to != "ZHQ") {
-                $emails[] = $transfer->to . "-sstf@vatusa.net";
+            if ($transfer->to_facility != "ZAE" && $transfer->to_facility != "ZHQ") {
+                $emails[] = $transfer->to_facility . "-sstf@vatusa.net";
                 $emails[] = "vatusa2@vatusa.net";
             }
-            if ($transfer->from != "ZAE" && $transfer->from != "ZHQ") {
-                $emails[] = $transfer->to . "-sstf@vatusa.net";
+            if ($transfer->from_facility != "ZAE" && $transfer->from_facility != "ZHQ") {
+                $emails[] = $transfer->from_facility . "-sstf@vatusa.net";
                 $emails[] = "vatusa2@vatusa.net";
             }
 
@@ -893,7 +885,10 @@ class UserController extends APIController
             return response()->api(generate_error("Forbidden"), 403);
         }
 
-        $transfers = Transfer::where('cid', $cid)->orderBy('created_at', 'desc')->get()->toArray();
+        $transfers = CoreApiHelper::getControllerTransfers($cid);
+
+        $data = [];
+
 
         return response()->api($transfers);
     }

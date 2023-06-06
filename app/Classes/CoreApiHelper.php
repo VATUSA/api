@@ -2,13 +2,13 @@
 
 namespace App\Classes;
 
-use App\APIModels\Transfer;
-use App\APIModels\TransferHold;
-use App\APIModels\User;
+use App\CoreAPIModels\Transfer;
+use App\CoreAPIModels\TransferHold;
+use App\CoreAPIModels\Controller;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
 
-class APIHelper
+class CoreApiHelper
 {
 
     private static function client() {
@@ -46,7 +46,7 @@ class APIHelper
         } catch (BadResponseException $e) {
             $response = $e->getResponse();
             $body = json_decode($response->getBody(), true);
-            throw new APIHelperException($method, $uri, $response->getStatusCode(), $body['detail']);
+            throw new CoreAPIHelperException($method, $uri, $response->getStatusCode(), $body['detail']);
         }
     }
 
@@ -59,7 +59,7 @@ class APIHelper
     }
 
     /**
-     * @throws APIHelperException
+     * @throws CoreAPIHelperException
      */
     public static function createTransferRequest(int    $cid,
                                                  string $facility,
@@ -75,7 +75,7 @@ class APIHelper
     }
 
     /**
-     * @throws APIHelperException
+     * @throws CoreAPIHelperException
      */
     public static function getPendingTransfers($facility = null) {
         if ($facility != null) {
@@ -86,14 +86,21 @@ class APIHelper
     }
 
     /**
-     * @throws APIHelperException
+     * @throws CoreAPIHelperException
      */
     public static function getControllerTransfers($cid) {
         return self::_request("GET", "/transfer/controller/{$cid}", Transfer::class);
     }
 
     /**
-     * @throws APIHelperException
+     * @throws CoreAPIHelperException
+     */
+    public static function getTransfer($id): Transfer {
+        return self::_request("GET", "/transfer/{$id}", Transfer::class);
+    }
+
+    /**
+     * @throws CoreAPIHelperException
      */
     public static function processTransferRequest(int $id, bool $approve, string $reason, int $admin_cid): Transfer {
         $data = [
@@ -105,14 +112,14 @@ class APIHelper
     }
 
     /**
-     * @throws APIHelperException
+     * @throws CoreAPIHelperException
      */
     public static function getControllerActiveHolds($cid) {
         return self::_request("GET", "/transfer/hold/controller/{$cid}", TransferHold::class);
     }
 
     /**
-     * @throws APIHelperException
+     * @throws CoreAPIHelperException
      */
     public static function createTransferHold(int $cid, string $hold, string $start_date, string $end_date,
                                               int $created_by_cid = null) {

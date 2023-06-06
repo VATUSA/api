@@ -1,6 +1,6 @@
 <?php
 
-namespace App\APIModels;
+namespace App\CoreAPIModels;
 
 class Transfer {
     public int $id;

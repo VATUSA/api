@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers\API\v2;
 
-use App\Classes\APIHelper;
+use App\Classes\CoreApiHelper;
 use App\Helpers\AuthHelper;
 use App\Helpers\FacilityHelper;
 use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
 use App\Role;
 use App\TMUFacility;
-use App\Transfer;
 use App\User;
 use App\Visit;
 use Auth;
@@ -24,8 +23,7 @@ use Hidehalo\Nanoid\Client as NanoidClient;
  *
  * @package App\Http\Controllers\API\v2
  */
-class FacilityController extends APIController
-{
+class FacilityController extends APIController {
     /**
      * @return array|string
      *
@@ -53,8 +51,7 @@ class FacilityController extends APIController
      *     )
      * )
      */
-    public function getIndex()
-    {
+    public function getIndex() {
         $data = Facility::where("active", 1)->get()->toArray();
 
         return response()->ok($data);
@@ -71,7 +68,8 @@ class FacilityController extends APIController
      *     description="Get facility information.",
      *     responses={"application/json"},
      *     tags={"facility"},
-     *     @OA\Parameter(name="id", in="query", description="Facility IATA ID", required=true, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="id", in="query", description="Facility IATA ID", required=true,
+     *                              @OA\Schema(type="string")),
      *     @OA\Response(
      *         response="404",
      *         description="Not found or not active",
@@ -114,8 +112,7 @@ class FacilityController extends APIController
      *     )
      * )
      */
-    public function getFacility($id)
-    {
+    public function getFacility($id) {
         $facility = Facility::find($id);
         if (!$facility || !$facility->active) {
             return response()->api(
@@ -126,15 +123,14 @@ class FacilityController extends APIController
         if (Cache::has("facility.$id.info")) {
             return response()->api(json_decode(Cache::get("facility.$id.info"), true));
         }
+        $pendingTransfers = CoreApiHelper::getPendingTransfers($id);
 
         $data['facility'] = [
-            'info'  => $facility->toArray(),
+            'info' => $facility->toArray(),
             'roles' => Role::where('facility', $facility->id)->get()->toArray(),
         ];
         $data['stats']['controllers'] = User::where('facility', $id)->count();
-        $data['stats']['pendingTransfers'] = Transfer::where('to', $id)->where(
-            'status', Transfer::$pending
-        )->count();
+        $data['stats']['pendingTransfers'] = count($pendingTransfers);
 
         $data['notices'] = [];
         foreach (TMUFacility::where('id', $id)->orWhere('parent', $id)->get() as $tmu) {
@@ -160,13 +156,19 @@ class FacilityController extends APIController
      *     responses={"application/json"},
      *     tags={"facility"},
      *     security={"jwt"},
-     *     @OA\Parameter(name="id", in="path", description="Facility IATA ID", required=true, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="id", in="path", description="Facility IATA ID", required=true,
+     *                              @OA\Schema(type="string")),
      *     @OA\Parameter(name="url", in="formData", description="Change facility URL", @OA\Schema(type="string")),
-     *     @OA\Parameter(name="url_dev", in="formData", description="Change facility Dev URL(s)", @OA\Schema(type="string")),
-     *     @OA\Parameter(name="apiv2jwk", in="formData", description="Request new APIv2 JWK", @OA\Schema(type="string")),
-     *     @OA\Parameter(name="jwkdev", in="formData", description="Request new testing JWK", @OA\Schema(type="string")),
-     *     @OA\Parameter(name="apikey", in="formData", @OA\Schema(type="string"), description="Request new API Key for facility"),
-     *     @OA\Parameter(name="apikeySandbox", in="formData", @OA\Schema(type="string"), description="Request new Sandbox API Key
+     *     @OA\Parameter(name="url_dev", in="formData", description="Change facility Dev URL(s)",
+     *                                   @OA\Schema(type="string")),
+     *     @OA\Parameter(name="apiv2jwk", in="formData", description="Request new APIv2 JWK",
+     *                                    @OA\Schema(type="string")),
+     *     @OA\Parameter(name="jwkdev", in="formData", description="Request new testing JWK",
+     *                                  @OA\Schema(type="string")),
+     *     @OA\Parameter(name="apikey", in="formData", @OA\Schema(type="string"), description="Request new API Key for
+     *                                  facility"),
+     *     @OA\Parameter(name="apikeySandbox", in="formData", @OA\Schema(type="string"), description="Request new
+     *                                         Sandbox API Key
     for facility"),
      *     @OA\Response(
      *         response="401",
@@ -199,8 +201,7 @@ class FacilityController extends APIController
      *     )
      * )
      */
-    public function putFacility(Request $request, $id)
-    {
+    public function putFacility(Request $request, $id) {
         $facility = Facility::find($id);
         if (!$facility || !$facility->active) {
             return response()->api(
@@ -301,7 +302,8 @@ class FacilityController extends APIController
      *     description="Get facility's email template. Requires API Key, Session Cookie (ATM/DATM/TA), or JWT",
      *     responses={"application/json"},
      *     tags={"facility","email"},
-     *     @OA\Parameter(name="id", in="path", description="Facility IATA ID", required=true, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="id", in="path", description="Facility IATA ID", required=true,
+     *                              @OA\Schema(type="string")),
      *     @OA\Parameter(name="templateName", in="path", description="Name of template (welcome, examassigned,
     examfailed, exampassed)",
      *                                          required=true, @OA\Schema(type="string")),
@@ -340,8 +342,8 @@ class FacilityController extends APIController
     public
     function getEmailTemplate(
         Request $request,
-        $id,
-        $templateName
+                $id,
+                $templateName
     ) {
         if (!Auth::check() && !AuthHelper::validApiKeyv2($request->input('apikey', null))) {
             return response()->api(generate_error("Unauthorized"), 401);
@@ -412,10 +414,12 @@ class FacilityController extends APIController
      *     description="Modify facility's email template. Requires JWT or Session Cookie (ATM/DATM/TA)",
      *     responses={"application/json"},
      *     tags={"facility","email"},
-     *     @OA\Parameter(name="id", in="query", description="Facility IATA ID", required=true, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="id", in="query", description="Facility IATA ID", required=true,
+     *                              @OA\Schema(type="string")),
      *     @OA\Parameter(name="templateName", in="path", description="Name of template (welcome, examassigned,
     examfailed, exampassed)", required=true, @OA\Schema(type="string")),
-     * @OA\Parameter(name="body", in="formData", description="Text of template", required=true, @OA\Schema(type="string")),
+     * @OA\Parameter(name="body", in="formData", description="Text of template", required=true,
+     *                            @OA\Schema(type="string")),
      * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
@@ -455,8 +459,8 @@ class FacilityController extends APIController
     public
     function postEmailTemplate(
         Request $request,
-        $id,
-        $templateName
+                $id,
+                $templateName
     ) {
         if (!Auth::check()) {
             return response()->api(generate_error("Unauthorized"), 401);
@@ -564,8 +568,8 @@ class FacilityController extends APIController
     public
     function getRoster(
         Request $request,
-        $id,
-        $membership = 'home'
+                $id,
+                $membership = 'home'
     ) {
         $facility = Facility::find($id);
         if (!$facility || $facility->active != 1) {
@@ -582,13 +586,13 @@ class FacilityController extends APIController
         if ($cache = Cache::get("roster-$id-$membership")) {
             $roster = $cache;
             $isCached = true;
-        } elseif ($membership == 'both') {
+        } else if ($membership == 'both') {
             $home = $facility->members;
             $visiting = $facility->visitors();
             $roster = $home->merge($visiting);
-        } elseif ($membership == 'home') {
+        } else if ($membership == 'home') {
             $roster = $facility->members;
-        } elseif ($membership == 'visit') {
+        } else if ($membership == 'visit') {
             $roster = $facility->visitors();
         } else {
             return response()->api(generate_error("Malformed request"), 400);
@@ -600,7 +604,7 @@ class FacilityController extends APIController
             if (!$hasAPIKey && !$isFacStaff) {
                 $rosterArr[$i]['flag_broadcastOptedIn'] = null;
                 $rosterArr[$i]['email'] = null;
-            } elseif ($isCached) {
+            } else if ($isCached) {
                 //Override cache
                 $rosterArr[$i]['flag_broadcastOptedIn'] = User::find($member->cid)->flag_broadcastOptedIn;
                 $rosterArr[$i]['email'] = User::find($member->cid)->email;
@@ -608,7 +612,7 @@ class FacilityController extends APIController
             if (!$isSeniorStaff) {
                 //Senior Staff Only
                 $rosterArr[$i]['flag_preventStaffAssign'] = null;
-            } elseif ($isCached) {
+            } else if ($isCached) {
                 //Override cache
                 $rosterArr[$i]['flag_preventStaffAssign'] = User::find($member->cid)->flag_preventStaffAssign;
             }
@@ -706,8 +710,8 @@ class FacilityController extends APIController
     public
     function addVisitor(
         Request $request,
-        string $id,
-        int $cid
+        string  $id,
+        int     $cid
     ) {
         // Checks if facility exists and is active
         $facility = Facility::find($id);
@@ -795,7 +799,8 @@ class FacilityController extends APIController
      * @OA\Parameter(name="id", in="query", description="Facility IATA ID", required=true, @OA\Schema(type="string")),
      * @OA\Parameter(name="cid", in="query", description="CID of controller", required=true, @OA\Schema
      * (type="integer")),
-     * @OA\Parameter(name="reason", in="formData", description="Reason for deletion", required=true, @OA\Schema(type="string")),
+     * @OA\Parameter(name="reason", in="formData", description="Reason for deletion", required=true,
+     *                              @OA\Schema(type="string")),
      * @OA\Response(
      *         response="400",
      *         description="Malformed request, missing required parameter",
@@ -837,8 +842,8 @@ class FacilityController extends APIController
     public
     function removeVisitor(
         Request $request,
-        string $id,
-        int $cid
+        string  $id,
+        int     $cid
     ) {
         // Checks if facility exists and is active
         $facility = Facility::find($id);
@@ -917,7 +922,8 @@ class FacilityController extends APIController
      * @OA\Parameter(name="id", in="query", description="Facility IATA ID", required=true, @OA\Schema(type="string")),
      * @OA\Parameter(name="cid", in="query", description="CID of controller", required=true, @OA\Schema
      * (type="integer")),
-     * @OA\Parameter(name="reason", in="formData", description="Reason for deletion", required=true, @OA\Schema(type="string")),
+     * @OA\Parameter(name="reason", in="formData", description="Reason for deletion", required=true,
+     *                              @OA\Schema(type="string")),
      * @OA\Parameter(name="by", in="formData", description="Staff member responsible for deletion - only required with
      *                           API Key", required=false, @OA\Schema(type="integer")),
      * @OA\Response(
@@ -955,8 +961,8 @@ class FacilityController extends APIController
     public
     function deleteRoster(
         Request $request,
-        string $id,
-        int $cid
+        string  $id,
+        int     $cid
     ) {
         $facility = Facility::find($id);
         if (!$facility || !$facility->active) {
@@ -964,7 +970,8 @@ class FacilityController extends APIController
                 generate_error("Facility not found or not active"), 404);
         }
 
-        if (!AuthHelper::validApiKeyv2($id) && !RoleHelper::isVATUSAStaff() && (Auth::check() && !RoleHelper::isSeniorStaff(Auth::user()->cid,
+        if (!AuthHelper::validApiKeyv2($id) && !RoleHelper::isVATUSAStaff() &&
+            (Auth::check() && !RoleHelper::isSeniorStaff(Auth::user()->cid,
                     $id, false))) {
             return response()->api(generate_error("Forbidden"), 403);
         }
@@ -973,7 +980,8 @@ class FacilityController extends APIController
             return response()->api(
                 generate_error("Missing staff CID (by)"), 400);
         } else {
-            if ($request->has('by') && (!User::find($request->by) || User::find($request->by)->facility != $facility->id)) {
+            if ($request->has('by') &&
+                (!User::find($request->by) || User::find($request->by)->facility != $facility->id)) {
                 return response()->api(
                     generate_error("Invalid staff CID"), 400);
             }
@@ -1013,7 +1021,8 @@ class FacilityController extends APIController
      *     responses={"application/json"},
      *     tags={"facility"},
      *     security={"jwt","apikey"},
-     *     @OA\Parameter(name="id", in="query", description="Facility IATA ID", required=true, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="id", in="query", description="Facility IATA ID", required=true,
+     *                              @OA\Schema(type="string")),
      *     @OA\Response(
      *         response="400",
      *         description="Malformed request, missing required parameter",
@@ -1074,7 +1083,7 @@ class FacilityController extends APIController
     public
     function getTransfers(
         Request $request,
-        string $id
+        string  $id
     ) {
         $facility = Facility::find($id);
         if (!$facility || !$facility->active) {
@@ -1094,26 +1103,26 @@ class FacilityController extends APIController
             return response()->api(generate_error("Forbidden"), 403);
         }
 
-        $transfers = APIHelper::getPendingTransfers($facility->id);
+        $transfers = CoreApiHelper::getPendingTransfers($facility->id);
         $data = [];
         /* @var $transfer \App\APIModels\Transfer */
         foreach ($transfers as $transfer) {
             $data[] = [
-                'id'        => $transfer->id,
-                'cid'       => $transfer->controller->cid,
+                'id' => $transfer->id,
+                'cid' => $transfer->controller->cid,
                 'display_name' => $transfer->controller->display_name,
-                'fname'     => $transfer->controller->first_name,
-                'lname'     => $transfer->controller->last_name,
-                'email'     => (AuthHelper::validApiKeyv2($request->input('apikey',
+                'fname' => $transfer->controller->first_name,
+                'lname' => $transfer->controller->last_name,
+                'email' => (AuthHelper::validApiKeyv2($request->input('apikey',
                         null)) || (Auth::check() && RoleHelper::isFacilityStaff(Auth::user()->cid)))
                     ? $transfer->controller->email : null,
-                'reason'    => (Auth::check() && RoleHelper::isSeniorStaff(Auth::user()->cid)) ? $transfer->reason : null,
-                'fromFac'   => [
-                    'id'   => $transfer->from_facility,
+                'reason' => (Auth::check() && RoleHelper::isSeniorStaff(Auth::user()->cid)) ? $transfer->reason : null,
+                'fromFac' => [
+                    'id' => $transfer->from_facility,
                 ],
-                'rating'    => RatingHelper::intToShort($transfer->user->rating),
+                'rating' => RatingHelper::intToShort($transfer->user->rating),
                 'intRating' => $transfer->controller->rating,
-                'date'      => $transfer->created_at->format('Y-m-d')
+                'date' => $transfer->created_at->format('Y-m-d')
             ];
         }
 
@@ -1139,7 +1148,8 @@ class FacilityController extends APIController
      *     "reject"},
      *                                   description="Action to take on transfer request. Valid values:
     accept,reject"),
-     * @OA\Parameter(name="reason", in="formData", @OA\Schema(type="string"), description="Reason for transfer request rejection
+     * @OA\Parameter(name="reason", in="formData", @OA\Schema(type="string"), description="Reason for transfer request
+     *                              rejection
     [required for rejections]"),
      * @OA\Parameter(name="by", in="formData", @OA\Schema(type="integer"), description="Staff member responsible for
      * trasnfer [required for API Key]"),
@@ -1178,8 +1188,8 @@ class FacilityController extends APIController
     public
     function putTransfer(
         Request $request,
-        string $id,
-        int $transferId
+        string  $id,
+        int     $transferId
     ) {
         $facility = Facility::find($id);
         if (!$facility || !$facility->active) {
@@ -1192,7 +1202,8 @@ class FacilityController extends APIController
             return response()->api(
                 generate_error("Missing staff CID (by)"), 400);
         } else {
-            if ($request->has('by') && (!User::find($request->by) || User::find($request->by)->facility != $facility->id)) {
+            if ($request->has('by') &&
+                (!User::find($request->by) || User::find($request->by)->facility != $facility->id)) {
                 return response()->api(
                     generate_error("Invalid staff CID"), 400);
             }
@@ -1207,20 +1218,15 @@ class FacilityController extends APIController
             return response()->api(generate_error("Forbidden"), 403);
         }
 
-        $transfer = Transfer::find($transferId);
-        if (!$transfer) {
-            return response()->api(
-                generate_error("Transfer request not found"), 404
-            );
-        }
+        $transfer = CoreApiHelper::getTransfer($transferId);
 
-        if ($transfer->status !== Transfer::$pending) {
+        if ($transfer->approved != null) {
             return response()->api(
                 generate_error("Transfer is not pending"), 410
             );
         }
 
-        if ($transfer->to !== $facility->id) {
+        if ($transfer->to_facility !== $facility->id) {
             return response()->api(generate_error("Forbidden"), 403);
         }
 
@@ -1235,17 +1241,16 @@ class FacilityController extends APIController
 
         if (!isTest()) {
             if ($request->input("action") === "accept") {
-                $transfer->accept($by);
+                CoreApiHelper::processTransferRequest($transfer->id, true, $request->input("reason"), $by);
             } else {
-                $transfer->reject($by, $request->input("reason"));
+                CoreApiHelper::processTransferRequest($transfer->id, false, $request->input("reason"), $by);
             }
         }
 
         return response()->ok();
     }
 
-    private function hasValidOAuthPerms($facilityId)
-    {
+    private function hasValidOAuthPerms($facilityId) {
         if (
             !RoleHelper::isSeniorStaff(Auth::user()->cid, $facilityId, false)
             && !RoleHelper::has(Auth::user()->cid, $facilityId, "WM")
@@ -1257,8 +1262,7 @@ class FacilityController extends APIController
         return true;
     }
 
-    public function isRedirectValid($redirect)
-    {
+    public function isRedirectValid($redirect) {
         if (!is_array($redirect)) {
             return false;
         } else {
