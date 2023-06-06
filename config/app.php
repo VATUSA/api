@@ -54,6 +54,10 @@ return [
     'url' => env('APP_URL', 'https://api.vatusa.devel'),
     'loginUrl' => env('LOGIN_URL', 'https://login.vatusa.devel'),
 
+    // Core API Details
+    'coreApiUrl' => env('CORE_API_URL'),
+    'coreApiToken' => env('CORE_API_TOKEN'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
