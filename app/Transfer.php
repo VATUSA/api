@@ -10,18 +10,18 @@ use Exception;
  * Class Transfer
  * @package App
  *
- * @SWG\Definition(
+ * @OA\Schema(
  *     type="object",
- *     @SWG\Property(property="id", type="integer"),
- *     @SWG\Property(property="cid", type="integer"),
- *     @SWG\Property(property="to", type="string"),
- *     @SWG\Property(property="from", type="string"),
- *     @SWG\Property(property="reason", type="string"),
- *     @SWG\Property(property="status", type="integer", description="0 pending, 1 approved, 2 rejected"),
- *     @SWG\Property(property="actiontext", type="string", description="Reasoning"),
- *     @SWG\Property(property="actionby", type="integer", description="Cert ID, 0 is system processed [CERT Sync usually]"),
- *     @SWG\Property(property="created_at", type="string", description="Date transfer submitted"),
- *     @SWG\Property(property="updated_at", type="string", description="Date transfer was last acted on [not updated after processed]")
+ *     @OA\Property(property="id", type="integer"),
+ *     @OA\Property(property="cid", type="integer"),
+ *     @OA\Property(property="to", type="string"),
+ *     @OA\Property(property="from", type="string"),
+ *     @OA\Property(property="reason", type="string"),
+ *     @OA\Property(property="status", type="integer", description="0 pending, 1 approved, 2 rejected"),
+ *     @OA\Property(property="actiontext", type="string", description="Reasoning"),
+ *     @OA\Property(property="actionby", type="integer", description="Cert ID, 0 is system processed [CERT Sync usually]"),
+ *     @OA\Property(property="created_at", type="string", description="Date transfer submitted"),
+ *     @OA\Property(property="updated_at", type="string", description="Date transfer was last acted on [not updated after processed]")
  * )
  */
 class Transfer extends Model

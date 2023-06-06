@@ -50,6 +50,8 @@ RUN composer.phar install --no-dev --no-scripts
 USER root
 RUN rm /usr/local/bin/composer.phar
 
+RUN php artisan l5-swagger:generate
+
 ENTRYPOINT ["/bin/sh","/www/build.sh"]
 
 EXPOSE 80

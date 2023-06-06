@@ -11,33 +11,33 @@ use App\User;
 class SurveyController
 {
     /**
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/survey/{id}",
      *     summary="Get survey questions. [Private]",
      *     description="Get survey questions (CORS Restricted).",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"survey"},
-     *     @SWG\Parameter(description="Survey Assignment ID", in="path", name="id", required=true, type="string"),
-     *     @SWG\Response(
+     *     @OA\Parameter(description="Survey Assignment ID", in="path", name="id", required=true, @OA\Schema(type="string")),
+     *     @OA\Response(
      *         response="404",
      *         description="Not found",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","msg"="Not found"}}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={{"application/json":{"status"="error","msg"="Not found"}}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="309",
      *         description="Conflict (survey already completed)",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","msg"="Conflict"}}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={{"application/json":{"status"="error","msg"="Conflict"}}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="object",
-     *             @SWG\Property(property="status", type="string"),
-     *             @SWG\Property(property="survey", ref="#/definitions/Survey"),
-     *             @SWG\Property(property="items", type="array", @SWG\Items(ref="#/definitions/SurveyQuestion")),
+     *             @OA\Property(property="status", type="string"),
+     *             @OA\Property(property="survey", ref="#/components/schemas/Survey"),
+     *             @OA\Property(property="items", type="array", @OA\Items(ref="#/components/schemas/SurveyQuestion")),
      *         ),
      *     )
      * )
@@ -61,37 +61,37 @@ class SurveyController
     }
 
     /**
-     * @SWG\Post(
+     * @OA\Post(
      *     path="/survey/{id}",
      *     summary="Submit survey. [Private]",
      *     description="Submit survey (CORS Restricted).",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"survey"},
-     *     @SWG\Parameter(description="Survey Assignment ID", in="path", name="id", required=true, type="string"),
-     *     @SWG\Parameter(name="data", in="formData", required=true, type="string"),
-     *     @SWG\Response(
+     *     @OA\Parameter(description="Survey Assignment ID", in="path", name="id", required=true, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="data", in="formData", required=true, @OA\Schema(type="string")),
+     *     @OA\Response(
      *         response="400",
      *         description="Malformed request",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","msg"="Malformed Request"}}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={{"application/json":{"status"="error","msg"="Malformed Request"}}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="404",
      *         description="Not found",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","msg"="Not found"}}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={{"application/json":{"status"="error","msg"="Not found"}}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="309",
      *         description="Conflict (survey already completed)",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","msg"="Conflict"}}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={{"application/json":{"status"="error","msg"="Conflict"}}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
-     *             ref="#/definitions/OK"),
+     *         @OA\Schema(
+     *             ref="#/components/schemas/OK"),
      *         ),
      *     )
      * )
@@ -127,31 +127,31 @@ class SurveyController
     }
 
     /**
-     * @SWG\Post(
+     * @OA\Post(
      *     path="/survey/{id}/assign/{cid}",
      *     summary="Assign a survey to cid. [Private]",
      *     description="Assign a survey to cid (CORS Restricted).",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"survey"},
-     *     @SWG\Parameter(description="Survey ID", in="path", name="id", required=true, type="integer"),
-     *     @SWG\Parameter(description="CERT ID", in="path", name="cid", required=true, type="integer"),
-     *     @SWG\Response(
+     *     @OA\Parameter(description="Survey ID", in="path", name="id", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(description="CERT ID", in="path", name="cid", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(
      *         response="404",
      *         description="Not found",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","msg"="Not found"}}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={{"application/json":{"status"="error","msg"="Not found"}}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="309",
      *         description="Conflict (survey already completed)",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","msg"="Conflict"}}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={{"application/json":{"status"="error","msg"="Conflict"}}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
-     *             ref="#/definitions/OK"),
+     *         @OA\Schema(
+     *             ref="#/components/schemas/OK"),
      *         ),
      *     )
      * )

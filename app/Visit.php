@@ -5,13 +5,13 @@ namespace App;
  * Class Visit
  * @package App
  *
- * @SWG\Definition(
+ * @OA\Schema(
  *     type="object",
- *     @SWG\Property(property="id", type="integer"),
- *     @SWG\Property(property="cid", type="integer"),
- *     @SWG\Property(property="facility", type="string"),
- *     @SWG\Property(property="active", type="integer", description="0 = inactive, 1 = active"),
- *     @SWG\Property(property="created_at", type="string"),
+ *     @OA\Property(property="id", type="integer"),
+ *     @OA\Property(property="cid", type="integer"),
+ *     @OA\Property(property="facility", type="string"),
+ *     @OA\Property(property="active", type="integer", description="0 = inactive, 1 = active"),
+ *     @OA\Property(property="created_at", type="string"),
  * )
  */
 class Visit extends Model

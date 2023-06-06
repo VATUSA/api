@@ -6,13 +6,13 @@ namespace App;
  * Class Survey
  * @package App
  *
- * @SWG\Definition(
+ * @OA\Schema(
  *     type="object",
- *     @SWG\Property(property="id", type="integer"),
- *     @SWG\Property(property="facility", type="string"),
- *     @SWG\Property(property="name", type="string"),
- *     @SWG\Property(property="created_at", type="string", description="Date added to database"),
- *     @SWG\Property(property="updated_at", type="string"),
+ *     @OA\Property(property="id", type="integer"),
+ *     @OA\Property(property="facility", type="string"),
+ *     @OA\Property(property="name", type="string"),
+ *     @OA\Property(property="created_at", type="string", description="Date added to database"),
+ *     @OA\Property(property="updated_at", type="string"),
  * )
  */
 class Survey extends Model

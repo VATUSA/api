@@ -11,54 +11,54 @@ class InfrastructureController extends APIController
      * @param Request $request
      * @return array|\Illuminate\Http\JsonResponse|string
      *
-     * [SWG]\Get(
+     * @OA\\Get(
      *     path="/infrastructure/deploy",
      *     summary="Deploy Stack. CORS Restricted",
      *     description="Deploy Stack. CORS Restricted",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"infrastructure"},
      *     security={"session","jwt"},
-     *     [SWG]\Response(
+     *     @OA\\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         [SWG]\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     *     [SWG]\Response(
+     *     @OA\\Response(
      *         response="403",
      *         description="Forbidden",
-     *         [SWG]\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     *     [SWG]\Response(
+     *     @OA\\Response(
      *         response=200,
      *         description="Return JSON Token.",
-     *         [SWG]\Schema(ref="#/definitions/OK"),
+     *         @OA\\Schema(ref="#/components/schemas/OK"),
      *     )
      * )
-     * [SWG]\Post(
+     * @OA\\Post(
      *     path="/infrastructure/deploy",
      *     summary="Deploy Stack. CORS Restricted",
      *     description="Deploy Stack. CORS Restricted",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"infrastructure"},
      *     security={"session","jwt"},
-     *     [SWG]\Response(
+     *     @OA\\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         [SWG]\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     *     [SWG]\Response(
+     *     @OA\\Response(
      *         response="403",
      *         description="Forbidden",
-     *         [SWG]\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     *     [SWG]\Response(
+     *     @OA\\Response(
      *         response=200,
      *         description="Return JSON Token.",
-     *         [SWG]\Schema(ref="#/definitions/OK"),
+     *         @OA\\Schema(ref="#/components/schemas/OK"),
      *     )
      * )
      */

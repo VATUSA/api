@@ -28,35 +28,35 @@ use Mews\Purifier\Facades\Purifier;
 class TrainingController extends Controller
 {
     /**
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/training/record/{recordID}",
      *     summary="Get training record. [Key]",
      *     description="Get content of training record. Must have APIKey or be Senior Staff, Training Staff, or the
     student.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"training"},
      *     security={"session", "jwt", "apikey"},
-     * @SWG\Response(
+     * @OA\Response(
      *         response="400",
      *         description="Malformed request.",
-     *         @SWG\Schema(ref="#/definitions/error")
+     *         @OA\Schema(ref="#/components/schemas/error")
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *        @SWG\Schema(ref="#/definitions/trainingrecord")
+     *        @OA\Schema(ref="#/components/schemas/trainingrecord")
      *     )
      * )
      * Get individual training record.
@@ -96,35 +96,35 @@ class TrainingController extends Controller
     }
 
     /**
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/user/{cid}/training/records",
      *     summary="Get user's training records. [Key]",
      *     description="Get all user's training records. Must have APIKey or be Senior Staff, Training Staff, or the
     student.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"training", "user"},
      *     security={"session", "jwt", "apikey"},
-     * @SWG\Response(
+     * @OA\Response(
      *         response="400",
      *         description="Malformed request.",
-     *         @SWG\Schema(ref="#/definitions/error")
+     *         @OA\Schema(ref="#/components/schemas/error")
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *        @SWG\Schema(ref="#/definitions/trainingrecord")
+     *        @OA\Schema(ref="#/components/schemas/trainingrecord")
      *     )
      * )
      *
@@ -149,34 +149,34 @@ class TrainingController extends Controller
     }
 
     /**
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/facility/{facility}/training/records",
      *     summary="Get facility's training records. [Key]",
      *     description="Get all facility's training records. Must have APIKey or be Senior Staff or Training Staff.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"training", "facility"},
      *     security={"session", "jwt", "apikey"},
-     * @SWG\Response(
+     * @OA\Response(
      *         response="400",
      *         description="Malformed request.",
-     *         @SWG\Schema(ref="#/definitions/error")
+     *         @OA\Schema(ref="#/components/schemas/error")
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *        @SWG\Schema(ref="#/definitions/trainingrecord")
+     *        @OA\Schema(ref="#/components/schemas/trainingrecord")
      *     )
      * )
      * Get all facility training records.
@@ -203,34 +203,34 @@ class TrainingController extends Controller
     }
 
     /**
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/training/records",
      *     summary="Get all training records. [Private]",
      *     description="Get all training records. CORS Restricted.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"training"},
      *     security={"session", "jwt", "apikey"},
-     * @SWG\Response(
+     * @OA\Response(
      *         response="400",
      *         description="Malformed request.",
-     *         @SWG\Schema(ref="#/definitions/error")
+     *         @OA\Schema(ref="#/components/schemas/error")
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *        @SWG\Schema(ref="#/definitions/trainingrecord")
+     *        @OA\Schema(ref="#/components/schemas/trainingrecord")
      *     )
      * )
      *
@@ -255,31 +255,31 @@ class TrainingController extends Controller
     }
 
     /**
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/training/otsEval/{recordID}",
      *     summary="Get OTS Eval content. [Private]",
      *     description="Get content of OTS Eval. CORS Restricted.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"training"},
      *     security={"session", "jwt"},
-     * @SWG\Response(
+     * @OA\Response(
      *         response="400",
      *         description="Malformed request.",
-     *         @SWG\Schema(ref="#/definitions/error")
+     *         @OA\Schema(ref="#/components/schemas/error")
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK"
      *     )
@@ -300,31 +300,31 @@ class TrainingController extends Controller
     }
 
     /**
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/training/record/{recordID}/otsEval",
      *     summary="Get attached OTS eval. [Private]",
      *     description="Get content of OTS Eval attached to given record. CORS Restricted.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"training"},
      *     security={"session", "jwt"},
-     * @SWG\Response(
+     * @OA\Response(
      *         response="400",
      *         description="Malformed request.",
-     *         @SWG\Schema(ref="#/definitions/error")
+     *         @OA\Schema(ref="#/components/schemas/error")
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK"
      *     )
@@ -353,35 +353,35 @@ class TrainingController extends Controller
     }
 
     /**
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/user/{cid}/training/otsEvals",
      *     summary="Get user's OTS evaluations. [Private]",
      *     description="Get users training evaluations. CORS Restricted.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"training", "user"},
      *     security={"apikey","jwt","session"},
-     * @SWG\Parameter(name="rating_id", in="query", type="integer", required=true, description="Filter by rating ID"),
-     * @SWG\Response(
+     * @OA\Parameter(name="rating_id", in="query", type="integer", required=true, description="Filter by rating ID"),
+     * @OA\Response(
      *         response="400",
      *         description="Malformed request.",
-     *         @SWG\Schema(ref="#/definitions/error")
+     *         @OA\Schema(ref="#/components/schemas/error")
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(ref="#/definitions/otseval")
+     *         @OA\Schema(ref="#/components/schemas/otseval")
      *     )
      * )
      *
@@ -421,35 +421,35 @@ class TrainingController extends Controller
     }
 
     /**
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/training/evals",
      *     summary="Get all OTS evaluations. [Private]",
      *     description="Get all OTS evaluations. This does not include the actual content. CORS Restricted.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"training"},
      *     security={"apikey","jwt","session"},
-     * @SWG\Parameter(name="rating_id", in="query", type="integer", required=true, description="Filter by rating ID"),
-     * @SWG\Response(
+     * @OA\Parameter(name="rating_id", in="query", type="integer", required=true, description="Filter by rating ID"),
+     * @OA\Response(
      *         response="400",
      *         description="Malformed request.",
-     *         @SWG\Schema(ref="#/definitions/error")
+     *         @OA\Schema(ref="#/components/schemas/error")
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(ref="#/definitions/otseval")
+     *         @OA\Schema(ref="#/components/schemas/otseval")
      *     )
      * )
      *
@@ -488,60 +488,60 @@ class TrainingController extends Controller
     }
 
     /**
-     * @SWG\Post(
+     * @OA\Post(
      *     path="/user/{cid}/training/record",
      *     summary="Submit new training record. [Key]",
      *     description="Submit new training record. Requires API Key, JWT, or Session Cookie (required roles:
-    [N/A for API Key] Senior Staff, Training Staff)", produces={"application/json"}, tags={"training"},
+    [N/A for API Key] Senior Staff, Training Staff)", responses={"application/json"}, tags={"training"},
      *     security={"apikey","jwt","session"},
-     * @SWG\Parameter(name="instructor_id", in="formData", type="integer", required=true, description="Instructor
+     * @OA\Parameter(name="instructor_id", in="formData", type="integer", required=true, description="Instructor
     CID"),
-     * @SWG\Parameter(name="session_date", in="formData", type="string", required=true, description="Session Date,
+     * @OA\Parameter(name="session_date", in="formData", @OA\Schema(type="string"), required=true, description="Session Date,
     YYYY-mm-dd HH:mm"),
-     * @SWG\Parameter(name="position", in="formData", type="string", required=true, description="Position ID
+     * @OA\Parameter(name="position", in="formData", @OA\Schema(type="string"), required=true, description="Position ID
     (XYZ_APP, ZZZ_CTR)"),
-     * @SWG\Parameter(name="duration", in="formData", type="string", required=true, description="Session Duration,
+     * @OA\Parameter(name="duration", in="formData", @OA\Schema(type="string"), required=true, description="Session Duration,
     HH:mm"),
-     * @SWG\Parameter(name="movements", in="formData", type="integer", required=false, description="Number of
+     * @OA\Parameter(name="movements", in="formData", type="integer", required=false, description="Number of
     Movements"),
-     * @SWG\Parameter(name="score", in="formData", type="integer", required=false, description="Session Score, 1-5"),
-     * @SWG\Parameter(name="notes", in="formData", type="string", required=true, description="Session Notes"),
-     * @SWG\Parameter(name="location", in="formData", type="integer", required=true, description="Session Location (0 =
+     * @OA\Parameter(name="score", in="formData", type="integer", required=false, description="Session Score, 1-5"),
+     * @OA\Parameter(name="notes", in="formData", @OA\Schema(type="string"), required=true, description="Session Notes"),
+     * @OA\Parameter(name="location", in="formData", type="integer", required=true, description="Session Location (0 =
     Classroom, 1 = Live, 2 = Sweatbox)"),
-     * @SWG\Parameter(name="ots_status", in="formData", type="boolean", required=false, description="0 = Not OTS, 1 =
+     * @OA\Parameter(name="ots_status", in="formData", type="boolean", required=false, description="0 = Not OTS, 1 =
     OTS Pass, 2 = OTS Fail, 3 = OTS Recommended"),
-     * @SWG\Parameter(name="is_cbt", in="formData", type="boolean", required=false, description="Record is a CBT
+     * @OA\Parameter(name="is_cbt", in="formData", type="boolean", required=false, description="Record is a CBT
     Completion"),
-     * @SWG\Parameter(name="solo_granted", in="formData", type="boolean", required=false, description="Solo endorsement
+     * @OA\Parameter(name="solo_granted", in="formData", type="boolean", required=false, description="Solo endorsement
     was granted"),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="400",
      *         description="Malformed request.",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","message"="Invalid
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={{"application/json":{"status"="error","message"="Invalid
      *         position"}},{"application/json":{"status"="error","message"="Invalid session date."}}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="object",
-     *             @SWG\Property(property="status", type="string"),
-     *             @SWG\Property(property="id", type="integer", description="DB ID of Record"),
+     *             @OA\Property(property="status", type="string"),
+     *             @OA\Property(property="id", type="integer", description="DB ID of Record"),
      *         ),
-     *         examples={"application/json":{"status"="OK", "id"=19, "testing": false}}
+     *         content={"application/json":{"status"="OK", "id"=19, "testing": false}}
      *     )
      * )
      *
@@ -692,34 +692,34 @@ class TrainingController extends Controller
     }
 
     /**
-     * @SWG\Post(
+     * @OA\Post(
      *     path="/user/{cid}/training/otsEval",
      *     summary="Post new OTS Eval for a user. [Private]",
      *     description="Post new OTS Eval for a user. CORS Restricted.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"training", "user"},
      *     security={"session", "jwt", "apikey"},
-     * @SWG\Response(
+     * @OA\Response(
      *         response="400",
      *         description="Malformed request.",
-     *         @SWG\Schema(ref="#/definitions/error")
+     *         @OA\Schema(ref="#/components/schemas/error")
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         examples={"application/json":{"status"="OK","id"=1234,"testing":false}}
+     *         content={"application/json":{"status"="OK","id"=1234,"testing":false}}
      *     )
      * )
      * Add OTS Evaluation
@@ -835,54 +835,54 @@ class TrainingController extends Controller
     }
 
     /**
-     * @SWG\Put(
+     * @OA\Put(
      *     path="/training/record/{record}",
      *     summary="Edit training record. [Key]",
      *     description="Edit training record. Requires API Key, JWT, or Session Cookie (required roles:
     [N/A for API Key] Senior Staff, Training Staff)",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"training"},
      *     security={"apikey","jwt","session"},
-     * @SWG\Parameter(name="session_date", in="formData", type="string", description="Session Date, YY-mm-dd HH:mm"),
-     * @SWG\Parameter(name="position", in="formData", type="string", description="Position ID
+     * @OA\Parameter(name="session_date", in="formData", @OA\Schema(type="string"), description="Session Date, YY-mm-dd HH:mm"),
+     * @OA\Parameter(name="position", in="formData", @OA\Schema(type="string"), description="Position ID
     (XYZ_APP, ZZZ_CTR)"),
-     * @SWG\Parameter(name="duration", in="formData", type="string", description="Session Duration, HH:mm"),
-     * @SWG\Parameter(name="movements", in="formData", type="integer", description="Number of Movements"),
-     * @SWG\Parameter(name="score", in="formData", type="integer", description="Session Score, 1-5"),
-     * @SWG\Parameter(name="notes", in="formData", type="string", description="Session Notes"),
-     * @SWG\Parameter(name="location", in="formData", type="integer", description="Session Location (0 = Classroom, 1 =
+     * @OA\Parameter(name="duration", in="formData", @OA\Schema(type="string"), description="Session Duration, HH:mm"),
+     * @OA\Parameter(name="movements", in="formData", type="integer", description="Number of Movements"),
+     * @OA\Parameter(name="score", in="formData", type="integer", description="Session Score, 1-5"),
+     * @OA\Parameter(name="notes", in="formData", type="string", description="Session Notes"),
+     * @OA\Parameter(name="location", in="formData", type="integer", description="Session Location (0 = Classroom, 1 =
     Live, 2 = Sweatbox)"),
-     * @SWG\Parameter(name="ots_status", in="formData", type="boolean", required=false, description="0 = Not OTS, 1 =
+     * @OA\Parameter(name="ots_status", in="formData", type="boolean", required=false, description="0 = Not OTS, 1 =
     OTS Pass, 2 = OTS Fail, 3 = OTS Recommended"),
-     * @SWG\Parameter(name="solo_granted", in="formData", type="boolean", description="Solo endorsement was granted"),
-     * @SWG\Response(
+     * @OA\Parameter(name="solo_granted", in="formData", type="boolean", description="Solo endorsement was granted"),
+     * @OA\Response(
      *         response="400",
      *         description="Malformed request.",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","message"="Invalid
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={{"application/json":{"status"="error","message"="Invalid
      *         position"}},{"application/json":{"status"="error","message"="Invalid session date."}}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="object",
-     *             @SWG\Property(property="status", type="string"),
-     *             @SWG\Property(property="id", type="integer", description="DB ID of Record"),
+     *             @OA\Property(property="status", type="string"),
+     *             @OA\Property(property="id", type="integer", description="DB ID of Record"),
      *         ),
-     *         examples={"application/json":{"status"="OK", "testing": false}}
+     *         content={"application/json":{"status"="OK", "testing": false}}
      *     )
      * )
      *
@@ -1018,34 +1018,34 @@ class TrainingController extends Controller
     }
 
     /**
-     * @SWG\Delete(
+     * @OA\Delete(
      *     path="/training/record/{recordID}",
      *     summary="Delete training record. [Key]",
      *     description="Delete training record. Must have APIKey or be Senior Staff, Training Staff, or the student.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"training"},
      *     security={"session", "jwt", "apikey"},
-     * @SWG\Response(
+     * @OA\Response(
      *         response="400",
      *         description="Malformed request.",
-     *         @SWG\Schema(ref="#/definitions/error")
+     *         @OA\Schema(ref="#/components/schemas/error")
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         examples={"application/json":{"status"="OK", "testing": false}}
+     *         content={"application/json":{"status"="OK", "testing": false}}
      *     )
      * )
      *

@@ -5,14 +5,14 @@ namespace App;
  * Class EmailTemplate
  * @package App
  *
- * @SWG\Definition(
+ * @OA\Schema(
  *     type="object",
- *     @SWG\Property(property="id", type="integer"),
- *     @SWG\Property(property="facility_id", type="string"),
- *     @SWG\Property(property="template", type="string", description="Template name"),
- *     @SWG\Property(property="body", type="string", description="Template"),
- *     @SWG\Property(property="created_at", type="string", description="date created"),
- *     @SWG\Property(property="updated_at", type="string", description="date last modified"),
+ *     @OA\Property(property="id", type="integer"),
+ *     @OA\Property(property="facility_id", type="string"),
+ *     @OA\Property(property="template", type="string", description="Template name"),
+ *     @OA\Property(property="body", type="string", description="Template"),
+ *     @OA\Property(property="created_at", type="string", description="date created"),
+ *     @OA\Property(property="updated_at", type="string", description="date last modified"),
  * )
  */
 class EmailTemplate extends Model {

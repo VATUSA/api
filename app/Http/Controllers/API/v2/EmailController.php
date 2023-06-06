@@ -13,35 +13,35 @@ use Illuminate\Http\Request;
 class EmailController extends APIController
 {
     /**
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/email",
      *     summary="Get info of VATUSA email address assigned for user. [Private]",
      *     description="Get info of VATUSA email address assigned for user. CORS Restricted.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"email"},
      *     security={"jwt","session"},
-     *     @SWG\Parameter(description="JWT Token", in="header", name="bearer", required=true, type="string"),
-     *     @SWG\Response(
+     *     @OA\Parameter(description="JWT Token", in="header", name="bearer", required=true, @OA\Schema(type="string")),
+     *     @OA\Response(
      *         response="401",
      *         description="Unauthenticated",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthenticated"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="array",
-     *             @SWG\Items(
+     *             @OA\Items(
      *                 type="object",
-     *                 @SWG\Property(property="type", type="string", description="Type of email
+     *                 @OA\Property(property="type", type="string", description="Type of email
      *                                                (forward/full/static)"),
-     *                 @SWG\Property(property="email", type="string", description="Email address"),
-     *                 @SWG\Property(property="destination", type="string", description="Destination for email
+     *                 @OA\Property(property="email", type="string", description="Email address"),
+     *                 @OA\Property(property="destination", type="string", description="Destination for email
      *                                                       forwards")
      *             ),
      *         ),
-     *         examples={
+     *         content={
      *              "application/json":{
      *                      {"type":"forward","email":"test@vatusa.net","destination":"test2@vatusa.net"},
      *                      {"type":"full","email":"easy@vatusa.net"}
@@ -108,50 +108,50 @@ class EmailController extends APIController
      *
      * @return string
      *
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/email/(address)",
      *     summary="Get info of VATUSA email address. [Private]",
      *     description="Get info of VATUSA email address. CORS Restricted.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"email"},
      *     security={"jwt","session"},
-     *     @SWG\Parameter(description="JWT Token", in="header", name="bearer", required=true, type="string"),
-     *     @SWG\Parameter(description="Email address", in="path", name="address", required=true, type="string"),
-     *     @SWG\Response(
+     *     @OA\Parameter(description="JWT Token", in="header", name="bearer", required=true, @OA\Schema(type="string")),
+     *     @OA\Parameter(description="Email address", in="path", name="address", required=true, @OA\Schema(type="string")),
+     *     @OA\Response(
      *         response="400",
      *         description="Bad request",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","msg"="Missing required
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={{"application/json":{"status"="error","msg"="Missing required
      *         field"}},{"application/json":{"status"="error","msg"="Password too weak"}}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="401",
      *         description="Unauthenticated",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthenticated"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="array",
-     *             @SWG\Items(
+     *             @OA\Items(
      *                 type="object",
-     *                 @SWG\Property(property="type", type="string", description="Type of email
+     *                 @OA\Property(property="type", type="string", description="Type of email
      *                                                (forward/full/static)"),
-     *                 @SWG\Property(property="email", type="string", description="Email address"),
-     *                 @SWG\Property(property="destination", type="string", description="Destination for email
+     *                 @OA\Property(property="email", type="string", description="Email address"),
+     *                 @OA\Property(property="destination", type="string", description="Destination for email
      *                                                       forwards"),
-     *                 @SWG\Property(property="static", type="boolean", description="Is address static?")
+     *                 @OA\Property(property="static", type="boolean", description="Is address static?")
      *             ),
      *         ),
-     *         examples={
+     *         content={
      *              "application/json":{
      *                      "type":"full","email":"easy@vatusa.net"
      *              }
@@ -185,53 +185,53 @@ class EmailController extends APIController
     }
 
     /**
-     * @SWG\Put(
+     * @OA\Put(
      *     path="/email",
      *     summary="Modify email account. [Private]",
      *     description="Modify email account. Static forwards may only be modified by the ATM, DATM or WM. CORS
-     *     Restricted.", produces={"application/json"}, tags={"email"}, security={"jwt","session"},
-     *     @SWG\Parameter(description="JWT Token", in="header", name="bearer", required=true, type="string"),
-     *     @SWG\Parameter(description="Email Address", in="query", name="email", required=true, type="string"),
-     *     @SWG\Parameter(description="Set destination for forwarded address", in="query", name="destination",
-     *                                     type="string"),
-     *     @SWG\Parameter(description="Password for full account", in="query", name="password", type="string"),
-     *     @SWG\Parameter(description="Is static forward or not", in="query", name="static", type="boolean"),
-     *     @SWG\Response(
+     *     Restricted.", responses={"application/json"}, tags={"email"}, security={"jwt","session"},
+     *     @OA\Parameter(description="JWT Token", in="header", name="bearer", required=true, @OA\Schema(type="string")),
+     *     @OA\Parameter(description="Email Address", in="query", name="email", required=true, @OA\Schema(type="string")),
+     *     @OA\Parameter(description="Set destination for forwarded address", in="query", name="destination",
+     *                                     @OA\Schema(type="string")),
+     *     @OA\Parameter(description="Password for full account", in="query", name="password", @OA\Schema(type="string")),
+     *     @OA\Parameter(description="Is static forward or not", in="query", name="static", @OA\Schema(type="string")),
+     *     @OA\Response(
      *         response="400",
      *         description="Bad request",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","msg"="Missing required
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={{"application/json":{"status"="error","msg"="Missing required
      *         field"}},{"application/json":{"status"="error","msg"="Password too weak"}}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="401",
      *         description="Unauthenticated",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthenticated"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="409",
      *         description="Conflict, usually caused by mismatched parameters",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Ambiguous request"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Ambiguous request"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="500",
      *         description="Server error",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unknown error"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unknown error"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(ref="#/definitions/OK"),
-     *         examples={"application/json":{"status"="OK","testing"=false}}
+     *         @OA\Schema(ref="#/components/schemas/OK"),
+     *         content={"application/json":{"status"="OK","testing"=false}}
      *     )
      * )
      * @param \Illuminate\Http\Request $request
@@ -341,43 +341,43 @@ class EmailController extends APIController
     }
 
     /**
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/email/hosted",
      *     summary="Get VATUSA hosted email accounts.  [Private]",
      *     description="Get VATUSA hosted email accounts. CORS Restricted.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"email"},
      *     security={"jwt","session"},
-     *     @SWG\Parameter(description="JWT Token", in="header", name="bearer", required=true, type="string"),
-     *     @SWG\Parameter(description="Facility IATA ID", in="query", name="facility", type="string"),
-     *     @SWG\Response(
+     *     @OA\Parameter(description="JWT Token", in="header", name="bearer", required=true, @OA\Schema(type="string")),
+     *     @OA\Parameter(description="Facility IATA ID", in="query", name="facility", @OA\Schema(type="string")),
+     *     @OA\Response(
      *         response="401",
      *         description="Unauthenticated",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthenticated"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="404",
      *         description="Not Found",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Not Found"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Not Found"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="object",
-     *             @SWG\Property(
+     *             @OA\Property(
      *                 property="emails",
      *                 type="array",
-     *                 @SWG\Items(
-     *                     ref="#/definitions/EmailAccounts"
+     *                 @OA\Items(
+     *                     ref="#/components/schemas/EmailAccounts"
      *                 ),
      *             ),
      *         ),
@@ -417,41 +417,41 @@ class EmailController extends APIController
     }
 
     /**
-     * @SWG\Put(
+     * @OA\Put(
      *     path="/email/hosted/{fac}/{username}",
      *     summary="Modify VATUSA hosted email account. [Private]",
      *     description="Modify VATUSA hosted email account. CORS Restricted.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"email"},
      *     security={"jwt","session"},
-     *     @SWG\Parameter(description="JWT Token", in="header", name="bearer", required=true, type="string"),
-     *     @SWG\Parameter(description="Email username", in="query", name="username", required=true, type="string"),
-     *     @SWG\Parameter(description="Facility IATA ID", in="query", name="facility", type="string"),
-     *     @SWG\Parameter(description="Owning CID", in="query", name="cid", type="integer"),
-     *     @SWG\Response(
+     *     @OA\Parameter(description="JWT Token", in="header", name="bearer", required=true, @OA\Schema(type="string")),
+     *     @OA\Parameter(description="Email username", in="query", name="username", required=true, @OA\Schema(type="string")),
+     *     @OA\Parameter(description="Facility IATA ID", in="query", name="facility", @OA\Schema(type="string")),
+     *     @OA\Parameter(description="Owning CID", in="query", name="cid", @OA\Schema(type="integer")),
+     *     @OA\Response(
      *         response="400",
      *         description="Bad request",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","msg"="Missing required
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={{"application/json":{"status"="error","msg"="Missing required
      *         field"}},{"application/json":{"status"="error","msg"="Password too weak"}}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="401",
      *         description="Unauthenticated",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthenticated"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(ref="#/definitions/OK"),
-     *         examples={"application/json":{"status"="OK","testing"=false}}
+     *         @OA\Schema(ref="#/components/schemas/OK"),
+     *         content={"application/json":{"status"="OK","testing"=false}}
      *     )
      * )
      * @param \Illuminate\Http\Request $request
@@ -509,40 +509,40 @@ class EmailController extends APIController
     }
 
     /**
-     * @SWG\Delete(
+     * @OA\Delete(
      *     path="/email/hosted/{fac}/{username}",
      *     summary="Delete VATUSA hosted email account. [Private]",
      *     description="Delete VATUSA hosted email account. CORS Restricted.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"email"},
      *     security={"jwt","session"},
-     *     @SWG\Parameter(description="JWT Token", in="header", name="bearer", required=true, type="string"),
-     *     @SWG\Parameter(description="Email username", in="query", name="username", required=true, type="string"),
-     *     @SWG\Parameter(description="Facility IATA ID", in="query", name="facility", type="string"),
-     *     @SWG\Response(
+     *     @OA\Parameter(description="JWT Token", in="header", name="bearer", required=true, @OA\Schema(type="string")),
+     *     @OA\Parameter(description="Email username", in="query", name="username", required=true, @OA\Schema(type="string")),
+     *     @OA\Parameter(description="Facility IATA ID", in="query", name="facility", @OA\Schema(type="string")),
+     *     @OA\Response(
      *         response="400",
      *         description="Bad request",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","msg"="Missing required
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={{"application/json":{"status"="error","msg"="Missing required
      *         field"}},{"application/json":{"status"="error","msg"="Password too weak"}}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="401",
      *         description="Unauthenticated",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthenticated"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(ref="#/definitions/OK"),
-     *         examples={"application/json":{"status"="OK","testing"=false}}
+     *         @OA\Schema(ref="#/components/schemas/OK"),
+     *         content={"application/json":{"status"="OK","testing"=false}}
      *     )
      * )
      * @param \Illuminate\Http\Request $request

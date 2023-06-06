@@ -8,11 +8,11 @@ use Illuminate\Database\Eloquent\Model;
  * Class EmailAccounts
  * @package App
  *
- * @SWG\Definition(
+ * @OA\Schema(
  *     type="object",
- *     @SWG\Property(property="id", type="integer"),
- *     @SWG\Property(property="facility", type="string", description="First name"),
- *     @SWG\Property(property="username", type="string", description="Last name"),
+ *     @OA\Property(property="id", type="integer"),
+ *     @OA\Property(property="facility", type="string", description="First name"),
+ *     @OA\Property(property="username", type="string", description="Last name"),
  * )
  */
 class EmailAccounts extends Model

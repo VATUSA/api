@@ -6,12 +6,12 @@ namespace App;
  * Class Facility
  * @package App
  *
- * @SWG\Definition(
+ * @OA\Schema(
  *     type="object",
- *     @SWG\Property(property="id", type="string", description="Facility IATA ID"),
- *     @SWG\Property(property="name", type="string"),
- *     @SWG\Property(property="url", type="string"),
- *     @SWG\Property(property="region", type="integer", description="Region represented by ATD (ie 7 = VATUSA7)"),
+ *     @OA\Property(property="id", type="string", description="Facility IATA ID"),
+ *     @OA\Property(property="name", type="string"),
+ *     @OA\Property(property="url", type="string"),
+ *     @OA\Property(property="region", type="integer", description="Region represented by ATD (ie 7 = VATUSA7)"),
  * )
  */
 class Facility extends Model

@@ -5,13 +5,13 @@ namespace App;
  * Class Role
  * @package App
  *
- * @SWG\Definition(
+ * @OA\Schema(
  *     type="object",
- *     @SWG\Property(property="id", type="integer"),
- *     @SWG\Property(property="cid", type="integer"),
- *     @SWG\Property(property="facility", type="string"),
- *     @SWG\Property(property="role", type="string"),
- *     @SWG\Property(property="created_at", type="string"),
+ *     @OA\Property(property="id", type="integer"),
+ *     @OA\Property(property="cid", type="integer"),
+ *     @OA\Property(property="facility", type="string"),
+ *     @OA\Property(property="role", type="string"),
+ *     @OA\Property(property="created_at", type="string"),
  * )
  */
 class Role extends Model
