@@ -1,13 +1,10 @@
 #!/bin/sh
-
 # cat /run/secrets/key > /www/.env
 # cat /run/secrets/*.env >> /www/.env
 # cat /run/secrets/sso.rsa >> /www/.sso.rsa
 # chmod 600 /run/secrets/*.key
 # chown application:application /run/secrets/*.key
-
 # chown application:application /www/.env
-
 mkdir /www/storage/logs
 chown -R application:application /www/storage/logs
 
