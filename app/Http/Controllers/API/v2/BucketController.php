@@ -13,38 +13,38 @@ class BucketController extends APIController
      * @param Request $request
      * @return array|\Illuminate\Http\JsonResponse|string
      *
-     * [SWG]\Get(
+     * @OA\\Get(
      *     path="/bucket/(facility)",
      *     summary="Get bucket information. [Auth]",
      *     description="Get bucket information. Requires JWT/Session Key.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"auth"},
      *     security={"session","jwt"},
-     *     [SWG]\Parameter(name="facility", in="path", type="string", description="Facility IATA ID"),
-     *     [SWG]\Response(
+     *     @OA\\Parameter(name="facility", in="path", @OA\Schema(type="string"), description="Facility IATA ID"),
+     *     @OA\\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         [SWG]\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     *     [SWG]\Response(
+     *     @OA\\Response(
      *         response="403",
      *         description="Forbidden",
-     *         [SWG]\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     *     [SWG]\Response(
+     *     @OA\\Response(
      *         response="404",
      *         description="Not found",
-     *         [SWG]\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Not found"}},
+     *         @OA\\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Not found"}},
      *     ),
-     *     [SWG]\Response(
+     *     @OA\\Response(
      *         response=200,
      *         description="Return JSON Token.",
-     *         [SWG]\Schema(
+     *         @OA\\Schema(
      *             type="object",
-     *             [SWG]\Items(ref="#/definitions/Bucket"),
+     *             @OA\\Items(ref="#/components/schemas/Bucket"),
      *        )
      *     )
      * )
@@ -66,44 +66,44 @@ class BucketController extends APIController
      * @param Request $request
      * @return array|\Illuminate\Http\JsonResponse|string
      *
-     * [SWG]\Post(
+     * @OA\\Post(
      *     path="/bucket/(facility)",
      *     summary="Create bucket. Requires JWT/Session Key [Auth]",
      *     description="Create bucket. Requires JWT/Session Key.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"auth"},
      *     security={"session","jwt"},
-     *     [SWG]\Parameter(name="facility", in="path", type="string", description="Facility IATA ID"),
-     *     [SWG]\Response(
+     *     @OA\\Parameter(name="facility", in="path", @OA\Schema(type="string"), description="Facility IATA ID"),
+     *     @OA\\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         [SWG]\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     *     [SWG]\Response(
+     *     @OA\\Response(
      *         response="403",
      *         description="Forbidden",
-     *         [SWG]\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     *     [SWG]\Response(
+     *     @OA\\Response(
      *         response="404",
      *         description="Not found",
-     *         [SWG]\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Not found"}},
+     *         @OA\\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Not found"}},
      *     ),
-     *     [SWG]\Response(
+     *     @OA\\Response(
      *         response="409",
      *         description="Conflict, bucket exists",
-     *         [SWG]\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Conflict"}},
+     *         @OA\\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Conflict"}},
      *     ),
-     *     [SWG]\Response(
+     *     @OA\\Response(
      *         response=200,
      *         description="Return JSON Token.",
-     *         [SWG]\Schema(
+     *         @OA\\Schema(
      *             type="object",
-     *             [SWG]\Items(ref="#/definitions/Bucket"),
+     *             @OA\\Items(ref="#/components/schemas/Bucket"),
      *        )
      *     )
      * )

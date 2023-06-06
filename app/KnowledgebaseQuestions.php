@@ -5,16 +5,16 @@ namespace App;
  * Class KnowledgebaseQuestions
  * @package App
  *
- * @SWG\Definition(
+ * @OA\Schema(
  *     type="object",
- *     @SWG\Property(property="id", type="integer"),
- *     @SWG\Property(property="category_id", type="integer"),
- *     @SWG\Property(property="order", type="integer"),
- *     @SWG\Property(property="question", type="string"),
- *     @SWG\Property(property="answer", type="string"),
- *     @SWG\Property(property="updated_by", type="integer"),
- *     @SWG\Property(property="created_at", type="string"),
- *     @SWG\Property(property="updated_at", type="string"),
+ *     @OA\Property(property="id", type="integer"),
+ *     @OA\Property(property="category_id", type="integer"),
+ *     @OA\Property(property="order", type="integer"),
+ *     @OA\Property(property="question", type="string"),
+ *     @OA\Property(property="answer", type="string"),
+ *     @OA\Property(property="updated_by", type="integer"),
+ *     @OA\Property(property="created_at", type="string"),
+ *     @OA\Property(property="updated_at", type="string"),
  * )
  */
 class KnowledgebaseQuestions extends Model

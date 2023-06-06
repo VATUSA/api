@@ -8,11 +8,11 @@ use \App\Http\Controllers\Controller as BaseController;
  *
  * @package App\Http\Controllers\API\v2
  *
- * @SWG\Swagger(
+ * @OA\Swagger(
  *     basePath="/v2",
  *     host="api.vatusa.net",
  *     schemes={"https"},
- *     @SWG\Info(
+ *     @OA\Info(
  *         version="2.3",
  *         title="VATUSA API",
  *         description="VATUSA APIv2 Documentation.
@@ -35,22 +35,22 @@ use \App\Http\Controllers\Controller as BaseController;
  *             "url": "https://www.vatusa.net/img/logo-full.png",
  *           },
  *         },
- *         @SWG\Contact(name="Blake Nahin", url="https://www.vatusa.net/info/members"),
+ *         @OA\Contact(name="Blake Nahin", url="https://www.vatusa.net/info/members"),
  *     ),
- *     @SWG\Tag(name="academy",description="Interaction with Moodle (Academy)"),
- *     @SWG\Tag(name="auth",description="Internal authentication handling commands for use by VATUSA Web Systems to translate Laravel Sessions into JSON Web Tokens"),
- *     @SWG\Tag(name="email",description="User email addresses for staff members"),
- *     @SWG\Tag(name="facility",description="Facility management actions"),
- *     @SWG\Tag(name="public",description="Public feeds of events and news"),
- *     @SWG\Tag(name="rating",description="Rating changes"),
- *     @SWG\Tag(name="role",description="Role handling"),
- *     @SWG\Tag(name="solo",description="Solo certifications"),
- *     @SWG\Tag(name="support",description="Support Center"),
- *     @SWG\Tag(name="survey", description="Survey management"),
- *     @SWG\Tag(name="tmu",description="Traffic Management Unit - Notices (NTOS)"),
- *     @SWG\Tag(name="training", description="Centralized training records"),
- *     @SWG\Tag(name="transfer",description="Transfer request submission and handling actions"),
- *     @SWG\Tag(name="user",description="User account management actions"),
+ *     @OA\Tag(name="academy",description="Interaction with Moodle (Academy)"),
+ *     @OA\Tag(name="auth",description="Internal authentication handling commands for use by VATUSA Web Systems to translate Laravel Sessions into JSON Web Tokens"),
+ *     @OA\Tag(name="email",description="User email addresses for staff members"),
+ *     @OA\Tag(name="facility",description="Facility management actions"),
+ *     @OA\Tag(name="public",description="Public feeds of events and news"),
+ *     @OA\Tag(name="rating",description="Rating changes"),
+ *     @OA\Tag(name="role",description="Role handling"),
+ *     @OA\Tag(name="solo",description="Solo certifications"),
+ *     @OA\Tag(name="support",description="Support Center"),
+ *     @OA\Tag(name="survey", description="Survey management"),
+ *     @OA\Tag(name="tmu",description="Traffic Management Unit - Notices (NTOS)"),
+ *     @OA\Tag(name="training", description="Centralized training records"),
+ *     @OA\Tag(name="transfer",description="Transfer request submission and handling actions"),
+ *     @OA\Tag(name="user",description="User account management actions"),
  * )
  */
 class APIController extends BaseController {
@@ -61,7 +61,7 @@ class APIController extends BaseController {
 }
 
 /**
- * @SWG\SecurityScheme(
+ * @OA\SecurityScheme(
  *   securityDefinition="jwt",
  *   type="apiKey",
  *   in="header",
@@ -70,7 +70,7 @@ class APIController extends BaseController {
  * )
  */
 /**
- * @SWG\SecurityScheme(
+ * @OA\SecurityScheme(
  *   securityDefinition="session",
  *   type="apiKey",
  *   in="header",
@@ -78,7 +78,7 @@ class APIController extends BaseController {
  * )
  */
 /**
- * @SWG\SecurityScheme(
+ * @OA\SecurityScheme(
  *     securityDefinition="apikey",
  *     type="apiKey",
  *     in="query",
@@ -89,52 +89,52 @@ class APIController extends BaseController {
 
 /**
  *
- * @SWG\Definition(
+ * @OA\Schema(
  *     definition="error",
  *     type="object",
- *     @SWG\Property(
+ *     @OA\Property(
  *         property="status",
  *         type="string",
  *         example="error",
  *     ),
- *     @SWG\Property(
+ *     @OA\Property(
  *         property="message",
  *         type="string",
  *         example="not_logged_in",
  *     ),
- *     @SWG\Property(
+ *     @OA\Property(
  *         property="exception",
  *         type="string"
  *     ),
- *     @SWG\Property(
+ *     @OA\Property(
  *         property="testing",
  *         type="boolean",
  *         example="false",
  *     ),
  * ),
- * @SWG\Definition(
+ * @OA\Schema(
  *     definition="OK",
  *     type="object",
- *     @SWG\Property(
+ *     @OA\Property(
  *         property="status",
  *         type="string",
  *         example="OK",
  *     ),
- *     @SWG\Property(
+ *     @OA\Property(
  *         property="testing",
  *         type="boolean",
  *         example="false",
  *     ),
  * ),
- * @SWG\Definition(
+ * @OA\Schema(
  *     definition="OKID",
  *     type="object",
- *     @SWG\Property(
+ *     @OA\Property(
  *         property="status",
  *         type="string",
  *         example="OK",
  *     ),
- *     @SWG\Property(
+ *     @OA\Property(
  *         property="id",
  *         type="integer",
  *         example=0,

@@ -5,12 +5,12 @@ namespace App;
  * Class KnowledgebaseCategories
  * @package App
  *
- * @SWG\Definition(
+ * @OA\Schema(
  *     type="object",
- *     @SWG\Property(property="id", type="integer"),
- *     @SWG\Property(property="name", type="integer"),
- *     @SWG\Property(property="questions", type="array", @SWG\Items(ref="#/definitions/KnowledgebaseQuestions")),
- *     @SWG\Property(property="created_at", type="string"),
+ *     @OA\Property(property="id", type="integer"),
+ *     @OA\Property(property="name", type="integer"),
+ *     @OA\Property(property="questions", type="array", @OA\Items(ref="#/components/schemas/KnowledgebaseQuestions")),
+ *     @OA\Property(property="created_at", type="string"),
  * )
  */
 class KnowledgebaseCategories extends Model

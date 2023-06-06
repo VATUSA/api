@@ -18,26 +18,26 @@ use Illuminate\Support\Facades\Auth;
 class SoloController extends APIController
 {
     /**
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/solo",
      *     summary="Get list of active solo certifications.",
      *     description="Get list of active solo certifications.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"solo"},
-     *     @SWG\Parameter(name="position", in="query", type="string", description="Filter for position"),
-     *     @SWG\Response(
+     *     @OA\Parameter(name="position", in="query", @OA\Schema(type="string"), description="Filter for position"),
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="array",
-     *             @SWG\Items(
+     *             @OA\Items(
      *                 type="object",
-     *                 @SWG\Property(property="id", type="integer", description="Solo Certification id"),
-     *                 @SWG\Property(property="cid",type="integer",description="CERT ID of user"),
-     *                 @SWG\Property(property="lastname",type="string",description="Last name"),
-     *                 @SWG\Property(property="firstname",type="string",description="First name"),
-     *                 @SWG\Property(property="position", type="string", description="Position ID (XYZ_APP, ZZZ_CTR)"),
-     *                 @SWG\Property(property="expDate", type="string", description="Expiration Date (YYYY-MM-DD)"),
+     *                 @OA\Property(property="id", type="integer", description="Solo Certification id"),
+     *                 @OA\Property(property="cid",type="integer",description="CERT ID of user"),
+     *                 @OA\Property(property="lastname",type="string",description="Last name"),
+     *                 @OA\Property(property="firstname",type="string",description="First name"),
+     *                 @OA\Property(property="position", type="string", description="Position ID (XYZ_APP, ZZZ_CTR)"),
+     *                 @OA\Property(property="expDate", type="string", description="Expiration Date (YYYY-MM-DD)"),
      *             ),
      *         ),
      *     )
@@ -57,45 +57,45 @@ class SoloController extends APIController
     }
 
     /**
-     * @SWG\Post(
+     * @OA\Post(
      *     path="/solo",
      *     summary="Submit new solo certification. [Key]",
      *     description="Submit new solo certification. Requires API Key, JWT, or Session Cookie (required roles:
-    [N/A for API Key] ATM, DATM, TA, INS)", produces={"application/json"}, tags={"solo"},
+    [N/A for API Key] ATM, DATM, TA, INS)", responses={"application/json"}, tags={"solo"},
      *     security={"apikey","jwt","session"},
-     * @SWG\Parameter(name="cid", in="formData", type="integer", required=true, description="CERT ID"),
-     * @SWG\Parameter(name="position", in="formData", type="string", required=true, description="Position ID
+     * @OA\Parameter(name="cid", in="formData", @OA\Schema(type="integer"), required=true, description="CERT ID"),
+     * @OA\Parameter(name="position", in="formData", @OA\Schema(type="string"), required=true, description="Position ID
     (XYZ_APP, ZZZ_CTR)"),
-     * @SWG\Parameter(name="expDate", in="formData", type="string", required=true, description="Date of expiration
+     * @OA\Parameter(name="expDate", in="formData", @OA\Schema(type="string"), required=true, description="Date of expiration
     (YYYY-MM-DD)"),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="400",
      *         description="Malformed request, check format of position, expDate",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","message"="Invalid
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={{"application/json":{"status"="error","message"="Invalid
      *         position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="object",
-     *             @SWG\Property(property="status", type="string"),
-     *             @SWG\Property(property="id", type="integer", description="ID number of solo certification"),
+     *             @OA\Property(property="status", type="string"),
+     *             @OA\Property(property="id", type="integer", description="ID number of solo certification"),
      *         ),
-     *         examples={"application/json":{"status"="OK","id"=1234}}
+     *         content={"application/json":{"status"="OK","id"=1234}}
      *     )
      * ),
      *
@@ -162,36 +162,37 @@ class SoloController extends APIController
     }
 
     /**
-     * @SWG\Delete(
+     * @OA\Delete(
      *     path="/solo",
      *     summary="Delete solo certification. [Key]",
      *     description="Delete solo certification. Pass the DB ID OR both CID and Position. Requires API Key, JWT, or
      *     Session cookie (required roles: [N/A
     for API Key] ATM, DATM, TA, INS).",
-     *     produces={"application/json"}, tags={"solo"},
+     *     responses={"application/json"}, tags={"solo"},
      *     security={"apikey","jwt","session"},
-     * @SWG\Parameter(name="id", in="formData", type="integer", required=false, description="Endorsement ID. Use this
+     * @OA\Parameter(name="id", in="formData", @OA\Schema(type="integer"), required=false, description="Endorsement ID.
+     *      Use this
      *                           OR both CID and Position."),
-     * @SWG\Parameter(name="cid", in="formData", type="integer", required=true, description="Vatsim ID"),
-     * @SWG\Parameter(name="position", in="formData", type="string", required=true, description="Position ID (XYZ_APP,
+     * @OA\Parameter(name="cid", in="formData", @OA\Schema(type="integer"), required=true, description="Vatsim ID"),
+     * @OA\Parameter(name="position", in="formData", @OA\Schema(type="string"), required=true, description="Position ID (XYZ_APP,
     ZZZ_CTR)"),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(ref="#/definitions/OK"),
-     *         examples={"application/json":{"status"="OK","testing"=false}}
+     *         @OA\Schema(ref="#/components/schemas/OK"),
+     *         content={"application/json":{"status"="OK","testing"=false}}
      *     )
      * ),
      *

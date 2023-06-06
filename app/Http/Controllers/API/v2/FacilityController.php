@@ -29,22 +29,22 @@ class FacilityController extends APIController
     /**
      * @return array|string
      *
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/facility",
      *     summary="Get list of VATUSA facilities.",
      *     description="Get list of VATUSA facilities.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"facility"},
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="array",
-     *             @SWG\Items(
-     *                 ref="#/definitions/Facility"
+     *             @OA\Items(
+     *                 ref="#/components/schemas/Facility"
      *             ),
      *         ),
-     *         examples={
+     *         content={
      *              "application/json":{
      *                      {"id": "HCF","name": "Honolulu CF","url": "http://www.hcfartcc.net","region": 7},
      *                      {"id":"ZAB","name":"Albuquerque ARTCC","url":"http:\/\/www.zabartcc.org","region":8},
@@ -65,40 +65,40 @@ class FacilityController extends APIController
      *
      * @return \Illuminate\Http\JsonResponse
      *
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/facility/{id}",
      *     summary="Get facility information.",
      *     description="Get facility information.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"facility"},
-     *     @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
-     *     @SWG\Response(
+     *     @OA\Parameter(name="id", in="query", description="Facility IATA ID", required=true, @OA\Schema(type="string")),
+     *     @OA\Response(
      *         response="404",
      *         description="Not found or not active",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Facility not found or not active"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="object",
-     *             @SWG\Property(property="facility", ref="#/definitions/Facility"),
-     *             @SWG\Property(property="roles", type="array",
-     *                 @SWG\Items(
-     *                     ref="#/definitions/Role",
+     *             @OA\Property(property="facility", ref="#/components/schemas/Facility"),
+     *             @OA\Property(property="roles", type="array",
+     *                 @OA\Items(
+     *                     ref="#/components/schemas/Role",
      *                 ),
      *             ),
-     *             @SWG\Property(
+     *             @OA\Property(
      *                 property="stats",
      *                 type="object",
-     *                 @SWG\Property(property="controllers", type="integer", description="Number of controllers on
+     *                 @OA\Property(property="controllers", type="integer", description="Number of controllers on
     facility roster"),
-     *                 @SWG\Property(property="pendingTransfers", type="integer", description="Number of pending
+     *                 @OA\Property(property="pendingTransfers", type="integer", description="Number of pending
     transfers to facility"),
      *             ),
      *         ),
-     *         examples={
+     *         content={
      *              "application/json":{
      *                      {"id":"HCF","name":"Honolulu CF",
     "url":"http:\/\/www.hcfartcc.net","role":{{"cid":1245046,"name":"Toby Rice","role":"MTR"},
@@ -153,49 +153,49 @@ class FacilityController extends APIController
      *
      * @return \Illuminate\Http\JsonResponse
      *
-     * @SWG\Put(
+     * @OA\Put(
      *     path="/facility/{id}",
      *     summary="Update facility information. [Auth]",
      *     description="Update facility information. Requires JWT or Session Cookie. Must be ATM, DATM, or WM.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"facility"},
      *     security={"jwt"},
-     *     @SWG\Parameter(name="id", in="path", description="Facility IATA ID", required=true, type="string"),
-     *     @SWG\Parameter(name="url", in="formData", description="Change facility URL", type="string"),
-     *     @SWG\Parameter(name="url_dev", in="formData", description="Change facility Dev URL(s)", type="string"),
-     *     @SWG\Parameter(name="apiv2jwk", in="formData", description="Request new APIv2 JWK", type="string"),
-     *     @SWG\Parameter(name="jwkdev", in="formData", description="Request new testing JWK", type="boolean"),
-     *     @SWG\Parameter(name="apikey", in="formData", type="string", description="Request new API Key for facility"),
-     *     @SWG\Parameter(name="apikeySandbox", in="formData", type="string", description="Request new Sandbox API Key
+     *     @OA\Parameter(name="id", in="path", description="Facility IATA ID", required=true, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="url", in="formData", description="Change facility URL", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="url_dev", in="formData", description="Change facility Dev URL(s)", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="apiv2jwk", in="formData", description="Request new APIv2 JWK", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="jwkdev", in="formData", description="Request new testing JWK", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="apikey", in="formData", @OA\Schema(type="string"), description="Request new API Key for facility"),
+     *     @OA\Parameter(name="apikeySandbox", in="formData", @OA\Schema(type="string"), description="Request new Sandbox API Key
     for facility"),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="404",
      *         description="Not found or not active",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Facility not found or not active"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="object",
-     *             @SWG\Property(property="status",type="string"),
-     *             @SWG\Property(property="apikey",type="string"),
-     *             @SWG\Property(property="apikeySandbox",type="string"),
+     *             @OA\Property(property="status",type="string"),
+     *             @OA\Property(property="apikey",type="string"),
+     *             @OA\Property(property="apikeySandbox",type="string"),
      *         ),
-     *         examples={"application/json":{"status"="OK", "testing"=false}}
+     *         content={"application/json":{"status"="OK", "testing"=false}}
      *     )
      * )
      */
@@ -295,39 +295,39 @@ class FacilityController extends APIController
 
     /**
      *
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/facility/{id}/email/{templateName}",
      *     summary="Get facility's email template. [Key]",
      *     description="Get facility's email template. Requires API Key, Session Cookie (ATM/DATM/TA), or JWT",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"facility","email"},
-     *     @SWG\Parameter(name="id", in="path", description="Facility IATA ID", required=true, type="string"),
-     *     @SWG\Parameter(name="templateName", in="path", description="Name of template (welcome, examassigned,
+     *     @OA\Parameter(name="id", in="path", description="Facility IATA ID", required=true, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="templateName", in="path", description="Name of template (welcome, examassigned,
     examfailed, exampassed)",
-     *                                          required=true, type="string"),
-     * @SWG\Response(
+     *                                          required=true, @OA\Schema(type="string")),
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="404",
      *         description="Not found",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Facility not found or not active"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
-     *             ref="#/definitions/EmailTemplate"
+     *         @OA\Schema(
+     *             ref="#/components/schemas/EmailTemplate"
      *         ),
      *     )
      * )
@@ -406,44 +406,44 @@ class FacilityController extends APIController
 
     /**
      *
-     * @SWG\Post(
+     * @OA\Post(
      *     path="/facility/{id}/email/{templateName}",
      *     summary="Modify facility's email template. [Auth]",
      *     description="Modify facility's email template. Requires JWT or Session Cookie (ATM/DATM/TA)",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"facility","email"},
-     *     @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
-     *     @SWG\Parameter(name="templateName", in="path", description="Name of template (welcome, examassigned,
-    examfailed, exampassed)", required=true, type="string"),
-     * @SWG\Parameter(name="body", in="formData", description="Text of template", required=true, type="string"),
-     * @SWG\Response(
+     *     @OA\Parameter(name="id", in="query", description="Facility IATA ID", required=true, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="templateName", in="path", description="Name of template (welcome, examassigned,
+    examfailed, exampassed)", required=true, @OA\Schema(type="string")),
+     * @OA\Parameter(name="body", in="formData", description="Text of template", required=true, @OA\Schema(type="string")),
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="404",
      *         description="Not found or not active",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Facility not found or not active"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="object",
-     *             @SWG\Property(property="status",type="string"),
-     *             @SWG\Property(property="template",type="string"),
-     *             @SWG\Property(property="body",type="string"),
+     *             @OA\Property(property="status",type="string"),
+     *             @OA\Property(property="template",type="string"),
+     *             @OA\Property(property="body",type="string"),
      *         ),
-     *         examples={"application/json":{"status"="OK", "testing"=false}}
+     *         content={"application/json":{"status"="OK", "testing"=false}}
      *     )
      * )
      * @param \Illuminate\Http\Request $request
@@ -492,69 +492,69 @@ class FacilityController extends APIController
      *
      * @return \Illuminate\Http\JsonResponse
      *
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/facility/{id}/roster/{membership}",
      *     summary="Get facility roster.",
      *     description="Get facility staff. Email field requires authentication as senior staff.
     Broadcast opt-in status requires API key or staff member authentication. Prevent Staff Assignment field requires
-    authentication as senior staff.", produces={"application/json"}, tags={"facility"},
-     * @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
-     * @SWG\Parameter(name="membership", in="query", description="Membership type (home, visit, both)", default="home",
-     *                                   type="string"),
-     * @SWG\Response(
+    authentication as senior staff.", responses={"application/json"}, tags={"facility"},
+     * @OA\Parameter(name="id", in="query", description="Facility IATA ID", required=true, @OA\Schema(type="string")),
+     * @OA\Parameter(name="membership", in="query", description="Membership type (home, visit, both) - defaults to
+     * home", @OA\Schema(type="string")),
+     * @OA\Response(
      *         response="400",
      *         description="Malformed request, invalid role parameter",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Malformed request"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Malformed request"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="404",
      *         description="Not found or not active",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Facility not found or not active"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="object",
-     *             @SWG\Property(property="cid", type="integer"),
-     *             @SWG\Property(property="fname", type="string", description="First name"),
-     *             @SWG\Property(property="lname", type="string", description="Last name"),
-     *             @SWG\Property(property="email", type="string", description="Email address of user, will be null if
+     *             @OA\Property(property="cid", type="integer"),
+     *             @OA\Property(property="fname", type="string", description="First name"),
+     *             @OA\Property(property="lname", type="string", description="Last name"),
+     *             @OA\Property(property="email", type="string", description="Email address of user, will be null if
     API Key or necessary roles are not available (ATM, DATM, TA, WM,
     INS)"),
-     *             @SWG\Property(property="facility", type="string", description="Facility ID"),
-     *             @SWG\Property(property="rating", type="integer", description="Rating based off array where 1=OBS,
+     *             @OA\Property(property="facility", type="string", description="Facility ID"),
+     *             @OA\Property(property="rating", type="integer", description="Rating based off array where 1=OBS,
     S1, S2, S3, C1, C2, C3, I1, I2, I3, SUP, ADM"),
-     *             @SWG\Property(property="rating_short", type="string", description="String representation of
+     *             @OA\Property(property="rating_short", type="string", description="String representation of
     rating"),
-     *             @SWG\Property(property="created_at", type="string", description="Date added to database"),
-     *             @SWG\Property(property="updated_at", type="string"),
-     *             @SWG\Property(property="flag_needbasic", type="integer", description="1 needs basic exam"),
-     *             @SWG\Property(property="flag_xferOverride", type="integer", description="Has approved transfer
+     *             @OA\Property(property="created_at", type="string", description="Date added to database"),
+     *             @OA\Property(property="updated_at", type="string"),
+     *             @OA\Property(property="flag_needbasic", type="integer", description="1 needs basic exam"),
+     *             @OA\Property(property="flag_xferOverride", type="integer", description="Has approved transfer
     override"),
-     *             @SWG\Property(property="flag_broadcastOptedIn", type="integer", description="Has opted in to
+     *             @OA\Property(property="flag_broadcastOptedIn", type="integer", description="Has opted in to
     receiving broadcast emails"),
-     *             @SWG\Property(property="flag_preventStaffAssign", type="integer", description="Ineligible for staff
+     *             @OA\Property(property="flag_preventStaffAssign", type="integer", description="Ineligible for staff
     role assignment"),
-     *             @SWG\Property(property="facility_join", type="string", description="Date joined facility (YYYY-mm-dd
+     *             @OA\Property(property="facility_join", type="string", description="Date joined facility (YYYY-mm-dd
     hh:mm:ss)"),
-     *             @SWG\Property(property="promotion_eligible", type="boolean", description="Is member eligible for
+     *             @OA\Property(property="promotion_eligible", type="boolean", description="Is member eligible for
     promotion?"),
-     *             @SWG\Property(property="transfer_eligible", type="boolean", description="Is member is eligible for
+     *             @OA\Property(property="transfer_eligible", type="boolean", description="Is member is eligible for
     transfer?"),
-     *             @SWG\Property(property="last_promotion", type="string", description="Date last promoted"),
-     *             @SWG\Property(property="flag_homecontroller", type="boolean", description="1-Belongs to VATUSA"),
-     *             @SWG\Property(property="lastactivity", type="string", description="Date last seen on website"),
-     *             @SWG\Property(property="isMentor", type="boolean", description="Has Mentor role"),
-     *             @SWG\Property(property="isSupIns", type="boolean", description="Is a SUP and has INS role"),
-     *             @SWG\Property(property="membership", type="string", description="'Home' or 'visit' depending on
+     *             @OA\Property(property="last_promotion", type="string", description="Date last promoted"),
+     *             @OA\Property(property="flag_homecontroller", type="boolean", description="1-Belongs to VATUSA"),
+     *             @OA\Property(property="lastactivity", type="string", description="Date last seen on website"),
+     *             @OA\Property(property="isMentor", type="boolean", description="Has Mentor role"),
+     *             @OA\Property(property="isSupIns", type="boolean", description="Is a SUP and has INS role"),
+     *             @OA\Property(property="membership", type="string", description="'Home' or 'visit' depending on
     facility membership."),
-     *             @SWG\Property(property="roles", type="array",
-     *                 @SWG\Items(type="object",
-     *                     @SWG\Property(property="facility", type="string"),
-     *                     @SWG\Property(property="role", type="string")
+     *             @OA\Property(property="roles", type="array",
+     *                 @OA\Items(type="object",
+     *                     @OA\Property(property="facility", type="string"),
+     *                     @OA\Property(property="role", type="string")
      *                 )
      *             )
      *         )
@@ -660,45 +660,46 @@ class FacilityController extends APIController
      *
      * @return \Illuminate\Http\JsonResponse
      *
-     * @SWG\Post(
+     * @OA\Post(
      *     path="/facility/{id}/roster/manageVisitor/{cid}",
      *     summary="Add member to visiting roster. [Key]",
      *     description="Add member to visiting roster.  API Key, JWT, or Session Cookie required (required role: ATM,
     DATM, WM, VATUSA STAFF)",
-     * produces={"application/json"},
+     * responses={"application/json"},
      * tags={"facility"},
      * security={"jwt"},
-     * @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
-     * @SWG\Parameter(name="cid", in="query", description="CID of controller", required=true, type="integer"),
-     * @SWG\Response(
+     * @OA\Parameter(name="id", in="query", description="Facility IATA ID", required=true, @OA\Schema(type="string")),
+     * @OA\Parameter(name="cid", in="query", description="CID of controller", required=true, @OA\Schema
+     * (type="integer")),
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden -- needs to have role of ATM, DATM or VATUSA Division staff member",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","message"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","message"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="404",
      *         description="Not found or not active",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Facility not found or not active"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="422",
      *         description="User is already visiting this facility",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="User is already visiting this facility"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="User is already visiting this facility"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(ref="#/definitions/OK"),
-     *         examples={"application/json":{"status"="OK", "testing"=false}}
+     *         @OA\Schema(ref="#/components/schemas/OK"),
+     *         content={"application/json":{"status"="OK", "testing"=false}}
      *     )
      * )
      */
@@ -782,53 +783,54 @@ class FacilityController extends APIController
      *
      * @return \Illuminate\Http\JsonResponse
      *
-     * @SWG\Delete(
+     * @OA\Delete(
      *     path="/facility/{id}/roster/manageVisitor/{cid}",
      *     summary="Delete member from visiting roster. [Key]",
      *     description="Delete member from visiting roster.  API Key, JWT, or Session Cookie required (required role:
      *     ATM,
     DATM, VATUSA STAFF)",
-     * produces={"application/json"},
+     * responses={"application/json"},
      * tags={"facility"},
      * security={"jwt"},
-     * @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
-     * @SWG\Parameter(name="cid", in="query", description="CID of controller", required=true, type="integer"),
-     * @SWG\Parameter(name="reason", in="formData", description="Reason for deletion", required=true, type="string"),
-     * @SWG\Response(
+     * @OA\Parameter(name="id", in="query", description="Facility IATA ID", required=true, @OA\Schema(type="string")),
+     * @OA\Parameter(name="cid", in="query", description="CID of controller", required=true, @OA\Schema
+     * (type="integer")),
+     * @OA\Parameter(name="reason", in="formData", description="Reason for deletion", required=true, @OA\Schema(type="string")),
+     * @OA\Response(
      *         response="400",
      *         description="Malformed request, missing required parameter",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Malformed request"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Malformed request"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden -- needs to have role of ATM, DATM or VATUSA Division staff member",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","message"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","message"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="404",
      *         description="Not found or not active",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Facility not found or not active"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="422",
      *         description="User is not visiting this facility",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="User is not visiting this facility"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="User is not visiting this facility"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(ref="#/definitions/OK"),
-     *         examples={"application/json":{"status"="OK", "testing"=false}}
+     *         @OA\Schema(ref="#/components/schemas/OK"),
+     *         content={"application/json":{"status"="OK", "testing"=false}}
      *     )
      * )
      */
@@ -903,49 +905,50 @@ class FacilityController extends APIController
      *
      * @return \Illuminate\Http\JsonResponse
      *
-     * @SWG\Delete(
+     * @OA\Delete(
      *     path="/facility/{id}/roster/{cid}",
      *     summary="Delete member from facility roster. [Key]",
      *     description="Delete member from facility roster.  API Key, JWT, or Session Cookie required (required role:
      *     ATM,
     DATM, VATUSA STAFF)",
-     * produces={"application/json"},
+     * responses={"application/json"},
      * tags={"facility"},
      * security={"jwt"},
-     * @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
-     * @SWG\Parameter(name="cid", in="query", description="CID of controller", required=true, type="integer"),
-     * @SWG\Parameter(name="reason", in="formData", description="Reason for deletion", required=true, type="string"),
-     * @SWG\Parameter(name="by", in="formData", description="Staff member responsible for deletion - only required with
-     *                           API Key", required=false, type="integer"),
-     * @SWG\Response(
+     * @OA\Parameter(name="id", in="query", description="Facility IATA ID", required=true, @OA\Schema(type="string")),
+     * @OA\Parameter(name="cid", in="query", description="CID of controller", required=true, @OA\Schema
+     * (type="integer")),
+     * @OA\Parameter(name="reason", in="formData", description="Reason for deletion", required=true, @OA\Schema(type="string")),
+     * @OA\Parameter(name="by", in="formData", description="Staff member responsible for deletion - only required with
+     *                           API Key", required=false, @OA\Schema(type="integer")),
+     * @OA\Response(
      *         response="400",
      *         description="Malformed request, missing required parameter",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Malformed request"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Malformed request"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden -- needs to have role of ATM, DATM or VATUSA Division staff member",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","message"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","message"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="404",
      *         description="Not found or not active",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Facility not found or not active"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(ref="#/definitions/OK"),
-     *         examples={"application/json":{"status"="OK", "testing"=false}}
+     *         @OA\Schema(ref="#/components/schemas/OK"),
+     *         content={"application/json":{"status"="OK", "testing"=false}}
      *     )
      * )
      */
@@ -1003,66 +1006,66 @@ class FacilityController extends APIController
      *
      * @return \Illuminate\Http\JsonResponse
      *
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/facility/{id}/transfers",
      *     summary="Get pending transfers. [Key]",
      *     description="Get pending transfers. Requires API Key, Session Cookie, or JWT",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"facility"},
      *     security={"jwt","apikey"},
-     *     @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
-     *     @SWG\Response(
+     *     @OA\Parameter(name="id", in="query", description="Facility IATA ID", required=true, @OA\Schema(type="string")),
+     *     @OA\Response(
      *         response="400",
      *         description="Malformed request, missing required parameter",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Malformed request"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Malformed request"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="403",
      *         description="Forbidden -- needs to be a staff member, other than mentor",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","message"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","message"="Forbidden"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="404",
      *         description="Not found or not active",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Facility not found or not active"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="object",
-     *             @SWG\Property(property="status", type="string"),
-     *             @SWG\Property(property="transfers", type="array",
-     *                 @SWG\Items(
+     *             @OA\Property(property="status", type="string"),
+     *             @OA\Property(property="transfers", type="array",
+     *                 @OA\Items(
      *                     type="object",
-     *                     @SWG\Property(property="id", type="integer", description="Transfer ID"),
-     *                     @SWG\Property(property="cid", type="integer", description="VATSIM ID"),
-     *                     @SWG\Property(property="fname", type="string", description="First name"),
-     *                     @SWG\Property(property="lname", type="string", description="Last name"),
-     *                     @SWG\Property(property="email", type="string", description="Email, if authenticated as staff
+     *                     @OA\Property(property="id", type="integer", description="Transfer ID"),
+     *                     @OA\Property(property="cid", type="integer", description="VATSIM ID"),
+     *                     @OA\Property(property="fname", type="string", description="First name"),
+     *                     @OA\Property(property="lname", type="string", description="Last name"),
+     *                     @OA\Property(property="email", type="string", description="Email, if authenticated as staff
     member and/or api key is present."),
-     *                     @SWG\Property(property="reason", type="string", description="Transfer reason; must be
+     *                     @OA\Property(property="reason", type="string", description="Transfer reason; must be
      *                                                      authenticated as senior staff."),
-     *                     @SWG\Property(property="fromFac", type="array",
-     *                         @SWG\Items(
+     *                     @OA\Property(property="fromFac", type="array",
+     *                         @OA\Items(
      *                             type="object",
-     *                             @SWG\Property(property="id", type="integer", description="Facility ID (ex. ZSE)"),
-     *                             @SWG\Property(property="name", type="integer", description="Facility Name (ex.
+     *                             @OA\Property(property="id", type="integer", description="Facility ID (ex. ZSE)"),
+     *                             @OA\Property(property="name", type="integer", description="Facility Name (ex.
     Seattle ARTCC)")
      *                         )
      *                     ),
-     *                     @SWG\Property(property="rating", type="string", description="Short string rating (S1, S2)"),
-     *                     @SWG\Property(property="intRating", type="integer", description="Numeric rating (OBS = 1,
+     *                     @OA\Property(property="rating", type="string", description="Short string rating (S1, S2)"),
+     *                     @OA\Property(property="intRating", type="integer", description="Numeric rating (OBS = 1,
     etc)"),
-     *                     @SWG\Property(property="date", type="string", description="Date transfer submitted
+     *                     @OA\Property(property="date", type="string", description="Date transfer submitted
     (YYYY-MM-DD)"),
      *                 ),
      *             ),
      *         ),
-     *         examples={"application/json":{"status":"OK","transfers":{"id":5606,"cid":1275302,"fname":"Blake",
+     *         content={"application/json":{"status":"OK","transfers":{"id":5606,"cid":1275302,"fname":"Blake",
     "lname":"Nahin","email":null,"reason":"Only one class B? Too easy. I want something harder, like ZTL.",
     "rating":"C1","intRating":5,"date":"2014-12-19","fromFac":{"id":"ZSE","name":"Seattle ARTCC"}}}}
      *     )
@@ -1124,48 +1127,51 @@ class FacilityController extends APIController
      *
      * @return \Illuminate\Http\JsonResponse
      *
-     * @SWG\Put(
+     * @OA\Put(
      *     path="/facility/{id}/transfers/{transferId}",
      *     summary="Modify transfer request.  [Key]",
      *     description="Modify transfer request. Requires API Key, Session Cookie, or JWT (required role: ATM, DATM,
-    VATUSA STAFF)", produces={"application/json"}, tags={"facility"}, security={"jwt"},
-     * @SWG\Parameter(name="id", in="query", description="Facility IATA ID", required=true, type="string"),
-     * @SWG\Parameter(name="transferId", in="query", description="Transfer ID", type="integer", required=true),
-     * @SWG\Parameter(name="action", in="formData", type="string", required=true, enum={"approve","reject"},
+    VATUSA STAFF)", responses={"application/json"}, tags={"facility"}, security={"jwt"},
+     * @OA\Parameter(name="id", in="query", description="Facility IATA ID", required=true, @OA\Schema(type="string")),
+     * @OA\Parameter(name="transferId", in="query", description="Transfer ID", @OA\Schema(type="integer"),
+     *     required=true),
+     * @OA\Parameter(name="action", in="formData", @OA\Schema(type="string"), required=true, examples={"approve",
+     *     "reject"},
      *                                   description="Action to take on transfer request. Valid values:
     accept,reject"),
-     * @SWG\Parameter(name="reason", in="formData", type="string", description="Reason for transfer request rejection
+     * @OA\Parameter(name="reason", in="formData", @OA\Schema(type="string"), description="Reason for transfer request rejection
     [required for rejections]"),
-     * @SWG\Parameter(name="by", in="formData", type="integer", description="Staff member responsible for trasnfer [required for API Key]"),
-     * @SWG\Response(
+     * @OA\Parameter(name="by", in="formData", @OA\Schema(type="integer"), description="Staff member responsible for
+     * trasnfer [required for API Key]"),
+     * @OA\Response(
      *         response="400",
      *         description="Malformed request, missing required parameter",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Malformed request"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Malformed request"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden -- needs to be a staff member, other than mentor",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","message"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","message"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="404",
      *         description="Not found or not active",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Facility not found or not active"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="410",
      *         description="Gone",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Transfer is not pending"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Transfer is not pending"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(ref="#/definitions/OK"),
-     *         examples={"application/json":{"status"="OK", "testing"=false}}
+     *         @OA\Schema(ref="#/components/schemas/OK"),
+     *         content={"application/json":{"status"="OK", "testing"=false}}
      *     )
      * )
      */

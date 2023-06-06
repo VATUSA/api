@@ -20,45 +20,45 @@ use Illuminate\Support\Str;
  * Class User
  * @package App
  *
- * @SWG\Definition(
+ * @OA\Schema(
  *     type="object",
- *     @SWG\Property(property="cid", type="integer"),
- *     @SWG\Property(property="fname", type="string", description="First name"),
- *     @SWG\Property(property="lname", type="string", description="Last name"),
- *     @SWG\Property(property="email", type="string", description="Email address of user, will be null if API Key or
+ *     @OA\Property(property="cid", type="integer"),
+ *     @OA\Property(property="fname", type="string", description="First name"),
+ *     @OA\Property(property="lname", type="string", description="Last name"),
+ *     @OA\Property(property="email", type="string", description="Email address of user, will be null if API Key or
                                        necessary roles are not available (ATM, DATM, TA, WM, INS)"),
- *     @SWG\Property(property="facility", type="string", description="Facility ID"),
- *     @SWG\Property(property="rating", type="integer", description="Rating based off array where 1=OBS, S1, S2, S3,
+ *     @OA\Property(property="facility", type="string", description="Facility ID"),
+ *     @OA\Property(property="rating", type="integer", description="Rating based off array where 1=OBS, S1, S2, S3,
                                         C1, C2, C3, I1, I2, I3, SUP, ADM"),
- *     @SWG\Property(property="rating_short", type="string", description="String representation of rating"),
- *     @SWG\Property(property="created_at", type="string", description="Date added to database"),
- *     @SWG\Property(property="updated_at", type="string"),
- *     @SWG\Property(property="flag_needbasic", type="integer", description="1 needs basic exam"),
- *     @SWG\Property(property="flag_xferOverride", type="integer", description="Has approved transfer override"),
- *     @SWG\Property(property="flag_broadcastOptedIn", type="integer", description="Has opted in to receiving broadcast
+ *     @OA\Property(property="rating_short", type="string", description="String representation of rating"),
+ *     @OA\Property(property="created_at", type="string", description="Date added to database"),
+ *     @OA\Property(property="updated_at", type="string"),
+ *     @OA\Property(property="flag_needbasic", type="integer", description="1 needs basic exam"),
+ *     @OA\Property(property="flag_xferOverride", type="integer", description="Has approved transfer override"),
+ *     @OA\Property(property="flag_broadcastOptedIn", type="integer", description="Has opted in to receiving broadcast
                                                        emails"),
- *     @SWG\Property(property="flag_preventStaffAssign", type="integer", description="Ineligible for staff role
+ *     @OA\Property(property="flag_preventStaffAssign", type="integer", description="Ineligible for staff role
                                                          assignment"),
- *     @SWG\Property(property="facility_join", type="string", description="Date joined facility (YYYY-mm-dd
+ *     @OA\Property(property="facility_join", type="string", description="Date joined facility (YYYY-mm-dd
                                                hh:mm:ss)"),
- *     @SWG\Property(property="promotion_eligible", type="boolean", description="Is member eligible for promotion?"),
- *     @SWG\Property(property="transfer_eligible", type="boolean", description="Is member is eligible for transfer?"),
- *     @SWG\Property(property="last_promotion", type="string", description="Date last promoted"),
- *     @SWG\Property(property="flag_homecontroller", type="boolean", description="1-Belongs to VATUSA"),
- *     @SWG\Property(property="lastactivity", type="string", description="Date last seen on website"),
- *     @SWG\Property(property="isMentor", type="boolean", description="Has Mentor role"),
- *     @SWG\Property(property="isSupIns", type="boolean", description="Is a SUP and has INS role"),
- *     @SWG\Property(property="roles", type="array",
- *         @SWG\Items(type="object",
- *             @SWG\Property(property="facility", type="string"),
- *             @SWG\Property(property="role", type="string")
+ *     @OA\Property(property="promotion_eligible", type="boolean", description="Is member eligible for promotion?"),
+ *     @OA\Property(property="transfer_eligible", type="boolean", description="Is member is eligible for transfer?"),
+ *     @OA\Property(property="last_promotion", type="string", description="Date last promoted"),
+ *     @OA\Property(property="flag_homecontroller", type="boolean", description="1-Belongs to VATUSA"),
+ *     @OA\Property(property="lastactivity", type="string", description="Date last seen on website"),
+ *     @OA\Property(property="isMentor", type="boolean", description="Has Mentor role"),
+ *     @OA\Property(property="isSupIns", type="boolean", description="Is a SUP and has INS role"),
+ *     @OA\Property(property="roles", type="array",
+ *         @OA\Items(type="object",
+ *             @OA\Property(property="facility", type="string"),
+ *             @OA\Property(property="role", type="string")
  *         )
  *     ),
- *     @SWG\Property(property="visiting_facilities", type="array",
- *         @SWG\Items(type="object",
- *             @SWG\Property(property="id", type="string"),
- *             @SWG\Property(property="name", type="string"),
- *             @SWG\Property(property="region", type="integer")
+ *     @OA\Property(property="visiting_facilities", type="array",
+ *         @OA\Items(type="object",
+ *             @OA\Property(property="id", type="string"),
+ *             @OA\Property(property="name", type="string"),
+ *             @OA\Property(property="region", type="integer")
  *         )
  *     )
  * )
@@ -566,7 +566,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         if (!in_array($this->facility, ["ZAE", "ZZN", "ZHQ"])) {
             if (Transfer::where('cid', $this->cid)->where('to', 'NOT LIKE', 'ZAE')->where('to', 'NOT LIKE',
                     'ZZN')->where('status', 1)->count() == 1) {
-                if ($this->facility_join->diffInDays(Carbon::now()) <= 30) {
+                if (Carbon::createFromFormat('Y-m-d H:i:s', $this->facility_join)->diffInDays(Carbon::now()) <= 30) {
                     $checks['initial'] = true;
                 }
             } else {
@@ -736,7 +736,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         }
     }
 
-    public function resolveRouteBinding($value)
+    public function resolveRouteBinding(mixed $value, $field = null)
     {
         return $this->where($this->getRouteKeyName(), $value)->first() ?? abort(404);
     }

@@ -17,19 +17,19 @@ class SupportController extends APIController
 {
     //<editor-fold desc="Knowledgebase">
     /**
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/support/kb",
      *     summary="Get knowledgebase list.",
      *     description="Get knowledgebase list.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"support"},
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="array",
-     *             @SWG\Items(
-     *                 ref="#/definitions/KnowledgebaseCategories",
+     *             @OA\Items(
+     *                 ref="#/components/schemas/KnowledgebaseCategories",
      *             ),
      *         ),
      *     )
@@ -43,37 +43,37 @@ class SupportController extends APIController
     }
 
     /**
-     * @SWG\Post(
+     * @OA\Post(
      *     path="/support/kb",
      *     summary="Create knowledgebase category. [Auth]",
      *     description="Creates knowledgebase category. Requires JWT or Session Cookie and VATUSA Staff role.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"support"},
      *     security={"jwt","session"},
-     *     @SWG\Parameter(in="formData", name="name", type="string", description="Name of new category"),
-     *     @SWG\Response(
+     *     @OA\Parameter(in="formData", name="name", @OA\Schema(type="string"), description="Name of new category"),
+     *     @OA\Response(
      *         response="400",
      *         description="Malformed request, check format of position, expDate",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","message"="Invalid position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={{"application/json":{"status"="error","message"="Invalid position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
-     *           ref="#/definitions/OKID",
+     *         @OA\Schema(
+     *           ref="#/components/schemas/OKID",
      *         ),
      *     )
      * )
@@ -94,44 +94,44 @@ class SupportController extends APIController
     }
 
     /**
-     * @SWG\Put(
+     * @OA\Put(
      *     path="/support/kb/{id}",
      *     summary="Modify knowledgebase category. [Auth]",
      *     description="Modify knowledgebase category. Requires JWT or Session Cookie and VATUSA Staff role.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"support"},
      *     security={"jwt","session"},
-     *     @SWG\Parameter(in="path", name="id", type="integer", description="ID of Knowledgebase Category"),
-     *     @SWG\Parameter(in="formData", name="name", type="string", description="New name of category"),
-     *     @SWG\Response(
+     *     @OA\Parameter(in="path", name="id", @OA\Schema(type="integer"), description="ID of Knowledgebase Category"),
+     *     @OA\Parameter(in="formData", name="name", @OA\Schema(type="string"), description="New name of category"),
+     *     @OA\Response(
      *         response="400",
      *         description="Malformed request, check format of position, expDate",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","message"="Invalid position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={{"application/json":{"status"="error","message"="Invalid position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="404",
      *         description="Not found",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Not found"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Not found"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
-     *           ref="#/definitions/OK",
+     *         @OA\Schema(
+     *           ref="#/components/schemas/OK",
      *         ),
      *     )
      * )
@@ -151,44 +151,44 @@ class SupportController extends APIController
     }
 
     /**
-     * @SWG\Delete(
+     * @OA\Delete(
      *     path="/support/kb/{id}",
      *     summary="Delete knowledgebase category. [Auth]",
      *     description="Delete knowledgebase category. Requires JWT or Session Cookie and VATUSA Staff role.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"support"},
      *     security={"jwt","session"},
-     *     @SWG\Parameter(in="path", name="id", type="integer", description="ID of Knowledgebase Category"),
-     *     @SWG\Response(
+     *     @OA\Parameter(in="path", name="id", @OA\Schema(type="integer"), description="ID of Knowledgebase Category"),
+     *     @OA\Response(
      *         response="400",
      *         description="Malformed request, check format of position, expDate",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","message"="Invalid
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={{"application/json":{"status"="error","message"="Invalid
      *         position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="404",
      *         description="Not found",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Not found"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Not found"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
-     *           ref="#/definitions/OK",
+     *         @OA\Schema(
+     *           ref="#/components/schemas/OK",
      *         ),
      *     )
      * )
@@ -217,45 +217,45 @@ class SupportController extends APIController
     }
 
     /**
-     * @SWG\Post(
+     * @OA\Post(
      *     path="/support/kb/{categoryId}",
      *     summary="Create knowledgebase question. [Auth]",
      *     description="Creates knowledgebase question. Requires JWT or Session Cookie and VATUSA Staff role.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"support"},
      *     security={"jwt","session"},
-     *     @SWG\Parameter(in="path", name="categoryId", type="integer", description="ID of category"),
-     *     @SWG\Parameter(in="formData", name="question", type="string", description="Question"),
-     *     @SWG\Parameter(in="formData", name="answer", type="string", description="Answer"),
-     *     @SWG\Response(
+     *     @OA\Parameter(in="path", name="categoryId", @OA\Schema(type="integer"), description="ID of category"),
+     *     @OA\Parameter(in="formData", name="question", @OA\Schema(type="string"), description="Question"),
+     *     @OA\Parameter(in="formData", name="answer", @OA\Schema(type="string"), description="Answer"),
+     *     @OA\Response(
      *         response="400",
      *         description="Malformed request, check format of position, expDate",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","message"="Invalid position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={{"application/json":{"status"="error","message"="Invalid position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="404",
      *         description="Not found",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Not found"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Not found"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
-     *           ref="#/definitions/OKID",
+     *         @OA\Schema(
+     *           ref="#/components/schemas/OKID",
      *         ),
      *     )
      * )
@@ -285,48 +285,50 @@ class SupportController extends APIController
     }
 
     /**
-     * @SWG\Put(
+     * @OA\Put(
      *     path="/support/kb/{categoryid}/{questionid}",
      *     summary="Modify knowledgebase question. [Auth]",
      *     description="Modify knowledgebase question. Requires JWT or Session Cookie and VATUSA Staff Role",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"support"},
      *     security={"jwt","session"},
-     *     @SWG\Parameter(in="path", name="categoryid", type="integer", description="ID of Knowledgebase Category"),
-     *     @SWG\Parameter(in="path", name="questionid", type="integer", description="ID of question"),
-     *     @SWG\Parameter(in="formData", name="question", type="string", description="New question"),
-     *     @SWG\Parameter(in="formData", name="answer", type="string", description="New answer"),
-     *     @SWG\Parameter(in="formData", name="category", type="integer", description="Move to new category"),
-     *     @SWG\Parameter(in="formData", name="order", type="integer", description="New order placement"),
-     *     @SWG\Response(
+     *     @OA\Parameter(in="path", name="categoryid", @OA\Schema(type="integer"), description="ID of Knowledgebase
+     * Category"),
+     *     @OA\Parameter(in="path", name="questionid", @OA\Schema(type="integer"), description="ID of question"),
+     *     @OA\Parameter(in="formData", name="question", @OA\Schema(type="string"), description="New question"),
+     *     @OA\Parameter(in="formData", name="answer", @OA\Schema(type="string"), description="New answer"),
+     *     @OA\Parameter(in="formData", name="category", @OA\Schema(type="integer"), description="Move to new
+     * category"),
+     *     @OA\Parameter(in="formData", name="order", @OA\Schema(type="integer"), description="New order placement"),
+     *     @OA\Response(
      *         response="400",
      *         description="Malformed request, check format of position, expDate",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","message"="Invalid position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={{"application/json":{"status"="error","message"="Invalid position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="404",
      *         description="Not found",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Not found"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Not found"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
-     *           ref="#/definitions/OK",
+     *         @OA\Schema(
+     *           ref="#/components/schemas/OK",
      *         ),
      *     )
      * )
@@ -375,39 +377,40 @@ class SupportController extends APIController
     }
 
     /**
-     * @SWG\Delete(
+     * @OA\Delete(
      *     path="/support/kb/{categoryid}/{questionid}",
      *     summary="Delete knowledgebase question. [Auth]",
      *     description="Delete knowledgebase question. Requires JWT or Session Cookie and VATUSA Staff role.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"support"},
      *     security={"jwt","session"},
-     *     @SWG\Parameter(in="path", name="categoryid", type="integer", description="ID of Knowledgebase Category"),
-     *     @SWG\Parameter(in="path", name="questionid", type="integer", description="ID of question"),
-     *     @SWG\Response(
+     *     @OA\Parameter(in="path", name="categoryid", @OA\Schema(type="integer"), description="ID of Knowledgebase
+     * Category"),
+     *     @OA\Parameter(in="path", name="questionid", @OA\Schema(type="integer"), description="ID of question"),
+     *     @OA\Response(
      *         response="400",
      *         description="Malformed request, check format of position, expDate",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","message"="Invalid
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={{"application/json":{"status"="error","message"="Invalid
                position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
-     *           ref="#/definitions/OK",
+     *         @OA\Schema(
+     *           ref="#/components/schemas/OK",
      *         ),
      *     )
      * )
@@ -436,23 +439,23 @@ class SupportController extends APIController
 
     // <editor-fold description="Dept Handling">
     /**
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/support/tickets/depts",
      *     summary="Get list of assignable departments.",
      *     description="Get list of assignable departments.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"support"},
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="object",
-     *             @SWG\Property(type="string", property="status"),
-     *             @SWG\Property(property="depts", type="array",
-     *                 @SWG\Items(
+     *             @OA\Property(type="string", property="status"),
+     *             @OA\Property(property="depts", type="array",
+     *                 @OA\Items(
      *                     type="object",
-     *                     @SWG\Property(property="id", type="string", description="ID of Dept"),
-     *                     @SWG\Property(property="name", type="string", description="Name of Dept"),
+     *                     @OA\Property(property="id", type="string", description="ID of Dept"),
+     *                     @OA\Property(property="name", type="string", description="Name of Dept"),
      *                 ),
      *             ),
      *         ),
@@ -479,25 +482,25 @@ class SupportController extends APIController
     }
 
     /**
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/support/tickets/depts/{dept}/staff",
      *     summary="Get list of assignable staff members for department.",
      *     description="Get list of assignable staff members for {dept}.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"support"},
-     *     @SWG\Parameter(name="dept", type="string", description="ID for Dept", in="path"),
-     *     @SWG\Response(
+     *     @OA\Parameter(name="dept", @OA\Schema(type="string"), description="ID for Dept", in="path"),
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="object",
-     *             @SWG\Property(type="string", property="status"),
-     *             @SWG\Property(property="staff", type="array",
-     *                 @SWG\Items(
+     *             @OA\Property(type="string", property="status"),
+     *             @OA\Property(property="staff", type="array",
+     *                 @OA\Items(
      *                     type="object",
-     *                     @SWG\Property(property="cid", type="string", description="CID of Staff Member"),
-     *                     @SWG\Property(property="name", type="string", description="Name of Dept"),
-     *                     @SWG\Property(property="role", type="string", description="Role"),
+     *                     @OA\Property(property="cid", type="string", description="CID of Staff Member"),
+     *                     @OA\Property(property="name", type="string", description="Name of Dept"),
+     *                     @OA\Property(property="role", type="string", description="Role"),
      *                 ),
      *             ),
      *         ),

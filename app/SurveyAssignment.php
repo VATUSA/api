@@ -8,15 +8,15 @@ use Ramsey\Uuid\Uuid;
  * Class SurveyQuestion
  * @package App
  *
- * @SWG\Definition(
+ * @OA\Schema(
  *     type="object",
- *     @SWG\Property(property="id", type="integer"),
- *     @SWG\Property(property="survey_id", type="integer"),
- *     @SWG\Property(property="facility", type="string", description="Facility user was in when assigned"),
- *     @SWG\Property(property="rating", type="integer", description="Rating when assigned"),
- *     @SWG\Property(property="completed", type="integer", description="Integer form of boolean"),
- *     @SWG\Property(property="created_at", type="string", description="Date added to database"),
- *     @SWG\Property(property="updated_at", type="string"),
+ *     @OA\Property(property="id", type="integer"),
+ *     @OA\Property(property="survey_id", type="integer"),
+ *     @OA\Property(property="facility", type="string", description="Facility user was in when assigned"),
+ *     @OA\Property(property="rating", type="integer", description="Rating when assigned"),
+ *     @OA\Property(property="completed", type="integer", description="Integer form of boolean"),
+ *     @OA\Property(property="created_at", type="string", description="Date added to database"),
+ *     @OA\Property(property="updated_at", type="string"),
  * )
  */
 class SurveyAssignment extends Model

@@ -21,41 +21,43 @@ class TMUController extends APIController
 {
 
     /**
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/tmu/notices/(tmufacid?)",
      *     summary="Get list of TMU Notices.",
      *     description="Get list of TMU Notices for either all of VATUSA or for the specified TMU Map ID.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"tmu"},
-     *     @SWG\Parameter(name="facility", in="path", type="string", description="TMU Facility/Map ID (optional)",
+     *     @OA\Parameter(name="facility", in="path", @OA\Schema(type="string"), description="TMU Facility/Map ID (optional)",
      *                                     required=false),
-     *     @SWG\Parameter(name="children", in="query", type="boolean", description="If a parent map is selected,
+     *     @OA\Parameter(name="children", in="query", @OA\Schema(type="boolean"), description="If a parent map is
+     *     selected,
     include its children TMU's Notices.", required=false),
-     *     @SWG\Parameter(name="onlyactive", in="query", type="boolean", description="Only include active notices.
+     *     @OA\Parameter(name="onlyactive", in="query", @OA\Schema(type="boolean"), description="Only include active
+     *     notices.
     Default = true.", required=false),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="array",
-     *             @SWG\Items(type="object",
-     *                 @SWG\Property(property="id",type="integer",description="TMU Notice ID"),
-     *                 @SWG\Property(property="tmu_facility",type="array",
-     *                               @SWG\Items(type="object",
-     *                                          @SWG\Property(property="id", type="string", description="TMU Facility ID"),
-     *                                          @SWG\Property(property="name", type="string", description="TMU Facility Name"),
-     *                                          @SWG\Property(property="parent", type="string", description="Parent TMU Facility/ARTCC")
+     *             @OA\Items(type="object",
+     *                 @OA\Property(property="id",type="integer",description="TMU Notice ID"),
+     *                 @OA\Property(property="tmu_facility",type="array",
+     *                               @OA\Items(type="object",
+     *                                          @OA\Property(property="id", type="string", description="TMU Facility ID"),
+     *                                          @OA\Property(property="name", type="string", description="TMU Facility Name"),
+     *                                          @OA\Property(property="parent", type="string", description="Parent TMU Facility/ARTCC")
      *                               )
      *                 ),
-     *                 @SWG\Property(property="priority",type="string",description="Priority of notice
+     *                 @OA\Property(property="priority",type="string",description="Priority of notice
     (0:Low,1:Standard,2:Urgent)"),
-     *                 @SWG\Property(property="message",type="string",description="Notice content"),
-     *                 @SWG\Property(property="expire_date", type="string", description="Expiration time in Zulu
+     *                 @OA\Property(property="message",type="string",description="Notice content"),
+     *                 @OA\Property(property="expire_date", type="string", description="Expiration time in Zulu
     (YYYY-MM-DD H:i:s)"),
-     *                 @SWG\Property(property="start_date", type="string", description="Start time in Zulu (YYYY-MM-DD
+     *                 @OA\Property(property="start_date", type="string", description="Start time in Zulu (YYYY-MM-DD
     H:i:s)"),
-     *                 @SWG\Property(property="is_delay", type="boolean", description="TMU Notice is a ground stop or delay"),
-     *                 @SWG\Property(property="is_pref_route", type="boolean", description="TMU Notice is a preferred routing")
+     *                 @OA\Property(property="is_delay", type="boolean", description="TMU Notice is a ground stop or delay"),
+     *                 @OA\Property(property="is_pref_route", type="boolean", description="TMU Notice is a preferred routing")
      *                   )
      *                )
      *             ),
@@ -99,35 +101,35 @@ class TMUController extends APIController
     }
 
     /**
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/tmu/notice/{id}",
      *     summary="Get TMU Notice info.",
      *     description="Get information for a specific TMU Notice.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"tmu"},
-     *     @SWG\Parameter(name="id", in="path", type="string", description="TMU Notice ID",
+     *     @OA\Parameter(name="id", in="path", @OA\Schema(type="string"), description="TMU Notice ID",
      *                                     required=true),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="array",
-     *             @SWG\Items(type="object",
-     *                 @SWG\Property(property="id",type="integer",description="TMU Notice ID"),
-     *                 @SWG\Property(property="tmu_facility",type="array",
-     *                                @SWG\Items(type="object",
-     *                                          @SWG\Property(property="id", type="string", description="TMU Facility ID"),
-     *                                          @SWG\Property(property="name", type="string", description="TMU Facility Name"),
-     *                                          @SWG\Property(property="parent", type="string", description="Parent TMU Facility/ARTCC")
+     *             @OA\Items(type="object",
+     *                 @OA\Property(property="id",type="integer",description="TMU Notice ID"),
+     *                 @OA\Property(property="tmu_facility",type="array",
+     *                                @OA\Items(type="object",
+     *                                          @OA\Property(property="id", type="string", description="TMU Facility ID"),
+     *                                          @OA\Property(property="name", type="string", description="TMU Facility Name"),
+     *                                          @OA\Property(property="parent", type="string", description="Parent TMU Facility/ARTCC")
      *                               ),
      *                 ),
-     *                 @SWG\Property(property="priority",type="string",description="Priority of notice
+     *                 @OA\Property(property="priority",type="string",description="Priority of notice
                                                                       (0:Low,1:Standard,2:Urgent)"),
-     *                 @SWG\Property(property="message",type="string",description="Notice content"),
-     *                 @SWG\Property(property="expire_date", type="string", description="Expiration time in Zulu (YYYY-MM-DD H:i:s)"),
-     *                 @SWG\Property(property="start_date", type="string", description="Start time in Zulu (YYYY-MM-DD H:i:s)"),
-     *                 @SWG\Property(property="is_delay", type="boolean", description="TMU Notice is a ground stop or delay."),
-     *                 @SWG\Property(property="is_pref_route", type="boolean", description="TMU Notice is a preferred routing")
+     *                 @OA\Property(property="message",type="string",description="Notice content"),
+     *                 @OA\Property(property="expire_date", type="string", description="Expiration time in Zulu (YYYY-MM-DD H:i:s)"),
+     *                 @OA\Property(property="start_date", type="string", description="Start time in Zulu (YYYY-MM-DD H:i:s)"),
+     *                 @OA\Property(property="is_delay", type="boolean", description="TMU Notice is a ground stop or delay."),
+     *                 @OA\Property(property="is_pref_route", type="boolean", description="TMU Notice is a preferred routing")
      *                       )
      *                )
      *             ),
@@ -151,48 +153,50 @@ class TMUController extends APIController
     }
 
     /**
-     * @SWG\Post(
+     * @OA\Post(
      *     path="/tmu/notices",
      *     summary="Add new TMU Notice. [Key]",
      *     description="Add new TMU Notice. Requires API Key, JWT, or Session Cookie (required roles:
-    [N/A for API Key] ATM, DATM, TA, EC, INS)", produces={"application/json"}, tags={"tmu"},
+    [N/A for API Key] ATM, DATM, TA, EC, INS)", responses={"application/json"}, tags={"tmu"},
      *     security={"apikey","jwt","session"},
-     *     produces={"application/json"}, tags={"tmu"},
-     * @SWG\Parameter(name="facility",type="string",description="TMU Facility/Map ID",in="formData",required=true),
-     * @SWG\Parameter(name="priority",type="string",description="Priority of notice
+     *     responses={"application/json"}, tags={"tmu"},
+     * @OA\Parameter(name="facility",@OA\Schema(type="string"),description="TMU Facility/Map ID",in="formData",required=true),
+     * @OA\Parameter(name="priority",@OA\Schema(type="string"),description="Priority of notice
     (1: Low, 2: Standard, 3: Urgent)",in="formData",required=true),
-     * @SWG\Parameter(name="message",type="string",description="Notice content",in="formData",required=true),
-     * @SWG\Parameter(name="start_date",type="string",description="Effective date (YYYY-MM-DD
+     * @OA\Parameter(name="message",@OA\Schema(type="string"),description="Notice content",in="formData",required=true),
+     * @OA\Parameter(name="start_date",@OA\Schema(type="string"),description="Effective date (YYYY-MM-DD
     HH:MM)",in="formData"),
-     * @SWG\Parameter(name="expire_date",type="string",description="Expiration date (YYYY-MM-DD
+     * @OA\Parameter(name="expire_date",@OA\Schema(type="string"),description="Expiration date (YYYY-MM-DD
     HH:MM)",in="formData"),
-     * @SWG\Parameter(name="is_delay",type="boolean",description="TMU Notice is a ground stop or delay",in="formData"),
-     * @SWG\Parameter(name="is_pref_route",type="boolean",description="TMU Notice is a preferred routing",in="formData"),
-     * @SWG\Response(
+     * @OA\Parameter(name="is_delay",@OA\Schema(type="boolean"),description="TMU Notice is a ground stop or delay",
+     *     in="formData"),
+     * @OA\Parameter(name="is_pref_route",@OA\Schema(type="boolean"),description="TMU Notice is a preferred routing",
+     *     in="formData"),
+     * @OA\Response(
      *         response="400",
      *         description="Malformed request",
-     *         @SWG\Schema(ref="#/definitions/error"),
+     *         @OA\Schema(ref="#/components/schemas/error"),
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="object",
-     *             @SWG\Property(property="status", type="string"),
+     *             @OA\Property(property="status", type="string"),
      *         ),
-     *         examples={"application/json":{"status"="OK"}}
+     *         content={"application/json":{"status"="OK"}}
      *     )
      * ),
      *
@@ -291,48 +295,50 @@ class TMUController extends APIController
     }
 
     /**
-     * @SWG\Put(
+     * @OA\Put(
      *     path="/tmu/notice/(id)",
      *     summary="Edit TMU Notice. [Key]",
      *     description="Edit TMU Notice. Requires API Key, JWT, or Session Cookie (required roles:
-    [N/A for API Key] ATM, DATM, TA, EC, INS)", produces={"application/json"}, tags={"tmu"},
+    [N/A for API Key] ATM, DATM, TA, EC, INS)", responses={"application/json"}, tags={"tmu"},
      *     security={"apikey","jwt","session"},
-     *     produces={"application/json"}, tags={"tmu"},
-     * @SWG\Parameter(name="id",type="integer",description="TMU Notice ID",in="path",required=true),
-     * @SWG\Parameter(name="facility",type="string",description="TMU Facility/Map ID",in="formData"),
-     * @SWG\Parameter(name="priority",type="string",description="Priority of notice
+     *     responses={"application/json"}, tags={"tmu"},
+     * @OA\Parameter(name="id",@OA\Schema(type="integer"),description="TMU Notice ID",in="path",required=true),
+     * @OA\Parameter(name="facility",@OA\Schema(type="string"),description="TMU Facility/Map ID",in="formData"),
+     * @OA\Parameter(name="priority",@OA\Schema(type="string"),description="Priority of notice
     (1: Low, 2: Standard, 3: Urgent)",in="formData"),
-     * @SWG\Parameter(name="message",type="string",description="Notice content",in="formData"),
-     * @SWG\Parameter(name="start_date",type="string",description="Start time (YYYY-MM-DD HH:MM)", in="formData"),
-     * @SWG\Parameter(name="expire_date",type="string",description="Expiration time (YYYY-MM-DD HH:MM) - null for no
+     * @OA\Parameter(name="message",@OA\Schema(type="string"),description="Notice content",in="formData"),
+     * @OA\Parameter(name="start_date",@OA\Schema(type="string"),description="Start time (YYYY-MM-DD HH:MM)", in="formData"),
+     * @OA\Parameter(name="expire_date",@OA\Schema(type="string"),description="Expiration time (YYYY-MM-DD HH:MM) - null for no
     expiration",in="formData"),
-     * @SWG\Parameter(name="is_delay",type="boolean",description="TMU Notice is a ground stop or delay.",in="formData"),
-     * @SWG\Parameter(name="is_pref_route",type="boolean",description="TMU Notice is a preferred routing",in="formData"),
-     * @SWG\Response(
+     * @OA\Parameter(name="is_delay",@OA\Schema(type="boolean"),description="TMU Notice is a ground stop or delay.",
+     *     in="formData"),
+     * @OA\Parameter(name="is_pref_route",@OA\Schema(type="boolean"),description="TMU Notice is a preferred routing",
+     *     in="formData"),
+     * @OA\Response(
      *         response="400",
      *         description="Malformed request",
-     *         @SWG\Schema(ref="#/definitions/error"),
+     *         @OA\Schema(ref="#/components/schemas/error"),
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="object",
-     *             @SWG\Property(property="status", type="string"),
+     *             @OA\Property(property="status", type="string"),
      *         ),
-     *         examples={"application/json":{"status"="OK"}}
+     *         content={"application/json":{"status"="OK"}}
      *     )
      * )
      *
@@ -466,31 +472,31 @@ class TMUController extends APIController
     }
 
     /**
-     * @SWG\Delete(
+     * @OA\Delete(
      *     path="/tmu/notice/(id)",
      *     summary="Delete TMU Notice. [Key]",
      *     description="Delete solo certification. Requires API Key, JWT, or Session cookie (required roles: [N/A
     for API Key] ATM, DATM, TA, EC, INS)",
-     *     produces={"application/json"}, tags={"tmu"},
+     *     responses={"application/json"}, tags={"tmu"},
      *     security={"apikey","jwt","session"},
-     * @SWG\Parameter(name="id", in="path", type="integer", required=true, description="TMU Notice ID"),
-     * @SWG\Response(
+     * @OA\Parameter(name="id", in="path", @OA\Schema(type="integer"), required=true, description="TMU Notice ID"),
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(ref="#/definitions/OK"),
-     *         examples={"application/json":{"status"="OK","testing"=false}}
+     *         @OA\Schema(ref="#/components/schemas/OK"),
+     *         content={"application/json":{"status"="OK","testing"=false}}
      *     )
      * ),
      *

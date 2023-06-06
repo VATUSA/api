@@ -13,20 +13,20 @@ class PublicController extends APIController
 
     /**
      *
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/public/events/(limit)",
      *     summary="Get events.",
      *     description="Get events (from Forums) set with a specific limit",
      *     tags={"public"},
-     *     produces={"application/json"},
-     *     @SWG\Parameter(name="limit", in="path", type="integer", description="Limit"),
-     *     @SWG\Response(
+     *     responses={"application/json"},
+     *     @OA\Parameter(name="limit", in="path", @OA\Schema(type="integer"), description="Limit"),
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
-     *             ref="#/definitions/OK"
+     *         @OA\Schema(
+     *             ref="#/components/schemas/OK"
      *         ),
-     *         examples={"application/json":{"id_event":760,"start_date":"2000-03-30","end_date":"2000-03-30","id_board":0,"id_topic":0,"title":"FNOklahoma
+     *         content={"application/json":{"id_event":760,"start_date":"2000-03-30","end_date":"2000-03-30","id_board":0,"id_topic":0,"title":"FNOklahoma
                City","id_member":1021}}
      *     )
      * )
@@ -50,20 +50,20 @@ class PublicController extends APIController
 
     /**
      *
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/public/news/(limits)",
      *     summary="Get news.",
      *     description="Get news (from Forums) set with a specific limit",
      *     tags={"public"},
-     *     produces={"application/json"},
-     *     @SWG\Parameter(name="limit", in="path", type="integer", description="Limit"),
-     *     @SWG\Response(
+     *     responses={"application/json"},
+     *     @OA\Parameter(name="limit", in="path", @OA\Schema(type="integer"), description="Limit"),
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
-     *             ref="#/definitions/OK"
+     *         @OA\Schema(
+     *             ref="#/components/schemas/OK"
      *         ),
-     *         examples={"application/json":{"id_msg":45163,"id_topic":10004,"id_board":47,"poster_time":1614395041,"id_member":2906,"id_msg_modified":45163,"subject":"Position
+     *         content={"application/json":{"id_msg":45163,"id_topic":10004,"id_board":47,"poster_time":1614395041,"id_member":2906,"id_msg_modified":45163,"subject":"Position
                Posting: VATUSA Web Team","poster_name":1275302,"poster_email":"","poster_ip":"","smileys_enabled":1,"modified_time":0,"modified_name":"","body":"","icon":"xx","approved":1}}
      *     )
      * )
@@ -88,19 +88,19 @@ class PublicController extends APIController
 
     /**
      *
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/public/planes",
      *     summary="Get planes for TMU.",
      *     description="Get online planes, used for TMU",
      *     tags={"public"},
-     *     produces={"application/json"},
-     *     @SWG\Response(
+     *     responses={"application/json"},
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
-     *             ref="#/definitions/OK"
+     *         @OA\Schema(
+     *             ref="#/components/schemas/OK"
      *         ),
-     *         examples={"application/json":{"callsign":"KLM910","cid":1544867,"type":"","dep":"","arr":"","route":"","lat":39.13393,"lon":-75.48326,"hdg":210,"spd":0,"alt":37}}
+     *         content={"application/json":{"callsign":"KLM910","cid":1544867,"type":"","dep":"","arr":"","route":"","lat":39.13393,"lon":-75.48326,"hdg":210,"spd":0,"alt":37}}
      *     )
      * )
      * @return \Illuminate\Http\Response

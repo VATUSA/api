@@ -26,23 +26,23 @@ use Illuminate\Support\Facades\Validator;
 class UserController extends APIController
 {
     /**
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/user/(cid)",
      *     summary="Get user's information.",
      *     description="Get user's information. Email field, broadcast opt-in status, and visiting facilities require authentication as staff member or API key.
     Prevent staff assigment flag requires authentication as senior staff.",
-     *     produces={"application/json"}, tags={"user"},
-     * @SWG\Parameter(name="cid",in="path",required=true,type="string",description="Cert ID"),
-     * @SWG\Response(
+     *     responses={"application/json"}, tags={"user"},
+     * @OA\Parameter(name="cid",in="path",required=true,@OA\Schema(type="string"),description="Cert ID"),
+     * @OA\Response(
      *         response="404",
      *         description="Not found",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Not found"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Not found"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(ref="#/definitions/User")
+     *         @OA\Schema(ref="#/components/schemas/User")
      *     )
      * )
      *
@@ -100,24 +100,24 @@ class UserController extends APIController
      *
      * @return array|string
      *
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/user/roles/(facility)/(role)",
      *     summary="Get users assigned to specific staff role.",
      *     description="Get users assigned to specific staff role",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"user","role"},
-     *     @SWG\Parameter(name="facility", in="path", required=true, type="string", description="Facility IATA ID"),
-     *     @SWG\Parameter(name="role", in="path", required=true, type="string", description="Role"),
-     *     @SWG\Response(
+     *     @OA\Parameter(name="facility", in="path", required=true, @OA\Schema(type="string"), description="Facility IATA ID"),
+     *     @OA\Parameter(name="role", in="path", required=true, @OA\Schema(type="string"), description="Role"),
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="array",
-     *             @SWG\Items(
+     *             @OA\Items(
      *                 type="object",
-     *                 @SWG\Property(property="cid",type="integer",description="CERT ID of user"),
-     *                 @SWG\Property(property="lname",type="string",description="Last name"),
-     *                 @SWG\Property(property="fname",type="string",description="First name"),
+     *                 @OA\Property(property="cid",type="integer",description="CERT ID of user"),
+     *                 @OA\Property(property="lname",type="string",description="Last name"),
+     *                 @OA\Property(property="fname",type="string",description="First name"),
      *             ),
      *         ),
      *     )
@@ -141,32 +141,32 @@ class UserController extends APIController
      *
      * @return array|string
      *
-     * @SWG\Post(
+     * @OA\Post(
      *     path="/user/(cid)/roles/(facility)/(role)",
      *     summary="Assign new role. [Auth]",
      *     description="Assign new role. Requires JWT or Session Cookie (required roles :: for FE, EC, WM:
-    ATM, DATM; for MTR: TA; for all other roles: VATUSA STAFF)", produces={"application/json"},
+    ATM, DATM; for MTR: TA; for all other roles: VATUSA STAFF)", responses={"application/json"},
      *     tags={"user","role"}, security={"jwt","session"},
-     *     @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
-     *     @SWG\Parameter(name="facility", in="path", required=true, type="string", description="Facility IATA ID"),
-     *     @SWG\Parameter(name="role", in="path", required=true, type="string", description="Role"),
-     *     @SWG\Response(
+     *     @OA\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
+     *     @OA\Parameter(name="facility", in="path", required=true, @OA\Schema(type="string"), description="Facility IATA ID"),
+     *     @OA\Parameter(name="role", in="path", required=true, @OA\Schema(type="string"), description="Role"),
+     *     @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(ref="#/definitions/OK"),
-     *         examples={"application/json":{"status"="OK","testing"=false}}
+     *         @OA\Schema(ref="#/components/schemas/OK"),
+     *         content={"application/json":{"status"="OK","testing"=false}}
      *     )
      * )
      */
@@ -219,38 +219,38 @@ class UserController extends APIController
      *
      * @return array|string
      *
-     * @SWG\Delete(
+     * @OA\Delete(
      *     path="/user/(cid)/roles/(facility)/(role)",
      *     summary="Delete role. [Auth]",
      *     description="Delete role. Requires JWT or Session Cookie (required role: for FE, EC, WM roles: ATM,
-    DATM; for MTR roles: TA; for all other roles: VATUSA STAFF)", produces={"application/json"}, tags={"user", "role"},
+    DATM; for MTR roles: TA; for all other roles: VATUSA STAFF)", responses={"application/json"}, tags={"user", "role"},
      *     security={"jwt","session"},
-     * @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
-     * @SWG\Parameter(name="facility", in="path", required=true, type="string", description="Facility IATA ID"),
-     * @SWG\Parameter(name="role", in="path", required=true, type="string", description="Role"),
-     * @SWG\Response(
+     * @OA\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
+     * @OA\Parameter(name="facility", in="path", required=true, @OA\Schema(type="string"), description="Facility IATA ID"),
+     * @OA\Parameter(name="role", in="path", required=true, type="string", description="Role"),
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="404",
      *         description="Not found, role may not be assigned",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Not found"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Not found"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(ref="#/definitions/OK"),
-     *         examples={"application/json":{"status"="OK","testing"=false}}
+     *         @OA\Schema(ref="#/components/schemas/OK"),
+     *         content={"application/json":{"status"="OK","testing"=false}}
      *     )
      * )
      * @throws \Exception
@@ -306,52 +306,52 @@ class UserController extends APIController
      *
      * @return array|string
      *
-     * @SWG\Post(
+     * @OA\Post(
      *     path="/user/(cid)/transfer",
      *     summary="Submit transfer request. [Private]",
      *     description="Submit transfer request. CORS Restricted, Requires JWT or Session Cookie (self or VATUSA
-    staff)", produces={"application/json"}, tags={"user","transfer"}, security={"jwt","session"},
-     * @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
-     * @SWG\Parameter(name="facility", in="formData", required=true, type="string", description="Facility IATA
+    staff)", responses={"application/json"}, tags={"user","transfer"}, security={"jwt","session"},
+     * @OA\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
+     * @OA\Parameter(name="facility", in="formData", required=true, type="string", description="Facility IATA
      *                                     ID"),
-     * @SWG\Parameter(name="reason", in="formData", required=true, type="string", description="Reason for transfer
+     * @OA\Parameter(name="reason", in="formData", required=true, type="string", description="Reason for transfer
      *                                   request"),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="400",
      *         description="Malformed request (missing field?)",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Malformed request"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Malformed request"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="404",
      *         description="Facility not found",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Not found"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Not found"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="409",
      *         description="There was a conflict, usually meaning the user has a pending transfer request or is not
      *         eligible",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Conflict"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Conflict"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(ref="#/definitions/OK"),
-     *         examples={"application/json":{"status"="OK","testing"=false}}
+     *         @OA\Schema(ref="#/components/schemas/OK"),
+     *         content={"application/json":{"status"="OK","testing"=false}}
      *     )
      * )
      */
@@ -413,34 +413,34 @@ class UserController extends APIController
      *
      * @return array|string
      *
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/user/(cid)/transfer/checklist",
      *     summary="Get user's transfer checklist. [Key]",
      *     description="Get user's checklist. Requires JWT, API Key, or Session Cookie (required role [N/A for
-    apikey]: ATM, DATM, WM)", produces={"application/json"}, tags={"user","transfer"},
+    apikey]: ATM, DATM, WM)", responses={"application/json"}, tags={"user","transfer"},
      *     security={"jwt","session","apikey"},
-     * @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
-     * @SWG\Response(
+     * @OA\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="array",
-     *             @SWG\Items(
+     *             @OA\Items(
      *                 type="object",
-     *                 @SWG\Property(property="item", type="string", description="Checklist checked item"),
-     *                 @SWG\Property(property="result", type="string", description="Result of check (OK, FAIL)"),
+     *                 @OA\Property(property="item", type="string", description="Checklist checked item"),
+     *                 @OA\Property(property="result", type="string", description="Result of check (OK, FAIL)"),
      *             )
      *         ),
      *     )
@@ -474,62 +474,62 @@ class UserController extends APIController
      *
      * @return array|string
      *
-     * @SWG\Post(
+     * @OA\Post(
      *     path="/user/(cid)/rating",
      *     summary="Submit rating change. [Auth]",
      *     description="Submit rating change. Requires JWT or Session Cookie (required role: ATM, DATM, TA, INS,
     VATUSA STAFF)",
-     *     produces={"application/json"}, tags={"user","rating"}, security={"jwt","session"},
-     * @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
-     * @SWG\Parameter(name="rating", in="formData", required=true, type="string", description="Rating to change
+     *     responses={"application/json"}, tags={"user","rating"}, security={"jwt","session"},
+     * @OA\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
+     * @OA\Parameter(name="rating", in="formData", required=true, type="string", description="Rating to change
     rating to"),
-     *     @SWG\Parameter(name="examDate", in="formData", type="string", description="Date of exam (format, YYYY-MM-DD)
+     *     @OA\Parameter(name="examDate", in="formData", type="string", description="Date of exam (format, YYYY-MM-DD)
     required for C1 and below"),
-     *     @SWG\Parameter(name="examiner", in="formData", type="integer", description="CID of Examiner, if not provided
+     *     @OA\Parameter(name="examiner", in="formData", type="integer", description="CID of Examiner, if not provided
     or null will default to authenticated user, required for C1 and below"),
-     *     @SWG\Parameter(name="position", in="formData", type="string", description="Position sat during exam,
+     *     @OA\Parameter(name="position", in="formData", type="string", description="Position sat during exam,
     required for C1 and below"),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="404",
      *         description="Not found",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Not found"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Not found"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="409",
      *         description="Conflict, when current rating and promoted rating are the same or demotion not possible",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Conflict"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Conflict"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="412",
      *         description="Precondition failed (not eligible)",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Precondition failed"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Precondition failed"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="500",
      *         description="CERT error, contact data services team",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Internal server error"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Internal server error"}},
      *     ),
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(ref="#/definitions/OK"),
-     *         examples={"application/json":{"status"="OK","testing"=false}}
+     *         @OA\Schema(ref="#/components/schemas/OK"),
+     *         content={"application/json":{"status"="OK","testing"=false}}
      *     )
      * )
      */
@@ -643,39 +643,39 @@ class UserController extends APIController
      *
      * @return array|string
      *
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/user/(cid)/rating/history",
      *     summary="Get user's rating history. [Key]",
      *     description="Get user's rating history. Requires API Key, JWT or Session Cookie (required role if no apikey:
-     *     ATM, DATM, TA, INS, VATUSA STAFF)", produces={"application/json"}, tags={"user","rating"},
+     *     ATM, DATM, TA, INS, VATUSA STAFF)", responses={"application/json"}, tags={"user","rating"},
      *     security={"jwt","session","apikey"},
-     * @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
-     * @SWG\Response(
+     * @OA\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="404",
      *         description="Not found",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Not found"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Not found"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="array",
-     *             @SWG\Items(ref="#/definitions/Promotion"),
+     *             @OA\Items(ref="#/components/schemas/Promotion"),
      *         ),
-     *         examples={"application/json":{{"id": 9486,"cid": 876594,"grantor": 111111,"to": 8,"from":
+     *         content={"application/json":{{"id": 9486,"cid": 876594,"grantor": 111111,"to": 8,"from":
      *         10,"created_at": "2011-09-06T04:28:51+00:00","exam": "0000-00-00","examiner": 0,"position": ""}}},
      *     )
      * )
@@ -710,39 +710,39 @@ class UserController extends APIController
      *
      * @return array|string
      *
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/user/(cid)/log",
      *     summary="Get controller's action log. [Private]",
      *     description="Get controller's action log. CORS Restricted. Requires JWT or Session Cookie (required
-    role: ATM, DATM, VATUSA STAFF)", produces={"application/json"}, tags={"user"}, security={"jwt","session"},
-     * @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
-     * @SWG\Parameter(name="entry", in="formData", required=true, type="string", description="Entry to log"),
-     * @SWG\Response(
+    role: ATM, DATM, VATUSA STAFF)", responses={"application/json"}, tags={"user"}, security={"jwt","session"},
+     * @OA\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
+     * @OA\Parameter(name="entry", in="formData", required=true, type="string", description="Entry to log"),
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="404",
      *         description="Not found",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Not found"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Not found"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="array",
-     *             @SWG\Items(ref="#/definitions/Action"),
+     *             @OA\Items(ref="#/components/schemas/Action"),
      *         ),
-     *         examples={"application/json":{{"id": 579572,"to": 1394143,"log": "Joined division, facility set to ZAE
+     *         content={"application/json":{{"id": 579572,"to": 1394143,"log": "Joined division, facility set to ZAE
                by CERTSync","created_at": "2017-06-01T00:02:09+00:00"}}}
      *     )
      * )
@@ -773,37 +773,37 @@ class UserController extends APIController
      *
      * @return array|string
      *
-     * @SWG\Post(
+     * @OA\Post(
      *     path="/user/(cid)/log",
      *     summary="Submit entry to controller's action log. [Private]",
      *     description="Submit entry to controller's action log. CORS Restricted. Requires JWT or Session Cookie
-    (required role: ATM, DATM, VATUSA STAFF)", produces={"application/json"}, tags={"user"},
+    (required role: ATM, DATM, VATUSA STAFF)", responses={"application/json"}, tags={"user"},
      *     security={"jwt","session"},
-     * @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
-     * @SWG\Parameter(name="entry", in="formData", required=true, type="string", description="Entry to log"),
-     * @SWG\Response(
+     * @OA\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
+     * @OA\Parameter(name="entry", in="formData", required=true, type="string", description="Entry to log"),
+     * @OA\Response(
      *         response="400",
      *         description="Malformed request",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Malformed request"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Malformed request"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(ref="#/definitions/OK"),
-     *         examples={"application/json":{"status"="OK","testing"=false}}
+     *         @OA\Schema(ref="#/components/schemas/OK"),
+     *         content={"application/json":{"status"="OK","testing"=false}}
      *     )
      * )
      */
@@ -831,42 +831,42 @@ class UserController extends APIController
      *
      * @return array|string
      *
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/user/(cid)/transfer/history",
      *     summary="Get user's transfer history. [Key]",
      *     description="Get user's transfer history. Requires API Key, JWT or Session Cookie (required role: [N/A for
      *     API
-    Key] ATM, DATM, TA, WM, VATUSA STAFF)", produces={"application/json"}, tags={"user","transfer"},
+    Key] ATM, DATM, TA, WM, VATUSA STAFF)", responses={"application/json"}, tags={"user","transfer"},
      *     security={"jwt","session","apikey"},
-     * @SWG\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
-     * @SWG\Response(
+     * @OA\Parameter(name="cid", in="path", required=true, type="integer", description="CERT ID"),
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="404",
      *         description="Not found",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Not found"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Not found"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="array",
-     *             @SWG\Items(
-     *                 ref="#/definitions/Transfer"
+     *             @OA\Items(
+     *                 ref="#/components/schemas/Transfer"
      *             )
      *         ),
-     *         examples={"application/json":{{"id":673608,"cid":1055319,"to":"ZAE","from":"ZNY","reason":"Removed for
+     *         content={"application/json":{{"id":673608,"cid":1055319,"to":"ZAE","from":"ZNY","reason":"Removed for
                inactivity.","status":1,"actiontext":"Removed for
     inactivity.","actionby":0,"created_at":"2017-01-01T12:06:27+00:00","updated_at":"2017-01-01T12:06:27+00:00"}}},
      *     )
@@ -903,37 +903,37 @@ class UserController extends APIController
      *
      * @return array|string
      *
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/user/filtercid/(partialCid)",
      *     summary="Filter users by partial CID.",
      *     description="Get an array of users matching a given partial CID.",
-     *     produces={"application/json"}, tags={"user"},
-     * @SWG\Parameter(name="partialCid", in="path", required=true, type="integer", description="Partial CERT ID"),
-     * @SWG\Response(
+     *     responses={"application/json"}, tags={"user"},
+     * @OA\Parameter(name="partialCid", in="path", required=true, type="integer", description="Partial CERT ID"),
+     * @OA\Response(
      *         response="404",
      *         description="Not Found",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="No matching users found."}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="No matching users found."}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="412",
      *         description="Precondition Failed (>= 4 digits)",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Partial CID must be at least 4 digits."}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Partial CID must be at least 4 digits."}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="array",
-     *             @SWG\Items(
+     *             @OA\Items(
      *                 type="object",
-     *                 @SWG\Property(property="cid", type="integer"),
-     *                 @SWG\Property(property="fname", type="string"),
-     *                 @SWG\Property(property="lname", type="string"),
+     *                 @OA\Property(property="cid", type="integer"),
+     *                 @OA\Property(property="fname", type="string"),
+     *                 @OA\Property(property="lname", type="string"),
      *             )
      *         ),
-     *         examples={"application/json":{"0":{"cid":1391803,"fname":"Michael","lname":"Romashov"},"1":{"cid":1391802,"fname":"Sankara","lname":"Narayanan "}}}
+     *         content={"application/json":{"0":{"cid":1391803,"fname":"Michael","lname":"Romashov"},"1":{"cid":1391802,"fname":"Sankara","lname":"Narayanan "}}}
      *     )
      * )
      */
@@ -962,37 +962,37 @@ class UserController extends APIController
      *
      * @return array|string
      *
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/user/filterlname/(partialLName)",
      *     summary="Filter users by partial last name.",
      *     description="Get an array of users matching a given partial last name.",
-     *     produces={"application/json"}, tags={"user"},
-     * @SWG\Parameter(name="partialLName", in="path", required=true, type="string", description="Partial Last Name"),
-     * @SWG\Response(
+     *     responses={"application/json"}, tags={"user"},
+     * @OA\Parameter(name="partialLName", in="path", required=true, type="string", description="Partial Last Name"),
+     * @OA\Response(
      *         response="404",
      *         description="Not Found",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="No matching users found."}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="No matching users found."}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="412",
      *         description="Precondition Failed (>= 4 letters)",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Partial last name must be at least 4 letters."}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Partial last name must be at least 4 letters."}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="array",
-     *             @SWG\Items(
+     *             @OA\Items(
      *                 type="object",
-     *                 @SWG\Property(property="cid", type="integer"),
-     *                 @SWG\Property(property="fname", type="string"),
-     *                 @SWG\Property(property="lname", type="string"),
+     *                 @OA\Property(property="cid", type="integer"),
+     *                 @OA\Property(property="fname", type="string"),
+     *                 @OA\Property(property="lname", type="string"),
      *             )
      *         ),
-     *         examples={"application/json":{"0":{"cid":1459055,"fname":"Aidan","lname":"Deschene"},"1":{"cid":1263769,"fname":"Austin","lname":"Tedesco"},"2":{"cid":919571,"fname":"Matthew","lname":"Tedesco"},"3":{"cid":1202101,"fname":"Mike","lname":"Tedesco"}}}
+     *         content={"application/json":{"0":{"cid":1459055,"fname":"Aidan","lname":"Deschene"},"1":{"cid":1263769,"fname":"Austin","lname":"Tedesco"},"2":{"cid":919571,"fname":"Matthew","lname":"Tedesco"},"3":{"cid":1202101,"fname":"Mike","lname":"Tedesco"}}}
      *     )
      * )
      */

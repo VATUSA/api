@@ -26,23 +26,23 @@ use Illuminate\Support\Facades\Mail;
 class AcademyController extends APIController
 {
     /**
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/academy/identifiers",
      *     summary="Get of list course IDs.",
      *     description="Get list of Academy Rating course IDs.",
-     *     produces={"application/json"},
+     *     responses={"application/json"},
      *     tags={"academy"},
-     *     @SWG\Response(
+     *     @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(
+     *         @OA\Schema(
      *             type="array",
-     *             @SWG\Items(
+     *             @OA\Items(
      *                 type="object",
-     *                 @SWG\Property(property="BASIC", type="integer", description="Basic ATC/S1 exam course ID."),
-     *                 @SWG\Property(property="S2",type="integer",description="S2 exam course ID."),
-     *                 @SWG\Property(property="S3",type="integer",description="S3 exam course ID."),
-     *                 @SWG\Property(property="C1",type="integer",description="C1 exam course ID."),
+     *                 @OA\Property(property="BASIC", type="integer", description="Basic ATC/S1 exam course ID."),
+     *                 @OA\Property(property="S2",type="integer",description="S2 exam course ID."),
+     *                 @OA\Property(property="S3",type="integer",description="S3 exam course ID."),
+     *                 @OA\Property(property="C1",type="integer",description="C1 exam course ID."),
      *             ),
      *         ),
      *     )
@@ -62,37 +62,37 @@ class AcademyController extends APIController
     }
 
     /**
-     * @SWG\Post(
+     * @OA\Post(
      *     path="/academy/enroll/{courseID}",
      *     summary="Enroll controller in course. [Key]",
      *     description="Enroll controller in ratings exam course (S2+). Requires Key,  Mentor (at or above requested rating),
-     *     Instructor, or Senior Staff role.", produces={"application/json"}, tags={"academy"}, security={"session",
+     *     Instructor, or Senior Staff role.", responses={"application/json"}, tags={"academy"}, security={"session",
      *     "jwt"},
-     * @SWG\Parameter(name="cid", in="formData", type="integer", description="Controller CID"),
-     * @SWG\Parameter(name="instructor", in="formData", type="integer", description="Instructor CID [required for API Key]"),
-     * @SWG\Response(
+     * @OA\Parameter(name="cid", in="formData", @OA\Schema(type="integer"), description="Controller CID"),
+     * @OA\Parameter(name="instructor", in="formData", @OA\Schema(type="integer"), description="Instructor CID [required for API Key]"),
+     * @OA\Response(
      *         response="400",
      *         description="Malformed request",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","message"="Invalid controller"}}}
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={{"application/json":{"status"="error","message"="Invalid controller"}}}
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(ref="#/definitions/OK"),
-     *         examples={"application/json":{"status"="OK"}},
+     *         @OA\Schema(ref="#/components/schemas/OK"),
+     *         content={"application/json":{"status"="OK"}},
      *     )
      * )
      *
@@ -188,42 +188,42 @@ class AcademyController extends APIController
     }
 
     /**
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/academy/transcript/{cid}",
      *     summary="Retrieve the Academy transcript for a user. [Key]",
      *     description="Retrieve the Academy transcript for a user, including all attempts for each rating exam. The
     outer array keys are the ratings (ex. S1) and the inner arrays are the attempts. Requires at least an API key.",
-     *     produces={"application/json"}, tags={"academy"},
+     *     responses={"application/json"}, tags={"academy"},
      *     security={"apikey","session", "jwt"},
-     * @SWG\Response(
+     * @OA\Response(
      *         response="400",
      *         description="Malformed request",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","message"="Invalid controller"}}}
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={{"application/json":{"status"="error","message"="Invalid controller"}}}
      *     ),
-     *     * @SWG\Response(
+     *     * @OA\Response(
      *         response="404",
      *         description="Not found",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={{"application/json":{"status"="error","message"="Not found"}}}
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={{"application/json":{"status"="error","message"="Not found"}}}
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @SWG\Schema(ref="#/definitions/error"),
-     *         examples={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
      *     ),
-     * @SWG\Response(
+     * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @SWG\Schema(ref="#/definitions/OK"),
-     *         examples={"application/json":{"BASIC":{{ "attempt": 1, "time_finished": 1632633706, "grade": 79 }, {
+     *         @OA\Schema(ref="#/components/schemas/OK"),
+     *         content={"application/json":{"BASIC":{{ "attempt": 1, "time_finished": 1632633706, "grade": 79 }, {
      *         "attempt": 2, "time_finished": 1632635241, "grade": 91 }}, "S2": {}, "S3": {}, "C1": {} }},
      *     )
      * )
