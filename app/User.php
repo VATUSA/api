@@ -736,7 +736,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         }
     }
 
-    public function resolveRouteBinding($value)
+    public function resolveRouteBinding(mixed $value, $field = null)
     {
         return $this->where($this->getRouteKeyName(), $value)->first() ?? abort(404);
     }
