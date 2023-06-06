@@ -43,7 +43,7 @@ class Handler extends ExceptionHandler
      * @return void
      * @throws \Exception
      */
-    public function report(Exception $exception)
+    public function report(Exception|\Throwable $exception)
     {
         if (app()->bound('sentry') && $this->shouldReport($exception)) {
             app('sentry')->captureException($exception);
@@ -60,7 +60,7 @@ class Handler extends ExceptionHandler
      *
      * @return bool|\Illuminate\Http\JsonResponse|\Symfony\Component\HttpFoundation\Response
      */
-    public function render($request, Exception $exception)
+    public function render($request, Exception|\Throwable $exception)
     {
         if ($exception instanceof AuthenticationException) {
             return response()->unauthenticated();
