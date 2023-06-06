@@ -22,4 +22,31 @@ class Controller {
     public bool $is_controller_interest;
     public array $roles;
     public array $visits;
+
+    public static function fromAssoc($data): Controller {
+        $controller = new Controller();
+        $controller->cid = $data['cid'];
+        $controller->display_name = $data['display_name'];
+        $controller->first_name = $data['first_name'];
+        $controller->last_name = $data['last_name'];
+        $controller->email = $data['email'];
+        $controller->facility = $data['facility'];
+        $controller->rating = $data['rating'];
+        $controller->rating_short = $data['rating_short'];
+        $controller->rating_long = $data['rating_long'];
+        $controller->discord_id = $data['discord_id'];
+        $controller->in_division = $data['in_division'];
+        $controller->receive_broadcast_emails = $data['receive_broadcast_emails'];
+        $controller->prevent_staff_assignment = $data['prevent_staff_assignment'];
+        $controller->is_promotion_eligible = $data['is_promotion_eligible'];
+        $controller->is_transfer_eligible = $data['is_transfer_eligible'];
+        $controller->is_visit_eligible = $data['is_visit_eligible'];
+        $controller->is_controller_interest = $data['is_controller_interest'];
+        $controller->roles = [];
+        foreach ($data['roles'] as $role) {
+            $controller->roles[] = ControllerRole::fromAssoc($role);
+        }
+        $controller->visits = $data['visits'];
+        return $controller;
+    }
 }

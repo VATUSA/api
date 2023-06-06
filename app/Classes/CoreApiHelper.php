@@ -37,7 +37,7 @@ class CoreApiHelper
             if (array_is_list($data)) {
                 $out = [];
                 foreach ($data as $item) {
-                    $out[] = self::_convert_response($data, $response_class);
+                    $out[] = $response_class::fromAssoc($item);
                 }
                 return $out;
             }

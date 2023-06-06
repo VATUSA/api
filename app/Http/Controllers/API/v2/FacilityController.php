@@ -1105,7 +1105,7 @@ class FacilityController extends APIController {
 
         $transfers = CoreApiHelper::getPendingTransfers($facility->id);
         $data = [];
-        /* @var $transfer \App\APIModels\Transfer */
+        /* @var $transfer \App\CoreAPIModels\Transfer */
         foreach ($transfers as $transfer) {
             $data[] = [
                 'id' => $transfer->id,

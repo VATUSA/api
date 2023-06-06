@@ -888,9 +888,23 @@ class UserController extends APIController
         $transfers = CoreApiHelper::getControllerTransfers($cid);
 
         $data = [];
+        /* @var $transfer \App\CoreAPIModels\Transfer */
+        foreach ($transfers as $transfer) {
+            $data[] = [
+                "id" => $transfer->id,
+                "cid" => $transfer->controller->cid,
+                "to" => $transfer->to_facility,
+                "from" => $transfer->from_facility,
+                "status" => ($transfer->approved === true) ? 1 : (($transfer->approved === false) ? 2 : 0),
+                "actiontext" => $transfer->approved_reason,
+                "actionby" => $transfer->approved_by,
+                "created_at" => $transfer->created_at,
+                "updated_at" => $transfer->approved_at
+            ];
+        }
 
 
-        return response()->api($transfers);
+        return response()->api($data);
     }
 
     /**
