@@ -1,10 +1,7 @@
 <?php
 
-namespace App\Classes;
+namespace App\CoreAPI;
 
-use App\CoreAPIModels\Transfer;
-use App\CoreAPIModels\TransferHold;
-use App\CoreAPIModels\Controller;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
 
@@ -64,12 +61,14 @@ class CoreApiHelper
     public static function createTransferRequest(int    $cid,
                                                  string $facility,
                                                  string $reason,
-                                                 int    $submitted_by_cid): Transfer {
+                                                 int    $submitted_by_cid,
+                                                 bool $force = false): Transfer {
         $data = [
             "cid" => $cid,
             "facility" => $facility,
             "reason" => $reason,
-            "submitted_by_cid" => $submitted_by_cid
+            "submitted_by_cid" => $submitted_by_cid,
+            "force" => $force,
         ];
         return self::_request("POST", "/transfer/", Transfer::class, $data);
     }
@@ -102,11 +101,12 @@ class CoreApiHelper
     /**
      * @throws CoreAPIHelperException
      */
-    public static function processTransferRequest(int $id, bool $approve, string $reason, int $admin_cid): Transfer {
+    public static function processTransferRequest(
+        int $id, bool $approve, string $reason, int $admin_cid): Transfer {
         $data = [
             "approve" => $approve,
             "reason" => $reason,
-            "admin_cid" => $admin_cid
+            "admin_cid" => $admin_cid,
         ];
         return self::_request("PUT", "/transfer/{$id}", Transfer::class, $data);
     }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\CoreAPIModels;
+namespace App\CoreAPI;
 
 class TransferHold {
     public int $id;

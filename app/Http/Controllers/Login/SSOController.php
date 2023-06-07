@@ -4,12 +4,13 @@ namespace App\Http\Controllers\Login;
 
 use App\Action;
 use App\Classes\OAuth\VatsimConnect;
+use App\CoreAPI\CoreApiHelper;
+use App\CoreAPI\CoreAPIHelperException;
 use App\Helpers\ExamHelper;
 use App\Helpers\RoleHelper;
 use App\Helpers\SMFHelper;
 use App\Helpers\EmailHelper;
 use App\Helpers\ULSHelper;
-use App\Transfer;
 use App\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -92,6 +93,9 @@ class SSOController extends Controller
         return $this->sso->redirect($request);
     }
 
+    /**
+     * @throws CoreAPIHelperException
+     */
     public function getReturn(Request $request, $token = null)
     {
         $user = $this->sso->validate($request, $token);
@@ -181,80 +185,14 @@ class SSOController extends Controller
             }
 
             if (!$member->flag_homecontroller && $user->vatsim->division->id == "USA") {
-                //User is rejoining
-                $transfers = Transfer::where('cid', $member->cid)->where(function ($query) {
-                    $query->where('actiontext', 'Suspended/Inactive')->orWhere('actiontext', 'Left division');
-                })->where('created_at', '>=', Carbon::now()->subHours(72))
-                    ->orderBy('created_at', 'DESC');
-                if ($transfers->count()) {
-                    //Within last 72 hours
-                    $t = $transfers->first();
-                    $member->addToFacility($t->from);
-                    //$member->flag_needbasic = 0;
 
-                    $trans = new Transfer();
-                    $trans->cid = $member->cid;
-                    $trans->to = $t->from;
-                    $trans->from = "ZZN";
-                    $trans->status = 1;
-                    $trans->actiontext = "Rejoined division";
-                    $trans->reason = "Rejoined division";
-                    $trans->save();
-
-                    $log = new Action();
-                    $log->to = $member->cid;
-                    $log->log = "Rejoined division within 72 hours, facility set to " . $member->facility;
-                    $log->save();
-                } elseif (Transfer::where('cid', $member->cid)->where(function ($query) {
-                    $query->where('actiontext', 'Suspended/Inactive')->orWhere('actiontext', 'Left division');
-                })->where('created_at', '>=', Carbon::now()->subMonths(6))
-                    ->orderBy('created_at', 'DESC')->count()
-                ) {
-                    //Within last 6 months but more than 72 hours
-                    $member->facility = "ZAE";
-                    $member->facility_join = Carbon::now();
-                    //$member->flag_needbasic = 0;
-
-                    $trans = new Transfer();
-                    $trans->cid = $member->cid;
-                    $trans->to = "ZAE";
-                    $trans->from = "ZZN";
-                    $trans->status = 1;
-                    $trans->actiontext = "Rejoined division";
-                    $trans->reason = "Rejoined division";
-                    $trans->save();
-
-                    $log = new Action();
-                    $log->to = $member->cid;
-                    $log->log = "Rejoined division within 6 months and more than 48 hours, facility set to ZAE";
-                    $log->save();
-                } else {
-                    //More than 6 months ago (or xfr doesn't exist for some reason)
-                    $member->facility = "ZAE";
-                    $member->facility_join = Carbon::now();
+                if (Carbon::createFromFormat('Y-m-d H:i:s', $member->facility_join)->diffInMonths(Carbon::now()) >= 6) {
+                    // Has been gone at least 6 months
                     $member->flag_needbasic = 1;
-
-                    $trans = new Transfer();
-                    $trans->cid = $member->cid;
-                    $trans->to = "ZAE";
-                    $trans->from = "ZZN";
-                    $trans->status = 1;
-                    $trans->actiontext = "Rejoined division";
-                    $trans->reason = "Rejoined division";
-                    $trans->save();
-
-                    $log = new Action();
-                    $log->to = $member->cid;
-                    $log->log = "Rejoined division after more than 6 months, facility set to ZAE";
-                    $log->save();
-
                     EmailHelper::sendEmail($member->email, "Welcome to VATUSA", "emails.user.join", []);
                 }
-                // Now let us check to see if they have ever been in a facility.. if not, we need to override the need basic flag.
-                if (!Transfer::where('cid', $member->cid)->where('to', 'NOT LIKE', 'ZAE')->where('to',
-                        'NOT LIKE', 'ZZN')->exists() && !$passedBasic) {
-                    $member->flag_needbasic = 1;
-                }
+                $transfer = CoreApiHelper::createTransferRequest(
+                    $member->cid, "ZAE", "Rejoined division", 0,true);
 
                 $member->flag_homecontroller = 1;
             }

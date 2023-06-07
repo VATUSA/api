@@ -3,21 +3,18 @@
 namespace App\Http\Controllers\API\v2;
 
 use App\Action;
-use App\Classes\CoreApiHelper;
+use App\CoreAPI\CoreApiHelper;
+use App\Facility;
 use App\Helpers\AuthHelper;
 use App\Helpers\EmailHelper;
-use App\Helpers\Helper;
 use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
 use App\Helpers\VATSIMApi2Helper;
 use App\Promotion;
 use App\Role;
-use App\Transfer;
 use App\User;
 use Auth;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
-use App\Facility;
 use Illuminate\Support\Facades\Validator;
 
 /**
@@ -383,18 +380,6 @@ class UserController extends APIController
 
         if (!isTest()) {
             $transfer = CoreApiHelper::createTransferRequest($cid, $facility, $reason, $cid);
-
-            $emails = [];
-            if ($transfer->to_facility != "ZAE" && $transfer->to_facility != "ZHQ") {
-                $emails[] = $transfer->to_facility . "-sstf@vatusa.net";
-                $emails[] = "vatusa2@vatusa.net";
-            }
-            if ($transfer->from_facility != "ZAE" && $transfer->from_facility != "ZHQ") {
-                $emails[] = $transfer->from_facility . "-sstf@vatusa.net";
-                $emails[] = "vatusa2@vatusa.net";
-            }
-
-            \Mail::to($emails)->send(new \App\Mail\TransferRequested($transfer));
         }
 
         return response()->ok();
@@ -888,7 +873,7 @@ class UserController extends APIController
         $transfers = CoreApiHelper::getControllerTransfers($cid);
 
         $data = [];
-        /* @var $transfer \App\CoreAPIModels\Transfer */
+        /* @var $transfer \App\CoreAPI\Transfer */
         foreach ($transfers as $transfer) {
             $data[] = [
                 "id" => $transfer->id,

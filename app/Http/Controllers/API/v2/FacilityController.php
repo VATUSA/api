@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers\API\v2;
 
-use App\Classes\CoreApiHelper;
+use App\CoreAPI\CoreApiHelper;
+use App\Facility;
 use App\Helpers\AuthHelper;
 use App\Helpers\FacilityHelper;
 use App\Helpers\RatingHelper;
@@ -13,10 +14,8 @@ use App\User;
 use App\Visit;
 use Auth;
 use Illuminate\Http\Request;
-use App\Facility;
 use Illuminate\Support\Facades\Cache;
 use Jose\Component\KeyManagement\JWKFactory;
-use Hidehalo\Nanoid\Client as NanoidClient;
 
 /**
  * Class FacilityController
@@ -1105,7 +1104,7 @@ class FacilityController extends APIController {
 
         $transfers = CoreApiHelper::getPendingTransfers($facility->id);
         $data = [];
-        /* @var $transfer \App\CoreAPIModels\Transfer */
+        /* @var $transfer \App\CoreAPI\Transfer */
         foreach ($transfers as $transfer) {
             $data[] = [
                 'id' => $transfer->id,

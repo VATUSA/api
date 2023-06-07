@@ -1,6 +1,8 @@
 <?php namespace App;
 
 use App\Classes\OAuth\VatsimConnect;
+use App\CoreAPI\CoreApiHelper;
+use App\CoreAPI\CoreAPIHelperException;
 use App\Helpers\ExamHelper;
 use App\Helpers\Helper;
 use App\Helpers\EmailHelper;
@@ -308,13 +310,13 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     /**
      * Remove from Facility
      *
-     * @param string $by
+     * @param int $by
      * @param string $msg
      * @param string $newfac
      *
      * @throws \Exception
      */
-    public function removeFromFacility($by = "Automated", $msg = "None provided", $newfac = "ZAE")
+    public function removeFromFacility(int $by = 0, string $msg = "None provided", string $newfac = "ZAE")
     {
         $old_facility = $this->facility;
         $region = $this->facilityObj->region;
@@ -345,10 +347,10 @@ class User extends Model implements AuthenticatableContract, JWTSubject
 
         if ($by > 800000) {
             $byuser = User::find($by);
-            $by = $byuser->fullname();
+            $byName = $byuser->fullname();
         }
 
-        log_action($this->cid, "Removed from $old_facility by $by: $msg");
+        log_action($this->cid, "Removed from $old_facility by $byName: $msg");
 
         if ($this->rating == RatingHelper::shortToInt("OBS") &&
             env('EXIT_SURVEY', null) != null &&
@@ -404,14 +406,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
 
         $this->save();
 
-        $t = new Transfer();
-        $t->cid = $this->cid;
-        $t->to = $newfac;
-        $t->from = $old_facility;
-        $t->reason = $msg;
-        $t->status = 1;
-        $t->actiontext = $msg;
-        $t->save();
+        $transfer = CoreApiHelper::createTransferRequest($this->cid, "ZAE", $msg, $by, true);
 
         Cache::forget("roster-$old_facility-home");
         Cache::forget("roster-$old_facility-both");
