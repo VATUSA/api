@@ -622,9 +622,8 @@ class FacilityController extends APIController
                     ->where("role", "MTR")->count() > 0;
 
             //Has Ins Perms
-            $rosterArr[$i]['isSupIns'] = $membership !== 'visit' && $roster[$i]['rating_short'] === "SUP" &&
-                $member->roles->where("facility", $member->facility)
-                    ->where("role", "INS")->count() > 0;
+            $rosterArr[$i]['isSupIns'] = $member->roles->where("facility", $facility->id)
+                                                        ->where("role", "INS")->count() > 0;
 
             //Last promotion date
             $last_promotion = $member->lastPromotion();
