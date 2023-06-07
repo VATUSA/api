@@ -82,17 +82,16 @@ class ResponseServiceProvider extends ServiceProvider
 
             $sig = [];
             if ($showsig && !is_null($fjwk) && $fjwk != "") {
-                $algorithmManager = AlgorithmManager::create([
+                $algorithmManager = new AlgorithmManager([
                     new HS256(),
                     new HS384(),
                     new HS512(),
                 ]);
-                $jwk = JWK::create(json_decode($fjwk, true));
+                $jwk = new JWK(json_decode($fjwk, true));
 
                 $jsonConverter = new StandardConverter();
 
                 $jwsBuilder = new JWSBuilder(
-                    $jsonConverter,
                     $algorithmManager
                 );
 
