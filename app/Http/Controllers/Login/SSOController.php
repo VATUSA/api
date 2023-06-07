@@ -172,7 +172,8 @@ class SSOController extends Controller
             $member->rating = $user->vatsim->rating->id;
             $member->lastactivity = Carbon::now();
 
-            if ($member->facility == "ZAE" && $member->facility_join->diffInMonths(Carbon::now()) > 6 && !$passedBasic) {
+            if ($member->facility == "ZAE" && Carbon::createFromFormat('Y-m-d H:i:s',$member->facility_join)
+                    ->diffInMonths(Carbon::now()) > 6 && !$passedBasic) {
                 $member->flag_needbasic = 1;
             }
 

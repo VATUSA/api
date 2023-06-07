@@ -99,9 +99,10 @@ class MoodleSync extends Command
         if ($user->flag_homecontroller) {
             $this->moodle->assignCohort($id,
                 "$user->facility-" . Helper::ratingShortFromInt($user->rating)); //Facility level rating
-            if (RoleHelper::isVATUSAStaff($user->cid, false,
-                    true) || RoleHelper::isInstructor($user->cid) || RoleHelper::isSeniorStaff($user->cid,
-                    true) || RoleHelper::isMentor($user->cid)) {
+            if (RoleHelper::isVATUSAStaff($user->cid, false, true)
+                || RoleHelper::isInstructor($user->cid)
+                || RoleHelper::isSeniorStaff($user->cid, true)
+                || RoleHelper::isMentor($user->cid)) {
                 $this->moodle->assignCohort($id, "TNG"); //Training staff
             }
         }
