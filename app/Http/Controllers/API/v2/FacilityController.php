@@ -577,12 +577,8 @@ class FacilityController extends APIController
         $isSeniorStaff = Auth::check() && RoleHelper::isSeniorStaff(Auth::user()->cid, Auth::user()->facility);
 
         $rosterArr = [];
-        $isCached = false;
 
-        if ($cache = Cache::get("roster-$id-$membership")) {
-            $roster = $cache;
-            $isCached = true;
-        } elseif ($membership == 'both') {
+        if ($membership == 'both') {
             $home = $facility->members;
             $visiting = $facility->visitors();
             $roster = $home->merge($visiting);
@@ -596,13 +592,15 @@ class FacilityController extends APIController
 
         $i = 0;
         foreach ($roster as $member) {
-            $rosterArr[$i] = $member;
-            $rosterArr[$i]['facility_join'] = Carbon::createFromFormat('Y-m-d H:i:s', $member->facility_join)->format('c');
-            $rosterArr[$i]['lastactivity'] = Carbon::createFromFormat('Y-m-d H:i:s', $member->lastactivity)->format('c');
+            $rosterArr[$i] = $member->toArray();
+            $rosterArr[$i]['facility_join'] = Carbon::createFromFormat('Y-m-d H:i:s', $member->facility_join)
+                ->format('c');
+            $rosterArr[$i]['lastactivity'] = Carbon::createFromFormat('Y-m-d H:i:s', $member->lastactivity)->format
+            ('c');
             if (!$hasAPIKey && !$isFacStaff) {
                 $rosterArr[$i]['flag_broadcastOptedIn'] = null;
                 $rosterArr[$i]['email'] = null;
-            } elseif ($isCached) {
+            } else {
                 //Override cache
                 $rosterArr[$i]['flag_broadcastOptedIn'] = User::find($member->cid)->flag_broadcastOptedIn;
                 $rosterArr[$i]['email'] = User::find($member->cid)->email;
@@ -610,7 +608,7 @@ class FacilityController extends APIController
             if (!$isSeniorStaff) {
                 //Senior Staff Only
                 $rosterArr[$i]['flag_preventStaffAssign'] = null;
-            } elseif ($isCached) {
+            } else {
                 //Override cache
                 $rosterArr[$i]['flag_preventStaffAssign'] = User::find($member->cid)->flag_preventStaffAssign;
             }
@@ -646,10 +644,6 @@ class FacilityController extends APIController
             }
 
             $i++;
-        }
-
-        if (!$isCached) {
-            Cache::put("roster-$id-$membership", $rosterArr, 60 * 10);
         }
 
         return response()->api($rosterArr);
