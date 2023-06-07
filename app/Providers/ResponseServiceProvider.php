@@ -49,61 +49,6 @@ class ResponseServiceProvider extends ServiceProvider
         });
 
         $factory->macro('api', function ($data, $status = 200, $headers = []) use ($factory) {
-            $showsig = false;
-            $fjwk = null;
-            if (Request::filled("f")) {
-                $facility = Facility::find(Request::input("f"));
-                if ($facility) {
-                    $showsig = true;
-                    $fjwk = $facility->apiv2_jwk;
-                    if (isset($_SERVER['HTTP_ORIGIN'])) {
-                        $domain = extract_domain(parse_url($_SERVER['HTTP_ORIGIN'], PHP_URL_HOST));
-                        if (in_array($domain, FacilityHelper::getDevURLs($facility))) {
-                            $fjwk = $facility->apiv2_jwk_dev;
-                        }
-                    }
-                }
-            } else {
-                if (isset($_SERVER['HTTP_ORIGIN'])) {
-                    $domain = extract_domain(parse_url($_SERVER['HTTP_ORIGIN'], PHP_URL_HOST));
-                    $facility = Facility::where('url', 'LIKE', "%$domain%")
-                        ->orWhere('url_dev', 'LIKE',
-                            "%$domain%")->first();
-                    if ($facility) {
-                        $showsig = true;
-                        if (in_array($domain, FacilityHelper::getDevURLs($facility))) {
-                            $fjwk = $facility->apiv2_jwk_dev;
-                        } else {
-                            $fjwk = $facility->apiv2_jwk;
-                        }
-                    }
-                }
-            }
-
-            $sig = [];
-            if ($showsig && !is_null($fjwk) && $fjwk != "") {
-                $algorithmManager = new AlgorithmManager([
-                    new HS256(),
-                    new HS384(),
-                    new HS512(),
-                ]);
-                $jwk = new JWK(json_decode($fjwk, true));
-
-                $jsonConverter = new StandardConverter();
-
-                $jwsBuilder = new JWSBuilder(
-                    $algorithmManager
-                );
-
-                $payload = $jsonConverter->encode(array_merge(['data' => $data], ['testing' => isTest()]));
-                $jws = $jwsBuilder->create()->withPayload($payload)->addSignature($jwk,
-                    ['alg' => json_decode($fjwk, true)['alg']])->build();
-                $serializer = new JSONFlattenedSerializer($jsonConverter);
-
-                return $factory->make($serializer->serialize($jws, 0), $status,
-                    array_merge($headers, ['Content-Type' => 'application/json']));
-            }
-
             return $factory->make(encode_json(array_merge(['data' => $data], ['testing' => isTest()])), $status,
                 array_merge($headers, ['Content-Type' => 'application/json']));
         });
