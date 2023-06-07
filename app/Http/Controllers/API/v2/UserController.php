@@ -71,6 +71,8 @@ class UserController extends APIController
             //Senior Staff Only
             $data['flag_preventStaffAssign'] = null;
         }
+        $data['facility_join'] = Carbon::createFromFormat('Y-m-d H:i:s', $user->facility_join)->format('c');
+        $data['lastactivity'] = Carbon::createFromFormat('Y-m-d H:i:s', $user->lastactivity)->format('c');
 
         //Add rating_short property
         $data['rating_short'] = RatingHelper::intToShort($data["rating"]);

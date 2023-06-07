@@ -12,6 +12,7 @@ use App\Transfer;
 use App\User;
 use App\Visit;
 use Auth;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Facility;
 use Illuminate\Support\Facades\Cache;
@@ -596,6 +597,8 @@ class FacilityController extends APIController
         $i = 0;
         foreach ($roster as $member) {
             $rosterArr[$i] = $member;
+            $rosterArr[$i]['facility_join'] = Carbon::createFromFormat('Y-m-d H:i:s', $member->facility_join)->format('c');
+            $rosterArr[$i]['lastactivity'] = Carbon::createFromFormat('Y-m-d H:i:s', $member->lastactivity)->format('c');
             if (!$hasAPIKey && !$isFacStaff) {
                 $rosterArr[$i]['flag_broadcastOptedIn'] = null;
                 $rosterArr[$i]['email'] = null;
