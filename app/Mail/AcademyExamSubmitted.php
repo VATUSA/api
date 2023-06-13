@@ -30,7 +30,7 @@ class AcademyExamSubmitted extends Mailable
      */
     public function build()
     {
-        return $this->from('no-reply@academy.vatusa.net', 'VATUSA Academy')
+        return $this->from('no-reply@vatusa.net', 'VATUSA Academy')
             ->subject('[VATUSA] Academy Rating Exam Results')
             ->view('emails.academy.examresults');
     }
