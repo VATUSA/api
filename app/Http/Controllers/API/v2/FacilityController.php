@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\v2;
 
 use App\Helpers\AuthHelper;
 use App\Helpers\FacilityHelper;
+use App\Helpers\EmailHelper;
 use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
 use App\Role;
@@ -874,6 +875,19 @@ class FacilityController extends APIController
         }
 
         if (!isTest()) {
+            $facname = $facility->name;
+
+            EmailHelper::sendEmail(
+                [$user->email, "$facility-atm@vatusa.net", "$facility-datm@vatusa.net", "vatusa2@vatusa.net"],
+                "Removal from $facname Visiting Roster",
+                "emails.user.removedVisit",
+                [
+                    'name' => $user->fname . " " . $user->lname,
+                    'cid' => $user->cid,
+                    'facility' => $facility,
+                    'reason' => $request->input("reason"),
+                ]
+            );
             $visit->delete();
 
             if (Auth::check()) {

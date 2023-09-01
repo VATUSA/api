@@ -397,7 +397,21 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         /** Remove from visiting rosters if going to ZAE */
         if ($newfac == "ZAE" && $this->visits) {
             foreach ($this->visits as $visit) {
-                log_action($this->cid, "User removed from {$visit->facility} visiting roster: Transfer to ZAE");
+            $facility = $visit->facility;
+            $facname = Facility::find($facility)->name;
+
+            EmailHelper::sendEmail(
+                [$this->email, "$facility-atm@vatusa.net", "$facility-datm@vatusa.net", "vatusa2@vatusa.net"],
+                "Removal from $facname Visiting Roster",
+                "emails.user.removedVisit",
+                [
+                    'name' => $this->fname . " " . $this->lname,
+                    'cid' => $this->cid,
+                    'facility' => $facility,
+                    'reason' => $msg,
+                ]
+            );
+                log_action($this->cid, "User removed from {$visit->facility} visiting roster: {$msg}");
                 $visit->delete();
             }
         }
