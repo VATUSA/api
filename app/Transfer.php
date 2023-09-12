@@ -116,7 +116,6 @@ class Transfer extends Model
                 'cid'     => $this->cid,
                 'facname' => $this->toFac->name,
                 'facid'   => $this->toFac->id,
-                'region'  => $this->toFac->region,
                 'by'      => User::findName($by),
                 'msg'     => $msg
             ]
