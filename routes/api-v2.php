@@ -256,3 +256,14 @@ Route::group(['prefix' => 'public', 'middleware' => 'public'], function () {
     Route::get('news/{limit}', 'PublicController@getNews')->where('limit', '[0-9]+');
     Route::get('planes', 'PublicController@getPlanes')->where('limit', '[0-9]+');
 });
+
+
+
+/******************************************************************************************
+ * /integration
+ * Integration functions
+ */
+
+Route::group(['prefix' => 'integration'], function () {
+    Route::get('staff', 'IntegrationController@getStaffMembers');
+});
