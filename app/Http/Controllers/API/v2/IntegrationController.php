@@ -16,7 +16,7 @@ class IntegrationController extends APIController
 
         $controllers = [];
         foreach ($userRoles as $r) {
-            $user = $r->user();
+            $user = $r->user;
             $c = $user->toArray();
 
             unset($c['flag_broadcastOptedIn']);
