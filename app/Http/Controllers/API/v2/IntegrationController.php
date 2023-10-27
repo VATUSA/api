@@ -9,7 +9,7 @@ use http\Env\Request;
 
 class IntegrationController extends APIController
 {
-    public function getStaffMembers(Request $request) {
+    public function getStaffMembers() {
         $staffRoles = ['ATM', 'DATM', 'TA', 'EC', 'FE', 'WM', 'INS', 'MTR'];
 
         $userRoles = Role::whereIn('role', $staffRoles)->get();
