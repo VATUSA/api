@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\AcademyBasicExamEmail;
 use App\AcademyExamAssignment;
 use App\Classes\VATUSAMoodle;
+use App\Helpers\Helper;
 use App\Http\Middleware\PrivateCORS;
 use App\Mail\AcademyExamSubmitted;
 use App\User;
@@ -160,7 +161,7 @@ class SendAcademyRatingExamEmails extends Command
                 //}
                 $mail->queue(new AcademyExamSubmitted($result));
 
-                if($passed) {
+                if($passed && $student->rating <= Helper::ratingIntFromShort("S1")) {
                     $student->flag_needbasic = 0;
                     $student->save();
                 }
