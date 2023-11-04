@@ -45,6 +45,8 @@ class IntegrationController extends APIController
             $controllers[$user->cid] = makeOutput($user);
         }
 
+        $controllers = array_values($controllers);
+
 
         return response()->api($controllers);
     }
