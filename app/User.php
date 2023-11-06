@@ -110,7 +110,8 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         'flag_xferOverride'       => 'boolean',
         'flag_homecontroller'     => 'boolean',
         'flag_broadcastOptedIn'   => 'boolean',
-        'flag_preventStaffAssign' => 'boolean'
+        'flag_preventStaffAssign' => 'boolean',
+        'flag_nameprivacy'        => 'boolean'
     ];
 
 
