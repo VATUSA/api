@@ -28,7 +28,12 @@ class Facility extends Model
         'apiv2_jwk',
         'apiv2_jwk_dev',
         'uls_jwk_dev',
-        'welcome_text'
+        'welcome_text',
+        "url_dev",
+        "uls_return",
+        "uls_devreturn",
+        "ip",
+        "api_sandbox_ip"
     ];
 
     public function members()
