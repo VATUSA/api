@@ -58,7 +58,7 @@ class FacilityController extends APIController
     {
         $data = Facility::where("active", 1)->get()->toArray();
 
-        return response()->ok($data);
+        return response()->api($data);
     }
 
     /**
