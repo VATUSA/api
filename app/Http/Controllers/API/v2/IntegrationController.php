@@ -29,7 +29,10 @@ class IntegrationController extends APIController
             $c['visiting_facilities'] = $user->visits->toArray();
             return $c;
         }
-        $staffRoles = ['ATM', 'DATM', 'TA', 'EC', 'FE', 'WM', 'INS', 'MTR'];
+        $staffRoles = [
+            'ATM', 'DATM', 'TA', 'EC', 'FE', 'WM', 'INS', 'MTR', 'DICE', 'USWT',
+            'US1', 'US2', 'US3', 'US4', 'US5', 'US6', 'US7', 'US8', 'US9'
+        ];
 
         $userRoles = Role::whereIn('role', $staffRoles)->get();
 
