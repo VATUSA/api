@@ -23,7 +23,7 @@
     "llagerlof/moodlerest": "^2.3",
     "mews/purifier": "^3.1",
     "php-http/curl-client": "^2.3.0",
-    "phpseclib/phpseclib": "2.0.31",
+    "phpseclib/phpseclib": "3.0.34",
     "predis/predis": "^1.1",
     "ramsey/uuid": "^4.7",
     "sentry/sentry-laravel": "^3.4.1",
