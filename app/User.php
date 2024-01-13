@@ -409,7 +409,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
                     'name' => $this->fname . " " . $this->lname,
                     'cid' => $this->cid,
                     'facility' => $facility,
-                    'reason' => $msg,
+                    'reason' => "Removed from home facility " . $old_facility . " for: " . $msg,
                 ]
             );
                 log_action($this->cid, "User removed from {$visit->facility} visiting roster: {$msg}");
