@@ -86,7 +86,7 @@ class ULSHelper
             if (!array_key_exists("loginurl", $response)) {
                 $error = "Unable to create academy data." .
                     "This is probably due to having multiple accounts with the same email." .
-                    " Please open a ticket with your CID in the VATUSA Discord.";
+                    " Please open a ticket with this error message and your CID in the VATUSA Discord.";
                 return redirect(env("SSO_RETURN_HOME_ERROR"))->with('error', $error);
             }
             $url = $response["loginurl"];
