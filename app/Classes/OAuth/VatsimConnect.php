@@ -83,7 +83,7 @@ class VatsimConnect extends GenericProvider
 
         if (!$code/* || !$state || $state !== $request->get('oauthstate')*/) {
             $request->session()->forget("return");
-            $error = "Invalid response from VATSIM, please try again. If this error persists, contact VATUSA12.";
+            $error = "Invalid response from VATSIM, please try again. If this error persists, contact VATUSA6.";
 
             return redirect(env('SSO_RETURN_HOME_ERROR'))->with('error', $error);
         }
