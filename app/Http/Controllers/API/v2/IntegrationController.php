@@ -11,10 +11,15 @@ use Illuminate\Http\Request;
 class IntegrationController extends APIController
 {
     public function getStaffMembers(Request $request) {
-        function makeOutput($user) {
+        $hasApiKey = false;
+        if (!AuthHelper::validApiKeyv2($request->input('apikey', null))) {
+            //API Key Required
+            $hasApiKey = true;
+        }
+        function makeOutput($user, $hasApiKey) {
             $c = $user->toArray();
 
-            if (!AuthHelper::validApiKeyv2($request->input('apikey', null))) {
+            if (!$hasApiKey) {
                 //API Key Required
                 unset($c['email']);
             }
@@ -44,13 +49,13 @@ class IntegrationController extends APIController
         $controllers = [];
         foreach ($userRoles as $r) {
             $user = $r->user;
-            $controllers[$user->cid] = makeOutput($user);
+            $controllers[$user->cid] = makeOutput($user, $hasApiKey);
         }
 
         $usersByRating = User::whereIn('rating', [8, 10])->get();
 
         foreach ($usersByRating as $user) {
-            $controllers[$user->cid] = makeOutput($user);
+            $controllers[$user->cid] = makeOutput($user, $hasApiKey);
         }
 
         $controllers = array_values($controllers);
