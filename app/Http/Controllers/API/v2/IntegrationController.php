@@ -12,7 +12,7 @@ class IntegrationController extends APIController
 {
     public function getStaffMembers(Request $request) {
         $hasApiKey = false;
-        if (!AuthHelper::validApiKeyv2($request->input('apikey', null))) {
+        if (AuthHelper::validApiKeyv2($request->input('apikey', null))) {
             //API Key Required
             $hasApiKey = true;
         }
