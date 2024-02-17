@@ -2,19 +2,23 @@
 
 namespace App\Http\Controllers\API\v2;
 
+use App\Helpers\AuthHelper;
 use App\Helpers\RatingHelper;
 use App\Role;
 use App\User;
-use http\Env\Request;
+use Illuminate\Http\Request;
 
 class IntegrationController extends APIController
 {
-    public function getStaffMembers() {
+    public function getStaffMembers(Request $request) {
         function makeOutput($user) {
             $c = $user->toArray();
 
+            if (!AuthHelper::validApiKeyv2($request->input('apikey', null))) {
+                //API Key Required
+                unset($c['email']);
+            }
             unset($c['flag_broadcastOptedIn']);
-            unset($c['email']);
             unset($c['flag_preventStaffAssign']);
             unset($c['created_at']);
             unset($c['updated_at']);
