@@ -642,6 +642,12 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             $checks['hasHome'] = false;
         }
 
+        if ($this->rating >= Helper::ratingIntFromShort("S1")){
+            $checks['hasRating'] = true;
+        } else {
+            $checks['hasRating'] = false;
+        }
+
         if ($this->rating >= RatingHelper::shortToInt("I1") && $this->rating <= RatingHelper::shortToInt("I3")) {
             $checks['instructor'] = false;
         } else {
@@ -653,7 +659,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             $checks['staff'] = false;
         }
 
-        if($checks['hasHome'] && $checks['50hrs'] && $checks['needbasic'] && $checks['promo']){
+        if($checks['hasRating'] && $checks['hasHome'] && $checks['50hrs'] && $checks['needbasic'] && $checks['promo']){
             $checks['visiting'] = true;
         } else {
             $checks['visiting'] = false;
