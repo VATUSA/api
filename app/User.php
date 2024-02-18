@@ -555,6 +555,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         $checks['initial'] = false;
         $checks['90days'] = false;
         $checks['promo'] = false;
+        $checks['50hrs'] = true;
         $checks['override'] = false;
         $checks['is_first'] = true;
 
@@ -590,8 +591,13 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         } else {
             $checks['is_first'] = false;
         }
-        $transfer = Transfer::where('cid', $this->cid)->where('status', 1)->where('to', 'NOT LIKE', 'ZAE')->where('to',
-            'NOT LIKE', 'ZZN')->where('status', 1)->orderBy('created_at', 'DESC')->first();
+        $transfer = Transfer::where('cid', $this->cid)
+            ->where('to', '!=', 'ZAE')
+            ->where('to', '!=', 'ZZN')
+            ->where('to', '!=', 'ZZI')
+            ->where('status', 1)
+            ->orderBy('created_at', 'DESC')
+            ->first();
         if (!$transfer) {
             $checks['90days'] = true;
         } else {
@@ -610,9 +616,30 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         ])->whereRaw('promotions.to > promotions.from')->first();
 
         if ($promotion == null) {
-            $checks['promo'] = 1;
+            $checks['promo'] = true;
         } else {
-            $checks['promo'] = 0;
+            $checks['promo'] = false;
+        }
+
+        // 50 hours consolidating current rating
+        $ratingHours = VATSIMApi2Helper::fetchRatingHours($this->cid);
+        if($this->rating == Helper::ratingIntFromShort("S1") && $ratingHours['s1'] < 50){
+            $checks['50hrs'] = false;
+        }
+        if($this->rating == Helper::ratingIntFromShort("S2") && $ratingHours['s2'] < 50){
+            $checks['50hrs'] = false;
+        }
+        if($this->rating == Helper::ratingIntFromShort("S3") && $ratingHours['s3'] < 50){
+            $checks['50hrs'] = false;
+        }
+        if($this->rating == Helper::ratingIntFromShort("C1") && $ratingHours['c1'] < 50){
+            $checks['50hrs'] = false;
+        }
+
+        if (!in_array($this->facility, ["ZAE", "ZZI"])) {
+            $checks['hasHome'] = true;
+        } else {
+            $checks['hasHome'] = false;
         }
 
         if ($this->rating >= RatingHelper::shortToInt("I1") && $this->rating <= RatingHelper::shortToInt("I3")) {
@@ -626,6 +653,12 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             $checks['staff'] = false;
         }
 
+        if($checks['hasHome'] && $checks['50hrs'] && $checks['needbasic'] && $checks['promo']){
+            $checks['visiting'] = true;
+        } else {
+            $checks['visiting'] = false;
+        }
+
         // Override flag
         if ($this->flag_xferOverride) {
             $checks['override'] = true;
@@ -636,7 +669,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         if ($checks['override']) {
             return true;
         }
-        if ($checks['instructor'] && $checks['staff'] && $checks['homecontroller'] && $checks['needbasic'] && $checks['pending'] && (($checks['is_first'] && $checks['initial']) || $checks['90days']) && $checks['promo']) {
+        if (($checks['50hrs'] || !$checks['hasHome']) && $checks['instructor'] && $checks['staff'] && $checks['homecontroller'] && $checks['needbasic'] && $checks['pending'] && (($checks['is_first'] && $checks['initial']) || $checks['90days']) && $checks['promo']) {
             return true;
         } else {
             return false;
