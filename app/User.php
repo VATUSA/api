@@ -642,7 +642,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             $checks['hasHome'] = false;
         }
 
-        if ($this->rating >= Helper::ratingIntFromShort("S1")){
+        if ($this->rating >= Helper::ratingIntFromShort("S3")){
             $checks['hasRating'] = true;
         } else {
             $checks['hasRating'] = false;
