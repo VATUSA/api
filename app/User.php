@@ -733,11 +733,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
 
     public function getTransferEligibleAttribute()
     {
-        if (Helper::testCORS()) {
-            return $this->transferEligible();
-        } else {
-            return null;
-        }
+        return null;
     }
 
     public function getNameAttribute()
