@@ -40,7 +40,7 @@ class IntegrationController extends APIController
         }
         $staffRoles = [
             'ATM', 'DATM', 'TA', 'EC', 'FE', 'WM', 'INS', 'MTR', 'DICE', 'USWT',
-            'US1', 'US2', 'US3', 'US4', 'US5', 'US6', 'US7', 'US8', 'US9',
+            'US1', 'US2', 'US3', 'US4', 'US5', 'US6', 'US7', 'US8', 'US9', 'SMT',
             'GSUITE' // Used for manually added email users
         ];
 
