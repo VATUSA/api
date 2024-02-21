@@ -623,9 +623,6 @@ class User extends Model implements AuthenticatableContract, JWTSubject
 
         // 50 hours consolidating current rating
         $ratingHours = VATSIMApi2Helper::fetchRatingHours($this->cid);
-        if($ratingHours === null){
-            $checks['50hrs'] = false;
-        }
         if($this->rating == Helper::ratingIntFromShort("S1") && $ratingHours['s1'] < 50){
             $checks['50hrs'] = false;
         }
