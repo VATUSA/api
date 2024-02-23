@@ -5,6 +5,7 @@ ENV PHP_MEMORY_LIMIT    128M
 ENV MAX_UPLOAD          20M
 ENV PHP_MAX_FILE_UPLOAD 200
 ENV PHP_MAX_POST       100M
+ARG APP_KEY=base64:N1mFIJRBY4ci7g8TVIsdu0X8dipDkY2LNU261QVZlEc=
 
 RUN ls /etc
 
@@ -49,6 +50,7 @@ USER application
 RUN composer.phar install --no-dev --no-scripts
 USER root
 RUN rm /usr/local/bin/composer.phar
+RUN mkdir /www/bootstrap/cache
 
 RUN php artisan l5-swagger:generate
 
