@@ -53,6 +53,7 @@ RUN rm /usr/local/bin/composer.phar
 RUN mkdir -p /www/bootstrap/cache
 
 RUN php artisan l5-swagger:generate
+RUN php artisan l5-swagger:publish
 
 ENTRYPOINT ["/bin/sh","/www/build.sh"]
 
