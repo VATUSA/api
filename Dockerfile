@@ -50,6 +50,8 @@ USER application
 RUN composer.phar install --no-dev --no-scripts
 USER root
 RUN rm /usr/local/bin/composer.phar
+
+USER application
 RUN mkdir -p /www/bootstrap/cache
 
 RUN php artisan l5-swagger:generate
