@@ -16,7 +16,11 @@ class VATSIMApi2Helper {
 
     private static function _client(): Client {
         $key = VATSIMApi2Helper::_key();
-        return new Client(['base_uri' => self::_url(),'headers' => ['Authorization' => "Token {$key}"]]);
+        return new Client([
+            'base_uri' => self::_url(),
+            'headers' => ['Authorization' => "Token {$key}"],
+            'User-Agent' => 'VATUSA/api +https://vatusa.net',
+        ]);
     }
 
     static function fetchRatingHours($cid) {
