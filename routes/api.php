@@ -18,6 +18,10 @@ Route::namespace("v2")->group(function() {
     require("api-v2.php");
 });
 
+Route::get('/', function () {
+   return redirect('/docs');
+});
+
 //Route::post('/deploy', 'DeployController@getDeploy');
 /*
 Route::get("/", [
