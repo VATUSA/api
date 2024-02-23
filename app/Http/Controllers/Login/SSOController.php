@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Login;
 use App\Action;
 use App\Classes\OAuth\VatsimConnect;
 use App\Helpers\ExamHelper;
+use App\Helpers\Helper;
 use App\Helpers\RoleHelper;
 use App\Helpers\SMFHelper;
 use App\Helpers\EmailHelper;
@@ -177,7 +178,7 @@ class SSOController extends Controller
                 $member->flag_needbasic = 1;
             }
 
-            if ($passedBasic) {
+            if ($passedBasic&& $member->rating <= Helper::ratingIntFromShort("S1")) {
                 $member->flag_needbasic = 0;
             }
 
