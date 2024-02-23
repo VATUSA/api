@@ -5,14 +5,14 @@ return [
     'documentations' => [
         'default' => [
             'api' => [
-                'title' => 'VATUSA API',
+                'title' => 'L5 Swagger UI',
             ],
 
             'routes' => [
                 /*
                  * Route for accessing api documentation interface
                 */
-                'api' => 'docs',
+                'api' => '',
             ],
             'paths' => [
                 /*
@@ -95,7 +95,7 @@ return [
             'swagger_ui_assets_path' => env('L5_SWAGGER_UI_ASSETS_PATH', 'vendor/swagger-api/swagger-ui/dist/'),
 
             /*
-             * Absolute path to directories that should be exclude from scanning
+             * Absolute path to directories that should be excluded from scanning
              * @deprecated Please use `scanOptions.exclude`
              * `scanOptions.exclude` overwrites this
             */
@@ -204,23 +204,14 @@ return [
                  * Examples of Securities
                 */
                 [
-                    'jwt'=>[
-                        'type'=>'basic',
-                        'description'=>'JSON Web Token translated from Laravel session',
-                        'name' => 'bearer',
-                        'in' => 'header'
+                    /*
+                    'oauth2_security_example' => [
+                        'read',
+                        'write'
                     ],
-                    'session'=>[
-                        'type'=>'basic',
-                        'description'=>'Session cookie (Authentication on main website)',
-                        'name'=>'cookie'
-                    ],
-                    'apikey' => [
-                        'type' => 'apiKey',
-                        'description' => 'API Key issued to facilities and generated on Facility Management page',
-                        'name' => 'apikey',
-                        'in' => 'query'
-                    ]
+
+                    'passport' => []
+                    */
                 ],
             ],
         ],
@@ -229,7 +220,7 @@ return [
          * Set this to `true` in development mode so that docs would be regenerated on each request
          * Set this to `false` to disable swagger generation on production
         */
-        'generate_always' => env('L5_SWAGGER_GENERATE_ALWAYS', false),
+        'generate_always' => env('L5_SWAGGER_GENERATE_ALWAYS', true),
 
         /*
          * Set this to `true` to generate a copy of documentation in yaml format
@@ -303,7 +294,7 @@ return [
          * Constants which can be used in annotations
          */
         'constants' => [
-            'L5_SWAGGER_CONST_HOST' => env('L5_SWAGGER_CONST_HOST', 'https://api.vatusa.net/v2'),
+            'L5_SWAGGER_CONST_HOST' => env('L5_SWAGGER_CONST_HOST', 'http://my-default-host.com'),
         ],
     ],
 ];

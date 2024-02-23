@@ -11,54 +11,52 @@ class InfrastructureController extends APIController
      * @param Request $request
      * @return array|\Illuminate\Http\JsonResponse|string
      *
-     * @OA\\Get(
+     * @OA\Get(
      *     path="/infrastructure/deploy",
      *     summary="Deploy Stack. CORS Restricted",
      *     description="Deploy Stack. CORS Restricted",
-     *     responses={"application/json"},
      *     tags={"infrastructure"},
      *     security={"session","jwt"},
-     *     @OA\\Response(
+     *     @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @OA\\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         
      *     ),
-     *     @OA\\Response(
+     *     @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @OA\\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         
      *     ),
-     *     @OA\\Response(
+     *     @OA\Response(
      *         response=200,
      *         description="Return JSON Token.",
-     *         @OA\\Schema(ref="#/components/schemas/OK"),
+     *         @OA\Schema(ref="#/components/schemas/OK"),
      *     )
      * )
-     * @OA\\Post(
+     * @OA\Post(
      *     path="/infrastructure/deploy",
      *     summary="Deploy Stack. CORS Restricted",
      *     description="Deploy Stack. CORS Restricted",
-     *     responses={"application/json"},
      *     tags={"infrastructure"},
      *     security={"session","jwt"},
-     *     @OA\\Response(
+     *     @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @OA\\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         
      *     ),
-     *     @OA\\Response(
+     *     @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @OA\\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"),
+     *         
      *     ),
-     *     @OA\\Response(
+     *     @OA\Response(
      *         response=200,
      *         description="Return JSON Token.",
-     *         @OA\\Schema(ref="#/components/schemas/OK"),
+     *         @OA\Schema(ref="#/components/schemas/OK"),
      *     )
      * )
      */

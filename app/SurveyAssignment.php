@@ -10,13 +10,13 @@ use Ramsey\Uuid\Uuid;
  *
  * @OA\Schema(
  *     type="object",
- *     @OA\Property(property="id", type="integer"),
- *     @OA\Property(property="survey_id", type="integer"),
- *     @OA\Property(property="facility", type="string", description="Facility user was in when assigned"),
- *     @OA\Property(property="rating", type="integer", description="Rating when assigned"),
- *     @OA\Property(property="completed", type="integer", description="Integer form of boolean"),
- *     @OA\Property(property="created_at", type="string", description="Date added to database"),
- *     @OA\Property(property="updated_at", type="string"),
+ *     @OA\Property(property="id", @OA\Schema(type="integer")),
+ *     @OA\Property(property="survey_id", @OA\Schema(type="integer")),
+ *     @OA\Property(property="facility", @OA\Schema(type="string"), description="Facility user was in when assigned"),
+ *     @OA\Property(property="rating", @OA\Schema(type="integer"), description="Rating when assigned"),
+ *     @OA\Property(property="completed", @OA\Schema(type="integer"), description="Integer form of boolean"),
+ *     @OA\Property(property="created_at", @OA\Schema(type="string"), description="Date added to database"),
+ *     @OA\Property(property="updated_at", @OA\Schema(type="string")),
  * )
  */
 class SurveyAssignment extends Model

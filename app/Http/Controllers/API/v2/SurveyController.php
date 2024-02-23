@@ -15,27 +15,26 @@ class SurveyController
      *     path="/survey/{id}",
      *     summary="Get survey questions. [Private]",
      *     description="Get survey questions (CORS Restricted).",
-     *     responses={"application/json"},
      *     tags={"survey"},
      *     @OA\Parameter(description="Survey Assignment ID", in="path", name="id", required=true, @OA\Schema(type="string")),
      *     @OA\Response(
      *         response="404",
      *         description="Not found",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={{"application/json":{"status"="error","msg"="Not found"}}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="309",
      *         description="Conflict (survey already completed)",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={{"application/json":{"status"="error","msg"="Conflict"}}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="200",
      *         description="OK",
      *         @OA\Schema(
      *             type="object",
-     *             @OA\Property(property="status", type="string"),
+     *             @OA\Property(property="status", @OA\Schema(type="string")),
      *             @OA\Property(property="survey", ref="#/components/schemas/Survey"),
      *             @OA\Property(property="items", type="array", @OA\Items(ref="#/components/schemas/SurveyQuestion")),
      *         ),
@@ -65,27 +64,28 @@ class SurveyController
      *     path="/survey/{id}",
      *     summary="Submit survey. [Private]",
      *     description="Submit survey (CORS Restricted).",
-     *     responses={"application/json"},
      *     tags={"survey"},
      *     @OA\Parameter(description="Survey Assignment ID", in="path", name="id", required=true, @OA\Schema(type="string")),
-     *     @OA\Parameter(name="data", in="formData", required=true, @OA\Schema(type="string")),
+     *    @OA\RequestBody(@OA\MediaType(mediaType="application/x-www-form-urlencoded",@OA\Schema(
+     *     @OA\Parameter(name="data",  required=true, @OA\Schema(type="string")),
+     *    ))),
      *     @OA\Response(
      *         response="400",
      *         description="Malformed request",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={{"application/json":{"status"="error","msg"="Malformed Request"}}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="404",
      *         description="Not found",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={{"application/json":{"status"="error","msg"="Not found"}}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="309",
      *         description="Conflict (survey already completed)",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={{"application/json":{"status"="error","msg"="Conflict"}}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="200",
@@ -131,7 +131,6 @@ class SurveyController
      *     path="/survey/{id}/assign/{cid}",
      *     summary="Assign a survey to cid. [Private]",
      *     description="Assign a survey to cid (CORS Restricted).",
-     *     responses={"application/json"},
      *     tags={"survey"},
      *     @OA\Parameter(description="Survey ID", in="path", name="id", required=true, @OA\Schema(type="integer")),
      *     @OA\Parameter(description="CERT ID", in="path", name="cid", required=true, @OA\Schema(type="integer")),
@@ -139,13 +138,13 @@ class SurveyController
      *         response="404",
      *         description="Not found",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={{"application/json":{"status"="error","msg"="Not found"}}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="309",
      *         description="Conflict (survey already completed)",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={{"application/json":{"status"="error","msg"="Conflict"}}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="200",

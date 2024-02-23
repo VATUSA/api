@@ -7,14 +7,14 @@ namespace App;
  *
  * @OA\Schema(
  *     type="object",
- *     @OA\Property(property="id", type="integer"),
- *     @OA\Property(property="category_id", type="integer"),
- *     @OA\Property(property="order", type="integer"),
- *     @OA\Property(property="question", type="string"),
- *     @OA\Property(property="answer", type="string"),
- *     @OA\Property(property="updated_by", type="integer"),
- *     @OA\Property(property="created_at", type="string"),
- *     @OA\Property(property="updated_at", type="string"),
+ *     @OA\Property(property="id", @OA\Schema(type="integer")),
+ *     @OA\Property(property="category_id", @OA\Schema(type="integer")),
+ *     @OA\Property(property="order", @OA\Schema(type="integer")),
+ *     @OA\Property(property="question", @OA\Schema(type="string")),
+ *     @OA\Property(property="answer", @OA\Schema(type="string")),
+ *     @OA\Property(property="updated_by", @OA\Schema(type="integer")),
+ *     @OA\Property(property="created_at", @OA\Schema(type="string")),
+ *     @OA\Property(property="updated_at", @OA\Schema(type="string")),
  * )
  */
 class KnowledgebaseQuestions extends Model

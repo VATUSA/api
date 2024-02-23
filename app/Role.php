@@ -7,11 +7,11 @@ namespace App;
  *
  * @OA\Schema(
  *     type="object",
- *     @OA\Property(property="id", type="integer"),
- *     @OA\Property(property="cid", type="integer"),
- *     @OA\Property(property="facility", type="string"),
- *     @OA\Property(property="role", type="string"),
- *     @OA\Property(property="created_at", type="string"),
+ *     @OA\Property(property="id", @OA\Schema(type="integer")),
+ *     @OA\Property(property="cid", @OA\Schema(type="integer")),
+ *     @OA\Property(property="facility", @OA\Schema(type="string")),
+ *     @OA\Property(property="role", @OA\Schema(type="string")),
+ *     @OA\Property(property="created_at", @OA\Schema(type="string")),
  * )
  */
 class Role extends Model

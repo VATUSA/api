@@ -22,43 +22,43 @@ use Illuminate\Support\Str;
  *
  * @OA\Schema(
  *     type="object",
- *     @OA\Property(property="cid", type="integer"),
- *     @OA\Property(property="fname", type="string", description="First name"),
- *     @OA\Property(property="lname", type="string", description="Last name"),
- *     @OA\Property(property="email", type="string", description="Email address of user, will be null if API Key or
+ *     @OA\Property(property="cid", @OA\Schema(type="integer")),
+ *     @OA\Property(property="fname", @OA\Schema(type="string"), description="First name"),
+ *     @OA\Property(property="lname", @OA\Schema(type="string"), description="Last name"),
+ *     @OA\Property(property="email", @OA\Schema(type="string"), description="Email address of user, will be null if API Key or
                                        necessary roles are not available (ATM, DATM, TA, WM, INS)"),
- *     @OA\Property(property="facility", type="string", description="Facility ID"),
- *     @OA\Property(property="rating", type="integer", description="Rating based off array where 1=OBS, S1, S2, S3,
+ *     @OA\Property(property="facility", @OA\Schema(type="string"), description="Facility ID"),
+ *     @OA\Property(property="rating", @OA\Schema(type="integer"), description="Rating based off array where 1=OBS, S1, S2, S3,
                                         C1, C2, C3, I1, I2, I3, SUP, ADM"),
- *     @OA\Property(property="rating_short", type="string", description="String representation of rating"),
- *     @OA\Property(property="created_at", type="string", description="Date added to database"),
- *     @OA\Property(property="updated_at", type="string"),
- *     @OA\Property(property="flag_needbasic", type="integer", description="1 needs basic exam"),
- *     @OA\Property(property="flag_xferOverride", type="integer", description="Has approved transfer override"),
- *     @OA\Property(property="flag_broadcastOptedIn", type="integer", description="Has opted in to receiving broadcast
+ *     @OA\Property(property="rating_short", @OA\Schema(type="string"), description="String representation of rating"),
+ *     @OA\Property(property="created_at", @OA\Schema(type="string"), description="Date added to database"),
+ *     @OA\Property(property="updated_at", @OA\Schema(type="string")),
+ *     @OA\Property(property="flag_needbasic", @OA\Schema(type="integer"), description="1 needs basic exam"),
+ *     @OA\Property(property="flag_xferOverride", @OA\Schema(type="integer"), description="Has approved transfer override"),
+ *     @OA\Property(property="flag_broadcastOptedIn", @OA\Schema(type="integer"), description="Has opted in to receiving broadcast
                                                        emails"),
- *     @OA\Property(property="flag_preventStaffAssign", type="integer", description="Ineligible for staff role
+ *     @OA\Property(property="flag_preventStaffAssign", @OA\Schema(type="integer"), description="Ineligible for staff role
                                                          assignment"),
- *     @OA\Property(property="facility_join", type="string", description="Date joined facility (YYYY-mm-dd
+ *     @OA\Property(property="facility_join", @OA\Schema(type="string"), description="Date joined facility (YYYY-mm-dd
                                                hh:mm:ss)"),
- *     @OA\Property(property="promotion_eligible", type="boolean", description="Is member eligible for promotion?"),
- *     @OA\Property(property="transfer_eligible", type="boolean", description="Is member is eligible for transfer?"),
- *     @OA\Property(property="last_promotion", type="string", description="Date last promoted"),
- *     @OA\Property(property="flag_homecontroller", type="boolean", description="1-Belongs to VATUSA"),
- *     @OA\Property(property="lastactivity", type="string", description="Date last seen on website"),
- *     @OA\Property(property="isMentor", type="boolean", description="Has Mentor role"),
- *     @OA\Property(property="isSupIns", type="boolean", description="Is a SUP and has INS role"),
+ *     @OA\Property(property="promotion_eligible", @OA\Schema(type="boolean"), description="Is member eligible for promotion?"),
+ *     @OA\Property(property="transfer_eligible", @OA\Schema(type="boolean"), description="Is member is eligible for transfer?"),
+ *     @OA\Property(property="last_promotion", @OA\Schema(type="string"), description="Date last promoted"),
+ *     @OA\Property(property="flag_homecontroller", @OA\Schema(type="boolean"), description="1-Belongs to VATUSA"),
+ *     @OA\Property(property="lastactivity", @OA\Schema(type="string"), description="Date last seen on website"),
+ *     @OA\Property(property="isMentor", @OA\Schema(type="boolean"), description="Has Mentor role"),
+ *     @OA\Property(property="isSupIns", @OA\Schema(type="boolean"), description="Is a SUP and has INS role"),
  *     @OA\Property(property="roles", type="array",
  *         @OA\Items(type="object",
- *             @OA\Property(property="facility", type="string"),
- *             @OA\Property(property="role", type="string")
+ *             @OA\Property(property="facility", @OA\Schema(type="string")),
+ *             @OA\Property(property="role", @OA\Schema(type="string"))
  *         )
  *     ),
  *     @OA\Property(property="visiting_facilities", type="array",
  *         @OA\Items(type="object",
- *             @OA\Property(property="id", type="string"),
- *             @OA\Property(property="name", type="string"),
- *             @OA\Property(property="region", type="integer")
+ *             @OA\Property(property="id", @OA\Schema(type="string")),
+ *             @OA\Property(property="name", @OA\Schema(type="string")),
+ *             @OA\Property(property="region", @OA\Schema(type="integer"))
  *         )
  *     )
  * )

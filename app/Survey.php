@@ -8,11 +8,11 @@ namespace App;
  *
  * @OA\Schema(
  *     type="object",
- *     @OA\Property(property="id", type="integer"),
- *     @OA\Property(property="facility", type="string"),
- *     @OA\Property(property="name", type="string"),
- *     @OA\Property(property="created_at", type="string", description="Date added to database"),
- *     @OA\Property(property="updated_at", type="string"),
+ *     @OA\Property(property="id", @OA\Schema(type="integer")),
+ *     @OA\Property(property="facility", @OA\Schema(type="string")),
+ *     @OA\Property(property="name", @OA\Schema(type="string")),
+ *     @OA\Property(property="created_at", @OA\Schema(type="string"), description="Date added to database"),
+ *     @OA\Property(property="updated_at", @OA\Schema(type="string")),
  * )
  */
 class Survey extends Model

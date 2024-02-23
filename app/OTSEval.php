@@ -11,13 +11,13 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @OA\Schema(
  *     type="object",
- *     definition="otseval",
- *     @OA\Property(property="id", type="integer", description="Record ID"),
- *     @OA\Property(property="filename", type="string", description="Filename in system"),
- *     @OA\Property(property="training_record_id", type="integer", description="Training record DB ID, if exists"),
- *     @OA\Property(property="student_id", type="integer", description="Student CID"),
- *     @OA\Property(property="instructor_id", type="integer", description="Instructor CID"),
- *     @OA\Property(property="rating_id", type="integer", description="DB ID of rating")
+ *     schema="otseval",
+ *     @OA\Property(property="id", @OA\Schema(type="integer"), description="Record ID"),
+ *     @OA\Property(property="filename", @OA\Schema(type="string"), description="Filename in system"),
+ *     @OA\Property(property="training_record_id", @OA\Schema(type="integer"), description="Training record DB ID, if exists"),
+ *     @OA\Property(property="student_id", @OA\Schema(type="integer"), description="Student CID"),
+ *     @OA\Property(property="instructor_id", @OA\Schema(type="integer"), description="Instructor CID"),
+ *     @OA\Property(property="rating_id", @OA\Schema(type="integer"), description="DB ID of rating")
  * )
  */
 class OTSEval extends Model
