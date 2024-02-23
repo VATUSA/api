@@ -35,7 +35,7 @@ use \App\Http\Controllers\Controller as BaseController;
  *             "url": "https://www.vatusa.net/img/logo-full.png",
  *           },
  *         },
- *         @OA\Contact(name="Blake Nahin", url="https://www.vatusa.net/info/members"),
+ *         @OA\Contact(name="VATUSA Web Team"),
  *     ),
  *     @OA\Tag(name="academy",description="Interaction with Moodle (Academy)"),
  *     @OA\Tag(name="auth",description="Internal authentication handling commands for use by VATUSA Web Systems to translate Laravel Sessions into JSON Web Tokens"),
@@ -62,27 +62,27 @@ class APIController extends BaseController {
 
 /**
  * @OA\SecurityScheme(
- *   securityDefinition="jwt",
  *   type="apiKey",
  *   in="header",
+ *   securityScheme="bearer",
  *   name="JSON Web Token",
  *   description="JSON Web Token translated from Laravel session"
  * )
  */
 /**
  * @OA\SecurityScheme(
- *   securityDefinition="session",
- *   type="apiKey",
- *   in="header",
+ *   type="http",
+ *   in="cookie",
+ *  securityScheme="session",
  *   name="Session Cookie (Authentication on main website)"
  * )
  */
 /**
  * @OA\SecurityScheme(
- *     securityDefinition="apikey",
  *     type="apiKey",
  *     in="query",
  *     name="apikey",
+ *    securityScheme="apikey",
  *     description="API Key issued to facilities and generated on Facility Management page"
  * )
  */
@@ -90,53 +90,53 @@ class APIController extends BaseController {
 /**
  *
  * @OA\Schema(
- *     definition="error",
+ *     schema="error",
  *     type="object",
  *     @OA\Property(
  *         property="status",
- *         type="string",
+ *         @OA\Schema(type="string"),
  *         example="error",
  *     ),
  *     @OA\Property(
  *         property="message",
- *         type="string",
+ *         @OA\Schema(type="string"),
  *         example="not_logged_in",
  *     ),
  *     @OA\Property(
  *         property="exception",
- *         type="string"
+ *         @OA\Schema(type="string")
  *     ),
  *     @OA\Property(
  *         property="testing",
- *         type="boolean",
+ *         @OA\Schema(type="boolean"),
  *         example="false",
  *     ),
  * ),
  * @OA\Schema(
- *     definition="OK",
+ *     schema="OK",
  *     type="object",
  *     @OA\Property(
  *         property="status",
- *         type="string",
+ *         @OA\Schema(type="string"),
  *         example="OK",
  *     ),
  *     @OA\Property(
  *         property="testing",
- *         type="boolean",
+ *         @OA\Schema(type="boolean"),
  *         example="false",
  *     ),
  * ),
  * @OA\Schema(
- *     definition="OKID",
+ *     schema="OKID",
  *     type="object",
  *     @OA\Property(
  *         property="status",
- *         type="string",
+ *         @OA\Schema(type="string"),
  *         example="OK",
  *     ),
  *     @OA\Property(
  *         property="id",
- *         type="integer",
+ *         @OA\Schema(type="integer"),
  *         example=0,
  *     ),
  * ),

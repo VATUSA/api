@@ -8,15 +8,15 @@ use App\Helpers\RatingHelper;
  *
  * @OA\Schema(
  *     type="object",
- *     @OA\Property(property="id", type="integer"),
- *     @OA\Property(property="cid", type="integer"),
- *     @OA\Property(property="grantor", type="integer", description="CID of grantor, 11111 = system generated or conducted outside of VATUSA"),
- *     @OA\Property(property="to", type="integer", description="Rating based off array where 1=OBS, S1, S2, S3, C1, C2, C3, I1, I2, I3, SUP, ADM"),
- *     @OA\Property(property="from", type="integer", description="Rating based off array where 1=OBS, S1, S2, S3, C1, C2, C3, I1, I2, I3, SUP, ADM"),
- *     @OA\Property(property="created_at", type="string", description="Date rating issued"),
- *     @OA\Property(property="exam", type="string", description="Date of exam"),
- *     @OA\Property(property="examiner", type="integer", description="CERT ID of examiner"),
- *     @OA\Property(property="position", type="string", description="Position worked"),
+ *     @OA\Property(property="id", @OA\Schema(type="integer")),
+ *     @OA\Property(property="cid", @OA\Schema(type="integer")),
+ *     @OA\Property(property="grantor", @OA\Schema(type="integer"), description="CID of grantor, 11111 = system generated or conducted outside of VATUSA"),
+ *     @OA\Property(property="to", @OA\Schema(type="integer"), description="Rating based off array where 1=OBS, S1, S2, S3, C1, C2, C3, I1, I2, I3, SUP, ADM"),
+ *     @OA\Property(property="from", @OA\Schema(type="integer"), description="Rating based off array where 1=OBS, S1, S2, S3, C1, C2, C3, I1, I2, I3, SUP, ADM"),
+ *     @OA\Property(property="created_at", @OA\Schema(type="string"), description="Date rating issued"),
+ *     @OA\Property(property="exam", @OA\Schema(type="string"), description="Date of exam"),
+ *     @OA\Property(property="examiner", @OA\Schema(type="integer"), description="CERT ID of examiner"),
+ *     @OA\Property(property="position", @OA\Schema(type="string"), description="Position worked"),
  * )
  */
 class Promotion extends Model {

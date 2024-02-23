@@ -30,7 +30,6 @@ class AcademyController extends APIController
      *     path="/academy/identifiers",
      *     summary="Get of list course IDs.",
      *     description="Get list of Academy Rating course IDs.",
-     *     responses={"application/json"},
      *     tags={"academy"},
      *     @OA\Response(
      *         response="200",
@@ -46,7 +45,8 @@ class AcademyController extends APIController
      *             ),
      *         ),
      *     )
-     * ),
+     * )
+     * 
      * @param \Illuminate\Http\Request $request
      *
      * @return \Illuminate\Http\JsonResponse
@@ -66,33 +66,36 @@ class AcademyController extends APIController
      *     path="/academy/enroll/{courseID}",
      *     summary="Enroll controller in course. [Key]",
      *     description="Enroll controller in ratings exam course (S2+). Requires Key,  Mentor (at or above requested rating),
-     *     Instructor, or Senior Staff role.", responses={"application/json"}, tags={"academy"}, security={"session",
+     *     Instructor, or Senior Staff role.", tags={"academy"}, security={"session",
      *     "jwt"},
-     * @OA\Parameter(name="cid", in="formData", @OA\Schema(type="integer"), description="Controller CID"),
-     * @OA\Parameter(name="instructor", in="formData", @OA\Schema(type="integer"), description="Instructor CID [required for API Key]"),
+     *     @OA\RequestBody(
+     *       @OA\MediaType(
+     *        mediaType="application/x-www-form-urlencoded",
+     *        @OA\Schema(
+     *          @OA\Property(property="cid", type="integer", description="Controller CID"),
+     *          @OA\Property(property="instructor", type="integer", description="Instructor CID [required for API Key]"),
+     *        )
+     *       )
+     *     ),
      * @OA\Response(
      *         response="400",
      *         description="Malformed request",
-     *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={{"application/json":{"status"="error","message"="Invalid controller"}}}
+     *         @OA\Schema(ref="#/components/schemas/error")
      *     ),
      * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error")
      *     ),
      * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error")
      *     ),
      * @OA\Response(
      *         response="200",
      *         description="OK",
-     *         @OA\Schema(ref="#/components/schemas/OK"),
-     *         content={"application/json":{"status"="OK"}},
+     *         @OA\Schema(ref="#/components/schemas/OK")
      *     )
      * )
      *
@@ -193,38 +196,36 @@ class AcademyController extends APIController
      *     summary="Retrieve the Academy transcript for a user. [Key]",
      *     description="Retrieve the Academy transcript for a user, including all attempts for each rating exam. The
     outer array keys are the ratings (ex. S1) and the inner arrays are the attempts. Requires at least an API key.",
-     *     responses={"application/json"}, tags={"academy"},
+     *      tags={"academy"},
      *     security={"apikey","session", "jwt"},
      * @OA\Response(
      *         response="400",
      *         description="Malformed request",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={{"application/json":{"status"="error","message"="Invalid controller"}}}
+     *         
      *     ),
      *     * @OA\Response(
      *         response="404",
      *         description="Not found",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={{"application/json":{"status"="error","message"="Not found"}}}
+     *         
      *     ),
      * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         
      *     ),
      * @OA\Response(
      *         response="403",
      *         description="Forbidden",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         
      *     ),
      * @OA\Response(
      *         response="200",
      *         description="OK",
      *         @OA\Schema(ref="#/components/schemas/OK"),
-     *         content={"application/json":{"BASIC":{{ "attempt": 1, "time_finished": 1632633706, "grade": 79 }, {
-     *         "attempt": 2, "time_finished": 1632635241, "grade": 91 }}, "S2": {}, "S3": {}, "C1": {} }},
      *     )
      * )
      *

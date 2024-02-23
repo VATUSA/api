@@ -19,9 +19,10 @@ Route::namespace("v2")->group(function() {
 });
 
 //Route::post('/deploy', 'DeployController@getDeploy');
-
+/*
 Route::get("/", [
     'as' => 'l5-swagger.api',
     'middleware' => config('l5-swagger.routes.middleware.api', []),
     'uses' => '\L5Swagger\Http\Controllers\SwaggerController@api',
 ]);
+*/

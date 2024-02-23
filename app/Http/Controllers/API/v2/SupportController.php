@@ -21,7 +21,6 @@ class SupportController extends APIController
      *     path="/support/kb",
      *     summary="Get knowledgebase list.",
      *     description="Get knowledgebase list.",
-     *     responses={"application/json"},
      *     tags={"support"},
      *     @OA\Response(
      *         response="200",
@@ -47,27 +46,33 @@ class SupportController extends APIController
      *     path="/support/kb",
      *     summary="Create knowledgebase category. [Auth]",
      *     description="Creates knowledgebase category. Requires JWT or Session Cookie and VATUSA Staff role.",
-     *     responses={"application/json"},
      *     tags={"support"},
      *     security={"jwt","session"},
-     *     @OA\Parameter(in="formData", name="name", @OA\Schema(type="string"), description="Name of new category"),
+     *     @OA\RequestBody(
+     *        @OA\MediaType(
+     *           mediaType="application/x-www-form-urlencoded",
+     *           @OA\Schema(
+     *               @OA\Parameter(name="name", @OA\Schema(type="string"), description="Name of new category"),
+     *          )
+     *       )
+     *    ),
      *     @OA\Response(
      *         response="400",
      *         description="Malformed request, check format of position, expDate",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={{"application/json":{"status"="error","message"="Invalid position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="401",
      *         description="Unauthorized",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="403",
      *         description="Forbidden",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="200",
@@ -98,34 +103,40 @@ class SupportController extends APIController
      *     path="/support/kb/{id}",
      *     summary="Modify knowledgebase category. [Auth]",
      *     description="Modify knowledgebase category. Requires JWT or Session Cookie and VATUSA Staff role.",
-     *     responses={"application/json"},
      *     tags={"support"},
      *     security={"jwt","session"},
      *     @OA\Parameter(in="path", name="id", @OA\Schema(type="integer"), description="ID of Knowledgebase Category"),
-     *     @OA\Parameter(in="formData", name="name", @OA\Schema(type="string"), description="New name of category"),
+     *     @OA\RequestBody(
+     *       @OA\MediaType(
+     *          mediaType="application/x-www-form-urlencoded",
+     *          @OA\Schema(
+     *             @OA\Parameter(name="name", @OA\Schema(type="string"), description="New name of category"),
+     *         )
+     *       )
+     *     ),
      *     @OA\Response(
      *         response="400",
      *         description="Malformed request, check format of position, expDate",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={{"application/json":{"status"="error","message"="Invalid position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="401",
      *         description="Unauthorized",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="403",
      *         description="Forbidden",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="404",
      *         description="Not found",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Not found"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="200",
@@ -155,7 +166,6 @@ class SupportController extends APIController
      *     path="/support/kb/{id}",
      *     summary="Delete knowledgebase category. [Auth]",
      *     description="Delete knowledgebase category. Requires JWT or Session Cookie and VATUSA Staff role.",
-     *     responses={"application/json"},
      *     tags={"support"},
      *     security={"jwt","session"},
      *     @OA\Parameter(in="path", name="id", @OA\Schema(type="integer"), description="ID of Knowledgebase Category"),
@@ -163,26 +173,25 @@ class SupportController extends APIController
      *         response="400",
      *         description="Malformed request, check format of position, expDate",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={{"application/json":{"status"="error","message"="Invalid
-     *         position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="401",
      *         description="Unauthorized",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="403",
      *         description="Forbidden",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="404",
      *         description="Not found",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Not found"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="200",
@@ -221,35 +230,41 @@ class SupportController extends APIController
      *     path="/support/kb/{categoryId}",
      *     summary="Create knowledgebase question. [Auth]",
      *     description="Creates knowledgebase question. Requires JWT or Session Cookie and VATUSA Staff role.",
-     *     responses={"application/json"},
      *     tags={"support"},
      *     security={"jwt","session"},
      *     @OA\Parameter(in="path", name="categoryId", @OA\Schema(type="integer"), description="ID of category"),
-     *     @OA\Parameter(in="formData", name="question", @OA\Schema(type="string"), description="Question"),
-     *     @OA\Parameter(in="formData", name="answer", @OA\Schema(type="string"), description="Answer"),
+     *     @OA\RequestBody(
+     *       @OA\MediaType(
+     *         mediaType="application/x-www-form-urlencoded",
+     *        @OA\Schema(
+     *     @OA\Parameter(name="question", @OA\Schema(type="string"), description="Question"),
+     *     @OA\Parameter(name="answer", @OA\Schema(type="string"), description="Answer"),
+     *        )
+     *      )
+     *     ),
      *     @OA\Response(
      *         response="400",
      *         description="Malformed request, check format of position, expDate",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={{"application/json":{"status"="error","message"="Invalid position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="401",
      *         description="Unauthorized",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="403",
      *         description="Forbidden",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="404",
      *         description="Not found",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Not found"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="200",
@@ -289,40 +304,44 @@ class SupportController extends APIController
      *     path="/support/kb/{categoryid}/{questionid}",
      *     summary="Modify knowledgebase question. [Auth]",
      *     description="Modify knowledgebase question. Requires JWT or Session Cookie and VATUSA Staff Role",
-     *     responses={"application/json"},
      *     tags={"support"},
      *     security={"jwt","session"},
      *     @OA\Parameter(in="path", name="categoryid", @OA\Schema(type="integer"), description="ID of Knowledgebase
      * Category"),
      *     @OA\Parameter(in="path", name="questionid", @OA\Schema(type="integer"), description="ID of question"),
-     *     @OA\Parameter(in="formData", name="question", @OA\Schema(type="string"), description="New question"),
-     *     @OA\Parameter(in="formData", name="answer", @OA\Schema(type="string"), description="New answer"),
-     *     @OA\Parameter(in="formData", name="category", @OA\Schema(type="integer"), description="Move to new
+     *    @OA\RequestBody(
+     *      @OA\MediaType(
+     *       mediaType="application/x-www-form-urlencoded",
+     *      @OA\Schema(
+     *     @OA\Parameter(name="question", @OA\Schema(type="string"), description="New question"),
+     *     @OA\Parameter(name="answer", @OA\Schema(type="string"), description="New answer"),
+     *     @OA\Parameter(name="category", @OA\Schema(type="integer"), description="Move to new
      * category"),
-     *     @OA\Parameter(in="formData", name="order", @OA\Schema(type="integer"), description="New order placement"),
+     *     @OA\Parameter(name="order", @OA\Schema(type="integer"), description="New order placement"),
+     *     ))),
      *     @OA\Response(
      *         response="400",
      *         description="Malformed request, check format of position, expDate",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={{"application/json":{"status"="error","message"="Invalid position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="401",
      *         description="Unauthorized",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="403",
      *         description="Forbidden",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="404",
      *         description="Not found",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Not found"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="200",
@@ -381,7 +400,6 @@ class SupportController extends APIController
      *     path="/support/kb/{categoryid}/{questionid}",
      *     summary="Delete knowledgebase question. [Auth]",
      *     description="Delete knowledgebase question. Requires JWT or Session Cookie and VATUSA Staff role.",
-     *     responses={"application/json"},
      *     tags={"support"},
      *     security={"jwt","session"},
      *     @OA\Parameter(in="path", name="categoryid", @OA\Schema(type="integer"), description="ID of Knowledgebase
@@ -391,20 +409,18 @@ class SupportController extends APIController
      *         response="400",
      *         description="Malformed request, check format of position, expDate",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={{"application/json":{"status"="error","message"="Invalid
-               position"}},{"application/json":{"status"="error","message"="Invalid expDate"}}},
      *     ),
      *     @OA\Response(
      *         response="401",
      *         description="Unauthorized",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="403",
      *         description="Forbidden",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="200",
@@ -443,7 +459,6 @@ class SupportController extends APIController
      *     path="/support/tickets/depts",
      *     summary="Get list of assignable departments.",
      *     description="Get list of assignable departments.",
-     *     responses={"application/json"},
      *     tags={"support"},
      *     @OA\Response(
      *         response="200",
@@ -454,8 +469,8 @@ class SupportController extends APIController
      *             @OA\Property(property="depts", type="array",
      *                 @OA\Items(
      *                     type="object",
-     *                     @OA\Property(property="id", type="string", description="ID of Dept"),
-     *                     @OA\Property(property="name", type="string", description="Name of Dept"),
+     *                     @OA\Property(property="id", @OA\Schema(type="string"), description="ID of Dept"),
+     *                     @OA\Property(property="name", @OA\Schema(type="string"), description="Name of Dept"),
      *                 ),
      *             ),
      *         ),
@@ -486,7 +501,6 @@ class SupportController extends APIController
      *     path="/support/tickets/depts/{dept}/staff",
      *     summary="Get list of assignable staff members for department.",
      *     description="Get list of assignable staff members for {dept}.",
-     *     responses={"application/json"},
      *     tags={"support"},
      *     @OA\Parameter(name="dept", @OA\Schema(type="string"), description="ID for Dept", in="path"),
      *     @OA\Response(
@@ -498,9 +512,9 @@ class SupportController extends APIController
      *             @OA\Property(property="staff", type="array",
      *                 @OA\Items(
      *                     type="object",
-     *                     @OA\Property(property="cid", type="string", description="CID of Staff Member"),
-     *                     @OA\Property(property="name", type="string", description="Name of Dept"),
-     *                     @OA\Property(property="role", type="string", description="Role"),
+     *                     @OA\Property(property="cid", @OA\Schema(type="string"), description="CID of Staff Member"),
+     *                     @OA\Property(property="name", @OA\Schema(type="string"), description="Name of Dept"),
+     *                     @OA\Property(property="role", @OA\Schema(type="string"), description="Role"),
      *                 ),
      *             ),
      *         ),

@@ -25,7 +25,6 @@ class TMUController extends APIController
      *     path="/tmu/notices/(tmufacid?)",
      *     summary="Get list of TMU Notices.",
      *     description="Get list of TMU Notices for either all of VATUSA or for the specified TMU Map ID.",
-     *     responses={"application/json"},
      *     tags={"tmu"},
      *     @OA\Parameter(name="facility", in="path", @OA\Schema(type="string"), description="TMU Facility/Map ID (optional)",
      *                                     required=false),
@@ -44,20 +43,20 @@ class TMUController extends APIController
      *                 @OA\Property(property="id",type="integer",description="TMU Notice ID"),
      *                 @OA\Property(property="tmu_facility",type="array",
      *                               @OA\Items(type="object",
-     *                                          @OA\Property(property="id", type="string", description="TMU Facility ID"),
-     *                                          @OA\Property(property="name", type="string", description="TMU Facility Name"),
-     *                                          @OA\Property(property="parent", type="string", description="Parent TMU Facility/ARTCC")
+     *                                          @OA\Property(property="id", @OA\Schema(type="string"), description="TMU Facility ID"),
+     *                                          @OA\Property(property="name", @OA\Schema(type="string"), description="TMU Facility Name"),
+     *                                          @OA\Property(property="parent", @OA\Schema(type="string"), description="Parent TMU Facility/ARTCC")
      *                               )
      *                 ),
      *                 @OA\Property(property="priority",type="string",description="Priority of notice
     (0:Low,1:Standard,2:Urgent)"),
      *                 @OA\Property(property="message",type="string",description="Notice content"),
-     *                 @OA\Property(property="expire_date", type="string", description="Expiration time in Zulu
+     *                 @OA\Property(property="expire_date", @OA\Schema(type="string"), description="Expiration time in Zulu
     (YYYY-MM-DD H:i:s)"),
-     *                 @OA\Property(property="start_date", type="string", description="Start time in Zulu (YYYY-MM-DD
+     *                 @OA\Property(property="start_date", @OA\Schema(type="string"), description="Start time in Zulu (YYYY-MM-DD
     H:i:s)"),
-     *                 @OA\Property(property="is_delay", type="boolean", description="TMU Notice is a ground stop or delay"),
-     *                 @OA\Property(property="is_pref_route", type="boolean", description="TMU Notice is a preferred routing")
+     *                 @OA\Property(property="is_delay", @OA\Schema(type="boolean"), description="TMU Notice is a ground stop or delay"),
+     *                 @OA\Property(property="is_pref_route", @OA\Schema(type="boolean"), description="TMU Notice is a preferred routing")
      *                   )
      *                )
      *             ),
@@ -105,7 +104,6 @@ class TMUController extends APIController
      *     path="/tmu/notice/{id}",
      *     summary="Get TMU Notice info.",
      *     description="Get information for a specific TMU Notice.",
-     *     responses={"application/json"},
      *     tags={"tmu"},
      *     @OA\Parameter(name="id", in="path", @OA\Schema(type="string"), description="TMU Notice ID",
      *                                     required=true),
@@ -118,18 +116,18 @@ class TMUController extends APIController
      *                 @OA\Property(property="id",type="integer",description="TMU Notice ID"),
      *                 @OA\Property(property="tmu_facility",type="array",
      *                                @OA\Items(type="object",
-     *                                          @OA\Property(property="id", type="string", description="TMU Facility ID"),
-     *                                          @OA\Property(property="name", type="string", description="TMU Facility Name"),
-     *                                          @OA\Property(property="parent", type="string", description="Parent TMU Facility/ARTCC")
+     *                                          @OA\Property(property="id", @OA\Schema(type="string"), description="TMU Facility ID"),
+     *                                          @OA\Property(property="name", @OA\Schema(type="string"), description="TMU Facility Name"),
+     *                                          @OA\Property(property="parent", @OA\Schema(type="string"), description="Parent TMU Facility/ARTCC")
      *                               ),
      *                 ),
      *                 @OA\Property(property="priority",type="string",description="Priority of notice
                                                                       (0:Low,1:Standard,2:Urgent)"),
      *                 @OA\Property(property="message",type="string",description="Notice content"),
-     *                 @OA\Property(property="expire_date", type="string", description="Expiration time in Zulu (YYYY-MM-DD H:i:s)"),
-     *                 @OA\Property(property="start_date", type="string", description="Start time in Zulu (YYYY-MM-DD H:i:s)"),
-     *                 @OA\Property(property="is_delay", type="boolean", description="TMU Notice is a ground stop or delay."),
-     *                 @OA\Property(property="is_pref_route", type="boolean", description="TMU Notice is a preferred routing")
+     *                 @OA\Property(property="expire_date", @OA\Schema(type="string"), description="Expiration time in Zulu (YYYY-MM-DD H:i:s)"),
+     *                 @OA\Property(property="start_date", @OA\Schema(type="string"), description="Start time in Zulu (YYYY-MM-DD H:i:s)"),
+     *                 @OA\Property(property="is_delay", @OA\Schema(type="boolean"), description="TMU Notice is a ground stop or delay."),
+     *                 @OA\Property(property="is_pref_route", @OA\Schema(type="boolean"), description="TMU Notice is a preferred routing")
      *                       )
      *                )
      *             ),
@@ -157,21 +155,21 @@ class TMUController extends APIController
      *     path="/tmu/notices",
      *     summary="Add new TMU Notice. [Key]",
      *     description="Add new TMU Notice. Requires API Key, JWT, or Session Cookie (required roles:
-    [N/A for API Key] ATM, DATM, TA, EC, INS)", responses={"application/json"}, tags={"tmu"},
+    [N/A for API Key] ATM, DATM, TA, EC, INS)",  tags={"tmu"},
      *     security={"apikey","jwt","session"},
-     *     responses={"application/json"}, tags={"tmu"},
-     * @OA\Parameter(name="facility",@OA\Schema(type="string"),description="TMU Facility/Map ID",in="formData",required=true),
+     *      tags={"tmu"},
+     * @OA\RequestBody(@OA\MediaType(mediaType="application/x-www-form-urlencoded",@OA\Schema(
+     * @OA\Parameter(name="facility",@OA\Schema(type="string"),description="TMU Facility/Map ID",required=true),
      * @OA\Parameter(name="priority",@OA\Schema(type="string"),description="Priority of notice
-    (1: Low, 2: Standard, 3: Urgent)",in="formData",required=true),
-     * @OA\Parameter(name="message",@OA\Schema(type="string"),description="Notice content",in="formData",required=true),
+    (1: Low, 2: Standard, 3: Urgent)",required=true),
+     * @OA\Parameter(name="message",@OA\Schema(type="string"),description="Notice content",required=true),
      * @OA\Parameter(name="start_date",@OA\Schema(type="string"),description="Effective date (YYYY-MM-DD
-    HH:MM)",in="formData"),
+    HH:MM)"),
      * @OA\Parameter(name="expire_date",@OA\Schema(type="string"),description="Expiration date (YYYY-MM-DD
-    HH:MM)",in="formData"),
-     * @OA\Parameter(name="is_delay",@OA\Schema(type="boolean"),description="TMU Notice is a ground stop or delay",
-     *     in="formData"),
-     * @OA\Parameter(name="is_pref_route",@OA\Schema(type="boolean"),description="TMU Notice is a preferred routing",
-     *     in="formData"),
+    HH:MM)"),
+     * @OA\Parameter(name="is_delay",@OA\Schema(type="boolean"),description="TMU Notice is a ground stop or delay"),
+     * @OA\Parameter(name="is_pref_route",@OA\Schema(type="boolean"),description="TMU Notice is a preferred routing"),
+     * ))),
      * @OA\Response(
      *         response="400",
      *         description="Malformed request",
@@ -181,22 +179,22 @@ class TMUController extends APIController
      *         response="401",
      *         description="Unauthorized",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         
      *     ),
      * @OA\Response(
      *         response="403",
      *         description="Forbidden",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         
      *     ),
      * @OA\Response(
      *         response="200",
      *         description="OK",
      *         @OA\Schema(
      *             type="object",
-     *             @OA\Property(property="status", type="string"),
+     *             @OA\Property(property="status", @OA\Schema(type="string")),
      *         ),
-     *         content={"application/json":{"status"="OK"}}
+     *         
      *     )
      * ),
      *
@@ -299,21 +297,21 @@ class TMUController extends APIController
      *     path="/tmu/notice/(id)",
      *     summary="Edit TMU Notice. [Key]",
      *     description="Edit TMU Notice. Requires API Key, JWT, or Session Cookie (required roles:
-    [N/A for API Key] ATM, DATM, TA, EC, INS)", responses={"application/json"}, tags={"tmu"},
+    [N/A for API Key] ATM, DATM, TA, EC, INS)",  tags={"tmu"},
      *     security={"apikey","jwt","session"},
-     *     responses={"application/json"}, tags={"tmu"},
+     *      tags={"tmu"},
      * @OA\Parameter(name="id",@OA\Schema(type="integer"),description="TMU Notice ID",in="path",required=true),
-     * @OA\Parameter(name="facility",@OA\Schema(type="string"),description="TMU Facility/Map ID",in="formData"),
+     * @OA\RequestBody(@OA\MediaType(mediaType="application/x-www-form-urlencoded",@OA\Schema(
+     * @OA\Parameter(name="facility",@OA\Schema(type="string"),description="TMU Facility/Map ID"),
      * @OA\Parameter(name="priority",@OA\Schema(type="string"),description="Priority of notice
-    (1: Low, 2: Standard, 3: Urgent)",in="formData"),
-     * @OA\Parameter(name="message",@OA\Schema(type="string"),description="Notice content",in="formData"),
-     * @OA\Parameter(name="start_date",@OA\Schema(type="string"),description="Start time (YYYY-MM-DD HH:MM)", in="formData"),
+    (1: Low, 2: Standard, 3: Urgent)"),
+     * @OA\Parameter(name="message",@OA\Schema(type="string"),description="Notice content"),
+     * @OA\Parameter(name="start_date",@OA\Schema(type="string"),description="Start time (YYYY-MM-DD HH:MM)"),
      * @OA\Parameter(name="expire_date",@OA\Schema(type="string"),description="Expiration time (YYYY-MM-DD HH:MM) - null for no
-    expiration",in="formData"),
-     * @OA\Parameter(name="is_delay",@OA\Schema(type="boolean"),description="TMU Notice is a ground stop or delay.",
-     *     in="formData"),
-     * @OA\Parameter(name="is_pref_route",@OA\Schema(type="boolean"),description="TMU Notice is a preferred routing",
-     *     in="formData"),
+    expiration"),
+     * @OA\Parameter(name="is_delay",@OA\Schema(type="boolean"),description="TMU Notice is a ground stop or delay."),
+     * @OA\Parameter(name="is_pref_route",@OA\Schema(type="boolean"),description="TMU Notice is a preferred routing"),
+     * ))),
      * @OA\Response(
      *         response="400",
      *         description="Malformed request",
@@ -323,22 +321,22 @@ class TMUController extends APIController
      *         response="401",
      *         description="Unauthorized",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         
      *     ),
      * @OA\Response(
      *         response="403",
      *         description="Forbidden",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         
      *     ),
      * @OA\Response(
      *         response="200",
      *         description="OK",
      *         @OA\Schema(
      *             type="object",
-     *             @OA\Property(property="status", type="string"),
+     *             @OA\Property(property="status", @OA\Schema(type="string")),
      *         ),
-     *         content={"application/json":{"status"="OK"}}
+     *         
      *     )
      * )
      *
@@ -477,26 +475,26 @@ class TMUController extends APIController
      *     summary="Delete TMU Notice. [Key]",
      *     description="Delete solo certification. Requires API Key, JWT, or Session cookie (required roles: [N/A
     for API Key] ATM, DATM, TA, EC, INS)",
-     *     responses={"application/json"}, tags={"tmu"},
+     *      tags={"tmu"},
      *     security={"apikey","jwt","session"},
      * @OA\Parameter(name="id", in="path", @OA\Schema(type="integer"), required=true, description="TMU Notice ID"),
      * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         
      *     ),
      * @OA\Response(
      *         response="403",
      *         description="Forbidden",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         
      *     ),
      * @OA\Response(
      *         response="200",
      *         description="OK",
      *         @OA\Schema(ref="#/components/schemas/OK"),
-     *         content={"application/json":{"status"="OK","testing"=false}}
+     *         
      *     )
      * ),
      *

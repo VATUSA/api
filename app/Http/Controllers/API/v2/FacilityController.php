@@ -34,7 +34,6 @@ class FacilityController extends APIController
      *     path="/facility",
      *     summary="Get list of VATUSA facilities.",
      *     description="Get list of VATUSA facilities.",
-     *     responses={"application/json"},
      *     tags={"facility"},
      *     @OA\Response(
      *         response="200",
@@ -45,12 +44,6 @@ class FacilityController extends APIController
      *                 ref="#/components/schemas/Facility"
      *             ),
      *         ),
-     *         content={
-     *              "application/json":{
-     *                      {"id": "HCF","name": "Honolulu CF","url": "http://www.hcfartcc.net","region": 7},
-     *                      {"id":"ZAB","name":"Albuquerque ARTCC","url":"http:\/\/www.zabartcc.org","region":8},
-     *              }
-     *         }
      *     )
      * )
      */
@@ -70,14 +63,13 @@ class FacilityController extends APIController
      *     path="/facility/{id}",
      *     summary="Get facility information.",
      *     description="Get facility information.",
-     *     responses={"application/json"},
      *     tags={"facility"},
      *     @OA\Parameter(name="id", in="query", description="Facility IATA ID", required=true, @OA\Schema(type="string")),
      *     @OA\Response(
      *         response="404",
      *         description="Not found or not active",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="200",
@@ -93,25 +85,12 @@ class FacilityController extends APIController
      *             @OA\Property(
      *                 property="stats",
      *                 type="object",
-     *                 @OA\Property(property="controllers", type="integer", description="Number of controllers on
+     *                 @OA\Property(property="controllers", @OA\Schema(type="integer"), description="Number of controllers on
     facility roster"),
-     *                 @OA\Property(property="pendingTransfers", type="integer", description="Number of pending
+     *                 @OA\Property(property="pendingTransfers", @OA\Schema(type="integer"), description="Number of pending
     transfers to facility"),
      *             ),
      *         ),
-     *         content={
-     *              "application/json":{
-     *                      {"id":"HCF","name":"Honolulu CF",
-    "url":"http:\/\/www.hcfartcc.net","role":{{"cid":1245046,"name":"Toby Rice","role":"MTR"},
-    {"cid":1152158,"name":"Taylor Broad","role":"MTR"},
-    {"cid":1147076,"name":"Dave Mayes","role":"ATM"},
-    {"cid":1245046,"name":"Toby Rice","role":"DATM"},
-    {"cid":1289149,"name":"Israel Reyes","role":"FE"},
-    {"cid":1152158,"name":"Taylor Broad","role":"WM"}},
-    "stats":{"controllers":19,"pendingTransfers":0},
-    "notices":{"D01":{{"id":4,"tmu_facility_id":"D01","priority":2,"message":"Ground hold in effect until 2300Z.",
-    "expire_date":"2019-08-01 00:00:00","created_at":"2019-07-18 08:04:36","updated_at":"2019-07-18 08:04:36"}}}}}
-     *         }
      *     )
      * )
      */
@@ -158,34 +137,39 @@ class FacilityController extends APIController
      *     path="/facility/{id}",
      *     summary="Update facility information. [Auth]",
      *     description="Update facility information. Requires JWT or Session Cookie. Must be ATM, DATM, or WM.",
-     *     responses={"application/json"},
      *     tags={"facility"},
      *     security={"jwt"},
      *     @OA\Parameter(name="id", in="path", description="Facility IATA ID", required=true, @OA\Schema(type="string")),
-     *     @OA\Parameter(name="url", in="formData", description="Change facility URL", @OA\Schema(type="string")),
-     *     @OA\Parameter(name="url_dev", in="formData", description="Change facility Dev URL(s)", @OA\Schema(type="string")),
-     *     @OA\Parameter(name="apiv2jwk", in="formData", description="Request new APIv2 JWK", @OA\Schema(type="string")),
-     *     @OA\Parameter(name="jwkdev", in="formData", description="Request new testing JWK", @OA\Schema(type="string")),
-     *     @OA\Parameter(name="apikey", in="formData", @OA\Schema(type="string"), description="Request new API Key for facility"),
-     *     @OA\Parameter(name="apikeySandbox", in="formData", @OA\Schema(type="string"), description="Request new Sandbox API Key
-    for facility"),
+     * @OA\RequestBody(
+     * @OA\MediaType(
+     *   mediaType="application/x-www-form-urlencoded",
+     *   @OA\Schema(
+     *   @OA\Parameter(name="url",description="Change facility URL", @OA\Schema(type="string")),
+     *   @OA\Parameter(name="url_dev",description="Change facility Dev URL(s)", @OA\Schema(type="string")),
+     *   @OA\Parameter(name="apiv2jwk",description="Request new APIv2 JWK", @OA\Schema(type="string")),
+     *   @OA\Parameter(name="jwkdev",description="Request new testing JWK", @OA\Schema(type="string")),
+     *   @OA\Parameter(name="apikey",description="Request new API Key for facility", @OA\Schema(type="string")),
+     *   @OA\Parameter(name="apikeySandbox",description="Request new Sandbox API Key for facility", @OA\Schema(type="string")),
+     *  )
+     * )
+     * ),
      *     @OA\Response(
      *         response="401",
      *         description="Unauthorized",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="403",
      *         description="Forbidden",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="404",
      *         description="Not found or not active",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="200",
@@ -196,7 +180,7 @@ class FacilityController extends APIController
      *             @OA\Property(property="apikey",type="string"),
      *             @OA\Property(property="apikeySandbox",type="string"),
      *         ),
-     *         content={"application/json":{"status"="OK", "testing"=false}}
+     *         
      *     )
      * )
      */
@@ -300,7 +284,6 @@ class FacilityController extends APIController
      *     path="/facility/{id}/email/{templateName}",
      *     summary="Get facility's email template. [Key]",
      *     description="Get facility's email template. Requires API Key, Session Cookie (ATM/DATM/TA), or JWT",
-     *     responses={"application/json"},
      *     tags={"facility","email"},
      *     @OA\Parameter(name="id", in="path", description="Facility IATA ID", required=true, @OA\Schema(type="string")),
      *     @OA\Parameter(name="templateName", in="path", description="Name of template (welcome, examassigned,
@@ -309,20 +292,17 @@ class FacilityController extends APIController
      * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
-     *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         @OA\Schema(ref="#/components/schemas/error"), 
      *     ),
      * @OA\Response(
      *         response="403",
      *         description="Forbidden",
-     *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         @OA\Schema(ref="#/components/schemas/error"), 
      *     ),
      * @OA\Response(
      *         response="404",
      *         description="Not found",
-     *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *         @OA\Schema(ref="#/components/schemas/error"), 
      *     ),
      * @OA\Response(
      *         response="200",
@@ -411,29 +391,33 @@ class FacilityController extends APIController
      *     path="/facility/{id}/email/{templateName}",
      *     summary="Modify facility's email template. [Auth]",
      *     description="Modify facility's email template. Requires JWT or Session Cookie (ATM/DATM/TA)",
-     *     responses={"application/json"},
      *     tags={"facility","email"},
      *     @OA\Parameter(name="id", in="query", description="Facility IATA ID", required=true, @OA\Schema(type="string")),
      *     @OA\Parameter(name="templateName", in="path", description="Name of template (welcome, examassigned,
     examfailed, exampassed)", required=true, @OA\Schema(type="string")),
-     * @OA\Parameter(name="body", in="formData", description="Text of template", required=true, @OA\Schema(type="string")),
+     * @OA\RequestBody(
+     * @OA\MediaType(
+     *  mediaType="application/x-www-form-urlencoded",
+     * @OA\Schema(
+     * @OA\Parameter(name="body", description="Text of template", required=true, @OA\Schema(type="string")),
+     * )
+     * )
+     * ),
      * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
      *     ),
      * @OA\Response(
      *         response="403",
      *         description="Forbidden",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         
      *     ),
      * @OA\Response(
      *         response="404",
      *         description="Not found or not active",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Facility not found or not active"}},
      *     ),
      * @OA\Response(
      *         response="200",
@@ -444,7 +428,6 @@ class FacilityController extends APIController
      *             @OA\Property(property="template",type="string"),
      *             @OA\Property(property="body",type="string"),
      *         ),
-     *         content={"application/json":{"status"="OK", "testing"=false}}
      *     )
      * )
      * @param \Illuminate\Http\Request $request
@@ -498,7 +481,7 @@ class FacilityController extends APIController
      *     summary="Get facility roster.",
      *     description="Get facility staff. Email field requires authentication as senior staff.
     Broadcast opt-in status requires API key or staff member authentication. Prevent Staff Assignment field requires
-    authentication as senior staff.", responses={"application/json"}, tags={"facility"},
+    authentication as senior staff.",  tags={"facility"},
      * @OA\Parameter(name="id", in="query", description="Facility IATA ID", required=true, @OA\Schema(type="string")),
      * @OA\Parameter(name="membership", in="query", description="Membership type (home, visit, both) - defaults to
      * home", @OA\Schema(type="string")),
@@ -506,56 +489,56 @@ class FacilityController extends APIController
      *         response="400",
      *         description="Malformed request, invalid role parameter",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Malformed request"}},
+     *         
      *     ),
      * @OA\Response(
      *         response="404",
      *         description="Not found or not active",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *         
      *     ),
      * @OA\Response(
      *         response="200",
      *         description="OK",
      *         @OA\Schema(
      *             type="object",
-     *             @OA\Property(property="cid", type="integer"),
-     *             @OA\Property(property="fname", type="string", description="First name"),
-     *             @OA\Property(property="lname", type="string", description="Last name"),
-     *             @OA\Property(property="email", type="string", description="Email address of user, will be null if
+     *             @OA\Property(property="cid", @OA\Schema(type="integer")),
+     *             @OA\Property(property="fname", @OA\Schema(type="string"), description="First name"),
+     *             @OA\Property(property="lname", @OA\Schema(type="string"), description="Last name"),
+     *             @OA\Property(property="email", @OA\Schema(type="string"), description="Email address of user, will be null if
     API Key or necessary roles are not available (ATM, DATM, TA, WM,
     INS)"),
-     *             @OA\Property(property="facility", type="string", description="Facility ID"),
-     *             @OA\Property(property="rating", type="integer", description="Rating based off array where 1=OBS,
+     *             @OA\Property(property="facility", @OA\Schema(type="string"), description="Facility ID"),
+     *             @OA\Property(property="rating", @OA\Schema(type="integer"), description="Rating based off array where 1=OBS,
     S1, S2, S3, C1, C2, C3, I1, I2, I3, SUP, ADM"),
-     *             @OA\Property(property="rating_short", type="string", description="String representation of
+     *             @OA\Property(property="rating_short", @OA\Schema(type="string"), description="String representation of
     rating"),
-     *             @OA\Property(property="created_at", type="string", description="Date added to database"),
-     *             @OA\Property(property="updated_at", type="string"),
-     *             @OA\Property(property="flag_needbasic", type="integer", description="1 needs basic exam"),
-     *             @OA\Property(property="flag_xferOverride", type="integer", description="Has approved transfer
+     *             @OA\Property(property="created_at", @OA\Schema(type="string"), description="Date added to database"),
+     *             @OA\Property(property="updated_at", @OA\Schema(type="string")),
+     *             @OA\Property(property="flag_needbasic", @OA\Schema(type="integer"), description="1 needs basic exam"),
+     *             @OA\Property(property="flag_xferOverride", @OA\Schema(type="integer"), description="Has approved transfer
     override"),
-     *             @OA\Property(property="flag_broadcastOptedIn", type="integer", description="Has opted in to
+     *             @OA\Property(property="flag_broadcastOptedIn", @OA\Schema(type="integer"), description="Has opted in to
     receiving broadcast emails"),
-     *             @OA\Property(property="flag_preventStaffAssign", type="integer", description="Ineligible for staff
+     *             @OA\Property(property="flag_preventStaffAssign", @OA\Schema(type="integer"), description="Ineligible for staff
     role assignment"),
-     *             @OA\Property(property="facility_join", type="string", description="Date joined facility (YYYY-mm-dd
+     *             @OA\Property(property="facility_join", @OA\Schema(type="string"), description="Date joined facility (YYYY-mm-dd
     hh:mm:ss)"),
-     *             @OA\Property(property="promotion_eligible", type="boolean", description="Is member eligible for
+     *             @OA\Property(property="promotion_eligible", @OA\Schema(type="boolean"), description="Is member eligible for
     promotion?"),
-     *             @OA\Property(property="transfer_eligible", type="boolean", description="Is member is eligible for
+     *             @OA\Property(property="transfer_eligible", @OA\Schema(type="boolean"), description="Is member is eligible for
     transfer?"),
-     *             @OA\Property(property="last_promotion", type="string", description="Date last promoted"),
-     *             @OA\Property(property="flag_homecontroller", type="boolean", description="1-Belongs to VATUSA"),
-     *             @OA\Property(property="lastactivity", type="string", description="Date last seen on website"),
-     *             @OA\Property(property="isMentor", type="boolean", description="Has Mentor role"),
-     *             @OA\Property(property="isSupIns", type="boolean", description="Is a SUP and has INS role"),
-     *             @OA\Property(property="membership", type="string", description="'Home' or 'visit' depending on
+     *             @OA\Property(property="last_promotion", @OA\Schema(type="string"), description="Date last promoted"),
+     *             @OA\Property(property="flag_homecontroller", @OA\Schema(type="boolean"), description="1-Belongs to VATUSA"),
+     *             @OA\Property(property="lastactivity", @OA\Schema(type="string"), description="Date last seen on website"),
+     *             @OA\Property(property="isMentor", @OA\Schema(type="boolean"), description="Has Mentor role"),
+     *             @OA\Property(property="isSupIns", @OA\Schema(type="boolean"), description="Is a SUP and has INS role"),
+     *             @OA\Property(property="membership", @OA\Schema(type="string"), description="'Home' or 'visit' depending on
     facility membership."),
      *             @OA\Property(property="roles", type="array",
      *                 @OA\Items(type="object",
-     *                     @OA\Property(property="facility", type="string"),
-     *                     @OA\Property(property="role", type="string")
+     *                     @OA\Property(property="facility", @OA\Schema(type="string")),
+     *                     @OA\Property(property="role", @OA\Schema(type="string"))
      *                 )
      *             )
      *         )
@@ -661,7 +644,7 @@ class FacilityController extends APIController
      *     summary="Add member to visiting roster. [Key]",
      *     description="Add member to visiting roster.  API Key, JWT, or Session Cookie required (required role: ATM,
     DATM, WM, VATUSA STAFF)",
-     * responses={"application/json"},
+     * 
      * tags={"facility"},
      * security={"jwt"},
      * @OA\Parameter(name="id", in="query", description="Facility IATA ID", required=true, @OA\Schema(type="string")),
@@ -671,31 +654,31 @@ class FacilityController extends APIController
      *         response="401",
      *         description="Unauthorized",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         
      *     ),
      * @OA\Response(
      *         response="403",
      *         description="Forbidden -- needs to have role of ATM, DATM or VATUSA Division staff member",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","message"="Forbidden"}},
+     *         
      *     ),
      * @OA\Response(
      *         response="404",
      *         description="Not found or not active",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *         
      *     ),
      * @OA\Response(
      *         response="422",
      *         description="User is already visiting this facility",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="User is already visiting this facility"}},
+     *         
      *     ),
      * @OA\Response(
      *         response="200",
      *         description="OK",
      *         @OA\Schema(ref="#/components/schemas/OK"),
-     *         content={"application/json":{"status"="OK", "testing"=false}}
+     *         
      *     )
      * )
      */
@@ -785,48 +768,55 @@ class FacilityController extends APIController
      *     description="Delete member from visiting roster.  API Key, JWT, or Session Cookie required (required role:
      *     ATM,
     DATM, VATUSA STAFF)",
-     * responses={"application/json"},
+     * 
      * tags={"facility"},
      * security={"jwt"},
      * @OA\Parameter(name="id", in="query", description="Facility IATA ID", required=true, @OA\Schema(type="string")),
      * @OA\Parameter(name="cid", in="query", description="CID of controller", required=true, @OA\Schema
      * (type="integer")),
-     * @OA\Parameter(name="reason", in="formData", description="Reason for deletion", required=true, @OA\Schema(type="string")),
+     * @OA\RequestBody(
+     * @OA\MediaType(
+     *  mediaType="application/x-www-form-urlencoded",
+     * @OA\Schema(
+     * @OA\Parameter(name="reason", description="Reason for deletion", required=true, @OA\Schema(type="string")),
+     * )
+     * )
+     * ),
      * @OA\Response(
      *         response="400",
      *         description="Malformed request, missing required parameter",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Malformed request"}},
+     *         
      *     ),
      * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         
      *     ),
      * @OA\Response(
      *         response="403",
      *         description="Forbidden -- needs to have role of ATM, DATM or VATUSA Division staff member",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","message"="Forbidden"}},
+     *         
      *     ),
      * @OA\Response(
      *         response="404",
      *         description="Not found or not active",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *         
      *     ),
      * @OA\Response(
      *         response="422",
      *         description="User is not visiting this facility",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="User is not visiting this facility"}},
+     *         
      *     ),
      * @OA\Response(
      *         response="200",
      *         description="OK",
      *         @OA\Schema(ref="#/components/schemas/OK"),
-     *         content={"application/json":{"status"="OK", "testing"=false}}
+     *         
      *     )
      * )
      */
@@ -920,44 +910,51 @@ class FacilityController extends APIController
      *     description="Delete member from facility roster.  API Key, JWT, or Session Cookie required (required role:
      *     ATM,
     DATM, VATUSA STAFF)",
-     * responses={"application/json"},
+     * 
      * tags={"facility"},
      * security={"jwt"},
      * @OA\Parameter(name="id", in="query", description="Facility IATA ID", required=true, @OA\Schema(type="string")),
      * @OA\Parameter(name="cid", in="query", description="CID of controller", required=true, @OA\Schema
      * (type="integer")),
-     * @OA\Parameter(name="reason", in="formData", description="Reason for deletion", required=true, @OA\Schema(type="string")),
-     * @OA\Parameter(name="by", in="formData", description="Staff member responsible for deletion - only required with
+     * @OA\RequestBody(
+     * @OA\MediaType(
+     * mediaType="application/x-www-form-urlencoded",
+     * @OA\Schema(
+     * @OA\Parameter(name="reason", description="Reason for deletion", required=true, @OA\Schema(type="string")),
+     * @OA\Parameter(name="by", description="Staff member responsible for deletion - only required with
      *                           API Key", required=false, @OA\Schema(type="integer")),
+     * )
+     * )
+     * ),
      * @OA\Response(
      *         response="400",
      *         description="Malformed request, missing required parameter",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Malformed request"}},
+     *         
      *     ),
      * @OA\Response(
      *         response="401",
      *         description="Unauthorized",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Unauthorized"}},
+     *         
      *     ),
      * @OA\Response(
      *         response="403",
      *         description="Forbidden -- needs to have role of ATM, DATM or VATUSA Division staff member",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","message"="Forbidden"}},
+     *         
      *     ),
      * @OA\Response(
      *         response="404",
      *         description="Not found or not active",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *         
      *     ),
      * @OA\Response(
      *         response="200",
      *         description="OK",
      *         @OA\Schema(ref="#/components/schemas/OK"),
-     *         content={"application/json":{"status"="OK", "testing"=false}}
+     *         
      *     )
      * )
      */
@@ -1019,7 +1016,6 @@ class FacilityController extends APIController
      *     path="/facility/{id}/transfers",
      *     summary="Get pending transfers. [Key]",
      *     description="Get pending transfers. Requires API Key, Session Cookie, or JWT",
-     *     responses={"application/json"},
      *     tags={"facility"},
      *     security={"jwt","apikey"},
      *     @OA\Parameter(name="id", in="query", description="Facility IATA ID", required=true, @OA\Schema(type="string")),
@@ -1027,56 +1023,53 @@ class FacilityController extends APIController
      *         response="400",
      *         description="Malformed request, missing required parameter",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Malformed request"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="403",
      *         description="Forbidden -- needs to be a staff member, other than mentor",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","message"="Forbidden"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="404",
      *         description="Not found or not active",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="200",
      *         description="OK",
      *         @OA\Schema(
      *             type="object",
-     *             @OA\Property(property="status", type="string"),
+     *             @OA\Property(property="status", @OA\Schema(type="string")),
      *             @OA\Property(property="transfers", type="array",
      *                 @OA\Items(
      *                     type="object",
-     *                     @OA\Property(property="id", type="integer", description="Transfer ID"),
-     *                     @OA\Property(property="cid", type="integer", description="VATSIM ID"),
-     *                     @OA\Property(property="fname", type="string", description="First name"),
-     *                     @OA\Property(property="lname", type="string", description="Last name"),
-     *                     @OA\Property(property="email", type="string", description="Email, if authenticated as staff
+     *                     @OA\Property(property="id", @OA\Schema(type="integer"), description="Transfer ID"),
+     *                     @OA\Property(property="cid", @OA\Schema(type="integer"), description="VATSIM ID"),
+     *                     @OA\Property(property="fname", @OA\Schema(type="string"), description="First name"),
+     *                     @OA\Property(property="lname", @OA\Schema(type="string"), description="Last name"),
+     *                     @OA\Property(property="email", @OA\Schema(type="string"), description="Email, if authenticated as staff
     member and/or api key is present."),
-     *                     @OA\Property(property="reason", type="string", description="Transfer reason; must be
+     *                     @OA\Property(property="reason", @OA\Schema(type="string"), description="Transfer reason; must be
      *                                                      authenticated as senior staff."),
      *                     @OA\Property(property="fromFac", type="array",
      *                         @OA\Items(
      *                             type="object",
-     *                             @OA\Property(property="id", type="integer", description="Facility ID (ex. ZSE)"),
-     *                             @OA\Property(property="name", type="integer", description="Facility Name (ex.
+     *                             @OA\Property(property="id", @OA\Schema(type="integer"), description="Facility ID (ex. ZSE)"),
+     *                             @OA\Property(property="name", @OA\Schema(type="integer"), description="Facility Name (ex.
     Seattle ARTCC)")
      *                         )
      *                     ),
-     *                     @OA\Property(property="rating", type="string", description="Short string rating (S1, S2)"),
-     *                     @OA\Property(property="intRating", type="integer", description="Numeric rating (OBS = 1,
+     *                     @OA\Property(property="rating", @OA\Schema(type="string"), description="Short string rating (S1, S2)"),
+     *                     @OA\Property(property="intRating", @OA\Schema(type="integer"), description="Numeric rating (OBS = 1,
     etc)"),
-     *                     @OA\Property(property="date", type="string", description="Date transfer submitted
+     *                     @OA\Property(property="date", @OA\Schema(type="string"), description="Date transfer submitted
     (YYYY-MM-DD)"),
      *                 ),
      *             ),
      *         ),
-     *         content={"application/json":{"status":"OK","transfers":{"id":5606,"cid":1275302,"fname":"Blake",
-    "lname":"Nahin","email":null,"reason":"Only one class B? Too easy. I want something harder, like ZTL.",
-    "rating":"C1","intRating":5,"date":"2014-12-19","fromFac":{"id":"ZSE","name":"Seattle ARTCC"}}}}
      *     )
      * )
      */
@@ -1141,47 +1134,53 @@ class FacilityController extends APIController
      *     path="/facility/{id}/transfers/{transferId}",
      *     summary="Modify transfer request.  [Key]",
      *     description="Modify transfer request. Requires API Key, Session Cookie, or JWT (required role: ATM, DATM,
-    VATUSA STAFF)", responses={"application/json"}, tags={"facility"}, security={"jwt"},
+    VATUSA STAFF)",  tags={"facility"}, security={"jwt"},
      * @OA\Parameter(name="id", in="query", description="Facility IATA ID", required=true, @OA\Schema(type="string")),
      * @OA\Parameter(name="transferId", in="query", description="Transfer ID", @OA\Schema(type="integer"),
      *     required=true),
-     * @OA\Parameter(name="action", in="formData", @OA\Schema(type="string"), required=true, examples={"approve",
-     *     "reject"},
+     * @OA\RequestBody(
+     * @OA\MediaType(
+     * mediaType="application/x-www-form-urlencoded",
+     * @OA\Schema(
+     * @OA\Parameter(name="action", @OA\Schema(type="string"), required=true,
      *                                   description="Action to take on transfer request. Valid values:
     accept,reject"),
-     * @OA\Parameter(name="reason", in="formData", @OA\Schema(type="string"), description="Reason for transfer request rejection
+     * @OA\Parameter(name="reason", @OA\Schema(type="string"), description="Reason for transfer request rejection
     [required for rejections]"),
-     * @OA\Parameter(name="by", in="formData", @OA\Schema(type="integer"), description="Staff member responsible for
+     * @OA\Parameter(name="by", @OA\Schema(type="integer"), description="Staff member responsible for
      * trasnfer [required for API Key]"),
+     * )
+     * )
+     * ),
      * @OA\Response(
      *         response="400",
      *         description="Malformed request, missing required parameter",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Malformed request"}},
+     *         
      *     ),
      * @OA\Response(
      *         response="403",
      *         description="Forbidden -- needs to be a staff member, other than mentor",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","message"="Forbidden"}},
+     *         
      *     ),
      * @OA\Response(
      *         response="404",
      *         description="Not found or not active",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Facility not found or not active"}},
+     *         
      *     ),
      * @OA\Response(
      *         response="410",
      *         description="Gone",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Transfer is not pending"}},
+     *         
      *     ),
      * @OA\Response(
      *         response="200",
      *         description="OK",
      *         @OA\Schema(ref="#/components/schemas/OK"),
-     *         content={"application/json":{"status"="OK", "testing"=false}}
+     *         
      *     )
      * )
      */

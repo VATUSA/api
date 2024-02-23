@@ -12,16 +12,16 @@ use Exception;
  *
  * @OA\Schema(
  *     type="object",
- *     @OA\Property(property="id", type="integer"),
- *     @OA\Property(property="cid", type="integer"),
- *     @OA\Property(property="to", type="string"),
- *     @OA\Property(property="from", type="string"),
- *     @OA\Property(property="reason", type="string"),
- *     @OA\Property(property="status", type="integer", description="0 pending, 1 approved, 2 rejected"),
- *     @OA\Property(property="actiontext", type="string", description="Reasoning"),
- *     @OA\Property(property="actionby", type="integer", description="Cert ID, 0 is system processed [CERT Sync usually]"),
- *     @OA\Property(property="created_at", type="string", description="Date transfer submitted"),
- *     @OA\Property(property="updated_at", type="string", description="Date transfer was last acted on [not updated after processed]")
+ *     @OA\Property(property="id", @OA\Schema(type="integer")),
+ *     @OA\Property(property="cid", @OA\Schema(type="integer")),
+ *     @OA\Property(property="to", @OA\Schema(type="string")),
+ *     @OA\Property(property="from", @OA\Schema(type="string")),
+ *     @OA\Property(property="reason", @OA\Schema(type="string")),
+ *     @OA\Property(property="status", @OA\Schema(type="integer"), description="0 pending, 1 approved, 2 rejected"),
+ *     @OA\Property(property="actiontext", @OA\Schema(type="string"), description="Reasoning"),
+ *     @OA\Property(property="actionby", @OA\Schema(type="integer"), description="Cert ID, 0 is system processed [CERT Sync usually]"),
+ *     @OA\Property(property="created_at", @OA\Schema(type="string"), description="Date transfer submitted"),
+ *     @OA\Property(property="updated_at", @OA\Schema(type="string"), description="Date transfer was last acted on [not updated after processed]")
  * )
  */
 class Transfer extends Model

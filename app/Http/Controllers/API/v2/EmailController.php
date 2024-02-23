@@ -17,7 +17,6 @@ class EmailController extends APIController
      *     path="/email",
      *     summary="Get info of VATUSA email address assigned for user. [Private]",
      *     description="Get info of VATUSA email address assigned for user. CORS Restricted.",
-     *     responses={"application/json"},
      *     tags={"email"},
      *     security={"jwt","session"},
      *     @OA\Parameter(description="JWT Token", in="header", name="bearer", required=true, @OA\Schema(type="string")),
@@ -25,7 +24,7 @@ class EmailController extends APIController
      *         response="401",
      *         description="Unauthenticated",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="200",
@@ -34,19 +33,13 @@ class EmailController extends APIController
      *             type="array",
      *             @OA\Items(
      *                 type="object",
-     *                 @OA\Property(property="type", type="string", description="Type of email
+     *                 @OA\Property(property="type", @OA\Schema(type="string"), description="Type of email
      *                                                (forward/full/static)"),
-     *                 @OA\Property(property="email", type="string", description="Email address"),
-     *                 @OA\Property(property="destination", type="string", description="Destination for email
+     *                 @OA\Property(property="email", @OA\Schema(type="string"), description="Email address"),
+     *                 @OA\Property(property="destination", @OA\Schema(type="string"), description="Destination for email
      *                                                       forwards")
      *             ),
      *         ),
-     *         content={
-     *              "application/json":{
-     *                      {"type":"forward","email":"test@vatusa.net","destination":"test2@vatusa.net"},
-     *                      {"type":"full","email":"easy@vatusa.net"}
-     *              }
-     *         }
      *     )
      * )
      */
@@ -112,7 +105,6 @@ class EmailController extends APIController
      *     path="/email/(address)",
      *     summary="Get info of VATUSA email address. [Private]",
      *     description="Get info of VATUSA email address. CORS Restricted.",
-     *     responses={"application/json"},
      *     tags={"email"},
      *     security={"jwt","session"},
      *     @OA\Parameter(description="JWT Token", in="header", name="bearer", required=true, @OA\Schema(type="string")),
@@ -121,20 +113,18 @@ class EmailController extends APIController
      *         response="400",
      *         description="Bad request",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={{"application/json":{"status"="error","msg"="Missing required
-     *         field"}},{"application/json":{"status"="error","msg"="Password too weak"}}},
      *     ),
      *     @OA\Response(
      *         response="401",
      *         description="Unauthenticated",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="403",
      *         description="Forbidden",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="200",
@@ -143,19 +133,14 @@ class EmailController extends APIController
      *             type="array",
      *             @OA\Items(
      *                 type="object",
-     *                 @OA\Property(property="type", type="string", description="Type of email
+     *                 @OA\Property(property="type", @OA\Schema(type="string"), description="Type of email
      *                                                (forward/full/static)"),
-     *                 @OA\Property(property="email", type="string", description="Email address"),
-     *                 @OA\Property(property="destination", type="string", description="Destination for email
+     *                 @OA\Property(property="email", @OA\Schema(type="string"), description="Email address"),
+     *                 @OA\Property(property="destination", @OA\Schema(type="string"), description="Destination for email
      *                                                       forwards"),
-     *                 @OA\Property(property="static", type="boolean", description="Is address static?")
+     *                 @OA\Property(property="static", @OA\Schema(type="boolean"), description="Is address static?")
      *             ),
      *         ),
-     *         content={
-     *              "application/json":{
-     *                      "type":"full","email":"easy@vatusa.net"
-     *              }
-     *         }
      *     )
      * )
      */
@@ -189,7 +174,7 @@ class EmailController extends APIController
      *     path="/email",
      *     summary="Modify email account. [Private]",
      *     description="Modify email account. Static forwards may only be modified by the ATM, DATM or WM. CORS
-     *     Restricted.", responses={"application/json"}, tags={"email"}, security={"jwt","session"},
+     *     Restricted.", tags={"email"}, security={"jwt","session"},
      *     @OA\Parameter(description="JWT Token", in="header", name="bearer", required=true, @OA\Schema(type="string")),
      *     @OA\Parameter(description="Email Address", in="query", name="email", required=true, @OA\Schema(type="string")),
      *     @OA\Parameter(description="Set destination for forwarded address", in="query", name="destination",
@@ -200,38 +185,36 @@ class EmailController extends APIController
      *         response="400",
      *         description="Bad request",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={{"application/json":{"status"="error","msg"="Missing required
-     *         field"}},{"application/json":{"status"="error","msg"="Password too weak"}}},
      *     ),
      *     @OA\Response(
      *         response="401",
      *         description="Unauthenticated",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="403",
      *         description="Forbidden",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="409",
      *         description="Conflict, usually caused by mismatched parameters",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Ambiguous request"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="500",
      *         description="Server error",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Unknown error"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="200",
      *         description="OK",
      *         @OA\Schema(ref="#/components/schemas/OK"),
-     *         content={"application/json":{"status"="OK","testing"=false}}
+     *         
      *     )
      * )
      * @param \Illuminate\Http\Request $request
@@ -345,7 +328,6 @@ class EmailController extends APIController
      *     path="/email/hosted",
      *     summary="Get VATUSA hosted email accounts.  [Private]",
      *     description="Get VATUSA hosted email accounts. CORS Restricted.",
-     *     responses={"application/json"},
      *     tags={"email"},
      *     security={"jwt","session"},
      *     @OA\Parameter(description="JWT Token", in="header", name="bearer", required=true, @OA\Schema(type="string")),
@@ -354,19 +336,19 @@ class EmailController extends APIController
      *         response="401",
      *         description="Unauthenticated",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="403",
      *         description="Forbidden",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="404",
      *         description="Not Found",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Not Found"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="200",
@@ -421,7 +403,6 @@ class EmailController extends APIController
      *     path="/email/hosted/{fac}/{username}",
      *     summary="Modify VATUSA hosted email account. [Private]",
      *     description="Modify VATUSA hosted email account. CORS Restricted.",
-     *     responses={"application/json"},
      *     tags={"email"},
      *     security={"jwt","session"},
      *     @OA\Parameter(description="JWT Token", in="header", name="bearer", required=true, @OA\Schema(type="string")),
@@ -432,26 +413,24 @@ class EmailController extends APIController
      *         response="400",
      *         description="Bad request",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={{"application/json":{"status"="error","msg"="Missing required
-     *         field"}},{"application/json":{"status"="error","msg"="Password too weak"}}},
      *     ),
      *     @OA\Response(
      *         response="401",
      *         description="Unauthenticated",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="403",
      *         description="Forbidden",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="200",
      *         description="OK",
      *         @OA\Schema(ref="#/components/schemas/OK"),
-     *         content={"application/json":{"status"="OK","testing"=false}}
+     *         
      *     )
      * )
      * @param \Illuminate\Http\Request $request
@@ -513,7 +492,6 @@ class EmailController extends APIController
      *     path="/email/hosted/{fac}/{username}",
      *     summary="Delete VATUSA hosted email account. [Private]",
      *     description="Delete VATUSA hosted email account. CORS Restricted.",
-     *     responses={"application/json"},
      *     tags={"email"},
      *     security={"jwt","session"},
      *     @OA\Parameter(description="JWT Token", in="header", name="bearer", required=true, @OA\Schema(type="string")),
@@ -523,26 +501,23 @@ class EmailController extends APIController
      *         response="400",
      *         description="Bad request",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={{"application/json":{"status"="error","msg"="Missing required
-     *         field"}},{"application/json":{"status"="error","msg"="Password too weak"}}},
      *     ),
      *     @OA\Response(
      *         response="401",
      *         description="Unauthenticated",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Unauthenticated"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="403",
      *         description="Forbidden",
      *         @OA\Schema(ref="#/components/schemas/error"),
-     *         content={"application/json":{"status"="error","msg"="Forbidden"}},
+     *         
      *     ),
      *     @OA\Response(
      *         response="200",
      *         description="OK",
      *         @OA\Schema(ref="#/components/schemas/OK"),
-     *         content={"application/json":{"status"="OK","testing"=false}}
      *     )
      * )
      * @param \Illuminate\Http\Request $request
