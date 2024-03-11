@@ -609,6 +609,21 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             }
         }
 
+        // added to visiting roster in last 60 days check
+        $visiting = Visit::where('cid', $this->cid)
+            ->orderBy('created_at', 'DESC')
+            ->first();
+        if (!$visiting) {
+            $checks['60days'] = true;
+        } else {
+            $checks['visitingDays'] = Carbon::createFromFormat('Y-m-d H:i:s', $visiting->updated_at)->diffInDays(new Carbon());
+            if ($checks['visitingDays'] >= 60) {
+                $checks['60days'] = true;
+            } else {
+                $checks['60days'] = false;
+            }
+        }
+
         // S1-C1 within 90 check
         $promotion = Promotion::where('cid', $this->cid)->where([
             ['to', '<=', Helper::ratingIntFromShort("C1")],
@@ -619,6 +634,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             $checks['promo'] = true;
         } else {
             $checks['promo'] = false;
+            $checks['promoDays'] = Carbon::createFromFormat('Y-m-d H:i:s', $promotion->created_at)->diffInDays(new Carbon());
         }
 
         // 50 hours consolidating current rating
@@ -659,7 +675,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             $checks['staff'] = false;
         }
 
-        if($checks['hasRating'] && $checks['hasHome'] && $checks['50hrs'] && $checks['needbasic'] && $checks['promo']){
+        if($checks ['60days'] && $checks['hasRating'] && $checks['hasHome'] && $checks['50hrs'] && $checks['needbasic'] && $checks['promo']){
             $checks['visiting'] = true;
         } else {
             $checks['visiting'] = false;
