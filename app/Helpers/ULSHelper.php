@@ -107,7 +107,7 @@ class ULSHelper
                 $forumsUrl = str_replace("api", "forums", config('app.url'));
             }
 
-            return redirect($url . "&wantsurl=" . urlencode("$forumsUrl/api.php?login=1&token=$token&signature=$signature"));
+            return redirect("$forumsUrl/api.php?login=1&token=$token&signature=$signature");
         }
 
         return redirect(env('SSO_RETURN_HOME'));
