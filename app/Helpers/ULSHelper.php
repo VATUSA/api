@@ -62,7 +62,7 @@ class ULSHelper
         return $data;
     }
 
-    public static function doHandleLogin($cid, $return, $destination, $isTest = false)
+    public static function doHandleLogin($cid, $return, $destination = "home", $isTest = false)
     {
         //require_once(config('sso.forumapi', ''));
         //smfapi_login($cid, 14400);
