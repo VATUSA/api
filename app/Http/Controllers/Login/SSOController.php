@@ -62,6 +62,8 @@ class SSOController extends Controller
                     'https://forums.dev.vatusa.net/') . "api.php?logout=1&return=$return");
         }
 
+        $destination = "home";
+
         /* Lots to check here ... but this is our multi-point redirect */
         if ($request->has('home')) {
             $request->session()->put('return', env('SSO_RETURN_HOME'));
@@ -72,10 +74,13 @@ class SSOController extends Controller
             $request->session()->put('return', env('SSO_RETURN_HOMEDEV'));
         } elseif ($request->has('forums')) {
             $request->session()->put('return', env('SSO_RETURN_FORUMS'));
+            $destination = "forums";
         } elseif ($request->has('moodle')) {
             $request->session()->put('return', env('SSO_RETURN_MOODLE'));
+            $destination = "moodle";
         } elseif ($request->has('moodle-test')) {
             $request->session()->put('return', env('SSO_RETURN_MOODLE_TEST'));
+            $destination = "moodle-test";
         } elseif ($request->has('localdev')) {
             $request->session()->put('return', env('SSO_RETURN_LOCALDEV'));
         } else {
@@ -87,7 +92,7 @@ class SSOController extends Controller
             $return = $request->session()->get("return");
             $request->session()->forget("return");
             $isTest = $request->has('moodle-test');
-            return ULSHelper::doHandleLogin(Auth::user()->cid, $return, $isTest);
+            return ULSHelper::doHandleLogin(Auth::user()->cid, $return, $destination, $isTest);
         }
 
         return $this->sso->redirect($request);

@@ -62,7 +62,7 @@ class ULSHelper
         return $data;
     }
 
-    public static function doHandleLogin($cid, $return, $isTest = false)
+    public static function doHandleLogin($cid, $return, $destination, $isTest = false)
     {
         //require_once(config('sso.forumapi', ''));
         //smfapi_login($cid, 14400);
@@ -89,10 +89,16 @@ class ULSHelper
                     " Please open a ticket with this error message and your CID in the VATUSA Discord.";
                 return redirect(env("SSO_RETURN_HOME_ERROR"))->with('error', $error);
             }
-            $url = $response["loginurl"];
+            $moodleUrl = $response["loginurl"];
+        }
+        if ($destination == "moodle") {
+            return redirect($moodleUrl . "&wantsurl=" . env('SSO_RETURN_MOODLE'));
+        }
+        if ($destination == "moodle-test") {
+            return redirect($moodleUrl . "&wantsurl=" . env('SSO_RETURN_MOODLE_TEST'));
         }
 
-        if (!in_array(app()->environment(), ["dev", "local"])) {
+        if ($destination == "forums" && !in_array(app()->environment(), ["dev", "local"])) {
             $token = [
                 "cid"    => (string)$cid,
                 "nlt"    => time() + 7,
