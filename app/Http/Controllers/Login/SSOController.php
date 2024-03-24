@@ -286,8 +286,12 @@ class SSOController extends Controller
                 $token = ULSHelper::base64url_encode(json_encode($regOptions));
                 $signature = hash_hmac("sha512", $token, base64_decode(env("FORUM_SECRET")));
                 $signature = ULSHelper::base64url_encode($signature);
-                $data = file_get_contents(env('SSO_RETURN_FORUMS',
-                        'https://forums.vatusa.net/') . "api.php?register=1&data=$token&signature=$signature");
+                try {
+                    $data = file_get_contents(env('SSO_RETURN_FORUMS',
+                            'https://forums.vatusa.net/') . "api.php?register=1&data=$token&signature=$signature");
+                } catch (\Exception $e) {
+
+                }
 //                if ($data != "OK") {
 //                    $error = "Unable to create forum data. Please try again later or contact VATUSA6.";
 //
