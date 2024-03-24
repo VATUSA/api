@@ -288,11 +288,11 @@ class SSOController extends Controller
                 $signature = ULSHelper::base64url_encode($signature);
                 $data = file_get_contents(env('SSO_RETURN_FORUMS',
                         'https://forums.vatusa.net/') . "api.php?register=1&data=$token&signature=$signature");
-                if ($data != "OK") {
-                    $error = "Unable to create forum data. Please try again later or contact VATUSA6.";
-
-                    return redirect(env("SSO_RETURN_HOME_ERROR"))->with('error', $error);
-                }
+//                if ($data != "OK") {
+//                    $error = "Unable to create forum data. Please try again later or contact VATUSA6.";
+//
+//                    return redirect(env("SSO_RETURN_HOME_ERROR"))->with('error', $error);
+//                }
             }
         }
 
