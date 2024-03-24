@@ -566,7 +566,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         }
 
 
-        if (!$this->flag_needbasic || ExamHelper::academyPassedExam($this->cid, "basic", 0, 6)) {
+        if (!$this->flag_needbasic) {
             $checks['needbasic'] = true;
         }
 
