@@ -338,6 +338,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
                     'msg'         => $msg,
                     'facid'       => $old_facility,
                     'region'      => $region,
+                    'rating'      => Helper::ratingShortFromInt($this->rating),
                     'obsInactive' => $this->rating == 1 && Str::contains($msg,
                             ['inactive', 'inactivity', 'Inactive', 'Inactivity', 'activity', 'Activity'])
                 ]
