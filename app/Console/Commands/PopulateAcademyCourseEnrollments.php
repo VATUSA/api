@@ -9,6 +9,7 @@ use App\AcademyCourseEnrollment;
 use App\User;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 class PopulateAcademyCourseEnrollments extends Command
 {
