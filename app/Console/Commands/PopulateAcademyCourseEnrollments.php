@@ -49,6 +49,16 @@ class PopulateAcademyCourseEnrollments extends Command
     public function handle()
     {
         $academy_courses = AcademyCourse::orderBy("list_order", "ASC")->get();
+        $enrollments = AcademyCourseEnrollment::get();
+        $user_enrollment_map = [];
+
+        foreach ($enrollments as $enrollment) {
+            if (!array_key_exists($enrollment->cid, $user_enrollment_map)) {
+                $user_enrollment_map[$enrollment->cid] = [];
+            }
+            $user_enrollment_map[$enrollment->cid][$enrollment->academy_course_id] = $enrollment;
+        }
+
         foreach (User::where('flag_homecontroller', 1)->where('rating', '>', 0)->get() as $user) {
             echo "Processing CID " . $user->cid . "\n";
             try {
@@ -56,13 +66,11 @@ class PopulateAcademyCourseEnrollments extends Command
             } catch (Exception $e) {
                 $uid = -1;
             }
-            $enrollments = AcademyCourseEnrollment::where('cid', $user->cid)->get();
-            $enrollment_map = [];
-            foreach ($enrollments as $enrollment) {
-                $enrollment_map[$enrollment->academy_course_id] = $enrollment;
+            if (!array_key_exists($enrollment->cid, $user_enrollment_map)) {
+                $user_enrollment_map[$enrollment->cid] = [];
             }
             foreach ($academy_courses as $academy_course) {
-                if (!array_key_exists($academy_course->id, $enrollment_map)) {
+                if (!array_key_exists($academy_course->id, $user_enrollment_map[$user->cid])) {
 
                     $e = new AcademyCourseEnrollment();
                     $e->cid = $user->cid;
@@ -71,7 +79,7 @@ class PopulateAcademyCourseEnrollments extends Command
                     $e->passed_timestamp = null;
                     $e->status = AcademyCourseEnrollment::$STATUS_NOT_ENROLLED;
                     $e->save();
-                    $enrollment_map[$academy_course->id] = $e;
+                    $user_enrollment_map[$user->cid][$academy_course->id] = $e;
                 }
             }
 
