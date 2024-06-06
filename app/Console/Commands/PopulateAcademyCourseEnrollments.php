@@ -48,10 +48,21 @@ class PopulateAcademyCourseEnrollments extends Command
      */
     public function handle()
     {
+        // Needed Enrollments
+        $needed_enrollments = DB::select("SELECT c.cid, ac.id as academy_course_id FROM vatusa.controllers c ".
+            "JOIN vatusa.academy_course ac " .
+            "LEFT JOIN vatusa.academy_course_enrollment ace ON ac.id = ace.academy_course_id AND c.cid = ace.cid ".
+            "WHERE flag_homecontroller = 1 AND c.rating > 0 AND ace.id IS NULL");
+
+        foreach ($needed_enrollments as $ne) {
+            var_dump($ne);
+        }
+        exit;
+
         $academy_courses = AcademyCourse::orderBy("list_order", "ASC")->get();
         $enrollments = AcademyCourseEnrollment::get();
         $user_enrollment_map = [];
-        echo "*** Loading Enrollments ***";
+        echo "*** Loading Enrollments ***\n";
         foreach ($enrollments as $enrollment) {
             if (!array_key_exists($enrollment->cid, $user_enrollment_map)) {
                 $user_enrollment_map[$enrollment->cid] = [];
@@ -59,7 +70,7 @@ class PopulateAcademyCourseEnrollments extends Command
             $user_enrollment_map[$enrollment->cid][$enrollment->academy_course_id] = $enrollment;
         }
 
-        echo "*** Processing Users ***";
+        echo "*** Processing Users ***\n";
         foreach (User::where('flag_homecontroller', 1)->where('rating', '>', 0)->get() as $user) {
             echo "Processing CID " . $user->cid . "\n";
             try {
