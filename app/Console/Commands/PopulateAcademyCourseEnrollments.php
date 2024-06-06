@@ -84,7 +84,7 @@ class PopulateAcademyCourseEnrollments extends Command
                 }
             }
 
-            foreach ($enrollments as $e) {
+            foreach ($user_enrollment_map[$user->cid] as $e) {
                 $hasChange = false;
                 if ($e->status < AcademyCourseEnrollment::$STATUS_ENROLLED) {
                     $assignmentDate = $this->moodle->getUserEnrolmentTimestamp($uid, $academy_course->moodle_enrol_id);
