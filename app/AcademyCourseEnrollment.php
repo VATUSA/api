@@ -11,7 +11,7 @@ class AcademyCourseEnrollment extends Model {
     protected $table = 'academy_course_enrollment';
     public function course()
     {
-        return $this->belongsTo(AcademyCourse::class, 'id', 'academy_course_id');
+        return $this->belongsTo(AcademyCourse::class, 'academy_course_id', 'id');
     }
 
     public function user()
