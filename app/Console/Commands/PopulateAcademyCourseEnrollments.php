@@ -51,7 +51,7 @@ class PopulateAcademyCourseEnrollments extends Command
         $academy_courses = AcademyCourse::orderBy("list_order", "ASC")->get();
         $enrollments = AcademyCourseEnrollment::get();
         $user_enrollment_map = [];
-
+        echo "*** Loading Enrollments ***";
         foreach ($enrollments as $enrollment) {
             if (!array_key_exists($enrollment->cid, $user_enrollment_map)) {
                 $user_enrollment_map[$enrollment->cid] = [];
@@ -59,6 +59,7 @@ class PopulateAcademyCourseEnrollments extends Command
             $user_enrollment_map[$enrollment->cid][$enrollment->academy_course_id] = $enrollment;
         }
 
+        echo "*** Processing Users ***";
         foreach (User::where('flag_homecontroller', 1)->where('rating', '>', 0)->get() as $user) {
             echo "Processing CID " . $user->cid . "\n";
             try {
