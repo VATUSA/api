@@ -4,8 +4,8 @@ namespace App\Console\Commands;
 
 use App\Classes\VATUSAMoodle;
 use App\Facility;
-use App\Models\AcademyCourse;
-use App\Models\AcademyCourseEnrollment;
+use App\AcademyCourse;
+use App\AcademyCourseEnrollment;
 use App\User;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
