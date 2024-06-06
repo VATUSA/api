@@ -50,6 +50,7 @@ class PopulateAcademyCourseEnrollments extends Command
     {
         $academy_courses = AcademyCourse::orderBy("list_order", "ASC")->get();
         foreach (User::where('flag_homecontroller', 1)->where('rating', '>', 0)->get() as $user) {
+            echo "Processing CID " . $user->cid . "\n";
             try {
                 $uid = $this->moodle->getUserId($user->cid);
             } catch (Exception $e) {
