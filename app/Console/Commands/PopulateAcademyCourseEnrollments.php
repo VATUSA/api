@@ -103,6 +103,11 @@ class PopulateAcademyCourseEnrollments extends Command
                     }
                 }
 
+                if ($e->status < AcademyCourseEnrollment::$STATUS_COMPLETED && $user->rating >= $e->course->rating) {
+                    $e->status = AcademyCourseEnrollment::$STATUS_EXEMPT;
+                    $hasChange = true;
+                }
+
                 if ($hasChange) {
                     $e->save();
                 }
