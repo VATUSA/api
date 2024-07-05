@@ -979,7 +979,7 @@ class FacilityController extends APIController
             return response()->api(
                 generate_error("Missing staff CID (by)"), 400);
         } else {
-            if ($request->has('by') && (!User::find($request->by) || User::find($request->by)->facility != $facility->id)) {
+            if ($request->has('by') && (!User::find($request->by) || !RoleHelper::isSeniorStaff($request->by, $facility->id, false))) {
                 return response()->api(
                     generate_error("Invalid staff CID"), 400);
             }
@@ -1201,7 +1201,7 @@ class FacilityController extends APIController
             return response()->api(
                 generate_error("Missing staff CID (by)"), 400);
         } else {
-            if ($request->has('by') && (!User::find($request->by) || User::find($request->by)->facility != $facility->id)) {
+            if ($request->has('by') && (!User::find($request->by) || !RoleHelper::isSeniorStaff($request->by, $facility->id, false))) {
                 return response()->api(
                     generate_error("Invalid staff CID"), 400);
             }
