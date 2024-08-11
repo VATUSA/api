@@ -41,56 +41,40 @@ jobs:
       - name: Push to Docker Hub (Master)
         if: contains(github.ref, 'master')
         run: |
-          docker tag vatusa/api vatusa/api:${{ steps.vars.outputs.sha_short }}
-          docker push vatusa/api:${{ steps.vars.outputs.sha_short }}
+          docker tag vatusa/api vatusa/api:${{ github.sha }}
+          docker push vatusa/api:${{ github.sha }}
           
       - name: Push to Docker Hub (Dev)
         if: contains(github.ref, 'dev')
         run: |
-          docker tag vatusa/api vatusa/api:dev
-          docker push vatusa/api:dev
+          docker tag vatusa/api vatusa/api:dev-${{ github.sha }}
+          docker push vatusa/api:dev-${{ github.sha }}
       
-      - name: Install kubectl
-        uses: azure/setup-kubectl@v1
+  deploy:
+    name: Deploy to ArgoCD
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
         with:
-          version: 'v1.21.2'
-          
-      - name: Create kubeconfig
+          repository: 'VATUSA/gitops'
+          path: gitops
+          token: ${{ secrets.G_TOKEN }}
+      - name: Setup Kustomize
+        uses: imranismail/setup-kustomize@v2
+      - name: Update manifests
         run: |
-          mkdir ~/.kube
-          cat << EOF > ~/.kube/config
-          apiVersion: v1
-          clusters:
-          - cluster:
-              certificate-authority-data: ${{ secrets.KUBECONFIG_CLUSTER_CERT_AUTH_DATA }}
-              server: ${{ secrets.KUBECONFIG_CLUSTER_SERVER }}
-            name: ${{ secrets.KUBECONFIG_CLUSTER_NAME }}
-          contexts:
-          - context:
-              cluster: ${{ secrets.KUBECONFIG_CLUSTER_NAME }}
-              user: ${{ secrets.KUBECONFIG_CLUSTER_NAME }}-admin
-            name: ${{ secrets.KUBECONFIG_CLUSTER_NAME }}
-          current-context: ${{ secrets.KUBECONFIG_CLUSTER_NAME }}
-          kind: Config
-          preferences: {}
-          users:
-          - name: ${{ secrets.KUBECONFIG_CLUSTER_NAME }}-admin
-            user:
-              token: ${{ secrets.KUBECONFIG_CLUSTER_TOKEN }}
-          EOF
-
-      - name: Deploy to Kubernetes Cluster - Update Deployment
-        if: contains(github.ref, 'master')
+          cd $GITHUB_WORKSPACE/gitops/current
+          kustomize edit set image vatusa/api=vatusa/api:${{ github.sha }}
+      - name: Commit and push changes
         run: |
-          kubectl set image deployment/api *=vatusa/api:${{ steps.vars.outputs.sha_short }} -n web
-      
-      - name: Deploy to Kubernetes Cluster - Update Cron Job
-        if: contains(github.ref, 'master')
+          cd $GITHUB_WORKSPACE/gitops
+          git config --global user.email "vatusa6@vatusa.net"
+          git config --global user.name "VATUSA6"
+          git add .
+          git commit -m "Update API image tag to ${{ github.sha }}"
+      - name: Push to gitops repo
         run: |
-          kubectl set image cronjob/api-cron *=vatusa/api:${{ steps.vars.outputs.sha_short }} -n web
-          
-          
-      - name: Deploy to Kubernetes Cluster - Update Queue Worker
-        if: contains(github.ref, 'master')
-        run: |
-          kubectl set image deployment/api-queue *=vatusa/api:${{ steps.vars.outputs.sha_short }} -n web
+          cd $GITHUB_WORKSPACE/gitops
+          git push origin main
