@@ -566,6 +566,9 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             $checks['homecontroller'] = false;
         }
 
+        if ($this->facility == "ZZI"){
+            $checks['homecontroller'] = false;
+        }
 
         if (!$this->flag_needbasic) {
             $checks['needbasic'] = true;
