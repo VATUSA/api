@@ -30,7 +30,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('stats:monthly')->monthlyOn(1, '00:00');
-        $schedule->command('moodle:sync')->hourly();
+        $schedule->command('moodle:sync')->everyThreeHours($minutes = 0);
         $schedule->command('vatsim:flights')->everyMinute();
         $schedule->command('moodle:sendexamemails')->everyFiveMinutes();
     }
