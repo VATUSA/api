@@ -96,7 +96,6 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         "access_token",
         "refresh_token",
         "token_expires",
-        "discord_id",
         "prefname",
         "prefname_date"
     ];
