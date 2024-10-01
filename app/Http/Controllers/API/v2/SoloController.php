@@ -130,7 +130,7 @@ class SoloController extends APIController
         }
 
         $position = strtoupper($request->input("position"));
-        if (!preg_match("/^([A-Z0-9]{2,3})_(TWR|APP|CTR)$/", $position)) {
+        if (!preg_match("/^([A-Z0-9]{2,3})_(TWR|APP|DEP|CTR)$/", $position)) {
             return response()->api(generate_error("Malformed position."), 400);
         }
 
