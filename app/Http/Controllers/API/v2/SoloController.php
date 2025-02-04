@@ -60,7 +60,7 @@ class SoloController extends APIController
      *     path="/solo",
      *     summary="Submit new solo certification. [Key]",
      *     description="Submit new solo certification. Requires API Key, JWT, or Session Cookie (required roles:
-    [N/A for API Key] ATM, DATM, TA, INS)",  tags={"solo"},
+    [N/A for API Key] ATM, DATM, TA, INS, MTR)",  tags={"solo"},
      *     security={"apikey","jwt","session"},
      * @OA\RequestBody(
      * @OA\MediaType(
@@ -114,19 +114,20 @@ class SoloController extends APIController
             return response()->api(generate_error("Unauthorized"), 401);
         }
 
-        if (\Auth::check() && !(RoleHelper::isFacilityStaff() ||
-                RoleHelper::isVATUSAStaff() ||
-                RoleHelper::isInstructor())) {
-            return response()->api(generate_error("Forbidden"), 403);
-        }
-
         if (!$request->has("cid") || !$request->has("position") || !$request->has("expDate")) {
             return response()->api(generate_error("Malformed request."), 400);
         }
 
         $cid = $request->input("cid");
-        if (!User::where("cid", $cid)->count()) {
+        $user = User::find($cid);
+        if (!$user) {
             return response()->api(generate_error("Invalid controller."), 400);
+        }
+
+        if (\Auth::check() && !(RoleHelper::isSeniorStaff(Auth::user()->cid,$user->facility,true) ||
+                RoleHelper::isVATUSAStaff() ||
+                RoleHelper::isTrainingStaff(Auth::user()->cid,true,$user->facility))) {
+            return response()->api(generate_error("Forbidden"), 403);
         }
 
         $position = strtoupper($request->input("position"));
@@ -142,8 +143,8 @@ class SoloController extends APIController
                 400);
         }
 
-        if ($cExp->diffInDays() > 30) {
-            return response()->api(generate_error("Invalid expiration date, must be in at most 30 days."), 400);
+        if ($cExp->diffInDays() > 45) {
+            return response()->api(generate_error("Invalid expiration date, must be in at most 45 days."), 400);
         }
 
         if ($cExp->isPast()) {
@@ -171,7 +172,7 @@ class SoloController extends APIController
      *     summary="Delete solo certification. [Key]",
      *     description="Delete solo certification. Pass the DB ID OR both CID and Position. Requires API Key, JWT, or
      *     Session cookie (required roles: [N/A
-    for API Key] ATM, DATM, TA, INS).",
+    for API Key] ATM, DATM, TA, INS, MTR).",
      *      tags={"solo"},
      *     security={"apikey","jwt","session"},
      * @OA\RequestBody(
@@ -219,16 +220,18 @@ class SoloController extends APIController
             return response()->api(generate_error("Unauthorized"), 401);
         }
 
-        if (\Auth::check() && (!RoleHelper::isFacilityStaff() &&
-                !RoleHelper::isVATUSAStaff() &&
-                !RoleHelper::isInstructor())) {
-            return response()->api(generate_error("Forbidden"), 403);
-        }
-
         if (!isTest()) {
             if ($request->input("id", null)) {
                 try {
                     $cert = SoloCert::findOrFail($request->input("id", null));
+
+                    $user = User::find($cert->cid);
+                    if (\Auth::check() && !(RoleHelper::isSeniorStaff(Auth::user()->cid,$user->facility,true) ||
+                            RoleHelper::isVATUSAStaff() ||
+                            RoleHelper::isTrainingStaff(Auth::user()->cid,true,$user->facility))) {
+                        return response()->api(generate_error("Forbidden"), 403);
+                    }
+
                     $log = new Action();
                     $log->to = $cert->cid;
                     $log->log = "Solo Cert revoked for " . $cert->position . " by " . ((Auth::user()) ? Auth::user()->fullname() : "API");
@@ -243,6 +246,13 @@ class SoloController extends APIController
                 if (!$cert) {
                     return response()->api(generate_error("Certification not found"), 404);
                 } else {
+                    $user = User::find($cert->cid);
+                    if (\Auth::check() && !(RoleHelper::isSeniorStaff(Auth::user()->cid,$user->facility,true) ||
+                            RoleHelper::isVATUSAStaff() ||
+                            RoleHelper::isTrainingStaff(Auth::user()->cid,true,$user->facility))) {
+                        return response()->api(generate_error("Forbidden"), 403);
+                    }
+
                     $log = new Action();
                     $log->to = $cert->cid;
                     $log->log = "Solo Cert revoked for " . $cert->position . " by " . ((Auth::user()) ? Auth::user()->fullname() : "API");
