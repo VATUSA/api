@@ -615,7 +615,7 @@ class TrainingController extends Controller
                 ['position', 'like', '%' . explode('_', $position)[1]],
                 'student_id' => $studentId
             ])->exists()) {
-            return response()->api(generate_error("The controller has an existing, passing OTS exam record for that position type."),
+            return response()->api(generate_error("The controller has an existing, passing Rating exam record for that position type."),
                 400);
         }
 
@@ -894,7 +894,7 @@ class TrainingController extends Controller
         }
 
         if (in_array($record->ots_status, [1, 2]) && !RoleHelper::isVATUSAStaff()) {
-            return response()->api(generate_error("Unable to edit record because it is an OTS exam. Please contact VATUSA3 or 13 for assistance."),
+            return response()->api(generate_error("Unable to edit record because it is a Rating exam. Please contact VATUSA3 or 13 for assistance."),
                 500);
         }
 
@@ -1055,7 +1055,7 @@ class TrainingController extends Controller
 
         if ($this->canModify($request, $record)) {
             if (in_array($record->ots_status, [1, 2]) && !RoleHelper::isVATUSAStaff()) {
-                return response()->api(generate_error("Unable to delete record because it is an OTS exam. Please contact VATUSA3 or 13 for assistance."),
+                return response()->api(generate_error("Unable to delete record because it is a Rating exam. Please contact VATUSA3 or 13 for assistance."),
                     500);
             }
             try {

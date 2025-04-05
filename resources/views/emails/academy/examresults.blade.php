@@ -19,7 +19,7 @@
                 href="https://www.vatusa.net/help/ticket/new">open a support ticket</a>.
         @endif
     @else
-        Congratulations! You have passed your exam. You will not receive a promotion to the new rating until you have passed an OTS (Over-the-shoulder practical exam) conducted by your ARTCC's training staff.
+        Congratulations! You have passed your exam. You will not receive a promotion to the new rating until you have passed a practical rating exam conducted by your ARTCC's training staff.
     @endif
     <br><br>
     <table class="button success float-center" align="center"
