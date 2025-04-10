@@ -746,7 +746,7 @@ class TrainingController extends Controller
             return response()->api(generate_error("The user is ineligible for this evaluation."), 400);
         }
 
-        if (!$position || !preg_match('/^([A-Z]{2,3})(_([A-Z]{1,3}))?_(TWR|APP|CTR)$/', $position)) {
+        if (!$position || !preg_match('/^([A-Z]{2,3})(_([A-Z]{1,3}))?_(DEL|GND|TWR|DEP|APP|CTR)$/', $position)) {
             return response()->api(generate_error("Invalid position."), 400);
         }
         try {
