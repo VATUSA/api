@@ -725,9 +725,6 @@ class TrainingController extends Controller
         Request $request,
         User $user
     ) {
-        if (!Auth::user() || !RoleHelper::isInstructor(Auth::user()->cid, $user->facility)) {
-            return response()->forbidden();
-        }
 
         $form = $request->input('form', null);
         $position = $request->input('position', null);
@@ -740,6 +737,10 @@ class TrainingController extends Controller
         $form = OTSEvalForm::find($form);
         if (!$form) {
             return response()->api(generate_error("Invalid evaluation form."), 400);
+        }
+
+        if (!Auth::user() || !(RoleHelper::isInstructor(Auth::user()->cid, $user->facility) || (RoleHelper::isMentor(Auth::user()->cid, $user->facility) && Auth::user()->rating>=4 && $form->rating_id==2))) {
+            return response()->forbidden();
         }
 
         if ($form->rating_id !== $user->rating + 1 || !$user->promotionEligible()) {

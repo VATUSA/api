@@ -875,9 +875,5 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         ])->exists()) {
             $trainingRecordStatus = 1;
         }
-
-        if ($pos == "GND") {
-            $trainingRecordStatus = $otsEvalStatus = -1;
-        }
     }
 }

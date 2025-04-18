@@ -576,18 +576,18 @@ class UserController extends APIController
             }
 
             Promotion::process($cid, \Auth::user()->cid, $rating);
-            // remove MTR/INS on promote to I1/I3
+            // remove MTR on promote to I1/I3
             $role = new Role();
-            $mtr_ins_query = $role->where("cid", $cid)
+            $mtr_query = $role->where("cid", $cid)
                 ->where(function ($query) {
-                    $query->where("role", "MTR")->orWhere("role", "INS");
+                    $query->where("role", "MTR");
                 });
 
             $changeRatingReturn = VATSIMApi2Helper::updateRating($cid, $rating);
-            if ($mtr_ins_query->count()) {
+            if ($mtr_query->count()) {
                 try {
-                    $mtr_ins_query->delete();
-                    log_action($this->cid, "MTR/INS role removed on promotion to I1/I3");
+                    $mtr_query->delete();
+                    log_action($this->cid, "MTR role removed on promotion to I1/I3");
                 } catch (\Exception $e) {
                     return response()->api(["status" => "Internal server error"], 500);
                 }
@@ -605,7 +605,8 @@ class UserController extends APIController
         // OBS-C1 changes
         if (!RoleHelper::isVATUSAStaff() &&
             !RoleHelper::has(Auth::user()->cid, Auth::user()->facility, ["ATM", "DATM", "TA"]) &&
-            !RoleHelper::isInstructor(Auth::user()->cid, $user->facility)) {
+            !RoleHelper::isInstructor(Auth::user()->cid, $user->facility) &&
+            !(RoleHelper::isMentor(Auth::user()->cid, $user->facility) && Auth::user()->rating>=4 && $rating==2)) {
 
             return response()->api(generate_error("Forbidden"), 403);
         }
