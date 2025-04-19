@@ -638,6 +638,7 @@ class UserController extends APIController
         if ($changeRatingReturn) {
             $user->rating = $rating;
             $user->save();
+            $user->promotionEligible(); // reset cache after promotion
             return response()->ok();
         } else {
             return response()->api(["status" => "Internal server error"], 500);
