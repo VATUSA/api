@@ -48,6 +48,7 @@ class Kernel extends ConsoleKernel
         $schedule->command($commandName)
             ->monthlyOn(1, '00:00')
             ->onOneServer()
+            ->runInBackground()
             ->before($createBeforeHook($commandName))
             ->after($createAfterHook($commandName));
 
@@ -55,6 +56,7 @@ class Kernel extends ConsoleKernel
         $schedule->command($commandName)
             ->everyThreeHours($minutes = 0)
             ->onOneServer()
+            ->runInBackground()
             ->before($createBeforeHook($commandName))
             ->after($createAfterHook($commandName));
 
@@ -62,6 +64,7 @@ class Kernel extends ConsoleKernel
         $schedule->command($commandName)
             ->everyMinute()
             ->onOneServer()
+            ->runInBackground()
             ->before($createBeforeHook($commandName))
             ->after($createAfterHook($commandName));
 
@@ -69,6 +72,7 @@ class Kernel extends ConsoleKernel
         $schedule->command($commandName)
             ->everyFiveMinutes()
             ->onOneServer()
+            ->runInBackground()
             ->before($createBeforeHook($commandName))
             ->after($createAfterHook($commandName));
     }
