@@ -61,12 +61,14 @@ class Kernel extends ConsoleKernel
         $commandName = 'vatsim:flights';
         $schedule->command($commandName)
             ->everyMinute()
+            ->onOneServer()
             ->before($createBeforeHook($commandName))
             ->after($createAfterHook($commandName));
 
         $commandName = 'moodle:sendexamemails';
         $schedule->command($commandName)
             ->everyFiveMinutes()
+            ->onOneServer()
             ->before($createBeforeHook($commandName))
             ->after($createAfterHook($commandName));
     }
