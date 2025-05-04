@@ -29,10 +29,46 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('stats:monthly')->monthlyOn(1, '00:00');
-        $schedule->command('moodle:sync')->everyThreeHours($minutes = 0);
-        $schedule->command('vatsim:flights')->everyMinute();
-        $schedule->command('moodle:sendexamemails')->everyFiveMinutes();
+        // Helper function to create a 'before' hook closure with the command name
+        $createBeforeHook = function (string $commandName) {
+            return function () use ($commandName) {
+                // Use logger() or Log::info() etc.
+                logger("Starting scheduled task: {$commandName}");
+            };
+        };
+
+        // Helper function to create an 'after' hook closure with the command name
+        $createAfterHook = function (string $commandName) {
+            return function () use ($commandName) {
+                logger("Finished scheduled task: {$commandName}");
+            };
+        };
+
+        $commandName = 'stats:monthly';
+        $schedule->command($commandName)
+            ->monthlyOn(1, '00:00')
+            ->onOneServer()
+            ->before($createBeforeHook($commandName))
+            ->after($createAfterHook($commandName));
+
+        $commandName = 'moodle:sync';
+        $schedule->command($commandName)
+            ->everyThreeHours($minutes = 0)
+            ->onOneServer()
+            ->before($createBeforeHook($commandName))
+            ->after($createAfterHook($commandName));
+
+        $commandName = 'vatsim:flights';
+        $schedule->command($commandName)
+            ->everyMinute()
+            ->before($createBeforeHook($commandName))
+            ->after($createAfterHook($commandName));
+
+        $commandName = 'moodle:sendexamemails';
+        $schedule->command($commandName)
+            ->everyFiveMinutes()
+            ->before($createBeforeHook($commandName))
+            ->after($createAfterHook($commandName));
     }
 
     /**
