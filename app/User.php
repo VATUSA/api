@@ -654,9 +654,9 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             $checks['50hrs'] = false;
             $checks['ratingHours'] = $ratingHours['s3'];
         }
-        if($this->rating == Helper::ratingIntFromShort("C1") && $ratingHours['c1'] < 50){
+        if($this->rating == Helper::ratingIntFromShort("C1") && ($ratingHours['c1']+$ratingHours['c3']+$ratingHours['i1']+$ratingHours['i3']) < 50){
             $checks['50hrs'] = false;
-            $checks['ratingHours'] = $ratingHours['c1'];
+            $checks['ratingHours'] = $ratingHours['c1']+$ratingHours['c3']+$ratingHours['i1']+$ratingHours['i3'];
         }
 
         if (!in_array($this->facility, ["ZAE", "ZZI"])) {
