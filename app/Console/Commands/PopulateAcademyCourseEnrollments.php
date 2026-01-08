@@ -50,88 +50,66 @@ class PopulateAcademyCourseEnrollments extends Command
     public function handle()
     {
         // Needed Enrollments
-        $needed_enrollments = DB::select("SELECT c.cid, ac.id as academy_course_id FROM vatusa.controllers c ".
-            "JOIN vatusa.academy_course ac " .
-            "LEFT JOIN vatusa.academy_course_enrollment ace ON ac.id = ace.academy_course_id AND c.cid = ace.cid ".
+        $needed_enrollments = DB::select("SELECT c.cid, ac.id as academy_course_id FROM controllers c ".
+            "JOIN academy_course ac " .
+            "LEFT JOIN academy_course_enrollment ace ON ac.id = ace.academy_course_id AND c.cid = ace.cid ".
             "WHERE flag_homecontroller = 1 AND c.rating > 0 AND ace.id IS NULL");
 
         foreach ($needed_enrollments as $ne) {
-            var_dump($ne);
-        }
-        exit;
-
-        $academy_courses = AcademyCourse::orderBy("list_order", "ASC")->get();
-        $enrollments = AcademyCourseEnrollment::get();
-        $user_enrollment_map = [];
-        echo "*** Loading Enrollments ***\n";
-        foreach ($enrollments as $enrollment) {
-            if (!array_key_exists($enrollment->cid, $user_enrollment_map)) {
-                $user_enrollment_map[$enrollment->cid] = [];
-            }
-            $user_enrollment_map[$enrollment->cid][$enrollment->academy_course_id] = $enrollment;
+            echo "Creating Enrollment for CID " . $ne->cid . " Course " . $ne->academy_course_id . "\n";
+            $e = new AcademyCourseEnrollment();
+            $e->cid = $ne->cid;
+            $e->academy_course_id = $ne->academy_course_id;
+            $e->assignment_timestamp = null;
+            $e->passed_timestamp = null;
+            $e->status = AcademyCourseEnrollment::$STATUS_NOT_ENROLLED;
+            $e->save();
         }
 
-        echo "*** Processing Users ***\n";
-        foreach (User::where('flag_homecontroller', 1)->where('rating', '>', 0)->get() as $user) {
-            echo "Processing CID " . $user->cid . "\n";
+        $enrollments = AcademyCourseEnrollment::where('status', '<', AcademyCourseEnrollment::$STATUS_COMPLETED)->get();
+
+        foreach ($enrollments as $e) {
+            $hasChange = false;
+
             try {
-                $uid = $this->moodle->getUserId($user->cid);
+                $uid = $this->moodle->getUserId($e->cid);
             } catch (Exception $e) {
                 $uid = -1;
             }
-            if (!array_key_exists($enrollment->cid, $user_enrollment_map)) {
-                $user_enrollment_map[$enrollment->cid] = [];
-            }
-            foreach ($academy_courses as $academy_course) {
-                if (!array_key_exists($academy_course->id, $user_enrollment_map[$user->cid])) {
 
-                    $e = new AcademyCourseEnrollment();
-                    $e->cid = $user->cid;
-                    $e->academy_course_id = $academy_course->id;
-                    $e->assignment_timestamp = null;
-                    $e->passed_timestamp = null;
-                    $e->status = AcademyCourseEnrollment::$STATUS_NOT_ENROLLED;
-                    $e->save();
-                    $user_enrollment_map[$user->cid][$academy_course->id] = $e;
+            if ($e->status < AcademyCourseEnrollment::$STATUS_ENROLLED) {
+                $assignmentDate = $this->moodle->getUserEnrolmentTimestamp($uid, $e->course->moodle_enrol_id);
+                $assignmentTimestamp = $assignmentDate ?
+                    Carbon::createFromTimestampUTC($assignmentDate)->format('Y-m-d H:i') : null;
+
+                if ($assignmentTimestamp) {
+                    $e->assignment_timestamp = $assignmentTimestamp;
+                    $e->status = AcademyCourseEnrollment::$STATUS_ENROLLED;
+                    $hasChange = true;
                 }
             }
 
-            foreach ($user_enrollment_map[$user->cid] as $e) {
-                $hasChange = false;
-                if ($e->status < AcademyCourseEnrollment::$STATUS_ENROLLED) {
-                    $assignmentDate = $this->moodle->getUserEnrolmentTimestamp($uid, $academy_course->moodle_enrol_id);
-                    $assignmentTimestamp = $assignmentDate ?
-                        Carbon::createFromTimestampUTC($assignmentDate)->format('Y-m-d H:i') : null;
-
-                    if ($assignmentTimestamp) {
-                        $e->assignment_timestamp = $assignmentTimestamp;
-                        $e->status = AcademyCourseEnrollment::$STATUS_ENROLLED;
+            if ($e->status == AcademyCourseEnrollment::$STATUS_ENROLLED) {
+                $attempts = $this->moodle->getQuizAttempts($e->course->moodle_quiz_id, null, $uid);
+                foreach($attempts as $attempt) {
+                    if (round($attempt['grade']) > $e->course->passing_percent) {
+                        // Passed
+                        $finishTimestamp =
+                            Carbon::createFromTimestampUTC($attempt['timefinish'])->format('Y-m-d H:i');
+                        $e->passed_timestamp = $finishTimestamp;
+                        $e->status = AcademyCourseEnrollment::$STATUS_COMPLETED;
                         $hasChange = true;
                     }
                 }
+            }
 
-                if ($e->status == AcademyCourseEnrollment::$STATUS_ENROLLED) {
-                    $attempts = $this->moodle->getQuizAttempts($e->course->moodle_quiz_id, null, $uid);
-                    foreach($attempts as $attempt) {
-                        if (round($attempt['grade']) > $e->course->passing_percent) {
-                            // Passed
-                            $finishTimestamp =
-                                Carbon::createFromTimestampUTC($attempt['timefinish'])->format('Y-m-d H:i');
-                            $e->passed_timestamp = $finishTimestamp;
-                            $e->status = AcademyCourseEnrollment::$STATUS_COMPLETED;
-                            $hasChange = true;
-                        }
-                    }
-                }
+            if ($e->status < AcademyCourseEnrollment::$STATUS_COMPLETED && $e->user->rating >= $e->course->rating) {
+                $e->status = AcademyCourseEnrollment::$STATUS_EXEMPT;
+                $hasChange = true;
+            }
 
-                if ($e->status < AcademyCourseEnrollment::$STATUS_COMPLETED && $user->rating >= $e->course->rating) {
-                    $e->status = AcademyCourseEnrollment::$STATUS_EXEMPT;
-                    $hasChange = true;
-                }
-
-                if ($hasChange) {
-                    $e->save();
-                }
+            if ($hasChange) {
+                $e->save();
             }
         }
     }
