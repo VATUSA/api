@@ -96,7 +96,7 @@ class PopulateAcademyCourseEnrollments extends Command
                         $e->assignment_timestamp = $assignmentTimestamp;
                         $e->status = AcademyCourseEnrollment::$STATUS_ENROLLED;
                         $hasChange = true;
-                        echo "Detected enrollment for {$e->cid} for {$e->course->name}\n";
+                        echo "===Detected enrollment for {$e->cid} for {$e->course->name}\n";
                     }
                 }
 
@@ -107,10 +107,13 @@ class PopulateAcademyCourseEnrollments extends Command
                             // Passed
                             $finishTimestamp =
                                 Carbon::createFromTimestampUTC($attempt['timefinish'])->format('Y-m-d H:i');
-                            $e->passed_timestamp = $finishTimestamp;
-                            $e->status = AcademyCourseEnrollment::$STATUS_COMPLETED;
-                            $hasChange = true;
-                            echo "Detected pass for $e->cid for {$e->course->name}\n";
+                            $finishDaysAgo = Carbon::now()->diffInDays($finishTimestamp);
+                            if ($finishDaysAgo < 180) {
+                                $e->passed_timestamp = $finishTimestamp;
+                                $e->status = AcademyCourseEnrollment::$STATUS_COMPLETED;
+                                $hasChange = true;
+                                echo "===Detected pass for $e->cid for {$e->course->name}\n";
+                            }
                         }
                     }
                 }
@@ -118,7 +121,7 @@ class PopulateAcademyCourseEnrollments extends Command
                 if ($e->status < AcademyCourseEnrollment::$STATUS_COMPLETED && $e->user->rating >= $e->course->rating) {
                     $e->status = AcademyCourseEnrollment::$STATUS_EXEMPT;
                     $hasChange = true;
-                    echo "Detected exempt for $e->cid for {$e->course->name}\n";
+                    echo "===Detected exempt for $e->cid for {$e->course->name}\n";
                 }
 
                 if ($hasChange) {
