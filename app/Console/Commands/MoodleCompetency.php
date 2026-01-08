@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\AcademyCompetency;
+use App\AcademyCourse;
 use App\Classes\VATUSAMoodle;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -27,6 +28,8 @@ class MoodleCompetency extends Command
     /** @var \App\Classes\VATUSAMoodle instance */
     private $moodle;
 
+    private $courses;
+
     /**
      * Create a new command instance.
      *
@@ -38,40 +41,28 @@ class MoodleCompetency extends Command
         $this->moodle = $moodle;
     }
 
-    /**
-     * Execute the console command.
-     *
-     * @return mixed
-     * @throws \Exception
-     */
-    public function handle()
+    public function checkControllerCompetency($cid, $rating, $controller_existing_competencies): void
     {
-        // Missing Competencies
-        $missing_competencies = DB::select("SELECT c.cid, ac.id as academy_course_id, ac.rating, ac.moodle_enrol_id, ac.moodle_quiz_id, ac.passing_percent
-                                                    FROM controllers c
-                                                             JOIN academy_course ac ON c.rating = ac.rating OR c.rating = ac.rating - 1
-                                                             LEFT JOIN academy_competency comp ON ac.id = comp.academy_course_id AND c.cid = comp.cid
-                                                    WHERE flag_homecontroller = 1
-                                                      AND c.rating > 0
-                                                      AND c.rating < 5
-                                                      AND (c.rating > 1 OR c.facility != 'ZAE')
-                                                      AND c.lastactivity > NOW() - INTERVAL 180 DAY
-                                                      AND (comp.id IS NULL OR comp.expiration_timestamp < NOW())");
-        $total = count($missing_competencies);
-        echo "{$total} competencies to process\n";
-        $i = 0;
-        foreach ($missing_competencies as $mc) {
-            try {
-                $uid = $this->moodle->getUserId($mc->cid);
-            } catch (Exception) {
-                echo "Can't get moodle user id for CID {$mc->cid}\n";
-                continue;
-            }
-            $i++;
-            echo "[{$i}/{$total}] Checking for missing competency - CID: {$mc->cid} - Rating: {$mc->rating} - Quiz Id: {$mc->moodle_quiz_id}\n";
-            $attempts = $this->moodle->getQuizAttempts($mc->moodle_quiz_id, null, $uid);
+        if ($rating < 2) {
+            return;
+        }
+        if ($rating > 5) {
+            $rating = 5;
+        }
+        if (in_array($rating, $controller_existing_competencies)) {
+            return;
+        }
+        try {
+            $uid = $this->moodle->getUserId($cid);
+        } catch (Exception) {
+            echo "Can't get moodle user id for CID {$cid}\n";
+            return;
+        }
+        foreach ($this->courses[$rating] as $course) {
+            echo "Querying Moodle - CID: {$cid} - Rating: {$rating} - Quiz Id: {$course->moodle_quiz_id}\n";
+            $attempts = $this->moodle->getQuizAttempts($course->moodle_quiz_id, null, $uid);
             foreach ($attempts as $attempt) {
-                if (round($attempt['grade']) > $mc->passing_percent) {
+                if (round($attempt['grade']) > $course->passing_percent) {
                     // Passed
                     $finishCarbon = Carbon::createFromTimestampUTC($attempt['timefinish']);
                     $finishTimestamp = $finishCarbon->format('Y-m-d H:i');
@@ -80,14 +71,63 @@ class MoodleCompetency extends Command
                     $finishDaysAgo = Carbon::now()->diffInDays($finishCarbon);
                     if ($finishDaysAgo < 180) {
                         $c = new AcademyCompetency();
-                        $c->cid = $mc->cid;
-                        $c->academy_course_id = $mc->academy_course_id;
+                        $c->cid = $cid;
+                        $c->academy_course_id = $course->id;
                         $c->completion_timestamp = $finishTimestamp;
                         $c->expiration_timestamp = $expireTimestamp;
                         $c->save();
-                        echo "===Detected valid quiz pass - CID: {$mc->cid} - Rating: {$mc->rating} - Quiz Id: {$mc->moodle_quiz_id}\n";
+                        echo "===Detected valid quiz pass - CID: {$cid} - Rating: {$rating} - Quiz Id: {$course->moodle_quiz_id}\n";
+                        return;
                     }
                 }
+            }
+        }
+
+    }
+
+    /**
+     * Execute the console command.
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    public function handle()
+    {
+        $all_courses = AcademyCourse::get();
+        $this->courses = [];
+        foreach ($all_courses as $course) {
+            $this->courses[$course->rating][] = $course;
+        }
+
+        $all_existing_competencies = DB::select("SELECT c.cid, ac.rating
+                                                        FROM academy_competency c
+                                                                 JOIN academy_course ac ON c.academy_course_id = ac.id
+                                                        WHERE c.expiration_timestamp < NOW()");
+        $existing_competencies = [];
+        foreach ($all_existing_competencies as $competency) {
+            $existing_competencies[$competency->cid][] = $competency->rating;
+        }
+
+        $controllers_to_check = DB::select("SELECT c.cid, c.rating, c.facility
+                                                    FROM controllers c
+                                                    WHERE (
+                                                        (
+                                                            flag_homecontroller = 1 AND (c.rating > 1 OR c.facility != 'ZAE')
+                                                        ) OR
+                                                           (c.facility = 'ZZN' AND c.rating >= 4)
+                                                        )
+                                                    
+                                                      AND c.rating > 0
+                                                      AND c.lastactivity > NOW() - INTERVAL 30 DAY");
+        $total = count($controllers_to_check);
+        $i=0;
+        foreach ($controllers_to_check as $controller) {
+            $i++;
+            echo "[{$i}/{$total}] Processing Controller {$controller->cid} - {$controller->rating}\n";
+            $controller_existing_competencies = (array_key_exists($controller->cid, $existing_competencies)) ? $existing_competencies[$controller->cid] : [];
+            $this->checkControllerCompetency($controller->cid, $controller->rating, $controller_existing_competencies);
+            if ($controller->rating < 5 && $controller->facility != 'ZZN' && $controller->facility != 'ZAE') {
+                $this->checkControllerCompetency($controller->cid, $controller->rating + 1, $controller_existing_competencies);
             }
         }
     }
