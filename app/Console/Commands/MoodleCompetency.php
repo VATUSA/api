@@ -55,6 +55,7 @@ class MoodleCompetency extends Command
                                                       AND c.rating > 0
                                                       AND c.rating < 5
                                                       AND (c.rating > 1 OR c.facility != 'ZAE')
+                                                      AND c.lastactivity > NOW() - INTERVAL 180 DAY
                                                       AND (comp.id IS NULL OR comp.expiration_timestamp < NOW())");
         $total = count($missing_competencies);
         echo "{$total} competencies to process";
