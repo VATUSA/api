@@ -17,7 +17,7 @@ class Kernel extends ConsoleKernel
         'App\Console\Commands\StatsMonthly',
         'App\Console\Commands\VATSIMFlights',
         'App\Console\Commands\SendAcademyRatingExamEmails',
-        'App\Console\Commands\PopulateAcademyCourseEnrollments',
+        'App\Console\Commands\MoodleCompetency',
     ];
 
     /**
