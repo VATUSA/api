@@ -751,11 +751,10 @@ class User extends Model implements AuthenticatableContract, JWTSubject
 
     public function getPromotionEligibleAttribute()
     {
-        $competencies = AcademyCompetency::where('cid', $this->cid)
-            ->where('expiration_timestamp', '>', 'NOW()')
-            ->get();
+        $competencies = AcademyCompetency::where('cid', $this->cid)->get();
         foreach ($competencies as $competency) {
-            if ($competency->course->rating == $this->rating + 1) {
+            $expireCarbon = Carbon::createFromFormat("Y-m-d H:i:s", $competency->expiration_timestamp);
+            if (Carbon::now()->isBefore($expireCarbon) && $competency->course->rating == $this->rating + 1) {
                 return true;
             }
         }
