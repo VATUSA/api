@@ -68,15 +68,17 @@ class MoodleCompetency extends Command
             foreach ($attempts as $attempt) {
                 if (round($attempt['grade']) > $mc->passing_percent) {
                     // Passed
-                    $finishTimestamp =
-                        Carbon::createFromTimestampUTC($attempt['timefinish'])->format('Y-m-d H:i');
-                    $finishDaysAgo = Carbon::now()->diffInDays($finishTimestamp);
+                    $finishCarbon = Carbon::createFromTimestampUTC($attempt['timefinish']);
+                    $finishTimestamp = $finishCarbon->format('Y-m-d H:i');
+                    $expireCarbon = $finishCarbon->addDays(180);
+                    $expireTimestamp = $expireCarbon->format('Y-m-d H:i');
+                    $finishDaysAgo = Carbon::now()->diffInDays($finishCarbon);
                     if ($finishDaysAgo < 180) {
                         $c = new AcademyCompetency();
                         $c->cid = $mc->cid;
                         $c->academy_course_id = $mc->academy_course_id;
                         $c->completion_timestamp = $finishTimestamp;
-                        $c->expiration_timestamp = $finishTimestamp->addDays(180);
+                        $c->expiration_timestamp = $expireTimestamp;
                         $c->save();
                         echo "===Detected valid quiz pass - CID: {$mc->cid} - Rating: {$mc->rating} - Quiz Id: {$mc->moodle_quiz_id}\n";
                     }
