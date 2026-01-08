@@ -79,6 +79,8 @@ class PopulateAcademyCourseEnrollments extends Command
                 $last_id = $e->id;
                 $hasChange = false;
 
+                echo "Checking enrollment for {$e->cid} for {$e->course->name}\n";
+
                 try {
                     $uid = $this->moodle->getUserId($e->cid);
                 } catch (Exception $e) {
