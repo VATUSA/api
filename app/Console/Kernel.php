@@ -75,6 +75,14 @@ class Kernel extends ConsoleKernel
             ->runInBackground()
             ->before($createBeforeHook($commandName))
             ->after($createAfterHook($commandName));
+
+        $commandName = "moodle:competency";
+        $schedule->command($commandName)
+            ->hourly()
+            ->onOneServer()
+            ->runInBackground()
+            ->before($createBeforeHook($commandName))
+            ->after($createAfterHook($commandName));
     }
 
     /**
