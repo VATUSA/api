@@ -102,7 +102,6 @@ class SendAcademyRatingExamEmails extends Command
 
                 if ($passed) {
                     $assignment->delete();
-                    $assignment->student->promotionEligible();
                 } else {
                     $attemptEmailsSent[] = $attemptNum;
                     $assignment->attempt_emails_sent = implode(',', $attemptEmailsSent);
@@ -173,8 +172,6 @@ class SendAcademyRatingExamEmails extends Command
                 $record->attempt_id = $attempt->id;
                 $record->student_id = $student->cid;
                 $record->save();
-
-                $student->promotionEligible();
             }
         }
         AcademyBasicExamEmail::where('created_at', '<', $weekInterval->subDays(2))->delete();

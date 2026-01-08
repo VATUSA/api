@@ -623,7 +623,7 @@ class UserController extends APIController
         }
 
         $user->checkPromotionCriteria($trainingRecordStatus, $otsEvalStatus, $examPosition, $dateOfExam, $evalId);
-        if (!$user->promotionEligible()/* || !(abs($trainingRecordStatus) == 1 && abs($otsEvalStatus) == 1)*/) {
+        if (!$user->promotion_eligible/* || !(abs($trainingRecordStatus) == 1 && abs($otsEvalStatus) == 1)*/) {
             return response()->api(generate_error("Precondition failed"), 412);
         }
 
@@ -638,7 +638,6 @@ class UserController extends APIController
         if ($changeRatingReturn) {
             $user->rating = $rating;
             $user->save();
-            $user->promotionEligible(); // reset cache after promotion
             return response()->ok();
         } else {
             return response()->api(["status" => "Internal server error"], 500);

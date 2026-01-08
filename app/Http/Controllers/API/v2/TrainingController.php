@@ -673,7 +673,6 @@ class TrainingController extends Controller
                         $otsEval->save();
                         $record->save();
                     }
-                    $user->promotionEligible();
                 }
             }
         } catch (Exception $e) {
@@ -743,7 +742,7 @@ class TrainingController extends Controller
             return response()->forbidden();
         }
 
-        if ($form->rating_id !== $user->rating + 1 || !$user->promotionEligible()) {
+        if ($form->rating_id !== $user->rating + 1 || !$user->promotion_eligible) {
             return response()->api(generate_error("The user is ineligible for this evaluation."), 400);
         }
 
@@ -820,8 +819,6 @@ class TrainingController extends Controller
                 return response()->api(generate_error("Unable to save submission. $e"), 400);
             }
         }
-
-        $user->promotionEligible();
 
         return response()->ok(['id' => $eval->id]);
     }
