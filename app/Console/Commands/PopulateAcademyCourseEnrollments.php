@@ -66,7 +66,7 @@ class PopulateAcademyCourseEnrollments extends Command
             $e->save();
         }
 
-        $enrollments = AcademyCourseEnrollment::where('status', '<', AcademyCourseEnrollment::$STATUS_COMPLETED)->get();
+        $enrollments = AcademyCourseEnrollment::where('status', '<', AcademyCourseEnrollment::$STATUS_COMPLETED)->limit(1000)->get();
 
         foreach ($enrollments as $e) {
             $hasChange = false;
