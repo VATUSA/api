@@ -50,10 +50,10 @@ class PopulateAcademyCourseEnrollments extends Command
     public function handle()
     {
         // Needed Enrollments
-        $needed_enrollments = DB::select("SELECT c.cid, ac.id as academy_course_id FROM controllers c ".
-            "JOIN academy_course ac " .
-            "LEFT JOIN academy_course_enrollment ace ON ac.id = ace.academy_course_id AND c.cid = ace.cid ".
-            "WHERE flag_homecontroller = 1 AND c.rating > 0 AND ace.id IS NULL");
+        $needed_enrollments = DB::select("SELECT c.cid, ac.id as academy_course_id FROM controllers c 
+            JOIN academy_course ac  ON c.rating < ac.rating
+            LEFT JOIN academy_course_enrollment ace ON ac.id = ace.academy_course_id AND c.cid = ace.cid 
+            WHERE flag_homecontroller = 1 AND c.rating > 0 AND c.rating < 5 AND ace.id IS NULL");
 
         foreach ($needed_enrollments as $ne) {
             echo "Creating Enrollment for CID " . $ne->cid . " Course " . $ne->academy_course_id . "\n";
@@ -65,51 +65,62 @@ class PopulateAcademyCourseEnrollments extends Command
             $e->status = AcademyCourseEnrollment::$STATUS_NOT_ENROLLED;
             $e->save();
         }
-
-        $enrollments = AcademyCourseEnrollment::where('status', '<', AcademyCourseEnrollment::$STATUS_COMPLETED)->limit(1000)->get();
-
-        foreach ($enrollments as $e) {
-            $hasChange = false;
-
-            try {
-                $uid = $this->moodle->getUserId($e->cid);
-            } catch (Exception $e) {
-                $uid = -1;
+        $last_id = 0;
+        while (true) {
+            $enrollments = AcademyCourseEnrollment::where('status', '<', AcademyCourseEnrollment::$STATUS_COMPLETED)
+                ->where('id', '>', $last_id)
+                ->limit(1000)
+                ->get();
+            if ($enrollments->count() == 0) {
+                break;
             }
+            foreach ($enrollments as $e) {
+                $last_id = $e->id;
+                $hasChange = false;
 
-            if ($e->status < AcademyCourseEnrollment::$STATUS_ENROLLED) {
-                $assignmentDate = $this->moodle->getUserEnrolmentTimestamp($uid, $e->course->moodle_enrol_id);
-                $assignmentTimestamp = $assignmentDate ?
-                    Carbon::createFromTimestampUTC($assignmentDate)->format('Y-m-d H:i') : null;
-
-                if ($assignmentTimestamp) {
-                    $e->assignment_timestamp = $assignmentTimestamp;
-                    $e->status = AcademyCourseEnrollment::$STATUS_ENROLLED;
-                    $hasChange = true;
+                try {
+                    $uid = $this->moodle->getUserId($e->cid);
+                } catch (Exception $e) {
+                    $uid = -1;
                 }
-            }
 
-            if ($e->status == AcademyCourseEnrollment::$STATUS_ENROLLED) {
-                $attempts = $this->moodle->getQuizAttempts($e->course->moodle_quiz_id, null, $uid);
-                foreach($attempts as $attempt) {
-                    if (round($attempt['grade']) > $e->course->passing_percent) {
-                        // Passed
-                        $finishTimestamp =
-                            Carbon::createFromTimestampUTC($attempt['timefinish'])->format('Y-m-d H:i');
-                        $e->passed_timestamp = $finishTimestamp;
-                        $e->status = AcademyCourseEnrollment::$STATUS_COMPLETED;
+                if ($e->status < AcademyCourseEnrollment::$STATUS_ENROLLED) {
+                    $assignmentDate = $this->moodle->getUserEnrolmentTimestamp($uid, $e->course->moodle_enrol_id);
+                    $assignmentTimestamp = $assignmentDate ?
+                        Carbon::createFromTimestampUTC($assignmentDate)->format('Y-m-d H:i') : null;
+
+                    if ($assignmentTimestamp) {
+                        $e->assignment_timestamp = $assignmentTimestamp;
+                        $e->status = AcademyCourseEnrollment::$STATUS_ENROLLED;
                         $hasChange = true;
+                        echo "Detected enrollment for $e->cid for $e->course->name\n";
                     }
                 }
-            }
 
-            if ($e->status < AcademyCourseEnrollment::$STATUS_COMPLETED && $e->user->rating >= $e->course->rating) {
-                $e->status = AcademyCourseEnrollment::$STATUS_EXEMPT;
-                $hasChange = true;
-            }
+                if ($e->status == AcademyCourseEnrollment::$STATUS_ENROLLED) {
+                    $attempts = $this->moodle->getQuizAttempts($e->course->moodle_quiz_id, null, $uid);
+                    foreach ($attempts as $attempt) {
+                        if (round($attempt['grade']) > $e->course->passing_percent) {
+                            // Passed
+                            $finishTimestamp =
+                                Carbon::createFromTimestampUTC($attempt['timefinish'])->format('Y-m-d H:i');
+                            $e->passed_timestamp = $finishTimestamp;
+                            $e->status = AcademyCourseEnrollment::$STATUS_COMPLETED;
+                            $hasChange = true;
+                            echo "Detected pass for $e->cid for $e->course->name\n";
+                        }
+                    }
+                }
 
-            if ($hasChange) {
-                $e->save();
+                if ($e->status < AcademyCourseEnrollment::$STATUS_COMPLETED && $e->user->rating >= $e->course->rating) {
+                    $e->status = AcademyCourseEnrollment::$STATUS_EXEMPT;
+                    $hasChange = true;
+                    echo "Detected exempt for $e->cid for $e->course->name\n";
+                }
+
+                if ($hasChange) {
+                    $e->save();
+                }
             }
         }
     }
