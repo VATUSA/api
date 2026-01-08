@@ -54,8 +54,11 @@ class MoodleCompetency extends Command
                                                     WHERE flag_homecontroller = 1
                                                       AND c.rating > 0
                                                       AND c.rating < 5
+                                                      AND (c.rating > 1 OR c.facility != 'ZAE')
                                                       AND (comp.id IS NULL OR comp.expiration_timestamp < NOW())");
-
+        $total = count($missing_competencies);
+        echo "{$total} competencies to process";
+        $i = 0;
         foreach ($missing_competencies as $mc) {
             try {
                 $uid = $this->moodle->getUserId($mc->cid);
@@ -63,7 +66,8 @@ class MoodleCompetency extends Command
                 echo "Can't get moodle user id for CID {$mc->cid}\n";
                 continue;
             }
-            echo "Checking for missing competency - CID: {$mc->cid} - Rating: {$mc->rating} - Quiz Id: {$mc->moodle_quiz_id}\n";
+            $i++;
+            echo "[{$i}/{$total}] Checking for missing competency - CID: {$mc->cid} - Rating: {$mc->rating} - Quiz Id: {$mc->moodle_quiz_id}\n";
             $attempts = $this->moodle->getQuizAttempts($mc->moodle_quiz_id, null, $uid);
             foreach ($attempts as $attempt) {
                 if (round($attempt['grade']) > $mc->passing_percent) {
