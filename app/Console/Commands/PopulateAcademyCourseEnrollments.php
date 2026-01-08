@@ -51,7 +51,7 @@ class PopulateAcademyCourseEnrollments extends Command
     {
         // Needed Enrollments
         $needed_enrollments = DB::select("SELECT c.cid, ac.id as academy_course_id FROM controllers c 
-            JOIN academy_course ac  ON c.rating < ac.rating
+            JOIN academy_course ac  ON c.rating = ac.rating - 1
             LEFT JOIN academy_course_enrollment ace ON ac.id = ace.academy_course_id AND c.cid = ace.cid 
             WHERE flag_homecontroller = 1 AND c.rating > 0 AND c.rating < 5 AND ace.id IS NULL");
 
@@ -70,6 +70,7 @@ class PopulateAcademyCourseEnrollments extends Command
             $enrollments = AcademyCourseEnrollment::where('status', '<', AcademyCourseEnrollment::$STATUS_COMPLETED)
                 ->where('id', '>', $last_id)
                 ->limit(1000)
+                ->orderBy('id')
                 ->get();
             if ($enrollments->count() == 0) {
                 break;
@@ -93,7 +94,7 @@ class PopulateAcademyCourseEnrollments extends Command
                         $e->assignment_timestamp = $assignmentTimestamp;
                         $e->status = AcademyCourseEnrollment::$STATUS_ENROLLED;
                         $hasChange = true;
-                        echo "Detected enrollment for $e->cid for $e->course->name\n";
+                        echo "Detected enrollment for {$e->cid} for {$e->course->name}\n";
                     }
                 }
 
@@ -107,7 +108,7 @@ class PopulateAcademyCourseEnrollments extends Command
                             $e->passed_timestamp = $finishTimestamp;
                             $e->status = AcademyCourseEnrollment::$STATUS_COMPLETED;
                             $hasChange = true;
-                            echo "Detected pass for $e->cid for $e->course->name\n";
+                            echo "Detected pass for $e->cid for {$e->course->name}\n";
                         }
                     }
                 }
@@ -115,7 +116,7 @@ class PopulateAcademyCourseEnrollments extends Command
                 if ($e->status < AcademyCourseEnrollment::$STATUS_COMPLETED && $e->user->rating >= $e->course->rating) {
                     $e->status = AcademyCourseEnrollment::$STATUS_EXEMPT;
                     $hasChange = true;
-                    echo "Detected exempt for $e->cid for $e->course->name\n";
+                    echo "Detected exempt for $e->cid for {$e->course->name}\n";
                 }
 
                 if ($hasChange) {
