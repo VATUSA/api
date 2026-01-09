@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\AcademyCompetency;
 use App\AcademyCourse;
 use App\Classes\VATUSAMoodle;
+use App\User;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +17,7 @@ class MoodleCompetency extends Command
      *
      * @var string
      */
-    protected $signature = 'moodle:competency';
+    protected $signature = 'moodle:competency {user? : CID of a single user to check competency for}';
 
     /**
      * The console command description.
@@ -93,6 +94,7 @@ class MoodleCompetency extends Command
      */
     public function handle()
     {
+
         $all_courses = AcademyCourse::get();
         $this->courses = [];
         foreach ($all_courses as $course) {
@@ -106,6 +108,24 @@ class MoodleCompetency extends Command
         $existing_competencies = [];
         foreach ($all_existing_competencies as $competency) {
             $existing_competencies[$competency->cid][] = $competency->rating;
+        }
+
+        if ($this->argument('user')) {
+            $user = User::find($this->argument('user'));
+            if (!$user) {
+                $this->error("Invalid CID");
+
+                return 0;
+            }
+
+
+            $controller_existing_competencies = (array_key_exists($user->cid, $existing_competencies)) ? $existing_competencies[$user->cid] : [];
+            $this->checkControllerCompetency($user->cid, $user->rating, $controller_existing_competencies);
+            if ($user->rating < 5 && $user->facility != 'ZZN' && $user->facility != 'ZAE') {
+                $this->checkControllerCompetency($user->cid, $user->rating + 1, $controller_existing_competencies);
+            }
+
+            return 0;
         }
 
         $controllers_to_check = DB::select("SELECT c.cid, c.rating, c.facility
