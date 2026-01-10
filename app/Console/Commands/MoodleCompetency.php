@@ -69,17 +69,15 @@ class MoodleCompetency extends Command
                     $finishTimestamp = $finishCarbon->format('Y-m-d H:i');
                     $expireCarbon = $finishCarbon->addDays(180);
                     $expireTimestamp = $expireCarbon->format('Y-m-d H:i');
-                    $finishDaysAgo = Carbon::now()->diffInDays($finishCarbon);
-                    if ($finishDaysAgo < 180) {
-                        $c = new AcademyCompetency();
-                        $c->cid = $cid;
-                        $c->academy_course_id = $course->id;
-                        $c->completion_timestamp = $finishTimestamp;
-                        $c->expiration_timestamp = $expireTimestamp;
-                        $c->save();
-                        echo "===Detected valid quiz pass - CID: {$cid} - Rating: {$rating} - Quiz Id: {$course->moodle_quiz_id}\n";
-                        return;
-                    }
+                    $c = new AcademyCompetency();
+                    $c->cid = $cid;
+                    $c->academy_course_id = $course->id;
+                    $c->completion_timestamp = $finishTimestamp;
+                    $c->expiration_timestamp = $expireTimestamp;
+                    $c->save();
+                    echo "===Detected valid quiz pass - CID: {$cid} - Rating: {$rating} - Quiz Id: {$course->moodle_quiz_id}\n";
+                    return;
+
                 }
             }
         }
