@@ -54,23 +54,7 @@ class CacheControllerEligibility extends Command
 
         if ($user->flag_homecontroller) {
             // Checks for in division only
-            if ($controllerEligibility->is_initial_selection !== false) {
-                if ($in_vatusa_facility) {
-                    $controllerEligibility->is_initial_selection = false;
-                } else {
-                    $transfer_count = Transfer::where('cid', $user->cid)
-                        ->where('to', '!=', 'ZAE')
-                        ->where('to', '!=', 'ZZN')
-                        ->where('to', '!=', 'ZZI')
-                        ->count();
-                    if ($transfer_count > 0) {
-                        $controllerEligibility->is_initial_selection = false;
-                    } else {
-                        $controllerEligibility->is_initial_selection = true;
-                    }
-                }
-            }
-            if ($controllerEligibility->first_selection_date === null) {
+            if ($controllerEligibility->is_initial_selection !== false || $controllerEligibility->first_selection_date === null) {
                 $first_transfer = Transfer::where('cid', $user->cid)
                     ->where('to', '!=', 'ZAE')
                     ->where('to', '!=', 'ZZN')
@@ -79,6 +63,9 @@ class CacheControllerEligibility extends Command
                     ->first();
                 if ($first_transfer) {
                     $controllerEligibility->first_selection_date = $first_transfer->created_at;
+                    $controllerEligibility->is_initial_selection = false;
+                } else {
+                    $controllerEligibility->is_initial_selection = true;
                 }
             }
             $last_promotion = Promotion::where('cid', $user->cid)->orderBy('created_at', 'desc')->first();
@@ -86,7 +73,12 @@ class CacheControllerEligibility extends Command
                 $carbonDate = Carbon::createFromFormat('Y-m-d H:i:s', $last_promotion->created_at);
                 $controllerEligibility->last_promotion_date = $carbonDate->toDateString();
             }
-            $last_transfer = Transfer::where('cid', $user->cid)->orderBy('created_at', 'desc')->first();
+            $last_transfer = Transfer::where('cid', $user->cid)
+                ->where('to', '!=', 'ZAE')
+                ->where('to', '!=', 'ZZN')
+                ->where('to', '!=', 'ZZI')
+                ->orderBy('created_at', 'desc')
+                ->first();
             if ($last_transfer) {
                 $carbonDate = Carbon::createFromFormat('Y-m-d H:i:s', $last_transfer->created_at);
                 $controllerEligibility->last_transfer_date = $carbonDate->toDateString();
@@ -137,7 +129,8 @@ class CacheControllerEligibility extends Command
             if ($controllerEligibility->has_consolidation_hours !== true && (
                 ($user->flag_homecontroller && $in_vatusa_facility) ||
                 (!$user->flag_homecontroller && $user->rating >= 4)
-                )) {
+                )
+                && !$controllerEligibility->is_initial_selection) {
                 $ratingHours = VATSIMApi2Helper::fetchRatingHours($user->cid);
                 $short = strtolower(Helper::ratingShortFromInt($user->rating));
                 if ($ratingHours) {
