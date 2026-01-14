@@ -134,7 +134,10 @@ class CacheControllerEligibility extends Command
                     }
                 }
             }
-            if ($controllerEligibility->has_consolidation_hours !== true) {
+            if ($controllerEligibility->has_consolidation_hours !== true && (
+                ($user->flag_homecontroller && $in_vatusa_facility) ||
+                (!$user->flag_homecontroller && $user->rating >= 4)
+                )) {
                 $ratingHours = VATSIMApi2Helper::fetchRatingHours($user->cid);
                 $short = strtolower(Helper::ratingShortFromInt($user->rating));
                 if ($ratingHours) {
@@ -175,12 +178,13 @@ class CacheControllerEligibility extends Command
             return;
         }
 
-        $cids_to_check = DB::select('select c.cid
+        $cids_to_check = DB::select("select c.cid
                                             from controllers c
                                                      left join controller_eligibility_cache ec on c.cid = ec.cid
                                             where c.rating > 0
                                               AND (c.flag_homecontroller OR c.rating > 3)
-                                              AND ec.cid is null');
+                                              AND ec.cid is null
+                                              AND c.facility != 'ZZI'");
         $total = count($cids_to_check);
         $i = 0;
         foreach ($cids_to_check as $cid) {
@@ -194,7 +198,7 @@ class CacheControllerEligibility extends Command
         $i = 0;
         foreach ($records as $record) {
             $i++;
-            echo "[{$i}/{$total}] Updating eligibility for for {$record->cid}\n";
+            echo "[{$i}/{$total}] Updating eligibility for {$record->cid}\n";
             $this->updateControllerEligibility($record);
         }
     }
