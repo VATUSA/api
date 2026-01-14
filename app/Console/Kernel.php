@@ -84,6 +84,15 @@ class Kernel extends ConsoleKernel
             ->runInBackground()
             ->before($createBeforeHook($commandName))
             ->after($createAfterHook($commandName));
+
+        $commandName = "controller:eligibility";
+        $schedule->command($commandName)
+            ->hourly()
+            ->onOneServer()
+            ->runInBackground()
+            ->before($createBeforeHook($commandName))
+            ->after($createAfterHook($commandName));
+
     }
 
     /**
