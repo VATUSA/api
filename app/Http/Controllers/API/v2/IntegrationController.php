@@ -52,7 +52,9 @@ class IntegrationController extends APIController
             $controllers[$user->cid] = makeOutput($user, $hasApiKey);
         }
 
-        $usersByRating = User::whereIn('rating', [8, 10])->get();
+        $usersByRating = User::whereIn('rating', [8, 10])
+            ->where('flag_homecontroller', 1)
+            ->get();
 
         foreach ($usersByRating as $user) {
             $controllers[$user->cid] = makeOutput($user, $hasApiKey);
