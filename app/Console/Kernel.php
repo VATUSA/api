@@ -18,6 +18,7 @@ class Kernel extends ConsoleKernel
         'App\Console\Commands\VATSIMFlights',
         'App\Console\Commands\SendAcademyRatingExamEmails',
         'App\Console\Commands\MoodleCompetency',
+        'App\Console\Commands\CacheControllerEligibility',
     ];
 
     /**
