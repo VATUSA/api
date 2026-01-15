@@ -131,20 +131,28 @@ class CacheControllerEligibility extends Command
                 (!$user->flag_homecontroller && $user->rating >= 4)
                 )
                 && !$controllerEligibility->is_initial_selection) {
-                $ratingHours = VATSIMApi2Helper::fetchRatingHours($user->cid);
-                $short = strtolower(Helper::ratingShortFromInt($user->rating));
-                if ($ratingHours) {
-                    if ($ratingHours[$short] >= 50) {
-                        $controllerEligibility->has_consolidation_hours = true;
-                    } else if ($user->rating > 5 && ($ratingHours['c1']+$ratingHours['c3']+$ratingHours['i1']+$ratingHours['i3']) >= 50) {
-                        $controllerEligibility->has_consolidation_hours = true;
-                    } else if ($user->rating > 5) {
-                        $controllerEligibility->has_consolidation_hours = false;
-                        $controllerEligibility->consolidation_hours =
-                            ($ratingHours['c1']+$ratingHours['c3']+$ratingHours['i1']+$ratingHours['i3']);
+                $attempts = 0;
+                while ($attempts < 3) {
+                    $attempts++;
+                    $ratingHours = VATSIMApi2Helper::fetchRatingHours($user->cid);
+                    $short = strtolower(Helper::ratingShortFromInt($user->rating));
+                    if ($ratingHours) {
+                        if ($ratingHours[$short] >= 50) {
+                            $controllerEligibility->has_consolidation_hours = true;
+                        } else if ($user->rating > 5 && ($ratingHours['c1'] + $ratingHours['c3'] + $ratingHours['i1'] + $ratingHours['i3']) >= 50) {
+                            $controllerEligibility->has_consolidation_hours = true;
+                        } else if ($user->rating > 5) {
+                            $controllerEligibility->has_consolidation_hours = false;
+                            $controllerEligibility->consolidation_hours =
+                                ($ratingHours['c1'] + $ratingHours['c3'] + $ratingHours['i1'] + $ratingHours['i3']);
+                        } else {
+                            $controllerEligibility->has_consolidation_hours = false;
+                            $controllerEligibility->consolidation_hours = $ratingHours[$short];
+                        }
+                        break;
                     } else {
-                        $controllerEligibility->has_consolidation_hours = false;
-                        $controllerEligibility->consolidation_hours = $ratingHours[$short];
+                        echo "===Rating hours object returned as empty for {$user->cid}\n";
+                        sleep(60);
                     }
                 }
             }

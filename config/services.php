@@ -45,6 +45,11 @@ return [
         'url'   => env('MOODLE_TEST_URL', ''),
         'token' => env('MOODLE_TEST_TOKEN'),
         'token_sso' => env('MOODLE_TEST_TOKEN_SSO')
+    ],
+
+    'vatsim_api2' => [
+        'url'   => env('VATSIM_API2_URL'),
+        'key' => env('VATSIM_API2_KEY'),
     ]
 
 ];

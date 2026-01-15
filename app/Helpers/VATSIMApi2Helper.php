@@ -7,11 +7,11 @@ use GuzzleHttp\Exception;
 class VATSIMApi2Helper {
 
     private static function _url() {
-        return env('VATSIM_API2_URL');
+        return config('services.vatsim_api2.url');
     }
 
     private static function _key() {
-        return env('VATSIM_API2_KEY', null);
+        return config('services.vatsim_api2.url', null);
     }
 
     private static function _client(): Client {
@@ -31,6 +31,7 @@ class VATSIMApi2Helper {
         try {
             $response = $client->get($path);
         } catch (Exception\GuzzleException $e) {
+            echo "Error in VATSIM API2 fetchRatingHours: ".$e->getMessage();
             return null;
         }
         return json_decode($response->getBody(), true);
