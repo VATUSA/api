@@ -164,6 +164,39 @@ class CacheControllerEligibility extends Command
         $controllerEligibility->save();
     }
 
+    private function checkControllerHours(ControllerEligibilityCache $controllerEligibility) {
+        $user = User::where('cid', $controllerEligibility->cid)->first();
+        $in_vatusa_facility = !in_array($user->facility, ["ZAE", "ZZN", "ZZI"]);
+
+        if ($user->rating > 1) {
+            if ($controllerEligibility->has_consolidation_hours !== true && (
+                    ($user->flag_homecontroller && $in_vatusa_facility) ||
+                    (!$user->flag_homecontroller && $user->rating >= 4)
+                )
+                && !$controllerEligibility->is_initial_selection) {
+                $ratingHours = VATSIMApi2Helper::fetchRatingHours($user->cid);
+                $short = strtolower(Helper::ratingShortFromInt($user->rating));
+                if ($ratingHours) {
+                    if ($ratingHours[$short] >= 50) {
+                        $controllerEligibility->has_consolidation_hours = true;
+                    } else if ($user->rating > 5 && ($ratingHours['c1'] + $ratingHours['c3'] + $ratingHours['i1'] + $ratingHours['i3']) >= 50) {
+                        $controllerEligibility->has_consolidation_hours = true;
+                    } else if ($user->rating > 5) {
+                        $controllerEligibility->has_consolidation_hours = false;
+                        $controllerEligibility->consolidation_hours =
+                            ($ratingHours['c1'] + $ratingHours['c3'] + $ratingHours['i1'] + $ratingHours['i3']);
+                    } else {
+                        $controllerEligibility->has_consolidation_hours = false;
+                        $controllerEligibility->consolidation_hours = $ratingHours[$short];
+                    }
+                } else {
+                    echo "===Rating hours object returned as empty for {$user->cid}\n";
+                }
+            }
+        }
+        $controllerEligibility->save();
+    }
+
 
     /**
      * Execute the console command.
@@ -180,6 +213,7 @@ class CacheControllerEligibility extends Command
                 $rec = $this->createRecord($cid);
             }
             $this->updateControllerEligibility($rec);
+            $this->checkControllerHours($rec);
             return;
         }
 
