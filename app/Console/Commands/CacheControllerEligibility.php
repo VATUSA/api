@@ -68,7 +68,11 @@ class CacheControllerEligibility extends Command
                     $controllerEligibility->is_initial_selection = true;
                 }
             }
-            $last_promotion = Promotion::where('cid', $user->cid)->orderBy('created_at', 'desc')->first();
+            $last_promotion = Promotion::where('cid', $user->cid)
+                ->where('from', '<', 5)
+                ->where('to', '<', 7)
+                ->orderBy('created_at', 'desc')
+                ->first();
             if ($last_promotion) {
                 $carbonDate = Carbon::createFromFormat('Y-m-d H:i:s', $last_promotion->created_at);
                 $controllerEligibility->last_promotion_date = $carbonDate->toDateString();
