@@ -63,7 +63,7 @@ class MoodleCompetency extends Command
             echo "Querying Moodle - CID: {$cid} - Rating: {$rating} - Quiz Id: {$course->moodle_quiz_id}\n";
             $attempts = $this->moodle->getQuizAttempts($course->moodle_quiz_id, null, $uid);
             foreach ($attempts as $attempt) {
-                if (round($attempt['grade']) > $course->passing_percent) {
+                if (round($attempt['grade']) >= $course->passing_percent) {
                     // Passed
                     $finishCarbon = Carbon::createFromTimestampUTC($attempt['timefinish']);
                     $finishTimestamp = $finishCarbon->format('Y-m-d H:i');
