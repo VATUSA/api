@@ -144,23 +144,29 @@ class CacheControllerEligibility extends Command
                     (!$user->flag_homecontroller && $user->rating >= 4)
                 )
                 && !$controllerEligibility->is_initial_selection) {
-                $ratingHours = VATSIMApi2Helper::fetchRatingHours($user->cid);
-                $short = strtolower(Helper::ratingShortFromInt($user->rating));
-                if ($ratingHours) {
-                    if ($ratingHours[$short] >= 50) {
-                        $controllerEligibility->has_consolidation_hours = true;
-                    } else if ($user->rating > 5 && ($ratingHours['c1'] + $ratingHours['c3'] + $ratingHours['i1'] + $ratingHours['i3']) >= 50) {
-                        $controllerEligibility->has_consolidation_hours = true;
-                    } else if ($user->rating > 5) {
-                        $controllerEligibility->has_consolidation_hours = false;
-                        $controllerEligibility->consolidation_hours =
-                            ($ratingHours['c1'] + $ratingHours['c3'] + $ratingHours['i1'] + $ratingHours['i3']);
+                $attempt = 0;
+                while ($attempt < 3) {
+                    $attempt++;
+                    $ratingHours = VATSIMApi2Helper::fetchRatingHours($user->cid);
+                    $short = strtolower(Helper::ratingShortFromInt($user->rating));
+                    if ($ratingHours) {
+                        if ($ratingHours[$short] >= 50) {
+                            $controllerEligibility->has_consolidation_hours = true;
+                        } else if ($user->rating > 5 && ($ratingHours['c1'] + $ratingHours['c3'] + $ratingHours['i1'] + $ratingHours['i3']) >= 50) {
+                            $controllerEligibility->has_consolidation_hours = true;
+                        } else if ($user->rating > 5) {
+                            $controllerEligibility->has_consolidation_hours = false;
+                            $controllerEligibility->consolidation_hours =
+                                ($ratingHours['c1'] + $ratingHours['c3'] + $ratingHours['i1'] + $ratingHours['i3']);
+                        } else {
+                            $controllerEligibility->has_consolidation_hours = false;
+                            $controllerEligibility->consolidation_hours = $ratingHours[$short];
+                        }
+                        break;
                     } else {
-                        $controllerEligibility->has_consolidation_hours = false;
-                        $controllerEligibility->consolidation_hours = $ratingHours[$short];
+                        echo "===Rating hours object returned as empty for {$user->cid}\n";
+                        sleep(60);
                     }
-                } else {
-                    echo "===Rating hours object returned as empty for {$user->cid}\n";
                 }
             }
         }
@@ -202,6 +208,7 @@ class CacheControllerEligibility extends Command
             $this->createRecord($cid->cid);
         }
 
+        // General Eligibility checks
         $records = ControllerEligibilityCache::get();
         $total = count($records);
         $i = 0;
@@ -209,6 +216,19 @@ class CacheControllerEligibility extends Command
             $i++;
             echo "[{$i}/{$total}] Updating eligibility for {$record->cid}\n";
             $this->updateControllerEligibility($record);
+        }
+
+        // Hours checks
+        $records = ControllerEligibilityCache::where('has_consolidation_hours', false)
+            ->where('is_initial_selection', false)
+            ->where('competency_rating', '>', 1)
+            ->get();
+        $i = 0;
+        $total = count($records);
+        foreach ($records as $record) {
+            $i++;
+            echo "[{$i}/{$total}] Checking hours for {$record->cid}\n";
+            $this->checkControllerHours($record);
         }
     }
 }
