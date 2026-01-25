@@ -11,7 +11,7 @@ class VATSIMApi2Helper {
     }
 
     private static function _key() {
-        return config('services.vatsim_api2.url', null);
+        return config('services.vatsim_api2.key', null);
     }
 
     private static function _client(): Client {
