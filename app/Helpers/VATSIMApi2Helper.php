@@ -14,13 +14,19 @@ class VATSIMApi2Helper {
         return config('services.vatsim_api2.key', null);
     }
 
+    private static function _identifier() {
+        return config('services.vatsim_api2.identifier', null);
+    }
+
     private static function _client(): Client {
         $key = VATSIMApi2Helper::_key();
+        $identifier = VATSIMApi2Helper::_identifier();
         return new Client([
             'base_uri' => self::_url(),
             'headers' => [
                 'Authorization' => "Token {$key}",
                 'User-Agent' => 'VATUSA/api +https://vatusa.net',
+                'x-identifier' => $identifier,
             ],
         ]);
     }

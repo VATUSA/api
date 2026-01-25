@@ -50,6 +50,7 @@ return [
     'vatsim_api2' => [
         'url'   => env('VATSIM_API2_URL'),
         'key' => env('VATSIM_API2_KEY'),
+        'identifier' => env('VATSIM_API2_IDENTIFIER')
     ]
 
 ];
