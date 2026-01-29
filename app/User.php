@@ -491,7 +491,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         $checks['initial'] = false;
         $checks['90days'] = false;
         $checks['promo'] = false;
-        $checks['50hrs'] = $this->rating == RatingHelper::shortToInt("OBS");
+        $checks['50hrs'] = $this->rating == 1;
         $checks['override'] = false;
         $checks['is_first'] = false;
 
@@ -533,6 +533,10 @@ class User extends Model implements AuthenticatableContract, JWTSubject
 
         if ($this->facility == "ZZI"){
             $checks['homecontroller'] = false;
+        }
+
+        if ($this->rating == 1) {
+            $checks['50hrs'] = true;
         }
 
         // true = check passed
