@@ -491,7 +491,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         $checks['initial'] = false;
         $checks['90days'] = false;
         $checks['promo'] = false;
-        $checks['50hrs'] = false;
+        $checks['50hrs'] = $this->rating == RatingHelper::shortToInt("OBS");
         $checks['override'] = false;
         $checks['is_first'] = false;
 
