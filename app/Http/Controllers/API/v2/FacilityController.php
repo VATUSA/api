@@ -117,9 +117,10 @@ class FacilityController extends APIController
         )->count();
 
         $data['notices'] = [];
-        foreach (TMUFacility::where('id', $id)->orWhere('parent', $id)->get() as $tmu) {
-            if ($tmu->tmuNotices()->count()) {
-                $data['notices'][$tmu->id] = $tmu->tmuNotices()->get()->toArray();
+        $tmuFacilities = TMUFacility::with('tmuNotices')->where('id', $id)->orWhere('parent', $id)->get();
+        foreach ($tmuFacilities as $tmu) {
+            if ($tmu->tmuNotices->count()) {
+                $data['notices'][$tmu->id] = $tmu->tmuNotices->toArray();
             }
         }
         Cache::put("facility.$id.info", encode_json($data), 60 * 60);
