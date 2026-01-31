@@ -1117,18 +1117,25 @@ class TrainingController extends Controller
             ->orWhere("api_sandbox_key", $request->apikey)->first();
         if ($request->has('apikey') && $keyFac) {
             if ($record) {
-                $apiKeyVisitor = $record->student->visits()->where('facility',
-                    $keyFac->id)->exists();
+                $record->loadMissing('student.visits');
+                $apiKeyVisitor = $record->student->visits->contains('facility', $keyFac->id);
             }
             if ($user) {
-                $apiKeyVisitor = $user->visits()->where('facility',
-                    $keyFac->id)->exists();
+                $user->loadMissing('visits');
+                $apiKeyVisitor = $user->visits->contains('facility', $keyFac->id);
             }
         }
-        $visitor = Auth::user() && RoleHelper::isTrainingStaff(Auth::user()->cid,
-                true) && ($record && $record->student->visits()->where('facility',
-                    Auth::user()->facility)->exists() || $user && $user->visits()->where('facility',
-                    Auth::user()->facility)->exists());
+        $visitor = Auth::user() && RoleHelper::isTrainingStaff(Auth::user()->cid, true);
+        if ($visitor) {
+            if ($record) {
+                $record->loadMissing('student.visits');
+                $visitor = $visitor && $record->student->visits->contains('facility', Auth::user()->facility);
+            }
+            if ($user) {
+                $user->loadMissing('visits');
+                $visitor = $visitor && $user->visits->contains('facility', Auth::user()->facility);
+            }
+        }
         $isTrainingStaff = Auth::user() && RoleHelper::isTrainingStaff(Auth::user()->cid, true,
                 $facility ?? Auth::user()->facility) && (!$record || ($record && ($record->student->facility == Auth::user()->facility || $record->facility->id == Auth::user()->facility)));
         $isVATUSAStaff = Auth::user() && RoleHelper::isSeniorStaff(null, null, true);
@@ -1143,6 +1150,8 @@ class TrainingController extends Controller
         Request $request,
         User $user
     ) {
+        $user->loadMissing('visits'); // Ensure visits are loaded
+
         $hasApiKey = AuthHelper::validApiKeyv2($request->input('apikey', null), $user->facility);
         
         //Check Visiting Facilities
@@ -1150,8 +1159,7 @@ class TrainingController extends Controller
         $keyFac = Facility::where("apikey", $request->apikey)
             ->orWhere("api_sandbox_key", $request->apikey)->first();
         if ($request->has('apikey') && $keyFac) {
-            $apiKeyVisitor = $user->visits()->where('facility',
-                $keyFac->id)->exists();
+            $apiKeyVisitor = $user->visits->contains('facility', $keyFac->id);
         }
         
         $isTrainingStaff = Auth::user() && RoleHelper::isTrainingStaff(Auth::user()->cid, true, $user->facility);
