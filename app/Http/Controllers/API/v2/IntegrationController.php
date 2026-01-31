@@ -11,14 +11,10 @@ use Illuminate\Http\Request;
 class IntegrationController extends APIController
 {
     public function getStaffMembers(Request $request) {
-        $hasApiKey = false;
-        if (AuthHelper::validApiKeyv2($request->input('apikey', null))) {
-            //API Key Required
-            $hasApiKey = true;
-        }
-        function makeOutput($user, $hasApiKey) {
-            $c = $user->toArray();
+        $hasApiKey = AuthHelper::validApiKeyv2($request->input('apikey', null));
 
+        $makeOutput = function($user, $hasApiKey) {
+            $c = $user->toArray();
             if (!$hasApiKey) {
                 //API Key Required
                 unset($c['email']);
@@ -33,35 +29,36 @@ class IntegrationController extends APIController
             unset($c['transfer_eligible']);
             unset($c['lastactivity']);
             unset($c['last_cert_sync']);
-
             $c['rating_short'] = RatingHelper::intToShort($c['rating']);
             $c['visiting_facilities'] = $user->visits->toArray();
             return $c;
-        }
+        };
+
         $staffRoles = [
             'ATM', 'DATM', 'TA', 'EC', 'FE', 'WM', 'INS', 'MTR', 'DICE', 'USWT',
             'US1', 'US2', 'US3', 'US4', 'US5', 'US6', 'US7', 'US8', 'US9', 'SMT',
             'EMAIL' // Used for manually added email users
         ];
 
-        $userRoles = Role::whereIn('role', $staffRoles)->get();
+        // Get CIDs of staff members
+        $staffCids = Role::whereIn('role', $staffRoles)->pluck('cid')->toArray();
+
+        // Get CIDs of users with specific ratings
+        $userCidsByRating = User::whereIn('rating', [8, 10])
+            ->where('flag_homecontroller', 1)
+            ->pluck('cid')
+            ->toArray();
+
+        // Combine and get unique CIDs
+        $allCids = array_unique(array_merge($staffCids, $userCidsByRating));
+
+        // Get all users and their visits in one go
+        $users = User::with('visits')->whereIn('cid', $allCids)->get();
 
         $controllers = [];
-        foreach ($userRoles as $r) {
-            $user = $r->user;
-            $controllers[$user->cid] = makeOutput($user, $hasApiKey);
+        foreach ($users as $user) {
+            $controllers[] = $makeOutput($user, $hasApiKey);
         }
-
-        $usersByRating = User::whereIn('rating', [8, 10])
-            ->where('flag_homecontroller', 1)
-            ->get();
-
-        foreach ($usersByRating as $user) {
-            $controllers[$user->cid] = makeOutput($user, $hasApiKey);
-        }
-
-        $controllers = array_values($controllers);
-
 
         return response()->api($controllers);
     }
