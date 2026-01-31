@@ -236,16 +236,20 @@ class AcademyController extends APIController
      */
     public function getTranscript(Request $request, User $user)
     {
+        $user->loadMissing('visits'); // Ensure user's visits are loaded
+        if (Auth::check()) {
+            Auth::user()->loadMissing('visits'); // Ensure authenticated user's visits are loaded
+        }
+
         $validKeyVisit = $validKeyHome = false;
         if ($request->has('apikey')) {
             $validKeyHome = AuthHelper::validApiKeyv2($request->apikey, $user->facility);
             $facility = Facility::where('apikey', $request->apikey)->orWhere('api_sandbox_key',
                 $request->apikey)->first();
-            $validKeyVisit = $user->visits()->where('facility', $facility->id)->exists();
+            $validKeyVisit = $user->visits->contains('facility', $facility->id);
         }
 
-        if (!$validKeyHome && !$validKeyVisit && !(Auth::check() && ($user->facility == Auth::user()->facility || $user->visits()->where('facility',
-                    Auth::user()->facility)->exists()) && (RoleHelper::isMentor() || RoleHelper::isInstructor() || RoleHelper::isSeniorStaff()) || RoleHelper::isVATUSAStaff())) {
+        if (!$validKeyHome && !$validKeyVisit && !(Auth::check() && ($user->facility == Auth::user()->facility || (Auth::user()->visits && Auth::user()->visits->contains('facility', Auth::user()->facility))) && (RoleHelper::isMentor() || RoleHelper::isInstructor() || RoleHelper::isSeniorStaff()) || RoleHelper::isVATUSAStaff())) {
             return response()->forbidden();
         }
 
