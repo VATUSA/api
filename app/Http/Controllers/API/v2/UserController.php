@@ -53,7 +53,8 @@ class UserController extends APIController
      */
     public function getIndex(Request $request, $cid)
     {
-        $user = $request->exists('d') ? User::where('discord_id', $cid)->first() : User::find($cid);
+        $userQuery = User::with(['visits', 'roles', 'promotions']); // Eager load relationships
+        $user = $request->exists('d') ? $userQuery->where('discord_id', $cid)->first() : $userQuery->find($cid);
         $isFacStaff = Auth::check() && RoleHelper::isFacilityStaff(Auth::user()->cid, Auth::user()->facility);
         $isSeniorStaff = Auth::check() && RoleHelper::isSeniorStaff(Auth::user()->cid, Auth::user()->facility);
 
@@ -91,7 +92,8 @@ class UserController extends APIController
                 ->where("role", "INS")->exists();
 
         //Last Promotion
-        $data['last_promotion'] = $user->lastPromotion() ? $user->lastPromotion()->created_at : null;
+        $lastPromotion = $user->promotions->sortByDesc('created_at')->first();
+        $data['last_promotion'] = $lastPromotion ? $lastPromotion->created_at : null;
 
         return response()->api($data);
     }
