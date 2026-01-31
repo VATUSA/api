@@ -81,6 +81,7 @@ class CacheControllerEligibility extends Command
                 ->where('to', '!=', 'ZAE')
                 ->where('to', '!=', 'ZZN')
                 ->where('to', '!=', 'ZZI')
+                ->where('status', '=', 1)
                 ->orderBy('created_at', 'desc')
                 ->first();
             if ($last_transfer) {
