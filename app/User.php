@@ -158,6 +158,11 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         return $this->hasMany(Visit::class, 'cid', 'cid');
     }
 
+    public function promotions()
+    {
+        return $this->hasMany(Promotion::class, 'cid', 'cid');
+    }
+
     public function lastPromotion()
     {
         return $this->hasMany(Promotion::class, 'cid', 'cid')->latest()->first();
