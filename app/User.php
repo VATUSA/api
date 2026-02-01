@@ -571,7 +571,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         }
 
         $checks['staff'] = true;
-        if (RoleHelper::isFacilityStaff($this->cid, $this->facility)) {
+        if (RoleHelper::isFacilityStaff($this, $this->facility)) {
             $checks['staff'] = false;
         }
 
