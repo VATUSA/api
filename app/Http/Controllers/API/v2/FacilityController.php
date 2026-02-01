@@ -575,6 +575,9 @@ class FacilityController extends APIController
             return response()->api(generate_error("Malformed request"), 400);
         }
 
+        $roster->load('roles', 'promotions');
+        $all_visits = Visit::where('facility', $id)->whereIn('cid', $roster->pluck('cid'))->get()->keyBy('cid');
+
         $i = 0;
         foreach ($roster as $member) {
             $rosterArr[$i] = $member->toArray();
@@ -611,7 +614,7 @@ class FacilityController extends APIController
                                                         ->where("role", "INS")->count() > 0;
 
             //Last promotion date
-            $last_promotion = $member->lastPromotion();
+            $last_promotion = $member->promotions->sortByDesc('created_at')->first();
             if ($last_promotion) {
                 $rosterArr[$i]['last_promotion'] = $last_promotion->created_at;
             } else {
@@ -623,8 +626,8 @@ class FacilityController extends APIController
                 $rosterArr[$i]['membership'] = 'home';
             } else {
                 $rosterArr[$i]['membership'] = 'visit';
-                $rosterArr[$i]['facility_join'] = Visit::where('facility', $facility->id)
-                    ->where('cid', $member->cid)->first()->updated_at;
+                $visit = $all_visits->get($member->cid);
+                $rosterArr[$i]['facility_join'] = $visit ? $visit->updated_at : null;
             }
 
             $i++;
