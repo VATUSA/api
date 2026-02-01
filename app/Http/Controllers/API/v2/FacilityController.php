@@ -558,8 +558,8 @@ class FacilityController extends APIController
         }
 
         $hasAPIKey = AuthHelper::validApiKeyv2($request->input('apikey', null), $id);
-        $isFacStaff = Auth::check() && RoleHelper::isFacilityStaff(Auth::user()->cid, Auth::user()->facility);
-        $isSeniorStaff = Auth::check() && RoleHelper::isSeniorStaff(Auth::user()->cid, Auth::user()->facility);
+        $isFacStaff = Auth::check() && RoleHelper::isFacilityStaff(Auth::user(), Auth::user()->facility);
+        $isSeniorStaff = Auth::check() && RoleHelper::isSeniorStaff(Auth::user(), Auth::user()->facility);
 
         $rosterArr = [];
 
@@ -1091,8 +1091,8 @@ class FacilityController extends APIController
         }
 
         if (!AuthHelper::validApiKeyv2($request->input('apikey', null))
-            && !RoleHelper::isFacilityStaff(Auth::user()->cid, $id)
-            && !RoleHelper::isVATUSAStaff(Auth::user()->cid)
+            && !RoleHelper::isFacilityStaff(Auth::user(), $id)
+            && !RoleHelper::isVATUSAStaff(Auth::user())
         ) {
             return response()->api(generate_error("Forbidden"), 403);
         }
@@ -1108,7 +1108,7 @@ class FacilityController extends APIController
                 'fname'     => $transfer->user->fname,
                 'lname'     => $transfer->user->lname,
                 'email'     => (AuthHelper::validApiKeyv2($request->input('apikey',
-                        null)) || (Auth::check() && RoleHelper::isFacilityStaff(Auth::user()->cid)))
+                        null)) || (Auth::check() && RoleHelper::isFacilityStaff(Auth::user())))
                     ? $transfer->user->email : null,
                 'reason'    => (Auth::check() && RoleHelper::isSeniorStaff(Auth::user()->cid)) ? $transfer->reason : null,
                 'fromFac'   => [
