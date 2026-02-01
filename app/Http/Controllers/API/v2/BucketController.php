@@ -52,7 +52,7 @@ class BucketController extends APIController
         if (!\Auth::check()) return response()->unauthenticated();
         $f = Facility::find($facility);
         if (!$f) return response()->notfound(["addl" => "Invalid facility"]);
-        if (!RoleHelper::isVATUSAStaff() && !RoleHelper::has(\Auth::user()->cid, $facility,["ATM","DATM","WM"])) {
+        if (!RoleHelper::isVATUSAStaff(\Auth::user()) && !RoleHelper::has(\Auth::user(), $facility,["ATM","DATM","WM"])) {
             return response()->forbidden();
         }
         $bucket = Bucket::where('facility', $facility)->first();
@@ -110,7 +110,7 @@ class BucketController extends APIController
         if (!\Auth::check()) return response()->unauthenticated();
         $f = Facility::find($facility);
         if (!$f) return response()->notfound(["addl" => "Invalid facility"]);
-        if (!RoleHelper::isVATUSAStaff() && !RoleHelper::has(\Auth::user()->cid, $facility,["ATM","DATM","WM"])) {
+        if (!RoleHelper::isVATUSAStaff(\Auth::user()) && !RoleHelper::has(\Auth::user(), $facility,["ATM","DATM","WM"])) {
             return response()->forbidden();
         }
         $bucket = Bucket::where('facility', $facility)->first();

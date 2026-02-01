@@ -124,9 +124,9 @@ class SoloController extends APIController
             return response()->api(generate_error("Invalid controller."), 400);
         }
 
-        if (\Auth::check() && !(RoleHelper::isSeniorStaff(Auth::user()->cid,$user->facility,true) ||
-                RoleHelper::isVATUSAStaff() ||
-                RoleHelper::isTrainingStaff(Auth::user()->cid,true,$user->facility))) {
+        if (\Auth::check() && !(RoleHelper::isSeniorStaff(Auth::user(),$user->facility,true) ||
+                RoleHelper::isVATUSAStaff(Auth::user()) ||
+                RoleHelper::isTrainingStaff(Auth::user(),true,$user->facility))) {
             return response()->api(generate_error("Forbidden"), 403);
         }
 
@@ -223,12 +223,10 @@ class SoloController extends APIController
         if (!isTest()) {
             if ($request->input("id", null)) {
                 try {
-                    $cert = SoloCert::findOrFail($request->input("id", null));
-
                     $user = User::find($cert->cid);
-                    if (\Auth::check() && !(RoleHelper::isSeniorStaff(Auth::user()->cid,$user->facility,true) ||
-                            RoleHelper::isVATUSAStaff() ||
-                            RoleHelper::isTrainingStaff(Auth::user()->cid,true,$user->facility))) {
+                    if (\Auth::check() && !(RoleHelper::isSeniorStaff(Auth::user(),$user->facility,true) ||
+                            RoleHelper::isVATUSAStaff(Auth::user()) ||
+                            RoleHelper::isTrainingStaff(Auth::user(),true,$user->facility))) {
                         return response()->api(generate_error("Forbidden"), 403);
                     }
 
@@ -247,9 +245,9 @@ class SoloController extends APIController
                     return response()->api(generate_error("Certification not found"), 404);
                 } else {
                     $user = User::find($cert->cid);
-                    if (\Auth::check() && !(RoleHelper::isSeniorStaff(Auth::user()->cid,$user->facility,true) ||
-                            RoleHelper::isVATUSAStaff() ||
-                            RoleHelper::isTrainingStaff(Auth::user()->cid,true,$user->facility))) {
+                    if (\Auth::check() && !(RoleHelper::isSeniorStaff(Auth::user(),$user->facility,true) ||
+                            RoleHelper::isVATUSAStaff(Auth::user()) ||
+                            RoleHelper::isTrainingStaff(Auth::user(),true,$user->facility))) {
                         return response()->api(generate_error("Forbidden"), 403);
                     }
 

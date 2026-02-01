@@ -1083,7 +1083,7 @@ class TrainingController extends Controller
     ): bool {
         $hasApiKey = AuthHelper::validApiKeyv2($request->input('apikey', null), $record->facility->id);
         $isSeniorStaff = Auth::user() && RoleHelper::isSeniorStaff(Auth::user()->cid, $record->facility, true);
-        $ownsRecord = $record && Auth::user() && $record->instructor_id == Auth::user()->cid && RoleHelper::isTrainingStaff(Auth::user()->cid,
+        $ownsRecord = $record && Auth::user() && $record->instructor_id == Auth::user()->cid && RoleHelper::isTrainingStaff(Auth::user(),
                 true, $record->facility);
         $notOwn = Auth::user() && $record->student_id !== Auth::user()->cid; //No one can modify their own record!
 

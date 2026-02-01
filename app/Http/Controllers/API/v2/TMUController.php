@@ -225,11 +225,11 @@ class TMUController extends APIController
 
         $fac = $tmuFac->parent ? $tmuFac->parent : $tmuFac->id; //ZXX
         if (Auth::check()) {
-            if (!RoleHelper::isVATUSAStaff() && Auth::user()->facility != $fac) {
+            if (!RoleHelper::isVATUSAStaff(Auth::user()) && Auth::user()->facility != $fac) {
                 return response()->api(generate_error("Forbidden. Cannot add notice for another ARTCC's TMU."), 403);
             }
-            if (!(RoleHelper::isFacilityStaff() ||
-                RoleHelper::isInstructor() || RoleHelper::isMentor())) {
+            if (!(RoleHelper::isFacilityStaff(Auth::user()) ||
+                RoleHelper::isInstructor(Auth::user()) || RoleHelper::isMentor(Auth::user()))) {
                 return response()->api(generate_error("Forbidden."), 403);
             }
         } else {
@@ -398,11 +398,11 @@ class TMUController extends APIController
 
         $fac = $tmuFac->parent ? $tmuFac->parent : $tmuFac->id; //ZXX
         if (Auth::check()) {
-            if (!RoleHelper::isVATUSAStaff() && Auth::user()->facility != $fac) {
+            if (!RoleHelper::isVATUSAStaff(Auth::user()) && Auth::user()->facility != $fac) {
                 return response()->api(generate_error("Forbidden. Cannot edit notice for another ARTCC's TMU."), 403);
             }
-            if (!(RoleHelper::isFacilityStaff() ||
-                RoleHelper::isInstructor() || RoleHelper::isMentor())) {
+            if (!(RoleHelper::isFacilityStaff(Auth::user()) ||
+                RoleHelper::isInstructor(Auth::user()) || RoleHelper::isMentor(Auth::user()))) {
                 return response()->api(generate_error("Forbidden."), 403);
             }
         } else {
@@ -512,11 +512,11 @@ class TMUController extends APIController
     ) {
         $fac = $notice->tmuFacility->parent ? $notice->tmuFacility->parent : $notice->tmuFacility->id; //ZXX
         if (Auth::check()) {
-            if (!RoleHelper::isVATUSAStaff() && Auth::user()->facility != $fac) {
+            if (!RoleHelper::isVATUSAStaff(Auth::user()) && Auth::user()->facility != $fac) {
                 return response()->api(generate_error("Forbidden. Cannot delete another ARTCC's TMU notice."), 403);
             }
-            if (!(RoleHelper::isFacilityStaff() ||
-                RoleHelper::isInstructor() || RoleHelper::isMentor())) {
+            if (!(RoleHelper::isFacilityStaff(Auth::user()) ||
+                RoleHelper::isInstructor(Auth::user()) || RoleHelper::isMentor(Auth::user()))) {
                 return response()->api(generate_error("Forbidden."), 403);
             }
         } else {

@@ -237,7 +237,7 @@ class EmailController extends APIController
         }
 
         if (EmailHelper::isStaticForward($email) &&
-            (!RoleHelper::has(\Auth::user()->cid, strtoupper(substr($email, 0, 3)), ['ATM', 'DATM', 'WM']) &&
+            (!RoleHelper::has(\Auth::user(), strtoupper(substr($email, 0, 3)), ['ATM', 'DATM', 'WM']) &&
                 !\Auth::user()->hasEmailAccess($email))) {
             return response()->api(generate_error("Forbidden static rules"), 403);
         }
@@ -379,13 +379,8 @@ class EmailController extends APIController
             return response()->malformed();
         }
 
-        $fac = Facility::find($request->input("facility"));
-        if (!$fac) {
-            return response()->notfound();
-        }
-
-        if (!RoleHelper::isVATUSAStaff() && !RoleHelper::isSeniorStaff(\Auth::user()->cid,
-                $fac->id) && !RoleHelper::has(\Auth::user()->cid, $fac->id, "WM")) {
+        if (!RoleHelper::isVATUSAStaff(\Auth::user()) && !RoleHelper::isSeniorStaff(\Auth::user(),
+                $fac->id) && !RoleHelper::has(\Auth::user(), $fac->id, "WM")) {
             return response()->forbidden();
         }
 
@@ -454,8 +449,8 @@ class EmailController extends APIController
             return response()->notfound();
         }
 
-        if (!RoleHelper::isVATUSAStaff() && !RoleHelper::isSeniorStaff(\Auth::user()->cid,
-                $fac->id) && !RoleHelper::has(\Auth::user()->cid, $fac->id, "WM")) {
+        if (!RoleHelper::isVATUSAStaff(\Auth::user()) && !RoleHelper::isSeniorStaff(\Auth::user(),
+                $fac->id) && !RoleHelper::has(\Auth::user(), $fac->id, "WM")) {
             return response()->forbidden();
         }
 
@@ -537,8 +532,8 @@ class EmailController extends APIController
             return response()->notfound();
         }
 
-        if (!RoleHelper::isVATUSAStaff() && !RoleHelper::isSeniorStaff(\Auth::user()->cid,
-                $fac->id) && !RoleHelper::has(\Auth::user()->cid, $fac->id, "WM")) {
+        if (!RoleHelper::isVATUSAStaff(\Auth::user()) && !RoleHelper::isSeniorStaff(\Auth::user(),
+                $fac->id) && !RoleHelper::has(\Auth::user(), $fac->id, "WM")) {
             return response()->forbidden();
         }
 

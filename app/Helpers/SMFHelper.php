@@ -107,7 +107,7 @@ class SMFHelper
             $secondary[] = static::findGroup($role);
         }
 
-        if (RoleHelper::isVATUSAStaff($cid, true, true)) {
+        if (RoleHelper::isVATUSAStaff($user, true, true)) {
             $primary = static::findGroup("VATUSA Staff");
             if (RoleHelper::hasRole($user->cid, "ZHQ", "US1") ||
                 RoleHelper::hasRole($user->cid, "ZHQ", "US2") ||
@@ -126,7 +126,7 @@ class SMFHelper
             $primary = static::findGroup("VATSIM Supervisors");
             $secondary[] = static::findGroup("Members");
         }
-        if (RoleHelper::isWebTeam($cid)) {
+        if (RoleHelper::isWebTeam($user)) {
             if ($primary === static::findGroup("Members")) {
                 //WT Priority over INS, MTRs, Members
                 $primary = static::findGroup("Web Team");
@@ -135,7 +135,7 @@ class SMFHelper
                 $secondary[] = static::findGroup("Web Team");
             }
         }
-        if (RoleHelper::isInstructor($cid)) {
+        if (RoleHelper::isInstructor($user)) {
             if ($primary === static::findGroup("Members")) {
                 //INS Priority over Members and MTRs
                 $primary = static::findGroup("Instructors");

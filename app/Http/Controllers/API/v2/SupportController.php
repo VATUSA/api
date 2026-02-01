@@ -89,7 +89,7 @@ class SupportController extends APIController
     public function postKB(Request $request) {
         if (!$request->has("name")) return response()->malformed();
         if (!\Auth::check()) return response()->unauthorized();
-        if (!RoleHelper::isVATUSAStaff()) return response()->forbidden();
+        if (!RoleHelper::isVATUSAStaff(\Auth::user())) return response()->forbidden();
 
         $cat = new KnowledgebaseCategories();
         $cat->name = $request->input("name");
@@ -150,7 +150,7 @@ class SupportController extends APIController
     public function putKB(Request $request, int $id) {
         if (!$request->has("name")) return response()->malformed();
         if (!\Auth::check()) return response()->unauthorized();
-        if (!RoleHelper::isVATUSAStaff()) return response()->forbidden();
+        if (!RoleHelper::isVATUSAStaff(\Auth::user())) return response()->forbidden();
 
         $cat = KnowledgebaseCategories::find($id);
         if (!$cat) return response()->notfound();
@@ -210,7 +210,7 @@ class SupportController extends APIController
     public function deleteKB(Request $request, int $id) {
         if (!$request->has("name")) return response()->malformed();
         if (!\Auth::check()) return response()->unauthorized();
-        if (!RoleHelper::isVATUSAStaff()) return response()->forbidden();
+        if (!RoleHelper::isVATUSAStaff(\Auth::user())) return response()->forbidden();
 
         $cat = KnowledgebaseCategories::find($id);
 
@@ -282,7 +282,7 @@ class SupportController extends APIController
     public function postKBQuestion(Request $request, $id) {
         if (!$request->has("name")) return response()->malformed();
         if (!\Auth::check()) return response()->unauthorized();
-        if (!RoleHelper::isVATUSAStaff()) return response()->forbidden();
+        if (!RoleHelper::isVATUSAStaff(\Auth::user())) return response()->forbidden();
         $cat = KnowledgebaseCategories::find($id);
         if (!$cat) return response()->notfound();
 
@@ -360,8 +360,7 @@ class SupportController extends APIController
     public function putKBQuestion(Request $request, int $cid, int $qid) {
         if (!$request->has("name")) return response()->malformed();
         if (!\Auth::check()) return response()->unauthorized();
-        if (!RoleHelper::isVATUSAStaff()) return response()->forbidden();
-        $cat = KnowledgebaseCategories::find($cid);
+        if (!RoleHelper::isVATUSAStaff(\Auth::user())) return response()->forbidden();
         if (!$cat) return response()->notfound();
         $q = KnowledgebaseQuestions::find($qid);
         if (!$q || $q->category_id != $cat->id) return response()->notFound();
@@ -440,7 +439,7 @@ class SupportController extends APIController
     public function deleteKBQuestion(Request $request, int $categoryid, int $questionid) {
         if (!$request->has("name")) return response()->malformed();
         if (!\Auth::check()) return response()->unauthorized();
-        if (!RoleHelper::isVATUSAStaff()) return response()->forbidden();
+        if (!RoleHelper::isVATUSAStaff(\Auth::user())) return response()->forbidden();
 
         $cat = KnowledgebaseCategories::find($categoryid);
         if (!$cat) return response()->notfound();

@@ -55,8 +55,8 @@ class UserController extends APIController
     {
         $userQuery = User::with(['visits', 'roles', 'promotions']); // Eager load relationships
         $user = $request->exists('d') ? $userQuery->where('discord_id', $cid)->first() : $userQuery->find($cid);
-        $isFacStaff = Auth::check() && RoleHelper::isFacilityStaff(Auth::user()->cid, Auth::user()->facility);
-        $isSeniorStaff = Auth::check() && RoleHelper::isSeniorStaff(Auth::user()->cid, Auth::user()->facility);
+        $isFacStaff = Auth::check() && RoleHelper::isFacilityStaff(Auth::user(), Auth::user()->facility);
+        $isSeniorStaff = Auth::check() && RoleHelper::isSeniorStaff(Auth::user(), Auth::user()->facility);
 
         if (!$user) {
             return response()->api(generate_error("Not found"), 404);
@@ -275,7 +275,12 @@ class UserController extends APIController
             return response()->api(generate_error("Forbidden"), 403);
         }
 
-        if (!RoleHelper::has($cid, $facility, $role)) {
+        $user = User::find($cid);
+        if (!$user) {
+            return response()->api(generate_error("User not found"), 404);
+        }
+
+        if (!RoleHelper::has($user, $facility, $role)) {
             return response()->api(generate_error("Not found"), 404);
         }
 
@@ -365,7 +370,7 @@ class UserController extends APIController
         if (!Auth::check()) {
             return response()->api(generate_error("Unauthorized"), 401);
         }
-        if (Auth::user()->cid != $cid && !RoleHelper::isVATUSAStaff(Auth::user()->cid)) {
+        if (Auth::user()->cid != $cid && !RoleHelper::isVATUSAStaff(Auth::user())) {
             return response()->api(generate_error("Forbidden"), 403);
         }
         $user = User::find($cid);
@@ -460,8 +465,8 @@ class UserController extends APIController
         if ($hasValidApiKey || (Auth::check() &&
                 (
                     Auth::user()->cid == $cid ||
-                    RoleHelper::isVATUSAStaff(Auth::user()->cid) ||
-                    RoleHelper::has(Auth::user()->cid, Auth::user()->facility, ["ATM", "DATM", "WM"])
+                    RoleHelper::isVATUSAStaff(Auth::user()) ||
+                    RoleHelper::has(Auth::user(), Auth::user()->facility, ["ATM", "DATM", "WM"])
                 )
             )) {
             $check = [];
@@ -605,10 +610,10 @@ class UserController extends APIController
         }
 
         // OBS-C1 changes
-        if (!RoleHelper::isVATUSAStaff() &&
-            !RoleHelper::has(Auth::user()->cid, Auth::user()->facility, ["ATM", "DATM", "TA"]) &&
-            !RoleHelper::isInstructor(Auth::user()->cid, $user->facility) &&
-            !(RoleHelper::isMentor(Auth::user()->cid, $user->facility) && Auth::user()->rating>=4 && $rating==2)) {
+        if (!RoleHelper::isVATUSAStaff(Auth::user()) &&
+            !RoleHelper::has(Auth::user(), Auth::user()->facility, ["ATM", "DATM", "TA"]) &&
+            !RoleHelper::isInstructor(Auth::user(), $user->facility) &&
+            !(RoleHelper::isMentor(Auth::user(), $user->facility) && Auth::user()->rating>=4 && $rating==2)) {
 
             return response()->api(generate_error("Forbidden"), 403);
         }
@@ -698,8 +703,8 @@ class UserController extends APIController
         if (!$hasValidApiKey && !(Auth::check() &&
                 (
                     Auth::user()->cid == $cid ||
-                    RoleHelper::isVATUSAStaff(Auth::user()->cid) ||
-                    RoleHelper::has(Auth::user()->cid, Auth::user()->facility, ["ATM", "DATM", "WM"])
+                    RoleHelper::isVATUSAStaff(Auth::user()) ||
+                    RoleHelper::has(Auth::user(), Auth::user()->facility, ["ATM", "DATM", "WM"])
                 )
             )) {
 
@@ -762,8 +767,8 @@ class UserController extends APIController
             return response()->api(generate_error("Unauthorized"), 401);
         }
         if (Auth::user()->cid == $cid ||
-            RoleHelper::isVATUSAStaff(Auth::user()->cid) ||
-            RoleHelper::has(Auth::user()->cid, Auth::user()->facility, ["ATM", "DATM"])
+            RoleHelper::isVATUSAStaff(Auth::user()) ||
+            RoleHelper::has(Auth::user(), Auth::user()->facility, ["ATM", "DATM"])
         ) {
 
             return response()->api(generate_error("Forbidden"), 403);
@@ -824,7 +829,7 @@ class UserController extends APIController
         if (!Auth::check()) {
             return response()->api(generate_error("Unauthorized"), 401);
         }
-        if (!RoleHelper::isVATUSAStaff(Auth::user()->cid) && !RoleHelper::has(Auth::user()->cid,
+        if (!RoleHelper::isVATUSAStaff(Auth::user()) && !RoleHelper::has(Auth::user(),
                 Auth::user()->facility, ["ATM", "DATM"])) {
             return response()->api(generate_error("Forbidden"), 403);
         }
@@ -891,8 +896,8 @@ class UserController extends APIController
         if (!$hasValidApiKey && !(Auth::check() &&
                 (
                     Auth::user()->cid == $cid ||
-                    RoleHelper::isVATUSAStaff(Auth::user()->cid) ||
-                    RoleHelper::has(Auth::user()->cid, Auth::user()->facility, ["ATM", "DATM", "TA", "WM"])
+                    RoleHelper::isVATUSAStaff(Auth::user()) ||
+                    RoleHelper::has(Auth::user(), Auth::user()->facility, ["ATM", "DATM", "TA", "WM"])
                 )
             )) {
             return response()->api(generate_error("Forbidden"), 403);

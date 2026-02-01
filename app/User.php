@@ -190,7 +190,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     {
         $eparts = explode("@", $email);
 
-        if (RoleHelper::isVATUSAStaff($this->cid)) {
+        if (RoleHelper::isVATUSAStaff($this)) {
             return true;
         }
 
@@ -200,11 +200,11 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             if (strpos($eparts[0], "-") >= 1) {
                 $uparts = explode("-", $eparts[0]);
                 // ATMs,DATMs,WM have access to all addresses
-                if (RoleHelper::isSeniorStaff($this->cid, $uparts[0], false) || RoleHelper::has($this->cid, $uparts[0],
+                if (RoleHelper::isSeniorStaff($this, $uparts[0], false) || RoleHelper::has($this, $uparts[0],
                         "WM")) {
                     return true;
                 }
-                if (RoleHelper::has($this->cid, $uparts[0], $uparts[1])) {
+                if (RoleHelper::has($this, $uparts[0], $uparts[1])) {
                     return true;
                 } else {
                     return false;
@@ -213,7 +213,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
             // Staff address
             // vatusa#@vatusa.net
             if (preg_match("/^vatusa(\d+)/", $eparts[0], $match)) {
-                if (RoleHelper::has($this->cid, "ZHQ", "US" . $match[1])) {
+                if (RoleHelper::has($this, "ZHQ", "US" . $match[1])) {
                     return true;
                 }
 
@@ -225,7 +225,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
                 return false;
             }
 
-            if (RoleHelper::isSeniorStaff($this->cid, $facility->id, false) || RoleHelper::has($this->cid,
+            if (RoleHelper::isSeniorStaff($this, $facility->id, false) || RoleHelper::has($this,
                     $facility->id, "WM")) {
                 return true;
             }
@@ -392,16 +392,16 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         $fc = 0;
 
         if ($oldfac->id != "ZZN" && $oldfac->id != "ZAE") {
-            if (RoleHelper::has($this->cid, $oldfac->id, "ATM") || RoleHelper::has($this->cid, $oldfac->id, "DATM")) {
+            if (RoleHelper::has($this, $oldfac->id, "ATM") || RoleHelper::has($this, $oldfac->id, "DATM")) {
                 EmailHelper::sendEmail(["vatusa2@vatusa.net"], "ATM or DATM discrepancy",
                     "emails.transfers.atm", ["user" => $this, "oldfac" => $oldfac]);
                 $fc = 1;
-            } elseif (RoleHelper::has($this->cid, $oldfac->id, "TA")) {
+            } elseif (RoleHelper::has($this, $oldfac->id, "TA")) {
                 EmailHelper::sendEmail(["vatusa3@vatusa.net"], "TA discrepancy", "emails.transfers.ta",
                     ["user" => $this, "oldfac" => $oldfac]);
                 $fc = 1;
-            } elseif (RoleHelper::has($this->cid, $oldfac->id, "EC") || RoleHelper::has($this->cid, $oldfac->id,
-                    "FE") || RoleHelper::has($this->cid, $oldfac->id, "WM")) {
+            } elseif (RoleHelper::has($this, $oldfac->id, "EC") || RoleHelper::has($this, $oldfac->id,
+                    "FE") || RoleHelper::has($this, $oldfac->id, "WM")) {
                 EmailHelper::sendEmail([$oldfac->id . "-atm@vatusa.net", $oldfac->id . "-datm@vatusa.net"],
                     "Staff discrepancy", "emails.transfers.otherstaff", ["user" => $this, "oldfac" => $oldfac]);
                 $fc = 1;
@@ -629,7 +629,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         }
 
         for ($i = 1; $i <= 14; $i++) {
-            if (RoleHelper::has($this->cid, "ZHQ", "US$i")) {
+            if (RoleHelper::has($this, "ZHQ", "US$i")) {
                 return $i;
             }
         }

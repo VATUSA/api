@@ -129,13 +129,13 @@ class AcademyController extends APIController
             return response()->forbidden();
         }
         if (!AuthHelper::validApiKeyv2($request->input('apikey', null))
-            && !RoleHelper::isInstructor(Auth::user()->cid, $user->facility)
-            && !RoleHelper::isSeniorStaff(Auth::user()->cid, $user->facility)
-            && !RoleHelper::isMentor(Auth::user()->cid, $user->facility)) {
+            && !RoleHelper::isInstructor(Auth::user(), $user->facility)
+            && !RoleHelper::isSeniorStaff(Auth::user(), $user->facility)
+            && !RoleHelper::isMentor(Auth::user(), $user->facility)) {
             return response()->forbidden();
         }
         if (!AuthHelper::validApiKeyv2($request->input('apikey', null))
-            && RoleHelper::isMentor(Auth::user()->cid, $user->facility)
+            && RoleHelper::isMentor(Auth::user(), $user->facility)
             && $user->rating >= Auth::user()->rating) {
             return response()->forbidden();
         }
@@ -249,7 +249,7 @@ class AcademyController extends APIController
             $validKeyVisit = $user->visits->contains('facility', $facility->id);
         }
 
-        if (!$validKeyHome && !$validKeyVisit && !(Auth::check() && ($user->facility == Auth::user()->facility || (Auth::user()->visits && Auth::user()->visits->contains('facility', Auth::user()->facility))) && (RoleHelper::isMentor() || RoleHelper::isInstructor() || RoleHelper::isSeniorStaff()) || RoleHelper::isVATUSAStaff())) {
+        if (!$validKeyHome && !$validKeyVisit && !(Auth::check() && ($user->facility == Auth::user()->facility || (Auth::user()->visits && Auth::user()->visits->contains('facility', Auth::user()->facility))) && (RoleHelper::isMentor(Auth::user()) || RoleHelper::isInstructor(Auth::user()) || RoleHelper::isSeniorStaff(Auth::user())) || RoleHelper::isVATUSAStaff(Auth::user()))) {
             return response()->forbidden();
         }
 
