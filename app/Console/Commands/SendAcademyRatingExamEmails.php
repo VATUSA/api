@@ -51,7 +51,7 @@ class SendAcademyRatingExamEmails extends Command
      */
     public function handle()
     {
-        foreach (AcademyExamAssignment::all() as $assignment) {
+        foreach (AcademyExamAssignment::with(['student', 'instructor'])->get() as $assignment) {
             $student = $assignment->student;
             $studentName = $student->name;
             $instructor = $assignment->instructor;
@@ -130,52 +130,72 @@ class SendAcademyRatingExamEmails extends Command
             ->where('state', 'finished')
             ->where('timefinish', '>=', $weekInterval->timestamp)
             ->get();
+        $moodleAttemptIds = $attempts->pluck('id')->toArray();
+        $processedAttemptIds = AcademyBasicExamEmail::whereIn('attempt_id', $moodleAttemptIds)->pluck('attempt_id')->toArray();
+
+        $cidsFromMoodleUsers = [];
+        $attemptsToProcess = $attempts->filter(function($attempt) use ($processedAttemptIds) {
+            return !in_array($attempt->id, $processedAttemptIds);
+        });
+
+        foreach ($attemptsToProcess as $attempt) {
+            // Note: $this->moodle->getCidFromUserId is likely an external API call, which is an N+1 with Moodle API.
+            // A batch version of getCidFromUserId would be ideal here if Moodle API supports it.
+            $cidsFromMoodleUsers[$attempt->id] = $this->moodle->getCidFromUserId($attempt->userid);
+        }
+
+        $studentsByCid = User::whereIn('cid', array_filter($cidsFromMoodleUsers))->get()->keyBy('cid');
+
         foreach ($attempts as $attempt) {
-            if (!AcademyBasicExamEmail::where('attempt_id', $attempt->id)->exists()) {
-                //Email not sent yet. Send now.
-                $student = User::find($this->moodle->getCidFromUserId($attempt->userid));
-                if (!$student) {
-                    continue;
-                }
-
-                $studentName = $student->fullname;
-                $attemptNum = $attempt->attempt;
-                $attemptId = $attempt->id;
-                $passingGrade = config('exams.BASIC.passingPercent');
-                $testName = "Basic ATC/S1 Exam";
-
-                $review = $this->moodle->request("mod_quiz_get_attempt_review",
-                        ["attemptid" => $attemptId]) ?? [];
-                if (empty($review)) {
-                    continue;
-                }
-                $grade = round(floatval($review['grade']));
-                $passed = $grade >= $passingGrade;
-
-                $result = compact('testName', 'studentName', 'attemptNum', 'grade',
-                    'passed', 'passingGrade', 'attemptId');
-                $mail = Mail::to($student);
-                //if ($attemptNum == 3 && !$passed) {
-                $mail->bcc(['training@vatusa.net']);
-                //}
-                $mail->queue(new AcademyExamSubmitted($result));
-
-                if($passed && $student->rating <= Helper::ratingIntFromShort("S1")) {
-                    $student->flag_needbasic = 0;
-                    $student->save();
-                }
-
-                log_action($student->cid,
-                    "Academy exam submitted - $testName - Attempt $attemptNum - $grade%");
-
-                $record = new AcademyBasicExamEmail();
-                $record->attempt_id = $attempt->id;
-                $record->student_id = $student->cid;
-                $record->save();
+            if (in_array($attempt->id, $processedAttemptIds)) {
+                continue; // Skip if already processed
             }
+
+            $cid = $cidsFromMoodleUsers[$attempt->id] ?? null;
+            $student = $studentsByCid->get($cid);
+
+            if (!$student) {
+                continue;
+            }
+
+            $studentName = $student->fullname;
+            $attemptNum = $attempt->attempt;
+            $attemptId = $attempt->id;
+            $passingGrade = config('exams.BASIC.passingPercent');
+            $testName = "Basic ATC/S1 Exam";
+
+            // Note: $this->moodle->request("mod_quiz_get_attempt_review") is an external Moodle API call,
+            // which is a potential N+1. Consider batching review requests if Moodle API supports it.
+            $review = $this->moodle->request("mod_quiz_get_attempt_review",
+                    ["attemptid" => $attemptId]) ?? [];
+            if (empty($review)) {
+                continue;
+            }
+
+            $grade = round(floatval($review['grade']));
+            $passed = $grade >= $passingGrade;
+
+            $result = compact('testName', 'studentName', 'attemptNum', 'grade',
+                'passed', 'passingGrade', 'attemptId');
+            $mail = Mail::to($student);
+            //if ($attemptNum == 3 && !$passed) {
+            $mail->bcc(['training@vatusa.net']);
+            //}
+            $mail->queue(new AcademyExamSubmitted($result));
+
+            if ($passed && $student->rating <= Helper::ratingIntFromShort("S1")) {
+                $student->flag_needbasic = 0;
+                $student->save();
+            }
+
+            log_action($student->cid,
+                "Academy exam submitted - $testName - Attempt $attemptNum - $grade%");
+
+            $record = new AcademyBasicExamEmail();
+            $record->attempt_id = $attempt->id;
+            $record->student_id = $student->cid;
+            $record->save();
         }
         AcademyBasicExamEmail::where('created_at', '<', $weekInterval->subDays(2))->delete();
-
-        exit(1);
     }
 }
