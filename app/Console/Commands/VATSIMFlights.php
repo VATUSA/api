@@ -37,22 +37,35 @@ class VATSIMFlights extends Command
      */
     public function handle()
     {
-        $status = file_get_contents("https://status.vatsim.net/status.json");
-        if (!$status) {
-            Log::notice("There was an error retrieving VATSIM data from server... received header:" . json_encode($http_response_header));
+        try {
+            $client = new \GuzzleHttp\Client();
+            $response = $client->get("https://status.vatsim.net/status.json", ['timeout' => 10]); // 10 second timeout
+            $status = $response->getBody()->getContents();
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
+            \Log::error("VATSIMFlights: Error retrieving VATSIM status.json: " . $e->getMessage());
+            return;
+        }
 
+        if (!$status) {
+            \Log::notice("VATSIMFlights: There was an error retrieving VATSIM data from status.json. Status is empty.");
             return;
         }
         $server = json_decode($status, true)["data"]["v3"][0] ?? null;
         if (!$server) {
-            Log::notice("There was an error retrieving VATSIM data from server. The array is invalid.");
-
+            \Log::notice("VATSIMFlights: There was an error retrieving VATSIM data from status.json. The array is invalid or server URL missing.");
             return;
         }
-        $data = file_get_contents($server);
-        if (!$data) {
-            Log::notice("There was an error retrieving VATSIM data from server... received header:" . json_encode($http_response_header));
 
+        try {
+            $response = $client->get($server, ['timeout' => 20]); // 20 second timeout for main data
+            $data = $response->getBody()->getContents();
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
+            \Log::error("VATSIMFlights: Error retrieving VATSIM data from server ($server): " . $e->getMessage());
+            return;
+        }
+
+        if (!$data) {
+            \Log::notice("VATSIMFlights: There was an error retrieving VATSIM data from server ($server). Data is empty.");
             return;
         }
         $vdata = json_decode($data, true);

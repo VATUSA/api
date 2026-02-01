@@ -54,14 +54,22 @@ class MoodleCompetency extends Command
             return;
         }
         try {
+            // Note: $this->moodle->getUserId is a Moodle API call, which is an N+1 here.
+            // A batch version of getUserId would be ideal if Moodle API supports it.
             $uid = $this->moodle->getUserId($cid);
-        } catch (Exception) {
-            echo "Can't get moodle user id for CID {$cid}\n";
+        } catch (\Exception $e) {
+            \Log::error("MoodleCompetency: Can't get Moodle user ID for CID {$cid}: " . $e->getMessage());
             return;
         }
         foreach ($this->courses[$rating] as $course) {
-            echo "Querying Moodle - CID: {$cid} - Rating: {$rating} - Quiz Id: {$course->moodle_quiz_id}\n";
-            $attempts = $this->moodle->getQuizAttempts($course->moodle_quiz_id, null, $uid);
+            try {
+                // Note: $this->moodle->getQuizAttempts is a Moodle API call, which is an N+1 here.
+                // A batch version of getQuizAttempts would be ideal if Moodle API supports it.
+                $attempts = $this->moodle->getQuizAttempts($course->moodle_quiz_id, null, $uid);
+            } catch (\Exception $e) {
+                \Log::error("MoodleCompetency: Error getting quiz attempts for CID {$cid}, Quiz ID {$course->moodle_quiz_id}: " . $e->getMessage());
+                continue; // Continue to next course if this one fails
+            }
             foreach ($attempts as $attempt) {
                 if (round($attempt['grade']) >= $course->passing_percent) {
                     // Passed
@@ -99,10 +107,10 @@ class MoodleCompetency extends Command
             $this->courses[$course->rating][] = $course;
         }
 
-        $all_existing_competencies = DB::select("SELECT c.cid, ac.rating
-                                                        FROM academy_competency c
-                                                                 JOIN academy_course ac ON c.academy_course_id = ac.id
-                                                        WHERE c.expiration_timestamp < NOW()");
+        $all_existing_competencies = AcademyCompetency::where('expiration_timestamp', '<', Carbon::now())
+                                            ->join('academy_course', 'academy_competency.academy_course_id', '=', 'academy_course.id')
+                                            ->select('academy_competency.cid', 'academy_course.rating')
+                                            ->get();
         $existing_competencies = [];
         foreach ($all_existing_competencies as $competency) {
             $existing_competencies[$competency->cid][] = $competency->rating;
@@ -126,22 +134,26 @@ class MoodleCompetency extends Command
             return 0;
         }
 
-        $controllers_to_check = DB::select("SELECT c.cid, c.rating, c.facility
-                                                    FROM controllers c
-                                                    WHERE (
-                                                        (
-                                                            flag_homecontroller = 1 AND (c.rating > 1 OR c.facility != 'ZAE')
-                                                        ) OR
-                                                           (c.facility = 'ZZN' AND c.rating >= 4)
-                                                        )
-                                                    
-                                                      AND c.rating > 0
-                                                      AND c.lastactivity > NOW() - INTERVAL 30 DAY");
+        $controllers_to_check = User::where(function ($query) {
+                                            $query->where('flag_homecontroller', 1)
+                                                  ->where(function ($q) {
+                                                      $q->where('rating', '>', 1)
+                                                        ->orWhere('facility', '!=', 'ZAE');
+                                                  });
+                                        })
+                                        ->orWhere(function ($query) {
+                                            $query->where('facility', 'ZZN')
+                                                  ->where('rating', '>=', 4);
+                                        })
+                                        ->where('rating', '>', 0)
+                                        ->where('lastactivity', '>', Carbon::now()->subDays(30))
+                                        ->select('cid', 'rating', 'facility')
+                                        ->get();
         $total = count($controllers_to_check);
         $i=0;
         foreach ($controllers_to_check as $controller) {
             $i++;
-            echo "[{$i}/{$total}] Processing Controller {$controller->cid} - {$controller->rating}\n";
+            // echo "[{$i}/{$total}] Processing Controller {$controller->cid} - {$controller->rating}\n"; // Removed excessive echo
             $controller_existing_competencies = (array_key_exists($controller->cid, $existing_competencies)) ? $existing_competencies[$controller->cid] : [];
             $this->checkControllerCompetency($controller->cid, $controller->rating, $controller_existing_competencies);
             if ($controller->rating < 5 && $controller->facility != 'ZZN' && $controller->facility != 'ZAE') {
