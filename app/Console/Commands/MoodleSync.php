@@ -49,7 +49,7 @@ class MoodleSync extends Command
     public function handle()
     {
         if ($this->argument('user')) {
-            $user = User::find($this->argument('user'));
+            $user = User::with('visits', 'academyCompetencies.course', 'roles')->find($this->argument('user'));
             if (!$user) {
                 $this->error("Invalid CID");
 
