@@ -560,7 +560,7 @@ class TrainingController extends Controller
         //Input Data
         $studentId = $user->cid;
         $instructorId = $request->input("instructor_id", null);
-        if (Auth::check() && (!$instructorId || ($instructorId && !RoleHelper::isSeniorStaff(Auth::user()->cid, Auth::user()->facility, true)))) {
+        if (Auth::check() && (!$instructorId || ($instructorId && !RoleHelper::isSeniorStaff(Auth::user(), Auth::user()->facility, true)))) {
             $instructorId = Auth::user()->cid;
         }
         $sessionDate = $request->input("session_date", null);
@@ -738,7 +738,7 @@ class TrainingController extends Controller
             return response()->api(generate_error("Invalid evaluation form."), 400);
         }
 
-        if (!Auth::user() || !(RoleHelper::isInstructor(Auth::user()->cid, $user->facility) || (RoleHelper::isMentor(Auth::user()->cid, $user->facility) && Auth::user()->rating>=4 && $form->rating_id==2))) {
+        if (!Auth::user() || !(RoleHelper::isInstructor(Auth::user(), $user->facility) || (RoleHelper::isMentor(Auth::user(), $user->facility) && Auth::user()->rating>=4 && $form->rating_id==2))) {
             return response()->forbidden();
         }
 
@@ -1082,7 +1082,7 @@ class TrainingController extends Controller
         TrainingRecord $record
     ): bool {
         $hasApiKey = AuthHelper::validApiKeyv2($request->input('apikey', null), $record->facility->id);
-        $isSeniorStaff = Auth::user() && RoleHelper::isSeniorStaff(Auth::user()->cid, $record->facility, true);
+        $isSeniorStaff = Auth::user() && RoleHelper::isSeniorStaff(Auth::user(), $record->facility, true);
         $ownsRecord = $record && Auth::user() && $record->instructor_id == Auth::user()->cid && RoleHelper::isTrainingStaff(Auth::user(),
                 true, $record->facility);
         $notOwn = Auth::user() && $record->student_id !== Auth::user()->cid; //No one can modify their own record!
@@ -1125,7 +1125,7 @@ class TrainingController extends Controller
                 $apiKeyVisitor = $user->visits->contains('facility', $keyFac->id);
             }
         }
-        $visitor = Auth::user() && RoleHelper::isTrainingStaff(Auth::user()->cid, true);
+        $visitor = Auth::user() && RoleHelper::isTrainingStaff(Auth::user(), true);
         if ($visitor) {
             if ($record) {
                 $record->loadMissing('student.visits');
@@ -1136,7 +1136,7 @@ class TrainingController extends Controller
                 $visitor = $visitor && $user->visits->contains('facility', Auth::user()->facility);
             }
         }
-        $isTrainingStaff = Auth::user() && RoleHelper::isTrainingStaff(Auth::user()->cid, true,
+        $isTrainingStaff = Auth::user() && RoleHelper::isTrainingStaff(Auth::user(), true,
                 $facility ?? Auth::user()->facility) && (!$record || ($record && ($record->student->facility == Auth::user()->facility || $record->facility->id == Auth::user()->facility)));
         $isVATUSAStaff = Auth::user() && RoleHelper::isSeniorStaff(null, null, true);
         $ownsRecord = $record && Auth::user() && $record->student_id === Auth::user()->cid;
@@ -1162,11 +1162,11 @@ class TrainingController extends Controller
             $apiKeyVisitor = $user->visits->contains('facility', $keyFac->id);
         }
         
-        $isTrainingStaff = Auth::user() && RoleHelper::isTrainingStaff(Auth::user()->cid, true, $user->facility);
+        $isTrainingStaff = Auth::user() && RoleHelper::isTrainingStaff(Auth::user(), true, $user->facility);
         if (!$isTrainingStaff && Auth::user()) {
             //Check visiting facilities.
             foreach ($user->visits as $visit) {
-                $isTrainingStaff = RoleHelper::isTrainingStaff(Auth::user()->cid, true, $visit->facility);
+                $isTrainingStaff = RoleHelper::isTrainingStaff(Auth::user(), true, $visit->facility);
                 if ($isTrainingStaff) {
                     break;
                 }

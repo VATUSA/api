@@ -68,7 +68,7 @@ class SMFHelper
         $user = User::find($cid);
 
         if ($user->rating == Helper::ratingIntFromShort("ADM")) {
-            if (!RoleHelper::isVATUSAStaff($cid, true, true)) {
+            if (!RoleHelper::isVATUSAStaff($user, true, true)) {
                 static::setGroups($cid, static::findGroup("VATSIM Leadership"));
 
                 return;

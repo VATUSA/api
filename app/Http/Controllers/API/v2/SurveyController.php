@@ -163,7 +163,7 @@ class SurveyController
      */
     public function postSurveyAssign(Request $request, $id, $cid) {
         if (!\Auth::check()) return response()->unauthenticated();
-        if (!RoleHelper::isVATUSAStaff(\Auth::user()->cid)) return response()->forbidden();
+        if (!RoleHelper::isVATUSAStaff(\Auth::user())) return response()->forbidden();
 
         $survey = Survey::find($id);
         if (!$survey) return response()->notfound();
