@@ -978,18 +978,20 @@ class FacilityController extends APIController
             return response()->api(generate_error("Forbidden"), 403);
         }
 
-        if (!Auth::check() && !$request->has('by')) {
-            return response()->api(
-                generate_error("Missing staff CID (by)"), 400);
-        } else {
-            if ($request->has('by')) {
-                $byUser = User::find($request->by);
-                if (!$byUser || !RoleHelper::isSeniorStaff($byUser, $facility->id, false)) {
-                    return response()->api(
-                        generate_error("Invalid staff CID"), 400);
-                }
+        if (!Auth::check()) {
+            if (!$request->has('by')) {
+                return response()->api(
+                    generate_error("Missing staff CID (by)"), 400);
             }
-        $by = Auth::check() ? Auth::user()->cid : $request->by;
+            $byUser = User::find($request->by);
+            if (!$byUser || !RoleHelper::isSeniorStaff($byUser, $facility->id, false)) {
+                return response()->api(
+                    generate_error("Invalid staff CID"), 400);
+            }
+            $by = $byUser->cid;
+        } else {
+            $by = Auth::user()->cid;
+        }
 
         $user = User::find($cid);
         if (!$user || $user->facility != $facility->id) {
