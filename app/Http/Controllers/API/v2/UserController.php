@@ -948,7 +948,7 @@ class UserController extends APIController
             return response()->api(generate_error("Partial CID must be at least 4 digits."), 412);
         }
 
-        $matches = User::where('cid', 'like', "%$partialCid%")->orderBy('fname', 'asc')->get();
+        $matches = User::where('cid', 'like', "$partialCid%")->orderBy('fname', 'asc')->get();
 
         if (!$matches) {
             return response()->api(generate_error("No matching users found.", 404));
@@ -1007,7 +1007,7 @@ class UserController extends APIController
             return response()->api(generate_error("Partial last name must be at least 4 letters."), 412);
         }
 
-        $matches = User::where('lname', 'like', "%$partialLName%")->orderBy('fname', 'asc')->get();
+        $matches = User::where('lname', 'like', "$partialLName%")->orderBy('fname', 'asc')->get();
 
         if (!$matches) {
             return response()->api(generate_error("No matching users found.", 404));
