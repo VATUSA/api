@@ -644,13 +644,17 @@ class User extends Model implements AuthenticatableContract, JWTSubject
 
     public function getPromotionEligibleAttribute()
     {
-        $competencies = AcademyCompetency::where('cid', $this->cid)->get();
-        foreach ($competencies as $competency) {
+        foreach ($this->academyCompetencies as $competency) {
             if ($competency->course->rating == $this->rating + 1) {
                 return true;
             }
         }
         return false;
+    }
+
+    public function academyCompetencies()
+    {
+        return $this->hasMany(AcademyCompetency::class, 'cid', 'cid');
     }
 
     public function getTransferEligibleAttribute()
