@@ -563,16 +563,14 @@ class FacilityController extends APIController
 
         $rosterArr = [];
 
-        $query = User::with(['roles', 'promotions', 'visits']);
-
         if ($membership == 'both') {
-            $home = $facility->members()->with(['roles', 'promotions', 'visits'])->get();
-            $visiting = $facility->visitors()->with(['roles', 'promotions', 'visits'])->get();
+            $home = $facility->members;
+            $visiting = $facility->visitors();
             $roster = $home->merge($visiting);
         } elseif ($membership == 'home') {
-            $roster = $facility->members()->with(['roles', 'promotions', 'visits'])->get();
+            $roster = $facility->members;
         } elseif ($membership == 'visit') {
-            $roster = $facility->visitors()->with(['roles', 'promotions', 'visits'])->get();
+            $roster = $facility->visitors();
         } else {
             return response()->api(generate_error("Malformed request"), 400);
         }
@@ -613,7 +611,7 @@ class FacilityController extends APIController
                                                         ->where("role", "INS")->count() > 0;
 
             //Last promotion date
-            $last_promotion = $member->promotions->sortByDesc('created_at')->first();
+            $last_promotion = $member->lastPromotion();
             if ($last_promotion) {
                 $rosterArr[$i]['last_promotion'] = $last_promotion->created_at;
             } else {
@@ -625,9 +623,8 @@ class FacilityController extends APIController
                 $rosterArr[$i]['membership'] = 'home';
             } else {
                 $rosterArr[$i]['membership'] = 'visit';
-                // Check if visits collection exists and has matching visit
-                $matchingVisit = $member->visits->where('facility', $facility->id)->first();
-                $rosterArr[$i]['facility_join'] = $matchingVisit ? $matchingVisit->updated_at : null;
+                $rosterArr[$i]['facility_join'] = Visit::where('facility', $facility->id)
+                    ->where('cid', $member->cid)->first()->updated_at;
             }
 
             $i++;
