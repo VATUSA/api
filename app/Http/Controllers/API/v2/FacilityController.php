@@ -194,8 +194,9 @@ class FacilityController extends APIController
             );
         }
 
-        if (!RoleHelper::has(Auth::user(), $id, ["ATM", "DATM", "WM"])
-            && !RoleHelper::isVATUSAStaff(Auth::user())) {
+        $authUser = Auth::user();
+        if (!$authUser || (!RoleHelper::has($authUser, $id, ["ATM", "DATM", "WM"])
+            && !RoleHelper::isVATUSAStaff($authUser))) {
             return response()->api(generate_error("Forbidden", true), 403);
         }
 
@@ -445,8 +446,9 @@ class FacilityController extends APIController
         if (!Auth::check()) {
             return response()->api(generate_error("Unauthorized"), 401);
         }
-        if (!RoleHelper::isSeniorStaff(Auth::user(), $id, true)
-            && !RoleHelper::isVATUSAStaff(Auth::user())
+        $authUser = Auth::user();
+        if (!$authUser || (!RoleHelper::isSeniorStaff($authUser, $id, true)
+            && !RoleHelper::isVATUSAStaff($authUser))
         ) {
             return response()->api(generate_error("Forbidden"), 403);
         }
@@ -973,8 +975,12 @@ class FacilityController extends APIController
                 generate_error("Facility not found or not active"), 404);
         }
 
-        if (!AuthHelper::validApiKeyv2($id) && !RoleHelper::isVATUSAStaff(Auth::user()) && (Auth::check() && !RoleHelper::isSeniorStaff(Auth::user(),
-                    $id, false))) {
+        $authUser = Auth::user();
+        $isAuthorized = AuthHelper::validApiKeyv2($id);
+        $isVatusaStaff = $authUser && RoleHelper::isVATUSAStaff($authUser);
+        $isSeniorStaff = $authUser && Auth::check() && RoleHelper::isSeniorStaff($authUser, $id, false);
+
+        if (!$isAuthorized && !$isVatusaStaff && !$isSeniorStaff) {
             return response()->api(generate_error("Forbidden"), 403);
         }
 
@@ -1096,9 +1102,10 @@ class FacilityController extends APIController
             return response()->api(generate_error("Unauthorized"), 401);
         }
 
+        $authUser = Auth::user();
         if (!AuthHelper::validApiKeyv2($request->input('apikey', null))
-            && !RoleHelper::isFacilityStaff(Auth::user(), $id)
-            && !RoleHelper::isVATUSAStaff(Auth::user())
+            && (!$authUser || !RoleHelper::isFacilityStaff($authUser, $id))
+            && (!$authUser || !RoleHelper::isVATUSAStaff($authUser))
         ) {
             return response()->api(generate_error("Forbidden"), 403);
         }
@@ -1114,9 +1121,9 @@ class FacilityController extends APIController
                 'fname'     => $transfer->user->fname,
                 'lname'     => $transfer->user->lname,
                 'email'     => (AuthHelper::validApiKeyv2($request->input('apikey',
-                        null)) || (Auth::check() && RoleHelper::isFacilityStaff(Auth::user())))
+                        null)) || ($authUser && RoleHelper::isFacilityStaff($authUser)))
                     ? $transfer->user->email : null,
-                'reason'    => (Auth::check() && RoleHelper::isSeniorStaff(Auth::user())) ? $transfer->reason : null,
+                'reason'    => ($authUser && RoleHelper::isSeniorStaff($authUser)) ? $transfer->reason : null,
                 'fromFac'   => [
                     'id'   => $transfer->from,
                     'name' => $transfer->fromFac->name
@@ -1208,9 +1215,11 @@ class FacilityController extends APIController
             return response()->api(
                 generate_error("Missing staff CID (by)"), 400);
         } else {
-            if ($request->has('by') && (!User::find($request->by) || !RoleHelper::isSeniorStaff($request->by, $facility->id, false))) {
-                return response()->api(
-                    generate_error("Invalid staff CID"), 400);
+            if ($request->has('by')) {
+                $userByRequest = User::find($request->by);
+                if (!$userByRequest || !RoleHelper::isSeniorStaff($userByRequest, $facility->id, false)) {
+                    return response()->api(generate_error("Invalid staff CID"), 400);
+                }
             }
         }
         $by = Auth::check() ? Auth::user()->cid : $request->by;
@@ -1219,7 +1228,12 @@ class FacilityController extends APIController
             return response()->api(generate_error("Unauthorized"), 401);
         }
 
-        if (!RoleHelper::isSeniorStaff($by, $id)) {
+        $staffUser = Auth::user();
+        if (!$staffUser) { // If not authenticated, use $request->by to find the user
+            $staffUser = User::find($request->by);
+        }
+
+        if (!$staffUser || !RoleHelper::isSeniorStaff($staffUser, $id)) {
             return response()->api(generate_error("Forbidden"), 403);
         }
 
@@ -1262,11 +1276,12 @@ class FacilityController extends APIController
 
     private function hasValidOAuthPerms($facilityId)
     {
-        if (
-            !RoleHelper::isSeniorStaff(Auth::user(), $facilityId, false)
-            && !RoleHelper::has(Auth::user(), $facilityId, "WM")
-            && !RoleHelper::isVATUSAStaff(Auth::user())
-        ) {
+        $authUser = Auth::user();
+        if (!$authUser || (
+            !RoleHelper::isSeniorStaff($authUser, $facilityId, false)
+            && !RoleHelper::has($authUser, $facilityId, "WM")
+            && !RoleHelper::isVATUSAStaff($authUser)
+        )) {
             return false;
         }
 
