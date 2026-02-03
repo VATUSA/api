@@ -976,7 +976,7 @@ class FacilityController extends APIController
         }
 
         $authUser = Auth::user();
-        $isAuthorized = AuthHelper::validApiKeyv2($id);
+        $isAuthorized = AuthHelper::validApiKeyv2($request->input('apikey', null));
         $isVatusaStaff = $authUser && RoleHelper::isVATUSAStaff($authUser);
         $isSeniorStaff = $authUser && Auth::check() && RoleHelper::isSeniorStaff($authUser, $id, false);
 
