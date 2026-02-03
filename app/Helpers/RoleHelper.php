@@ -248,9 +248,6 @@ class RoleHelper
         if (!\Auth::check() && !$isApi) {
             return false;
         }
-        if ($user->cid == null || $user->cid == 0) {
-            $cid = \Auth::user()->cid;
-        }
 
         $user = User::where('cid', $cid)->first();
         if ($user == null) {
@@ -262,11 +259,11 @@ class RoleHelper
         }*/
 
         if (!$skipWebTeam) {
-            if (Role::where("facility", "ZHQ")->where("cid", $cid)->where("role", "LIKE", "US%")->count() >= 1) {
+            if (Role::where("facility", "ZHQ")->where("cid", $user->cid)->where("role", "LIKE", "US%")->count() >= 1) {
                 return true;
             }
         } else {
-            if (Role::where('facility', 'ZHQ')->where("cid", $cid)->where("role", "LIKE", "US%")->where("role",
+            if (Role::where('facility', 'ZHQ')->where("cid", $user->cid)->where("role", "LIKE", "US%")->where("role",
                     "NOT LIKE", "USWT")->count() >= 1) {
                 return true;
             }
