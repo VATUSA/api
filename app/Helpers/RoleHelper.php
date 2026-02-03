@@ -249,11 +249,6 @@ class RoleHelper
             return false;
         }
 
-        $user = User::where('cid', $cid)->first();
-        if ($user == null) {
-            return false;
-        }
-
         /*if ($user->facility == "ZHQ") {
             return true;
         }*/
