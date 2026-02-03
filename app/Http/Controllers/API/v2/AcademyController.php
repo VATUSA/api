@@ -249,7 +249,7 @@ class AcademyController extends APIController
             $validKeyVisit = $user->visits->contains('facility', $facility->id);
         }
 
-        if (!$validKeyHome && !$validKeyVisit && !(Auth::check() && ($user->facility == Auth::user()->facility || (Auth::user()->visits && Auth::user()->visits->contains('facility', Auth::user()->facility))) && (RoleHelper::isMentor(Auth::user()) || RoleHelper::isInstructor(Auth::user()) || RoleHelper::isSeniorStaff(Auth::user())) || RoleHelper::isVATUSAStaff(Auth::user()))) {
+        if (!$validKeyHome && !$validKeyVisit && !(Auth::check() && ($user->facility == Auth::user()->facility || (Auth::user()->visits && Auth::user()->visits->contains('facility', Auth::user()->facility))) && (RoleHelper::isMentor(Auth::user()) || RoleHelper::isInstructor(Auth::user()) || RoleHelper::isSeniorStaff(Auth::user())) || (Auth::check() && RoleHelper::isVATUSAStaff(Auth::user())))) {
             return response()->forbidden();
         }
 
