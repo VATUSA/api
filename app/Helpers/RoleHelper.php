@@ -245,17 +245,29 @@ class RoleHelper
 
     public static function isVATUSAStaff(User $user, $skipWebTeam = false, $isApi = false)
     {
+        if (!\Auth::check() && !$isApi) {
+            return false;
+        }
+        if ($user->cid == null || $user->cid == 0) {
+            $cid = \Auth::user()->cid;
+        }
+
+        $user = User::where('cid', $cid)->first();
+        if ($user == null) {
+            return false;
+        }
+
         /*if ($user->facility == "ZHQ") {
             return true;
         }*/
 
         if (!$skipWebTeam) {
-            if ($user->roles->where("facility", "ZHQ")->where("role", "LIKE", "US%")->count()) {
+            if (Role::where("facility", "ZHQ")->where("cid", $cid)->where("role", "LIKE", "US%")->count() >= 1) {
                 return true;
             }
         } else {
-            if ($user->roles->where('facility', 'ZHQ')->where("role", "LIKE", "US%")->where("role",
-                    "NOT LIKE", "USWT")->count()) {
+            if (Role::where('facility', 'ZHQ')->where("cid", $cid)->where("role", "LIKE", "US%")->where("role",
+                    "NOT LIKE", "USWT")->count() >= 1) {
                 return true;
             }
         }
