@@ -499,6 +499,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         $checks['50hrs'] = $this->rating == 1;
         $checks['override'] = false;
         $checks['is_first'] = false;
+        $checks['60days'] = false;
 
         $controllerEligibilityCache = ControllerEligibilityCache::where('cid', $this->cid)->first();
         if ($controllerEligibilityCache !== null) {
