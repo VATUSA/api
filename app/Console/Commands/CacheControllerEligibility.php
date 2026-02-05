@@ -168,7 +168,7 @@ class CacheControllerEligibility extends Command
             $this->createRecord($cid->cid);
         }
         $page = 0;
-        $recordsPerPage = 500;
+        $recordsPerPage = 250;
         while (true) {
             Log::info("Loading page {$page}");
             // General Eligibility checks
