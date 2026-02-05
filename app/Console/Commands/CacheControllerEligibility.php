@@ -38,21 +38,23 @@ class CacheControllerEligibility extends Command
         parent::__construct();
     }
 
-    public function createRecord(int $cid): ControllerEligibilityCache {
+    public function createRecord(int $cid): ControllerEligibilityCache
+    {
         $record = new ControllerEligibilityCache();
         $record->cid = $cid;
         $record->save();
         return $record;
     }
 
-    public function updateControllerEligibility(ControllerEligibilityCache $controllerEligibility, User $user, $userTransfers, $userPromotions, $userVisits, $userAcademyCompetencies) {
+    public function updateControllerEligibility(ControllerEligibilityCache $controllerEligibility, User $user, $userTransfers, $userPromotions, $userVisits, $userAcademyCompetencies)
+    {
         $in_vatusa_facility = !in_array($user->facility, ["ZAE", "ZZN", "ZZI"]);
         $visits_vatusa_facility = $userVisits->count() > 0;
 
         if ($user->flag_homecontroller) {
             // Checks for in division only
             if ($controllerEligibility->is_initial_selection !== false || $controllerEligibility->first_selection_date === null) {
-                $first_transfer = $userTransfers->filter(function($transfer) {
+                $first_transfer = $userTransfers->filter(function ($transfer) {
                     return !in_array($transfer->to, ['ZAE', 'ZZN', 'ZZI']);
                 })->sortBy('created_at')->first();
                 if ($first_transfer) {
@@ -62,14 +64,14 @@ class CacheControllerEligibility extends Command
                     $controllerEligibility->is_initial_selection = true;
                 }
             }
-            $last_promotion = $userPromotions->filter(function($promotion) {
+            $last_promotion = $userPromotions->filter(function ($promotion) {
                 return $promotion->from < 5 && $promotion->to < 7;
             })->sortByDesc('created_at')->first();
             if ($last_promotion) {
                 $carbonDate = Carbon::createFromFormat('Y-m-d H:i:s', $last_promotion->created_at);
                 $controllerEligibility->last_promotion_date = $carbonDate->toDateString();
             }
-            $last_transfer = $userTransfers->filter(function($transfer) {
+            $last_transfer = $userTransfers->filter(function ($transfer) {
                 return !in_array($transfer->to, ['ZAE', 'ZZN', 'ZZI']) && $transfer->status === 1;
             })->sortByDesc('created_at')->first();
             if ($last_transfer) {
@@ -116,7 +118,8 @@ class CacheControllerEligibility extends Command
         $controllerEligibility->save();
     }
 
-    private function checkControllerHours(ControllerEligibilityCache $controllerEligibility) {
+    private function checkControllerHours(ControllerEligibilityCache $controllerEligibility)
+    {
         \App\Jobs\UpdateControllerHoursJob::dispatch($controllerEligibility->cid);
     }
 
@@ -164,35 +167,43 @@ class CacheControllerEligibility extends Command
             Log::info("[{$i}/{$total}] Creating record for {$cid->cid}");
             $this->createRecord($cid->cid);
         }
-
-        // General Eligibility checks
-        $records = ControllerEligibilityCache::get();
-        $cidsForProcessing = $records->pluck('cid')->toArray();
-
-        // Batch fetch all related data for the CIDs
-        $users = User::whereIn('cid', $cidsForProcessing)->get()->keyBy('cid');
-        $transfersByCid = Transfer::whereIn('cid', $cidsForProcessing)->get()->groupBy('cid');
-        $promotionsByCid = Promotion::whereIn('cid', $cidsForProcessing)->get()->groupBy('cid');
-        $visitsByCid = Visit::whereIn('cid', $cidsForProcessing)->get()->groupBy('cid');
-        $academyCompetenciesByCid = AcademyCompetency::whereIn('cid', $cidsForProcessing)->with('course')->get()->groupBy('cid');
-
-
-        $total = count($records);
-        $i = 0;
-        foreach ($records as $record) {
-            $i++;
-            Log::info("[{$i}/{$total}] Updating eligibility for {$record->cid}");
-            $user = $users->get($record->cid);
-
-            if ($user) {
-                $userTransfers = $transfersByCid->get($record->cid, collect());
-                $userPromotions = $promotionsByCid->get($record->cid, collect());
-                $userVisits = $visitsByCid->get($record->cid, collect());
-                $userAcademyCompetencies = $academyCompetenciesByCid->get($record->cid, collect());
-                $this->updateControllerEligibility($record, $user, $userTransfers, $userPromotions, $userVisits, $userAcademyCompetencies);
-            } else {
-                Log::warning("CacheControllerEligibility: User {$record->cid} not found for eligibility update, skipping.");
+        $page = 0;
+        $recordsPerPage = 500;
+        while (true) {
+            Log::info("Loading page {$page}");
+            // General Eligibility checks
+            $records = ControllerEligibilityCache::offset($page*$recordsPerPage)->limit($recordsPerPage)->get();
+            if (count($records) == 0) {
+                break;
             }
+            $cidsForProcessing = $records->pluck('cid')->toArray();
+
+            // Batch fetch all related data for the CIDs
+            $users = User::whereIn('cid', $cidsForProcessing)->get()->keyBy('cid');
+            $transfersByCid = Transfer::whereIn('cid', $cidsForProcessing)->get()->groupBy('cid');
+            $promotionsByCid = Promotion::whereIn('cid', $cidsForProcessing)->get()->groupBy('cid');
+            $visitsByCid = Visit::whereIn('cid', $cidsForProcessing)->get()->groupBy('cid');
+            $academyCompetenciesByCid = AcademyCompetency::whereIn('cid', $cidsForProcessing)->with('course')->get()->groupBy('cid');
+
+
+            $total = count($records);
+            $i = 0;
+            foreach ($records as $record) {
+                $i++;
+                Log::info("[{$i}/{$total}] Updating eligibility for {$record->cid}");
+                $user = $users->get($record->cid);
+
+                if ($user) {
+                    $userTransfers = $transfersByCid->get($record->cid, collect());
+                    $userPromotions = $promotionsByCid->get($record->cid, collect());
+                    $userVisits = $visitsByCid->get($record->cid, collect());
+                    $userAcademyCompetencies = $academyCompetenciesByCid->get($record->cid, collect());
+                    $this->updateControllerEligibility($record, $user, $userTransfers, $userPromotions, $userVisits, $userAcademyCompetencies);
+                } else {
+                    Log::warning("CacheControllerEligibility: User {$record->cid} not found for eligibility update, skipping.");
+                }
+            }
+            $page++;
         }
 
         // Hours checks
