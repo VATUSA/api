@@ -118,8 +118,10 @@ class MoodleCompetency extends Command
 
 
             $controller_existing_competencies = (array_key_exists($user->cid, $existing_competencies)) ? $existing_competencies[$user->cid] : [];
-            $this->checkControllerCompetency($user->cid, $user->rating, $controller_existing_competencies);
-            if ($user->rating < 5 && $user->facility != 'ZZN' && $user->facility != 'ZAE') {
+            if ($user->rating > 1) {
+                $this->checkControllerCompetency($user->cid, $user->rating, $controller_existing_competencies);
+            }
+            if ($user->rating < 5 && $user->facility != 'ZZN') {
                 $this->checkControllerCompetency($user->cid, $user->rating + 1, $controller_existing_competencies);
             }
 
@@ -130,7 +132,7 @@ class MoodleCompetency extends Command
                                                     FROM controllers c
                                                     WHERE (
                                                         (
-                                                            flag_homecontroller = 1 AND (c.rating > 1 OR c.facility != 'ZAE')
+                                                            flag_homecontroller = 1
                                                         ) OR
                                                            (c.facility = 'ZZN' AND c.rating >= 4)
                                                         )
