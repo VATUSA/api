@@ -90,7 +90,7 @@ class CacheControllerEligibility extends Command
             }
         }
         if ($user->rating >= 4 || $user->flag_homecontroller) {
-            $target_competency_rating = ($user->rating > 5) ? 5 : $user->rating;
+            $target_competency_rating = ($user->rating > 5) ? 5 : (($user->rating == 1) ? 2 : $user->rating);
             if ($controllerEligibility->competency_rating < $target_competency_rating) {
                 $controllerEligibility->has_consolidation_hours = false;
             }
