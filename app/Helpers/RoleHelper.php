@@ -198,7 +198,7 @@ class RoleHelper
         }
 
         // Check for an instructor role
-        if ($user->roles->where("facility", $facility)->where("role", "INS")->count()) {
+        if (Role::where("cid", $user->cid)->where("facility", $facility)->where("role", "INS")->count()) {
             return true;
         }
 
@@ -229,7 +229,7 @@ class RoleHelper
             return false;
         }
 
-        if ($user->roles->where("facility", $facility->id)->where("role", "MTR")->count()) {
+        if (Role::where("cid", $user->cid)->where("facility", $facility->id)->where("role", "MTR")->count()) {
             return true;
         }
 
@@ -277,7 +277,7 @@ class RoleHelper
         if (static::has($user, "ZHQ", "US6")) {
             return true;
         }
-        if ($user->roles->where("facility", "ZHQ")->where("role", "USWT")->count()) {
+        if (Role::where("cid", $user->cid)->where("facility", "ZHQ")->where("role", "USWT")->count()) {
             return true;
         }
 
@@ -323,13 +323,13 @@ class RoleHelper
                 $facility = $facility->id;
             }
             foreach ($role as $r) {
-                if ($user->roles->where("facility", $facility)->where("role", $r)->count()) {
+                if (Role::where("cid", $user->cid)->where("facility", $facility)->where("role", $r)->count()) {
                     return true;
                 }
             }
             return false;
         }
-        if ($user->roles->where("facility", $facility)->where("role", $role)->count()) {
+        if (Role::where("cid", $user->cid)->where("facility", $facility)->where("role", $role)->count()) {
             return true;
         }
         return false;
