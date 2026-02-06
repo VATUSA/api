@@ -102,7 +102,7 @@ class MoodleCompetency extends Command
         $all_existing_competencies = DB::select("SELECT c.cid, ac.rating
                                                         FROM academy_competency c
                                                                  JOIN academy_course ac ON c.academy_course_id = ac.id
-                                                        WHERE c.expiration_timestamp < NOW()");
+                                                        WHERE c.expiration_timestamp > NOW()");
         $existing_competencies = [];
         foreach ($all_existing_competencies as $competency) {
             $existing_competencies[$competency->cid][] = $competency->rating;
