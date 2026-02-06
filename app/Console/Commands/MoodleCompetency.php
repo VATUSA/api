@@ -76,8 +76,6 @@ class MoodleCompetency extends Command
                     $c->expiration_timestamp = $expireTimestamp;
                     $c->save();
                     echo "===Detected valid quiz pass - CID: {$cid} - Rating: {$rating} - Quiz Id: {$course->moodle_quiz_id}\n";
-                    return;
-
                 }
             }
         }
