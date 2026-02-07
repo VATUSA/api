@@ -42,6 +42,22 @@ class MoodleCompetency extends Command
         $this->moodle = $moodle;
     }
 
+    public function storeControllerCompetency($cid, $rating, $course_id, $competency_date) {
+        $c = AcademyCompetency::where('cid', $cid)->where('rating', $rating)->first();
+        if (!$c) {
+            $c = new AcademyCompetency();
+            $c->cid = $cid;
+            $c->rating = $rating;
+        }
+        $finishTimestamp = $competency_date->format('Y-m-d H:i');
+        $expireCarbon = $competency_date->addDays(180);
+        $expireTimestamp = $expireCarbon->format('Y-m-d H:i');
+        $c->academy_course_id = $course_id;
+        $c->completion_timestamp = $finishTimestamp;
+        $c->expiration_timestamp = $expireTimestamp;
+        $c->save();
+    }
+
     public function checkControllerCompetency($cid, $rating, $controller_existing_competencies): void
     {
         if ($rating < 2) {
@@ -59,6 +75,8 @@ class MoodleCompetency extends Command
             echo "Can't get moodle user id for CID {$cid}\n";
             return;
         }
+        $passedCourseId = null;
+        $passedCarbon = null;
         foreach ($this->courses[$rating] as $course) {
             echo "Querying Moodle - CID: {$cid} - Rating: {$rating} - Quiz Id: {$course->moodle_quiz_id}\n";
             $attempts = $this->moodle->getQuizAttempts($course->moodle_quiz_id, null, $uid);
@@ -66,18 +84,16 @@ class MoodleCompetency extends Command
                 if (round($attempt['grade']) >= $course->passing_percent) {
                     // Passed
                     $finishCarbon = Carbon::createFromTimestampUTC($attempt['timefinish']);
-                    $finishTimestamp = $finishCarbon->format('Y-m-d H:i');
-                    $expireCarbon = $finishCarbon->addDays(180);
-                    $expireTimestamp = $expireCarbon->format('Y-m-d H:i');
-                    $c = new AcademyCompetency();
-                    $c->cid = $cid;
-                    $c->academy_course_id = $course->id;
-                    $c->completion_timestamp = $finishTimestamp;
-                    $c->expiration_timestamp = $expireTimestamp;
-                    $c->save();
+                    if ($passedCarbon == null || $passedCarbon->before($finishCarbon)) {
+                        $passedCarbon = $finishCarbon;
+                        $passedCourseId = $course->id;
+                    }
                     echo "===Detected valid quiz pass - CID: {$cid} - Rating: {$rating} - Quiz Id: {$course->moodle_quiz_id}\n";
                 }
             }
+        }
+        if ($passedCourseId != null) {
+            $this->storeControllerCompetency($cid, $rating, $passedCourseId, $passedCarbon);
         }
 
     }
