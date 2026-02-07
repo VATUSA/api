@@ -84,7 +84,7 @@ class MoodleCompetency extends Command
                 if (round($attempt['grade']) >= $course->passing_percent) {
                     // Passed
                     $finishCarbon = Carbon::createFromTimestampUTC($attempt['timefinish']);
-                    if ($passedCarbon == null || $passedCarbon->before($finishCarbon)) {
+                    if ($passedCarbon == null || $passedCarbon->isBefore($finishCarbon)) {
                         $passedCarbon = $finishCarbon;
                         $passedCourseId = $course->id;
                     }
