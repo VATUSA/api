@@ -5,6 +5,8 @@ namespace App\Console\Commands;
 use App\AcademyCompetency;
 use App\AcademyCourse;
 use App\Classes\VATUSAMoodle;
+use App\Http\Controllers\Controller;
+use App\Models\ControllerEligibilityCache;
 use App\User;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -42,7 +44,7 @@ class MoodleCompetency extends Command
         $this->moodle = $moodle;
     }
 
-    public function storeControllerCompetency($cid, $rating, $course_id, $competency_date) {
+    public function storeControllerCompetency(int $cid, int $rating, int $course_id, Carbon $competency_date) {
         $c = AcademyCompetency::where('cid', $cid)->where('rating', $rating)->first();
         if (!$c) {
             $c = new AcademyCompetency();
@@ -56,6 +58,16 @@ class MoodleCompetency extends Command
         $c->completion_timestamp = $finishTimestamp;
         $c->expiration_timestamp = $expireTimestamp;
         $c->save();
+
+        $ec = ControllerEligibilityCache::where('cid', $cid)->first();
+        if ($ec) {
+            $ecCompetencyCarbon = Carbon::parse($ec->competency_date);
+            if ($rating >= $ec->competency_rating && $ecCompetencyCarbon->isBefore($competency_date)) {
+                $ec->competency_rating = $rating;
+                $ec->cometency_date = $competency_date->format('Y-m-d H:i');
+                $ec->save();
+            }
+        }
     }
 
     public function checkControllerCompetency($cid, $rating, $controller_existing_competencies): void
@@ -158,7 +170,7 @@ class MoodleCompetency extends Command
                                                         )
                                                     
                                                       AND c.rating > 0
-                                                      AND c.lastactivity > NOW() - INTERVAL 30 DAY");
+                                                      AND c.lastactivity > NOW() - INTERVAL 1 DAY");
         $total = count($controllers_to_check);
         $i=0;
         foreach ($controllers_to_check as $controller) {

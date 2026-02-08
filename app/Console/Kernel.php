@@ -79,7 +79,7 @@ class Kernel extends ConsoleKernel
 
         $commandName = "moodle:competency";
         $schedule->command($commandName)
-            ->hourly()
+            ->everyFiveMinutes()
             ->onOneServer()
             ->runInBackground()
             ->before($createBeforeHook($commandName))
