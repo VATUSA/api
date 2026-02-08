@@ -79,7 +79,12 @@ class MoodleCompetency extends Command
         $passedCarbon = null;
         foreach ($this->courses[$rating] as $course) {
             echo "Querying Moodle - CID: {$cid} - Rating: {$rating} - Quiz Id: {$course->moodle_quiz_id}\n";
-            $attempts = $this->moodle->getQuizAttempts($course->moodle_quiz_id, null, $uid);
+            try {
+                $attempts = $this->moodle->getQuizAttempts($course->moodle_quiz_id, null, $uid);
+            } catch (Exception $e) {
+                echo "Exception in moodle->getQuizAttempts(): " . $e->getMessage() . "\n\n";
+                $attempts = [];
+            }
             foreach ($attempts as $attempt) {
                 if (round($attempt['grade']) >= $course->passing_percent) {
                     // Passed
@@ -121,6 +126,7 @@ class MoodleCompetency extends Command
         foreach ($all_existing_competencies as $competency) {
             $existing_competencies[$competency->cid][] = $competency->rating;
         }
+        unset($all_existing_competencies); // Dropping DB result to reclaim memory
 
         if ($this->argument('user')) {
             $user = User::find($this->argument('user'));
