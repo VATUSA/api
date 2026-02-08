@@ -164,13 +164,11 @@ class MoodleCompetency extends Command
                                                     FROM controllers c
                                                     WHERE (
                                                         (
-                                                            flag_homecontroller = 1
+                                                            flag_homecontroller = 1 
+                                                            AND (c.rating < 5 or c.facility = 'ZAE')
                                                         ) OR
                                                            (c.facility = 'ZZN' AND c.rating >= 4)
                                                         )
-                                                      AND (
-                                                          c.
-                                                      )
                                                       AND c.rating > 0
                                                       AND c.lastactivity > NOW() - INTERVAL 1 DAY");
         $total = count($controllers_to_check);
