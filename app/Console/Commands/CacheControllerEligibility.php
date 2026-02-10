@@ -142,7 +142,7 @@ class CacheControllerEligibility extends Command
 
             $rec = ControllerEligibilityCache::find(['cid' => $cid]);
             if (!$rec) {
-                $this->createRecord($cid);
+                $rec = $this->createRecord($cid);
             }
 
             // Fetch related data for this single user
