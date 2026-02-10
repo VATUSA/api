@@ -55,7 +55,7 @@ class CacheControllerEligibility extends Command
             // Checks for in division only
             if ($controllerEligibility->is_initial_selection !== false || $controllerEligibility->first_selection_date === null) {
                 $first_transfer = $userTransfers->filter(function ($transfer) {
-                    return !in_array($transfer->to, ['ZAE', 'ZZN', 'ZZI']);
+                    return !in_array($transfer->to, ['ZAE', 'ZZN', 'ZZI']) && $transfer->status != 2;
                 })->sortBy('created_at')->first();
                 if ($first_transfer) {
                     $controllerEligibility->first_selection_date = $first_transfer->created_at;
