@@ -140,7 +140,10 @@ class CacheControllerEligibility extends Command
                 return;
             }
 
-            $rec = ControllerEligibilityCache::firstOrCreate(['cid' => $cid]);
+            $rec = ControllerEligibilityCache::find(['cid' => $cid]);
+            if (!$rec) {
+                $this->createRecord($cid);
+            }
 
             // Fetch related data for this single user
             $userTransfers = Transfer::where('cid', $cid)->get();
