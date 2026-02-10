@@ -140,7 +140,7 @@ class CacheControllerEligibility extends Command
                 return;
             }
 
-            $rec = ControllerEligibilityCache::find(['cid' => $cid]);
+            $rec = ControllerEligibilityCache::where('cid', $cid)->first();
             if (!$rec) {
                 $rec = $this->createRecord($cid);
             }
