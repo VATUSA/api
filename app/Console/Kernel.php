@@ -65,6 +65,7 @@ class Kernel extends ConsoleKernel
         $schedule->command($commandName)
             ->everyMinute()
             ->onOneServer()
+            ->withoutOverlapping()
             ->runInBackground()
             ->before($createBeforeHook($commandName))
             ->after($createAfterHook($commandName));
@@ -81,6 +82,7 @@ class Kernel extends ConsoleKernel
         $schedule->command($commandName)
             ->everyFiveMinutes()
             ->onOneServer()
+            ->withoutOverlapping()
             ->runInBackground()
             ->before($createBeforeHook($commandName))
             ->after($createAfterHook($commandName));
