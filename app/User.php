@@ -597,7 +597,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         if ($checks['override']) {
             return true;
         }
-        if (($checks['50hrs'] || !$checks['hasHome']) && $checks['instructor'] && $checks['staff'] && $checks['homecontroller'] && $checks['needbasic'] && $checks['pending'] && (($checks['is_first'] && $checks['initial']) || $checks['90days']) && $checks['promo']) {
+        if (($checks['50hrs'] || !$checks['hasHome']) && $checks['instructor'] && $checks['staff'] && $checks['homecontroller'] && $checks['needbasic'] && $checks['pending'] && ($checks['is_first'] || $checks['90days']) && $checks['promo']) {
             return true;
         } else {
             return false;
