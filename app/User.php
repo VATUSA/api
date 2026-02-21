@@ -507,6 +507,11 @@ class User extends Model implements AuthenticatableContract, JWTSubject
 
             $daysSinceFirstSelection = daysSince($controllerEligibilityCache->first_selection_date);
             $checks['is_first'] = $daysSinceFirstSelection === null || $daysSinceFirstSelection < 30;
+            $completedTransferCount = Transfers::where('cid', $this->cid)
+                    ->where('status', 1)
+                    ->whereNotIn('to', ['ZAE', 'ZZI', 'ZZN'])
+                    ->count();
+            $checks['is_first'] = $completedTransferCount > 1 ? 0:1;
 
             $daysSinceLastTransfer = daysSince($controllerEligibilityCache->last_transfer_date);
             $checks['90days'] = $daysSinceLastTransfer === null || $daysSinceLastTransfer >= 90;

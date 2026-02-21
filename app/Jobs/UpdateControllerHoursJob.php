@@ -62,9 +62,9 @@ class UpdateControllerHoursJob implements ShouldQueue
                     if ($ratingHours) {
                         if ($ratingHours[$short] >= 50) {
                             $controllerEligibility->has_consolidation_hours = true;
-                        } else if ($user->rating > 5 && ($ratingHours['c1'] + $ratingHours['c3'] + $ratingHours['i1'] + $ratingHours['i3']) >= 50) {
+                        } else if ($user->rating > 4 && ($ratingHours['c1'] + $ratingHours['c3'] + $ratingHours['i1'] + $ratingHours['i3']) >= 50) {
                             $controllerEligibility->has_consolidation_hours = true;
-                        } else if ($user->rating > 5) {
+                        } else if ($user->rating > 4) {
                             $controllerEligibility->has_consolidation_hours = false;
                             $controllerEligibility->consolidation_hours =
                                 ($ratingHours['c1'] + $ratingHours['c3'] + $ratingHours['i1'] + $ratingHours['i3']);
