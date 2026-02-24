@@ -93,7 +93,6 @@ class UserController extends APIController
             $data['visits'] = null;
             $data['visiting_facilities'] = null;
             $data['academy_competencies'] = null;
-            $data['roles'] = null;
             $data['promotions'] = null;
         }
         if (!$isSeniorStaff) {
