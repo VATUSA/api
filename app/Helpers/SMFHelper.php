@@ -113,7 +113,8 @@ class SMFHelper
                 RoleHelper::hasRole($user->cid, "ZHQ", "US2") ||
                 RoleHelper::hasRole($user->cid, "ZHQ", "US3") ||
                 RoleHelper::hasRole($user->cid, "ZHQ", "US4") ||
-                RoleHelper::hasRole($user->cid, "ZHQ", "US6")) {
+                RoleHelper::hasRole($user->cid, "ZHQ", "US6")||
+                RoleHelper::hasRole($user->cid, "ZHQ", "US0")) {
                 $secondary[] = static::findGroup("Administrator");
             }
         }
