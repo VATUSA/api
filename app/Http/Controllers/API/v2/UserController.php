@@ -63,15 +63,6 @@ class UserController extends APIController
         }
         $data = $user->toArray();
 
-        if (!AuthHelper::validApiKeyv2($request->input('apikey', null)) && !$isFacStaff) {
-            //API Key Required
-            $data['flag_broadcastOptedIn'] = null;
-            $data['email'] = null;
-        }
-        if (!$isSeniorStaff) {
-            //Senior Staff Only
-            $data['flag_preventStaffAssign'] = null;
-        }
         $data['facility_join'] = Carbon::createFromFormat('Y-m-d H:i:s', $user->facility_join)->format('c');
         $data['lastactivity'] = Carbon::createFromFormat('Y-m-d H:i:s', $user->lastactivity)->format('c');
 
@@ -94,6 +85,19 @@ class UserController extends APIController
         //Last Promotion
         $lastPromotion = $user->promotions->sortByDesc('created_at')->first();
         $data['last_promotion'] = $lastPromotion ? $lastPromotion->created_at : null;
+
+        if (!AuthHelper::validApiKeyv2($request->input('apikey', null)) && !$isFacStaff) {
+            //API Key Required
+            $data['flag_broadcastOptedIn'] = null;
+            $data['email'] = null;
+            $data['visiting'] = null;
+            $data['roles'] = null;
+            $data['promotions'] = null;
+        }
+        if (!$isSeniorStaff) {
+            //Senior Staff Only
+            $data['flag_preventStaffAssign'] = null;
+        }
 
         return response()->api($data);
     }
