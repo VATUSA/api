@@ -90,7 +90,9 @@ class UserController extends APIController
             //API Key Required
             $data['flag_broadcastOptedIn'] = null;
             $data['email'] = null;
-            $data['visiting'] = null;
+            $data['visits'] = null;
+            $data['visiting_facilities'] = null;
+            $data['academy_competencies'] = null;
             $data['roles'] = null;
             $data['promotions'] = null;
         }
