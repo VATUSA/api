@@ -91,7 +91,6 @@ class UserController extends APIController
             $data['flag_broadcastOptedIn'] = null;
             $data['email'] = null;
             $data['visits'] = null;
-            $data['visiting_facilities'] = null;
             $data['academy_competencies'] = null;
             $data['promotions'] = null;
         }
