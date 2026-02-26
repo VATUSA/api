@@ -152,7 +152,10 @@ class MoodleCompetency extends Command
             $controller_existing_competencies = (array_key_exists($user->cid, $existing_competencies)) ? $existing_competencies[$user->cid] : [];
             $checkRating = $user->rating;
             while ($checkRating <= 5) {
-                if ($checkRating < 2) continue;
+                if ($checkRating < 2) {
+                    $checkRating++;
+                    continue;
+                }
                 $this->checkControllerCompetency($user->cid, $checkRating, $controller_existing_competencies);
                 $checkRating++;
             }
