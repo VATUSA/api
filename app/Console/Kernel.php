@@ -58,6 +58,7 @@ class Kernel extends ConsoleKernel
             ->everyThreeHours($minutes = 0)
             ->onOneServer()
             ->runInBackground()
+            ->withoutOverlapping()
             ->before($createBeforeHook($commandName))
             ->after($createAfterHook($commandName));
 
