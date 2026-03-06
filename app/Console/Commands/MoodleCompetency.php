@@ -62,7 +62,7 @@ class MoodleCompetency extends Command
         $ec = ControllerEligibilityCache::where('cid', $cid)->first();
         if ($ec) {
             $ecCompetencyCarbon = Carbon::parse($ec->competency_date);
-            if ($rating >= $ec->competency_rating || $ecCompetencyCarbon->isBefore($competency_date)) {
+            if ($ecCompetencyCarbon->isBefore($competency_date)) {
                 $ec->competency_rating = $rating;
                 $ec->competency_date = $competency_date->format('Y-m-d H:i');
                 $ec->save();
