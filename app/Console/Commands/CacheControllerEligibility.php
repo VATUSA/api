@@ -106,8 +106,7 @@ class CacheControllerEligibility extends Command
                 $competencies = $userAcademyCompetencies->sortByDesc('completion_timestamp');
                 foreach ($competencies as $competency) {
                     $carbonDate = Carbon::createFromFormat('Y-m-d H:i:s', $competency->completion_timestamp);
-                    if ($competency->course->rating >= $controllerEligibility->competency_rating
-                        || ($controllerEligibility->competency_date === null || $carbonDate->isAfter($ceCarbonDate))) {
+                    if ($controllerEligibility->competency_date === null || $carbonDate->isAfter($ceCarbonDate)) {
                         $controllerEligibility->competency_rating = $competency->course->rating;
                         $controllerEligibility->competency_date = $carbonDate->toDateString();
                         $controllerEligibility->has_consolidation_hours = false;
