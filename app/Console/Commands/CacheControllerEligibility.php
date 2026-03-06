@@ -101,8 +101,9 @@ class CacheControllerEligibility extends Command
                 $carbonDate = Carbon::now();
                 $controllerEligibility->competency_date = $carbonDate->toDateString();
             }
-            $ceCarbonDate = Carbon::createFromFormat('Y-m-d', $controllerEligibility->competency_date);
-            if ($controllerEligibility->competency_date === null || $ceCarbonDate->diffInDays(Carbon::now()) > 180) {
+            if ($controllerEligibility->competency_date === null
+                || Carbon::createFromFormat('Y-m-d', $controllerEligibility->competency_date)->diffInDays(Carbon::now()) > 180) {
+                $ceCarbonDate = Carbon::createFromFormat('Y-m-d', $controllerEligibility->competency_date);
                 $competencies = $userAcademyCompetencies->sortByDesc('completion_timestamp');
                 foreach ($competencies as $competency) {
                     $carbonDate = Carbon::createFromFormat('Y-m-d H:i:s', $competency->completion_timestamp);
