@@ -103,11 +103,10 @@ class CacheControllerEligibility extends Command
             }
             if ($controllerEligibility->competency_date === null
                 || Carbon::createFromFormat('Y-m-d', $controllerEligibility->competency_date)->diffInDays(Carbon::now()) > 180) {
-                $ceCarbonDate = Carbon::createFromFormat('Y-m-d', $controllerEligibility->competency_date);
                 $competencies = $userAcademyCompetencies->sortByDesc('completion_timestamp');
                 foreach ($competencies as $competency) {
                     $carbonDate = Carbon::createFromFormat('Y-m-d H:i:s', $competency->completion_timestamp);
-                    if ($controllerEligibility->competency_date === null || $carbonDate->isAfter($ceCarbonDate)) {
+                    if ($controllerEligibility->competency_date === null || $carbonDate->isAfter(Carbon::createFromFormat('Y-m-d', $controllerEligibility->competency_date))) {
                         $controllerEligibility->competency_rating = $competency->course->rating;
                         $controllerEligibility->competency_date = $carbonDate->toDateString();
                         $controllerEligibility->has_consolidation_hours = false;
