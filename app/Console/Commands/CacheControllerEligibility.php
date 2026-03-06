@@ -101,16 +101,16 @@ class CacheControllerEligibility extends Command
                 $carbonDate = Carbon::now();
                 $controllerEligibility->competency_date = $carbonDate->toDateString();
             }
-            if ($controllerEligibility->competency_date === null || Carbon::createFromFormat('Y-m-d', $controllerEligibility->competency_date)->diffInDays(Carbon::now()) > 180) {
+            $ceCarbonDate = Carbon::createFromFormat('Y-m-d', $controllerEligibility->competency_date);
+            if ($controllerEligibility->competency_date === null || $ceCarbonDate->diffInDays(Carbon::now()) > 180) {
                 $competencies = $userAcademyCompetencies->sortByDesc('completion_timestamp');
                 foreach ($competencies as $competency) {
-                    if ($competency->course->rating >= $controllerEligibility->competency_rating) {
-                        $carbonDate = Carbon::createFromFormat('Y-m-d H:i:s', $competency->completion_timestamp);
-                        if ($controllerEligibility->competency_date === null || $carbonDate->isAfter(Carbon::createFromFormat('Y-m-d', $controllerEligibility->competency_date))) {
-                            $controllerEligibility->competency_rating = $competency->course->rating;
-                            $controllerEligibility->competency_date = $carbonDate->toDateString();
-                            $controllerEligibility->has_consolidation_hours = false;
-                        }
+                    $carbonDate = Carbon::createFromFormat('Y-m-d H:i:s', $competency->completion_timestamp);
+                    if ($competency->course->rating >= $controllerEligibility->competency_rating
+                        && ($controllerEligibility->competency_date === null || $carbonDate->isAfter($ceCarbonDate))) {
+                        $controllerEligibility->competency_rating = $competency->course->rating;
+                        $controllerEligibility->competency_date = $carbonDate->toDateString();
+                        $controllerEligibility->has_consolidation_hours = false;
                     }
                 }
             }
@@ -118,7 +118,8 @@ class CacheControllerEligibility extends Command
         $controllerEligibility->save();
     }
 
-    private function checkControllerHours(ControllerEligibilityCache $controllerEligibility)
+    private
+    function checkControllerHours(ControllerEligibilityCache $controllerEligibility)
     {
         \App\Jobs\UpdateControllerHoursJob::dispatch($controllerEligibility->cid);
     }
@@ -130,7 +131,8 @@ class CacheControllerEligibility extends Command
      * @return mixed
      * @throws \Exception
      */
-    public function handle()
+    public
+    function handle()
     {
         if ($this->argument('cid')) {
             $cid = $this->argument('cid');
@@ -175,7 +177,7 @@ class CacheControllerEligibility extends Command
         while (true) {
             Log::info("Loading page {$page}");
             // General Eligibility checks
-            $records = ControllerEligibilityCache::offset($page*$recordsPerPage)->limit($recordsPerPage)->get();
+            $records = ControllerEligibilityCache::offset($page * $recordsPerPage)->limit($recordsPerPage)->get();
             if (count($records) == 0) {
                 break;
             }
