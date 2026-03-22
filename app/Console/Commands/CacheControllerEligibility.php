@@ -81,7 +81,7 @@ class CacheControllerEligibility extends Command
             $lastFacilityExit = $userTransfers->filter(function ($transfer) {
                 return in_array($transfer->to, ['ZAE', 'ZZN', 'ZZI']) && !in_array($transfer->from, ['ZAE', 'ZZN', 'ZZI']) && $transfer->status === 1;
             })->sortByDesc('created_at')->first();
-            if ($lastFacilityExit) {
+            if ($lastFacilityExit && $user->facility == 'ZAE') {
                 $carbonDate = Carbon::createFromFormat('Y-m-d H:i:s', $lastFacilityExit->created_at);
                 if ($controllerEligibility->competency_date === null
                     || Carbon::createFromFormat('Y-m-d', $controllerEligibility->competency_date)->isBefore($carbonDate)) {
