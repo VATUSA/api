@@ -181,6 +181,9 @@ class MoodleCompetency extends Command
             echo "[{$i}/{$total}] Processing Controller {$controller->cid} - {$controller->rating}\n";
             $controller_existing_competencies = (array_key_exists($controller->cid, $existing_competencies)) ? $existing_competencies[$controller->cid] : [];
             $checkRating = $controller->rating;
+            if ($checkRating > 5) {
+                $checkRating = 5;
+            }
             while ($checkRating <= 5) {
                 if ($checkRating < 2) {
                     $checkRating++;
