@@ -86,7 +86,9 @@ class CacheControllerEligibility extends Command
                 if ($controllerEligibility->competency_date === null
                     || Carbon::createFromFormat('Y-m-d', $controllerEligibility->competency_date)->isBefore($carbonDate)) {
                     $controllerEligibility->competency_date = $carbonDate->toDateString();
-                    $controllerEligibility->competency_rating = $last_promotion->to;
+                    if ($last_promotion) {
+                        $controllerEligibility->competency_rating = $last_promotion->to;
+                    }
                 }
             }
         }
