@@ -3,6 +3,8 @@
 namespace App\Console\Commands;
 
 use App\AcademyCompetency;
+use App\Helpers\Helper;
+use App\Helpers\VATSIMApi2Helper;
 use App\Models\ControllerEligibilityCache;
 use App\Promotion;
 use App\Transfer;
@@ -129,13 +131,31 @@ class CacheControllerEligibility extends Command
                 }
             }
         }
-        $controllerEligibility->save();
-    }
 
-    private
-    function checkControllerHours(ControllerEligibilityCache $controllerEligibility)
-    {
-        \App\Jobs\UpdateControllerHoursJob::dispatch($controllerEligibility->cid);
+
+        if ($user->rating > 1) {
+            if ($controllerEligibility->has_consolidation_hours !== true &&
+                ($in_vatusa_facility ||  $user->rating >= 4)) {
+                Log::info("Checking hours for {$user->cid}");
+                $ratingHours = VATSIMApi2Helper::fetchRatingHours($user->cid);
+                $short = strtolower(Helper::ratingShortFromInt($user->rating));
+                if ($ratingHours) {
+                    if ($ratingHours[$short] >= 50) {
+                        $controllerEligibility->has_consolidation_hours = true;
+                    } else if ($user->rating > 4 && ($ratingHours['c1'] + $ratingHours['c3'] + $ratingHours['i1'] + $ratingHours['i3']) >= 50) {
+                        $controllerEligibility->has_consolidation_hours = true;
+                    } else if ($user->rating > 4) {
+                        $controllerEligibility->has_consolidation_hours = false;
+                        $controllerEligibility->consolidation_hours =
+                            ($ratingHours['c1'] + $ratingHours['c3'] + $ratingHours['i1'] + $ratingHours['i3']);
+                    } else {
+                        $controllerEligibility->has_consolidation_hours = false;
+                        $controllerEligibility->consolidation_hours = $ratingHours[$short];
+                    }
+                }
+            }
+        }
+        $controllerEligibility->save();
     }
 
 
@@ -168,7 +188,6 @@ class CacheControllerEligibility extends Command
             $userAcademyCompetencies = AcademyCompetency::where('cid', $cid)->with('course')->get();
 
             $this->updateControllerEligibility($rec, $user, $userTransfers, $userPromotions, $userVisits, $userAcademyCompetencies);
-            $this->checkControllerHours($rec);
             return;
         }
 
@@ -223,19 +242,6 @@ class CacheControllerEligibility extends Command
                 }
             }
             $page++;
-        }
-
-        // Hours checks
-        $records = ControllerEligibilityCache::where('has_consolidation_hours', false)
-            ->where('is_initial_selection', false)
-            ->where('competency_rating', '>', 1)
-            ->get();
-        $total = count($records);
-        $i = 0;
-        foreach ($records as $record) {
-            $i++;
-            Log::info("[{$i}/{$total}] Checking hours for {$record->cid}");
-            $this->checkControllerHours($record);
         }
     }
 }
