@@ -88,6 +88,8 @@ class CacheControllerEligibility extends Command
                     $controllerEligibility->competency_date = $carbonDate->toDateString();
                     if ($last_promotion) {
                         $controllerEligibility->competency_rating = $last_promotion->to;
+                    } else if ($user->rating == 1) {
+                        $controllerEligibility->competency_rating = 2;
                     }
                 }
             }
