@@ -3,6 +3,8 @@
 namespace App\Console\Commands;
 
 use App\AcademyCompetency;
+use App\Helpers\Helper;
+use App\Helpers\VATSIMApi2Helper;
 use App\Models\ControllerEligibilityCache;
 use App\Promotion;
 use App\Transfer;
@@ -135,7 +137,42 @@ class CacheControllerEligibility extends Command
     private
     function checkControllerHours(ControllerEligibilityCache $controllerEligibility)
     {
-        \App\Jobs\UpdateControllerHoursJob::dispatch($controllerEligibility->cid);
+        // \App\Jobs\UpdateControllerHoursJob::dispatch($controllerEligibility->cid);
+
+        $user = User::where('cid', $controllerEligibility->cid)->first();
+        $in_vatusa_facility = !in_array($user->facility, ["ZAE", "ZZN", "ZZI"]);
+
+        if ($user->rating > 1) {
+            if ($controllerEligibility->has_consolidation_hours !== true &&
+                (($user->flag_homecontroller && $in_vatusa_facility) || (!$user->flag_homecontroller && $user->rating >= 4))
+                && !$controllerEligibility->is_initial_selection) {
+                $attempt = 0;
+                while ($attempt < 3) {
+                    $attempt++;
+                    $ratingHours = VATSIMApi2Helper::fetchRatingHours($user->cid);
+                    $short = strtolower(Helper::ratingShortFromInt($user->rating));
+                    if ($ratingHours) {
+                        if ($ratingHours[$short] >= 50) {
+                            $controllerEligibility->has_consolidation_hours = true;
+                        } else if ($user->rating > 4 && ($ratingHours['c1'] + $ratingHours['c3'] + $ratingHours['i1'] + $ratingHours['i3']) >= 50) {
+                            $controllerEligibility->has_consolidation_hours = true;
+                        } else if ($user->rating > 4) {
+                            $controllerEligibility->has_consolidation_hours = false;
+                            $controllerEligibility->consolidation_hours =
+                                ($ratingHours['c1'] + $ratingHours['c3'] + $ratingHours['i1'] + $ratingHours['i3']);
+                        } else {
+                            $controllerEligibility->has_consolidation_hours = false;
+                            $controllerEligibility->consolidation_hours = $ratingHours[$short];
+                        }
+                        break;
+                    } else {
+                        Log::warning("UpdateControllerHoursJob: Rating hours object returned as empty for {$user->cid}");
+                        sleep(60);
+                    }
+                }
+            }
+        }
+        $controllerEligibility->save();
     }
 
 
