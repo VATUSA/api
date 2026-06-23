@@ -7,7 +7,7 @@ repository. For how this repo relates to the other VATUSA projects, see the work
 ## Project Overview
 
 The **VATUSA API** (api.vatusa.net) — a Laravel 10 / PHP 8.1+ application. It works in
-parallel with `vatusa/current` and is the legacy/current API that the newer `cobalt` and
+parallel with `current` and is the legacy/current API that the newer `cobalt` and
 `mithril` backends are intended to extend or replace.
 
 ## Build & Development Commands
