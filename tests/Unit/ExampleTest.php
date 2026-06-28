@@ -2,19 +2,18 @@
 
 namespace Tests\Unit;
 
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
+use PHPUnit\Framework\TestCase;
 
+/**
+ * Pure unit test — does not boot the Laravel application, so it has no DB or
+ * config dependencies. Exercises an autoloaded helper from app/Helpers.
+ */
 class ExampleTest extends TestCase
 {
-    /**
-     * A basic test example.
-     *
-     * @return void
-     */
-    public function testBasicTest()
+    public function test_generate_error_returns_standard_shape(): void
     {
-        $this->assertTrue(true);
+        $error = generate_error('boom');
+
+        $this->assertSame(['status' => 'error', 'msg' => 'boom'], $error);
     }
 }

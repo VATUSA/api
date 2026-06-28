@@ -22,6 +22,33 @@ php artisan tinker      # REPL
 ./vendor/bin/phpunit    # Run tests (PHPUnit 10, suite in ./tests)
 ```
 
+### Local environment
+
+Two paths (see `README.md` for full detail):
+
+- **Docker (preferred, no local PHP needed):** `docker compose -f compose.dev.yml up --build`
+  brings up MySQL + Redis + the API (`artisan serve`) at http://localhost:5002. Run
+  migrations with `docker compose -f compose.dev.yml exec app php artisan migrate`. The dev
+  image is `docker/dev.Dockerfile` — separate from the production root `Dockerfile`.
+- **Native:** `cp .env.example .env && composer install && php artisan key:generate`, point
+  `.env` at a MySQL+Redis, then `php artisan migrate` and `php artisan serve`.
+
+`.env.example` is the authoritative, sectioned list of env vars (DB connections, JWT,
+VATSIM SSO/OAuth, AWS, Moodle, Swagger).
+
+### Testing & CI
+
+- Tests are **smoke tests only** right now (in-memory SQLite, no external services). Real
+  DB-backed feature tests aren't wired up because the app needs MySQL + the `forum`/`email`/
+  `moodle` connections. `phpunit.xml` uses the PHPUnit 10 schema and sets a throwaway
+  `APP_KEY` + sqlite so the suite runs with zero setup.
+- **PR validation:** `.github/workflows/ci.yml` runs on `pull_request` — PHP syntax lint,
+  `composer validate`, PHPUnit, and an informational Pint check. `ci-master.yml` is the
+  separate push-only pipeline that builds/pushes the Docker image and deploys via gitops.
+- **Code style:** Laravel Pint (`pint.json`, `laravel` preset). Install with
+  `composer global require laravel/pint`; `pint --test` to check, `pint` to fix. CI's style
+  job is non-blocking until the tree is Pint-clean.
+
 ## Authentication & Middleware
 
 Auth is multi-layered (JWT via `tymon/jwt-auth` + OAuth2 + API keys). Middleware tiers,
