@@ -43,11 +43,11 @@ VATSIM SSO/OAuth, AWS, Moodle, Swagger).
   `moodle` connections. `phpunit.xml` uses the PHPUnit 10 schema and sets a throwaway
   `APP_KEY` + sqlite so the suite runs with zero setup.
 - **PR validation:** `.github/workflows/ci.yml` runs on `pull_request` — PHP syntax lint,
-  `composer validate`, PHPUnit, and an informational Pint check. `ci-master.yml` is the
-  separate push-only pipeline that builds/pushes the Docker image and deploys via gitops.
+  `composer validate`, and PHPUnit. `ci-master.yml` is the separate push-only pipeline that
+  builds/pushes the Docker image and deploys via gitops.
 - **Code style:** Laravel Pint (`pint.json`, `laravel` preset). Install with
-  `composer global require laravel/pint`; `pint --test` to check, `pint` to fix. CI's style
-  job is non-blocking until the tree is Pint-clean.
+  `composer global require laravel/pint`; `pint --test` to check, `pint` to fix. There's no
+  CI style job yet — the tree isn't Pint-clean.
 
 ## Authentication & Middleware
 

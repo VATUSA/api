@@ -6,8 +6,8 @@ name: PR Checks
 #
 # Full feature/integration testing requires MySQL plus several auxiliary
 # databases (forum/email/moodle), so it is out of scope here. These checks
-# verify that the code parses, the Composer manifest is sane, the framework
-# still boots, and (informationally) that code style is consistent.
+# verify that the code parses, the Composer manifest is sane, and the framework
+# still boots.
 
 on:
   pull_request:
@@ -94,23 +94,3 @@ jobs:
         run: composer install --no-interaction --prefer-dist --no-progress
       - name: Run PHPUnit
         run: ./vendor/bin/phpunit
-
-  style:
-    name: Code style (Pint, informational)
-    runs-on: ubuntu-latest
-    # Non-blocking: the legacy codebase is not yet fully Pint-clean. This surfaces
-    # style drift on PRs without blocking merges. Flip `continue-on-error` to
-    # false once the tree is clean (run `pint` once and commit the result).
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.1'
-          tools: composer:v2
-          coverage: none
-      - name: Install Pint
-        run: composer global require laravel/pint --no-interaction
-      - name: Check code style
-        run: $(composer global config home)/vendor/bin/pint --test

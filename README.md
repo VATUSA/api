@@ -150,12 +150,12 @@ Style is checked with [Laravel Pint](https://laravel.com/docs/pint) (config in `
 ```sh
 composer global require laravel/pint     # one-time
 pint            # fix style in place
-pint --test     # check only (what CI runs)
+pint --test     # check only
 ```
 
-The codebase is **not yet fully Pint-clean**, so the CI style job is currently
-informational (non-blocking). To make it enforced later: run `pint`, commit the result,
-then flip `continue-on-error` to `false` in `.github/workflows/ci.yml`.
+The codebase is **not yet fully Pint-clean**, so there is no CI style job yet. To add an
+enforced one later: run `pint`, commit the result, then add a `pint --test` job to
+`.github/workflows/ci.yml`.
 
 ---
 
@@ -164,8 +164,8 @@ then flip `continue-on-error` to `false` in `.github/workflows/ci.yml`.
 Two GitHub Actions workflows:
 
 - **`.github/workflows/ci.yml` (PR Checks)** — runs on every pull request (and pushes to
-  `master`/`dev`): PHP syntax lint, `composer validate`, the PHPUnit smoke tests, and the
-  informational Pint check. This validates changes without needing a full database.
+  `master`/`dev`): PHP syntax lint, `composer validate`, and the PHPUnit smoke tests. This
+  validates changes without needing a full database.
 - **`.github/workflows/ci-master.yml` (CI to Docker Hub)** — runs on pushes to
   `master`/`dev` only: builds the production Docker image, pushes it to Docker Hub tagged
   with the commit SHA, then bumps the image tag in the `gitops` repo for ArgoCD to deploy.
