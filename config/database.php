@@ -32,6 +32,12 @@ return [
     */
 
     'connections' => [
+        // Used by the test suite (in-memory) and handy for quick local pokes.
+        'sqlite' => [
+            'driver'   => 'sqlite',
+            'database' => env('DB_DATABASE', database_path('database.sqlite')),
+            'prefix'   => '',
+        ],
         'mysql'  => [
             'driver'    => 'mysql',
             'host'      => env('DB_HOST', 'localhost'),

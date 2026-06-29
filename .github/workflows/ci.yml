@@ -1,0 +1,96 @@
+name: PR Checks
+
+# Lightweight validation that runs on every pull request (and on pushes to the
+# long-lived branches). This intentionally does NOT build or push Docker images
+# or deploy — that is handled by `ci-master.yml` on pushes to master/dev.
+#
+# Full feature/integration testing requires MySQL plus several auxiliary
+# databases (forum/email/moodle), so it is out of scope here. These checks
+# verify that the code parses, the Composer manifest is sane, and the framework
+# still boots.
+
+on:
+  pull_request:
+  push:
+    branches: [master, dev]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  syntax:
+    name: PHP syntax lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          coverage: none
+      - name: Lint all PHP files
+        run: |
+          # `php -l` every PHP source file; fail the job on the first parse error.
+          find app config database routes tests bootstrap public server.php \
+            -name '*.php' -print0 \
+          | xargs -0 -n1 -P4 php -l
+          php -l artisan
+
+  composer-validate:
+    name: Composer manifest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: composer:v2
+          coverage: none
+      - name: Validate composer.json / composer.lock
+        run: composer validate --no-check-publish
+
+  test:
+    name: Boot & smoke tests
+    runs-on: ubuntu-latest
+    # Safe drivers so booting the app (during composer's package:discover and the
+    # tests) needs no MySQL/Redis/etc. These real env vars take precedence over
+    # the values in .env. The app eagerly resolves the encrypter at boot, so an
+    # APP_KEY must be present — this is a throwaway, not a real secret.
+    env:
+      APP_KEY: "base64:N1mFIJRBY4ci7g8TVIsdu0X8dipDkY2LNU261QVZlEc="
+      CACHE_DRIVER: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+      MAIL_MAILER: array
+      DB_CONNECTION: sqlite
+      DB_DATABASE: ":memory:"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: pdo_sqlite, mbstring, bcmath, gmp, sodium, intl, zip
+          tools: composer:v2
+          coverage: none
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+      - name: Prepare environment
+        run: |
+          # bootstrap/cache is gitignored and absent on a fresh checkout, but
+          # composer's package:discover hook needs it to exist and be writable.
+          mkdir -p bootstrap/cache
+          cp .env.example .env
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Run PHPUnit
+        run: ./vendor/bin/phpunit

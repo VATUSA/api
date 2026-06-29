@@ -1,0 +1,63 @@
+# Local development stack — MySQL + Redis + the API running via `artisan serve`.
+#
+#   docker compose -f compose.dev.yml up --build
+#
+# Then, the first time (or after new migrations), in another terminal:
+#   docker compose -f compose.dev.yml exec app php artisan migrate
+#
+# The API is served at http://localhost:5002. Source is bind-mounted, so PHP
+# changes are picked up live. This file is independent of the root
+# docker-compose.yml (which builds the production image for CI).
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/dev.Dockerfile
+    ports:
+      - "5002:8000"
+    volumes:
+      - .:/www
+    environment:
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_DATABASE: vatusa
+      DB_USERNAME: vatusa
+      DB_PASSWORD: secret
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    # Install deps if needed, ensure an app key exists, then serve.
+    command: >
+      sh -c "composer install --no-interaction &&
+             ([ -f .env ] || cp .env.example .env) &&
+             php artisan key:generate --force &&
+             php artisan serve --host=0.0.0.0 --port=8000"
+
+  db:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: vatusa
+      MYSQL_USER: vatusa
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: secret
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-psecret"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  db-data:
