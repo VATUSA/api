@@ -75,7 +75,7 @@ If neither condition holds, the endpoint returns `response()->forbidden()`
 |-----------------|---------|----------|--------------|
 | `instructor_id` | integer | conditionally | Instructor's CID. If omitted (or the caller isn't Senior Staff), it's silently overridden to the **authenticated caller's own CID**. When using an API key with no session, this field is effectively required — there is no fallback and the request fails validation. |
 | `session_date`  | string  | yes | `YYYY-MM-DD HH:MM` (24h). Parsed with `Carbon::createFromFormat('Y-m-d H:i', ...)` — extra/missing punctuation fails with 400. |
-| `position`      | string  | yes | Position worked, e.g. `SEA_APP`, `ZZZ_CTR`. Automatically uppercased. Must match `^([A-Z0-9]{2,3})(_([A-Z0-9]{1,3}))?_(DEL|GND|TWR|APP|DEP|CTR|FSS)$`. |
+| `position`      | string  | yes | Position worked, e.g. `SEA_APP`, `ZZZ_CTR`. Automatically uppercased. Must match a specific regex [here](https://github.com/VATUSA/api/blob/65ead285809a08be4a26a2ef636bfc37d5504bd8/app/Http/Controllers/API/v2/TrainingController.php#L608) (GitHub markdown doesn't like it). |
 | `duration`      | string  | yes | Session duration, `HH:MM`. Stored as `HH:MM:SS`. |
 | `movements`     | integer | no | Number of aircraft/movements handled. Must be numeric if present. |
 | `score`         | integer | no | Overall score, `1`–`5`. Must be numeric and in range if present. |
