@@ -484,7 +484,8 @@ class TrainingController extends Controller
      *     path="/user/{cid}/training/record",
      *     summary="Submit new training record. [Key]",
      *     description="Submit new training record. Requires API Key, JWT, or Session Cookie (required roles:
-    [N/A for API Key] Senior Staff, Training Staff)",  tags={"training"},
+    [N/A for API Key] Senior Staff, Training Staff). See <a href='https://github.com/VATUSA/api/blob/master/Training_records_endpoints.md'>Training_records_endpoints.md</a>
+    for full field-level documentation, validation rules, and error responses.",  tags={"training"},
      *     security={"apikey","jwt","session"},
      * @OA\RequestBody(@OA\MediaType(mediaType="application/x-www-form-urlencoded",@OA\Schema(
      * @OA\Parameter(name="instructor_id", required=true, description="Instructor
@@ -686,7 +687,8 @@ class TrainingController extends Controller
      * @OA\Post(
      *     path="/user/{cid}/training/otsEval",
      *     summary="Post new OTS Eval for a user. [Private]",
-     *     description="Post new OTS Eval for a user. CORS Restricted.",
+     *     description="Post new OTS Eval for a user. CORS Restricted. See <a href='https://github.com/VATUSA/api/blob/master/Training_records_endpoints.md'>Training_records_endpoints.md</a>
+    for full field-level documentation, validation rules, and error responses.",
      *     tags={"training", "user"},
      *     security={"session", "jwt", "apikey"},
      * @OA\Response(

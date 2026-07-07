@@ -48,7 +48,7 @@ use \App\Http\Controllers\Controller as BaseController;
  *     @OA\Tag(name="support",description="Support Center"),
  *     @OA\Tag(name="survey", description="Survey management"),
  *     @OA\Tag(name="tmu",description="Traffic Management Unit - Notices (NTOS)"),
- *     @OA\Tag(name="training", description="Centralized training records"),
+ *     @OA\Tag(name="training", description="Centralized training records. For detailed field-level documentation of the training/record and training/otsEval submission endpoints, see <a href='https://github.com/VATUSA/api/blob/master/Training_records_endpoints.md'>Training_records_endpoints.md</a>."),
  *     @OA\Tag(name="transfer",description="Transfer request submission and handling actions"),
  *     @OA\Tag(name="user",description="User account management actions"),
  * )
