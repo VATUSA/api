@@ -58,7 +58,7 @@ class Kernel extends ConsoleKernel
             ->everyThreeHours($minutes = 0)
             ->onOneServer()
             ->runInBackground()
-            ->withoutOverlapping()
+            ->withoutOverlapping(120)
             ->before($createBeforeHook($commandName))
             ->after($createAfterHook($commandName));
 
@@ -81,9 +81,9 @@ class Kernel extends ConsoleKernel
 
         $commandName = "moodle:competency";
         $schedule->command($commandName)
-            ->everyFiveMinutes()
+            ->everyTenMinutes()
             ->onOneServer()
-            ->withoutOverlapping()
+            ->withoutOverlapping(60)
             ->runInBackground()
             ->before($createBeforeHook($commandName))
             ->after($createAfterHook($commandName));
