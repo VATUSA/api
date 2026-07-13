@@ -18,6 +18,7 @@ RUN	addgroup -S application && adduser -SG application application && \
 	apk add --update \
 	nginx \
 	supervisor \
+	tini \
 	openssh-client && \
 	cp /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini && \
 	sed -i "s|;*daemonize\s*=\s*yes|daemonize = no|g" /usr/local/etc/php-fpm.conf && \
@@ -55,6 +56,13 @@ RUN php artisan l5-swagger:generate
 USER root
 RUN rm /usr/local/bin/composer.phar
 
-ENTRYPOINT ["/bin/sh","/www/build.sh"]
+# tini (PID 1) reaps orphaned child processes. The main pod runs supervisord
+# which reaps its own children, but the api-worker Deployment overrides this
+# ENTRYPOINT with `command: [php] artisan schedule:work`, leaving php as PID 1
+# with no reaper — its per-minute forked schedule tasks pile up as zombies.
+# tini here protects the main pod; the worker must also invoke tini via its
+# command (see gitops current/base/api/worker.yaml). -g forwards signals to the
+# whole process group so shutdown stays clean.
+ENTRYPOINT ["/sbin/tini","-g","--","/bin/sh","/www/build.sh"]
 
 EXPOSE 80
