@@ -223,6 +223,7 @@ class SoloController extends APIController
         if (!isTest()) {
             if ($request->input("id", null)) {
                 try {
+                    $cert = SoloCert::findOrFail($request->input("id"));
                     $user = User::find($cert->cid);
                     if (\Auth::check() && !(RoleHelper::isSeniorStaff(Auth::user(),$user->facility,true) ||
                             RoleHelper::isVATUSAStaff(Auth::user()) ||
