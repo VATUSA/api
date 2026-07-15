@@ -95,6 +95,8 @@ class CacheControllerEligibility extends Command
                     }
                 }
             }
+        } else if ($controllerEligibility->is_initial_selection === null) {
+            $controllerEligibility->is_initial_selection = false;
         }
         if ($user->rating >= 4 || $user->flag_homecontroller) {
             $last_visit = $userVisits->sortByDesc('created_at')->first();
