@@ -53,6 +53,12 @@ class VATUSAMoodle extends MoodleRest
 
     private $isTest;
 
+    /** @var array|null Memoized result of getCategories() for the lifetime of this instance */
+    private $categoriesCache = null;
+
+    /** @var int Seconds to bound each Moodle HTTP request to */
+    private const HTTP_TIMEOUT_SECONDS = 30;
+
     /**
      * VATUSAMoodle constructor.
      *
@@ -92,6 +98,32 @@ class VATUSAMoodle extends MoodleRest
     }
 
     /**
+     * Make the request, with a bounded HTTP timeout.
+     *
+     * The vendored MoodleRest::request() uses file_get_contents()/stream contexts with no
+     * explicit timeout, so it silently falls back to PHP's default_socket_timeout ini
+     * (60s, not guaranteed). Scope an explicit timeout tightly around each individual call
+     * rather than setting it once for the process, since default_socket_timeout is a
+     * process-global ini setting also consulted by predis (CACHE_DRIVER=redis).
+     *
+     * @param string      $function
+     * @param array|null  $parameters
+     * @param string      $method
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    public function request($function, $parameters = null, $method = self::METHOD_GET)
+    {
+        $previous = ini_set('default_socket_timeout', self::HTTP_TIMEOUT_SECONDS);
+        try {
+            return parent::request($function, $parameters, $method);
+        } finally {
+            ini_set('default_socket_timeout', $previous);
+        }
+    }
+
+    /**
      * Get all Cohorts
      * @return mixed
      * @throws \Exception
@@ -124,7 +156,11 @@ class VATUSAMoodle extends MoodleRest
      */
     public function getCategories()
     {
-        return $this->request("core_course_get_categories");
+        if ($this->categoriesCache === null) {
+            $this->categoriesCache = $this->request("core_course_get_categories");
+        }
+
+        return $this->categoriesCache;
     }
 
     /**

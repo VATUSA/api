@@ -4,6 +4,8 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class Kernel extends ConsoleKernel
 {
@@ -30,18 +32,32 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // Helper function to create a 'before' hook closure with the command name
+        // Helper function to create a 'before' hook closure with the command name.
+        // Records the start time in cache (not a shared closure variable) because
+        // runInBackground() events run their 'after' hook in a separate, freshly-booted
+        // `schedule:finish` process with no memory in common with this one.
         $createBeforeHook = function (string $commandName) {
             return function () use ($commandName) {
-                // Use logger() or Log::info() etc.
                 logger("Starting scheduled task: {$commandName}");
+                Cache::put("schedule:started:{$commandName}", now(), now()->addHours(6));
             };
         };
 
-        // Helper function to create an 'after' hook closure with the command name
-        $createAfterHook = function (string $commandName) {
-            return function () use ($commandName) {
-                logger("Finished scheduled task: {$commandName}");
+        // Helper function to create an 'after' hook closure with the command name.
+        // $warnAfterMinutes, when given, logs a WARN if the run exceeded that duration —
+        // used for commands with a withoutOverlapping() lock window to catch a run
+        // approaching that window before it starts stacking overlapping instances.
+        $createAfterHook = function (string $commandName, ?int $warnAfterMinutes = null) {
+            return function () use ($commandName, $warnAfterMinutes) {
+                $startedAt = Cache::pull("schedule:started:{$commandName}");
+                $elapsedMinutes = $startedAt ? round(now()->diffInSeconds($startedAt) / 60, 1) : null;
+
+                logger("Finished scheduled task: {$commandName}" .
+                    ($elapsedMinutes !== null ? " ({$elapsedMinutes} min)" : ""));
+
+                if ($warnAfterMinutes !== null && $elapsedMinutes !== null && $elapsedMinutes > $warnAfterMinutes) {
+                    Log::warning("Scheduled task {$commandName} took {$elapsedMinutes} minutes, exceeding the {$warnAfterMinutes}-minute warn threshold.");
+                }
             };
         };
 
@@ -60,7 +76,7 @@ class Kernel extends ConsoleKernel
             ->runInBackground()
             ->withoutOverlapping(120)
             ->before($createBeforeHook($commandName))
-            ->after($createAfterHook($commandName));
+            ->after($createAfterHook($commandName, 90));
 
         $commandName = 'vatsim:flights';
         $schedule->command($commandName)
@@ -86,7 +102,7 @@ class Kernel extends ConsoleKernel
             ->withoutOverlapping(60)
             ->runInBackground()
             ->before($createBeforeHook($commandName))
-            ->after($createAfterHook($commandName));
+            ->after($createAfterHook($commandName, 45));
 
         $commandName = "controller:eligibility";
         $schedule->command($commandName)
