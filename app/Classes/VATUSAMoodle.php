@@ -327,6 +327,21 @@ class VATUSAMoodle extends MoodleRest
     }
 
     /**
+     * Build a full CID -> Moodle user id map in a single query, to replace a
+     * whole-table per-user HTTP existence check with an in-memory lookup.
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getAllUserIdMap(): \Illuminate\Support\Collection
+    {
+        return DB::connection('moodle')->table('user')
+            ->where('deleted', 0)
+            ->whereNotNull('idnumber')
+            ->where('idnumber', '!=', '')
+            ->pluck('id', 'idnumber');
+    }
+
+    /**
      * Create user.
      *
      * @param \App\User $user
@@ -442,6 +457,30 @@ class VATUSAMoodle extends MoodleRest
     }
 
     /**
+     * Assign many users to Cohorts in a single request.
+     *
+     * @param array $items Each: ['uid' => int, 'cnumber' => string]
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    public function assignCohortsBulk(array $items)
+    {
+        return $this->request("core_cohort_add_cohort_members", [
+            "members" => array_values(array_map(fn ($item) => [
+                "cohorttype" => [
+                    'type'  => 'idnumber',
+                    'value' => $item['cnumber']
+                ],
+                "usertype"   => [
+                    'type'  => 'id',
+                    'value' => $item['uid']
+                ]
+            ], $items))
+        ]);
+    }
+
+    /**
      * Unassign Cohort
      *
      * @param int $uid
@@ -488,6 +527,26 @@ class VATUSAMoodle extends MoodleRest
                     "contextlevel" => $context
                 ]
             ]
+        ]);
+    }
+
+    /**
+     * Assign many Roles in a single request.
+     *
+     * @param array $items Each: ['uid' => int, 'cid' => int|null, 'role' => string, 'context' => string]
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    public function assignRolesBulk(array $items)
+    {
+        return $this->request("core_role_assign_roles", [
+            "assignments" => array_values(array_map(fn ($item) => [
+                "roleid"       => $this->roleIds[$item['role']],
+                "userid"       => $item['uid'],
+                "contextid"    => $item['cid'],
+                "contextlevel" => $item['context']
+            ], $items))
         ]);
     }
 
@@ -675,6 +734,27 @@ class VATUSAMoodle extends MoodleRest
 
         return $this->request("enrol_manual_enrol_users",
             ["enrolments" => [0 => ["roleid" => $rid, "userid" => $uid, "courseid" => $cid]]]);
+    }
+
+    /**
+     * Enrol many users in courses in a single request.
+     *
+     * @param array $items Each: ['uid' => int, 'cid' => int, 'rid' => int|null]
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    public
+    function enrolUsersBulk(
+        array $items
+    ) {
+        return $this->request("enrol_manual_enrol_users", [
+            "enrolments" => array_values(array_map(fn ($item) => [
+                "roleid"   => $item['rid'] ?? $this->roleIds['STU'],
+                "userid"   => $item['uid'],
+                "courseid" => $item['cid']
+            ], $items))
+        ]);
     }
 
     /**
