@@ -500,7 +500,7 @@ class VATUSAMoodle extends MoodleRest
                     'value' => $item['uid']
                 ]
             ], $items))
-        ]);
+        ], self::METHOD_POST);
     }
 
     /**
@@ -570,7 +570,7 @@ class VATUSAMoodle extends MoodleRest
                 "contextid"    => $item['cid'],
                 "contextlevel" => $item['context']
             ], $items))
-        ]);
+        ], self::METHOD_POST);
     }
 
     /**
@@ -782,7 +782,7 @@ class VATUSAMoodle extends MoodleRest
                 "userid"   => $item['uid'],
                 "courseid" => $item['cid']
             ], $items))
-        ]);
+        ], self::METHOD_POST);
     }
 
     /**
