@@ -56,6 +56,9 @@ class VATUSAMoodle extends MoodleRest
     /** @var array|null Memoized result of getCategories() for the lifetime of this instance */
     private $categoriesCache = null;
 
+    /** @var array Memoized results of getCoursesInCategory(), keyed by category id */
+    private $coursesInCategoryCache = [];
+
     /** @var int Seconds to bound each Moodle HTTP request to */
     private const HTTP_TIMEOUT_SECONDS = 30;
 
@@ -401,6 +404,26 @@ class VATUSAMoodle extends MoodleRest
     }
 
     /**
+     * Bulk update Users
+     *
+     * @param array $items Each item: ['id' => int, 'fname' => string, 'lname' => string, 'email' => string]
+     *
+     * @return mixed
+     * @throws Exception
+     */
+    public function updateUsersBulk(array $items)
+    {
+        return $this->request("core_user_update_users", [
+            'users' => array_values(array_map(fn ($item) => [
+                'id'        => $item['id'],
+                'firstname' => $item['fname'],
+                'lastname'  => $item['lname'],
+                'email'     => $item['email']
+            ], $items))
+        ], self::METHOD_POST);
+    }
+
+    /**
      * Create Cohort
      *
      * @param string $id
@@ -673,9 +696,14 @@ class VATUSAMoodle extends MoodleRest
     function getCoursesInCategory(
         int $catid = null
     ) {
-        $params = $catid ? ["field" => "category", "value" => $catid] : [];
+        $key = $catid ?? 0;
+        if (!array_key_exists($key, $this->coursesInCategoryCache)) {
+            $params = $catid ? ["field" => "category", "value" => $catid] : [];
+            $this->coursesInCategoryCache[$key] = $this->request("core_course_get_courses_by_field",
+                $params)["courses"];
+        }
 
-        return $this->request("core_course_get_courses_by_field", $params)["courses"];
+        return $this->coursesInCategoryCache[$key];
     }
 
     public
