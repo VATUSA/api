@@ -38,6 +38,13 @@ class MoodleSync extends Command
     /** @var int Attempts per sub-batch before giving up on it and moving on */
     private const MAX_ATTEMPTS = 2;
 
+    /** @var int Microseconds to sleep between successive bulk sub-batch calls. Moodle's
+     *           cohort/role writes trigger its own course cache-invalidation (mdl_course.cacherev),
+     *           which was observed serializing against itself under back-to-back calls and
+     *           causing 30s+ lock waits. Pacing our own call rate keeps concurrent invalidations
+     *           low enough for Moodle's DB to keep up. */
+    private const FLUSH_PACING_USEC = 300000;
+
     /**
      * Create a new command instance.
      *
@@ -96,10 +103,13 @@ class MoodleSync extends Command
                 $failed = 0;
                 $failed += $this->flushBulk($chunkNum, 'update', $updates,
                     fn ($items) => $this->moodle->updateUsersBulk($items));
+                usleep(self::FLUSH_PACING_USEC);
                 $failed += $this->flushBulk($chunkNum, 'cohorts', $cohorts,
                     fn ($items) => $this->moodle->assignCohortsBulk($items));
+                usleep(self::FLUSH_PACING_USEC);
                 $failed += $this->flushBulk($chunkNum, 'roles', $roles,
                     fn ($items) => $this->moodle->assignRolesBulk($items));
+                usleep(self::FLUSH_PACING_USEC);
                 $failed += $this->flushBulk($chunkNum, 'enrolments', $enrolments,
                     fn ($items) => $this->moodle->enrolUsersBulk($items));
 
@@ -161,6 +171,10 @@ class MoodleSync extends Command
         $failures = 0;
 
         foreach (array_chunk($items, self::FLUSH_BATCH_SIZE) as $batchNum => $batch) {
+            if ($batchNum > 0) {
+                usleep(self::FLUSH_PACING_USEC);
+            }
+
             for ($attempt = 1; $attempt <= self::MAX_ATTEMPTS; $attempt++) {
                 try {
                     $call($batch);
@@ -169,6 +183,7 @@ class MoodleSync extends Command
                     if ($attempt < self::MAX_ATTEMPTS) {
                         logger()->warning("moodle:sync chunk {$chunkNum} {$kind} batch {$batchNum}: "
                             . "attempt {$attempt} failed ({$e->getMessage()}), retrying");
+                        usleep(self::FLUSH_PACING_USEC);
                         continue;
                     }
                     logger()->error("moodle:sync chunk {$chunkNum} {$kind} batch {$batchNum}: "
