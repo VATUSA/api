@@ -30,6 +30,14 @@ class MoodleSync extends Command
     /** @var \App\Classes\VATUSAMoodle instance */
     private $moodle;
 
+    /** @var int Max items sent in a single Moodle bulk call — 1000-user chunks can accumulate
+     *           several thousand cohort/role entries, which was timing out Moodle's 30s
+     *           HTTP_TIMEOUT_SECONDS bound on dense chunks. Flush in smaller sub-batches. */
+    private const FLUSH_BATCH_SIZE = 200;
+
+    /** @var int Attempts per sub-batch before giving up on it and moving on */
+    private const MAX_ATTEMPTS = 2;
+
     /**
      * Create a new command instance.
      *
@@ -67,7 +75,7 @@ class MoodleSync extends Command
         logger()->info("moodle:sync starting bulk pass: {$moodleIds->count()} Moodle-linked users");
 
         $chunkNum = 0;
-        $totals = ['users' => 0, 'updates' => 0, 'cohorts' => 0, 'roles' => 0, 'enrolments' => 0];
+        $totals = ['users' => 0, 'updates' => 0, 'cohorts' => 0, 'roles' => 0, 'enrolments' => 0, 'failedBatches' => 0];
 
         User::with('visits', 'academyCompetencies.course', 'roles')->chunk(1000,
             function ($users) use ($moodleIds, &$chunkNum, &$totals) {
@@ -85,11 +93,14 @@ class MoodleSync extends Command
                     $enrolments = array_merge($enrolments, $items['enrolments']);
                 }
 
-                $this->flushBulk($chunkNum, 'update', $updates, fn ($items) => $this->moodle->updateUsersBulk($items));
-                $this->flushBulk($chunkNum, 'cohorts', $cohorts,
+                $failed = 0;
+                $failed += $this->flushBulk($chunkNum, 'update', $updates,
+                    fn ($items) => $this->moodle->updateUsersBulk($items));
+                $failed += $this->flushBulk($chunkNum, 'cohorts', $cohorts,
                     fn ($items) => $this->moodle->assignCohortsBulk($items));
-                $this->flushBulk($chunkNum, 'roles', $roles, fn ($items) => $this->moodle->assignRolesBulk($items));
-                $this->flushBulk($chunkNum, 'enrolments', $enrolments,
+                $failed += $this->flushBulk($chunkNum, 'roles', $roles,
+                    fn ($items) => $this->moodle->assignRolesBulk($items));
+                $failed += $this->flushBulk($chunkNum, 'enrolments', $enrolments,
                     fn ($items) => $this->moodle->enrolUsersBulk($items));
 
                 $totals['users'] += count($users);
@@ -97,15 +108,18 @@ class MoodleSync extends Command
                 $totals['cohorts'] += count($cohorts);
                 $totals['roles'] += count($roles);
                 $totals['enrolments'] += count($enrolments);
+                $totals['failedBatches'] += $failed;
 
                 logger()->info("moodle:sync chunk {$chunkNum}: " . count($users) . " users, "
                     . count($updates) . " updates, " . count($cohorts) . " cohorts, "
-                    . count($roles) . " roles, " . count($enrolments) . " enrolments");
+                    . count($roles) . " roles, " . count($enrolments) . " enrolments"
+                    . ($failed > 0 ? ", {$failed} sub-batches failed" : ""));
             });
 
         logger()->info("moodle:sync finished bulk pass: {$totals['users']} users seen, "
             . "{$totals['updates']} updates, {$totals['cohorts']} cohorts, "
-            . "{$totals['roles']} roles, {$totals['enrolments']} enrolments across {$chunkNum} chunks");
+            . "{$totals['roles']} roles, {$totals['enrolments']} enrolments across {$chunkNum} chunks, "
+            . "{$totals['failedBatches']} sub-batches permanently failed");
 
         return 0;
     }
@@ -128,49 +142,59 @@ class MoodleSync extends Command
     }
 
     /**
-     * Flush one bulk call for a chunk, logging and rethrowing on failure so a mid-run
-     * failure points straight at which chunk and which call broke.
+     * Flush a bulk call for a chunk, split into FLUSH_BATCH_SIZE-sized sub-batches (a
+     * 1000-user chunk can accumulate several thousand cohort/role entries, too large for
+     * Moodle to process within the 30s HTTP timeout in one call). Each sub-batch gets
+     * MAX_ATTEMPTS tries; a sub-batch that still fails is logged and skipped rather than
+     * aborting the rest of the chunk or the run — the next scheduled run will pick up
+     * anything missed, since moodle:sync recomputes full state every time.
      *
      * @param int      $chunkNum
      * @param string   $kind
      * @param array    $items
      * @param callable $call
      *
-     * @throws \Exception
+     * @return int Number of sub-batches that failed after all attempts
      */
-    private function flushBulk(int $chunkNum, string $kind, array $items, callable $call)
+    private function flushBulk(int $chunkNum, string $kind, array $items, callable $call): int
     {
-        if (empty($items)) {
-            return;
+        $failures = 0;
+
+        foreach (array_chunk($items, self::FLUSH_BATCH_SIZE) as $batchNum => $batch) {
+            for ($attempt = 1; $attempt <= self::MAX_ATTEMPTS; $attempt++) {
+                try {
+                    $call($batch);
+                    continue 2;
+                } catch (\Exception $e) {
+                    if ($attempt < self::MAX_ATTEMPTS) {
+                        logger()->warning("moodle:sync chunk {$chunkNum} {$kind} batch {$batchNum}: "
+                            . "attempt {$attempt} failed ({$e->getMessage()}), retrying");
+                        continue;
+                    }
+                    logger()->error("moodle:sync chunk {$chunkNum} {$kind} batch {$batchNum}: "
+                        . "failed after {$attempt} attempts, skipping: {$e->getMessage()}");
+                    $failures++;
+                }
+            }
         }
 
-        try {
-            $call($items);
-        } catch (\Exception $e) {
-            logger()->error("moodle:sync chunk {$chunkNum}: {$kind} bulk call failed: {$e->getMessage()}");
-            throw $e;
-        }
+        return $failures;
     }
 
     /**
-     * Flush a single user's computed items immediately (single-user CLI path).
+     * Flush a single user's computed items immediately (single-user CLI path). Still routed
+     * through flushBulk() for consistent retry behavior, though a single user's item counts
+     * never approach FLUSH_BATCH_SIZE.
      *
      * @param array $items
-     *
-     * @throws \Exception
      */
     private function flushItems(array $items)
     {
-        $this->moodle->updateUsersBulk([$items['update']]);
-        if (!empty($items['cohorts'])) {
-            $this->moodle->assignCohortsBulk($items['cohorts']);
-        }
-        if (!empty($items['roles'])) {
-            $this->moodle->assignRolesBulk($items['roles']);
-        }
-        if (!empty($items['enrolments'])) {
-            $this->moodle->enrolUsersBulk($items['enrolments']);
-        }
+        $this->flushBulk(0, 'update', [$items['update']], fn ($items) => $this->moodle->updateUsersBulk($items));
+        $this->flushBulk(0, 'cohorts', $items['cohorts'], fn ($items) => $this->moodle->assignCohortsBulk($items));
+        $this->flushBulk(0, 'roles', $items['roles'], fn ($items) => $this->moodle->assignRolesBulk($items));
+        $this->flushBulk(0, 'enrolments', $items['enrolments'],
+            fn ($items) => $this->moodle->enrolUsersBulk($items));
     }
 
     /**
