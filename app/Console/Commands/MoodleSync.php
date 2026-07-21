@@ -62,10 +62,11 @@ class MoodleSync extends Command
         }
 
         //Syncronize Users
-        User::with('visits', 'academyCompetencies.course', 'roles')->chunk(1000, function ($users) {
+        $moodleIds = $this->moodle->getAllUserIdMap();
+        User::with('visits', 'academyCompetencies.course', 'roles')->chunk(1000, function ($users) use ($moodleIds) {
             foreach ($users as $user) {
-                if ($this->moodle->getUserId($user->cid)) {
-                    $this->sync($user);
+                if ($moodleIds->has($user->cid)) {
+                    $this->sync($user, (int) $moodleIds[$user->cid]);
                 }
             }
         });
@@ -77,13 +78,19 @@ class MoodleSync extends Command
      * Synchronize Roles
      *
      * @param \App\User $user
+     * @param int|null  $knownId Moodle user id, if already known (bulk sync path) — skips the
+     *                           redundant existence-check lookup that the single-user CLI path
+     *                           still needs to decide create-vs-update.
      *
      * @throws \Exception
      */
-    private function sync(User $user)
+    private function sync(User $user, ?int $knownId = null)
     {
         //Update or Create
-        if ($id = $this->moodle->getUserId($user->cid)) {
+        if ($knownId !== null) {
+            $id = $knownId;
+            $this->moodle->updateUser($user, $id);
+        } elseif ($id = $this->moodle->getUserId($user->cid)) {
             //Update Information
             $this->moodle->updateUser($user, $id);
         } else {
@@ -94,74 +101,113 @@ class MoodleSync extends Command
 
         //Assign Cohorts
         $this->moodle->clearUserCohorts($id);
-        $this->moodle->assignCohort($id,
-            Helper::ratingShortFromInt($user->rating)); //VATUSA level rating
+        $cohorts = [];
+        $cohorts[] = Helper::ratingShortFromInt($user->rating); //VATUSA level rating
         if ($user->flag_homecontroller) {
-            $this->moodle->assignCohort($id,
-                "$user->facility-" . Helper::ratingShortFromInt($user->rating)); //Facility level rating
+            $cohorts[] = "$user->facility-" . Helper::ratingShortFromInt($user->rating); //Facility level rating
             if (RoleHelper::userIsVATUSAStaff($user, false, true)
                 || RoleHelper::userIsInstructor($user)
                 || RoleHelper::userIsSeniorStaff($user, null, true)
                 || RoleHelper::userIsMentor($user)) {
-                $this->moodle->assignCohort($id, "TNG"); //Training staff
+                $cohorts[] = "TNG"; //Training staff
             }
         }
-        $this->moodle->assignCohort($id, $user->facility); //Home Facility
+        $cohorts[] = $user->facility; //Home Facility
 
         foreach ($user->visits->pluck('facility') as $facility) {
             //Visiting Facilities
-            $this->moodle->assignCohort($id, $facility . "-V"); //Facility level visitor
-            $this->moodle->assignCohort($id,
-                "$facility-" . Helper::ratingShortFromInt($user->rating)); //Facility level rating
+            $cohorts[] = $facility . "-V"; //Facility level visitor
+            $cohorts[] = "$facility-" . Helper::ratingShortFromInt($user->rating); //Facility level rating
         }
+        if (!empty($cohorts)) {
+            $this->moodle->assignCohortsBulk(array_map(fn ($cnumber) => ['uid' => $id, 'cnumber' => $cnumber],
+                $cohorts));
+        }
+
         //Clear Roles
         $this->moodle->clearUserRoles($id);
 
+        $roles = [];
         //Assign Student Role
         foreach ($facilities as $facility) {
-            $this->moodle->assignRole($id, $this->moodle->getCategoryFromShort($facility, true), "STU", "coursecat");
+            $roles[] = [
+                'uid'     => $id,
+                'cid'     => $this->moodle->getCategoryFromShort($facility, true),
+                'role'    => "STU",
+                'context' => "coursecat"
+            ];
         }
 
         //Assign Category Permissions
+        $enrolments = [];
         if (RoleHelper::userIsVATUSAStaff($user, false, true) || RoleHelper::userIsSeniorStaff($user, $user->facility,
                 true)) {
-            $this->moodle->assignRole($id, VATUSAMoodle::CATEGORY_CONTEXT_VATUSA, "INS", "coursecat");
-            $this->moodle->assignRole($id, $this->moodle->getCategoryFromShort($user->facility, true), "TA",
-                "coursecat");
+            $roles[] = [
+                'uid' => $id, 'cid' => VATUSAMoodle::CATEGORY_CONTEXT_VATUSA, 'role' => "INS",
+                'context' => "coursecat"
+            ];
+            $roles[] = [
+                'uid'     => $id,
+                'cid'     => $this->moodle->getCategoryFromShort($user->facility, true),
+                'role'    => "TA",
+                'context' => "coursecat"
+            ];
             $artccCategories = $this->moodle->getAllSubcategories($this->moodle->getCategoryFromShort($user->facility),
                 true);
             foreach ($artccCategories as $category) {
                 $courses = $this->moodle->getCoursesInCategory($category);
                 foreach ($courses as $course) {
-                    $this->moodle->enrolUser($id, $course["id"]);
+                    $enrolments[] = ['uid' => $id, 'cid' => $course["id"]];
                 }
             }
         }
         if (RoleHelper::userIsVATUSAStaff($user, false, true) || RoleHelper::userHas($user, "ZAE", "CBT")) {
-            $this->moodle->assignRole($id, VATUSAMoodle::CATEGORY_CONTEXT_VATUSA, "CBT", "coursecat");
+            $roles[] = [
+                'uid' => $id, 'cid' => VATUSAMoodle::CATEGORY_CONTEXT_VATUSA, 'role' => "CBT",
+                'context' => "coursecat"
+            ];
         }
         if (RoleHelper::userIsVATUSAStaff($user, false, true) || RoleHelper::userHas($user, $user->facility,
                 "FACCBT")) {
-            $this->moodle->assignRole($id, $this->moodle->getCategoryFromShort($user->facility, true), "FACCBT",
-                "coursecat");
+            $roles[] = [
+                'uid'     => $id,
+                'cid'     => $this->moodle->getCategoryFromShort($user->facility, true),
+                'role'    => "FACCBT",
+                'context' => "coursecat"
+            ];
         }
         if (RoleHelper::userIsVATUSAStaff($user, false, true) || RoleHelper::userIsInstructor($user,
                 $user->facility)) {
-            $this->moodle->assignRole($id, VATUSAMoodle::CATEGORY_CONTEXT_VATUSA, "INS", "coursecat");
-            $this->moodle->assignRole($id, $this->moodle->getCategoryFromShort($user->facility, true), "INS",
-                "coursecat");
+            $roles[] = [
+                'uid' => $id, 'cid' => VATUSAMoodle::CATEGORY_CONTEXT_VATUSA, 'role' => "INS",
+                'context' => "coursecat"
+            ];
+            $roles[] = [
+                'uid'     => $id,
+                'cid'     => $this->moodle->getCategoryFromShort($user->facility, true),
+                'role'    => "INS",
+                'context' => "coursecat"
+            ];
         }
         if (RoleHelper::userIsVATUSAStaff($user, false, true) || RoleHelper::userIsMentor($user)) {
             for ($i = Helper::ratingIntFromShort("S1"); $i <= $user->rating; $i++) {
                 $context = "EXAM_CONTEXT_" . Helper::ratingShortFromInt($i);
-                $this->moodle->assignRole($id, $this->moodle->getConstant($context), "MTR", "course");
+                $roles[] = [
+                    'uid' => $id, 'cid' => $this->moodle->getConstant($context), 'role' => "MTR",
+                    'context' => "course"
+                ];
             }
         }
 
         /*if (Role::where("cid", $user->cid)->where("facility", $user->facility)->where("role", "MTR")->exists()) {
-            $this->moodle->assignRole($id, $this->moodle->getCategoryFromShort($user->facility, true), "MTR",
-                "coursecat");
+            $roles[] = ['uid' => $id, 'cid' => $this->moodle->getCategoryFromShort($user->facility, true), 'role' => "MTR", 'context' => "coursecat"];
         }*/
 
+        if (!empty($roles)) {
+            $this->moodle->assignRolesBulk($roles);
+        }
+        if (!empty($enrolments)) {
+            $this->moodle->enrolUsersBulk($enrolments);
+        }
     }
 }
