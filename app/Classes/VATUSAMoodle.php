@@ -59,6 +59,9 @@ class VATUSAMoodle extends MoodleRest
     /** @var array Memoized results of getCoursesInCategory(), keyed by category id */
     private $coursesInCategoryCache = [];
 
+    /** @var array|null Memoized cohort idnumber => id map for the lifetime of this instance */
+    private $cohortIdMapCache = null;
+
     /** @var int Seconds to bound each Moodle HTTP request to */
     private const HTTP_TIMEOUT_SECONDS = 30;
 
@@ -477,6 +480,72 @@ class VATUSAMoodle extends MoodleRest
                 ]
             ]
         ]);
+    }
+
+    /**
+     * Build a cohort idnumber => id map in a single query, memoized for this instance.
+     * Lets the sync diff a user's desired cohorts (expressed as idnumbers) against their
+     * current memberships (stored as cohort ids) without an HTTP round-trip per cohort.
+     *
+     * @return array<string,int>
+     */
+    public function getCohortIdMap(): array
+    {
+        if ($this->cohortIdMapCache === null) {
+            $this->cohortIdMapCache = DB::connection('moodle')->table('cohort')
+                ->whereNotNull('idnumber')
+                ->where('idnumber', '!=', '')
+                ->pluck('id', 'idnumber')
+                ->map(fn ($id) => (int) $id)
+                ->toArray();
+        }
+
+        return $this->cohortIdMapCache;
+    }
+
+    /**
+     * Read current cohort memberships for a set of Moodle user ids in a single query,
+     * so a bulk sync can diff desired vs. current state without a per-user round-trip.
+     *
+     * @param int[] $uids Moodle user ids
+     *
+     * @return array<int,int[]> userid => list of cohort ids they currently belong to
+     */
+    public function getCohortMembershipsForUsers(array $uids): array
+    {
+        if (empty($uids)) {
+            return [];
+        }
+
+        $map = [];
+        DB::connection('moodle')->table('cohort_members')
+            ->whereIn('userid', $uids)
+            ->get(['userid', 'cohortid'])
+            ->each(function ($row) use (&$map) {
+                $map[(int) $row->userid][] = (int) $row->cohortid;
+            });
+
+        return $map;
+    }
+
+    /**
+     * Remove many cohort memberships in a single request. Routed through the Web Service
+     * (not a direct DB delete) so Moodle's enrol_cohort sync unenrols the user from the
+     * cohort's linked courses properly.
+     *
+     * @param array $items Each: ['uid' => int, 'cohortid' => int]
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    public function removeCohortsBulk(array $items)
+    {
+        return $this->request("core_cohort_delete_cohort_members", [
+            "members" => array_values(array_map(fn ($item) => [
+                "cohortid" => $item['cohortid'],
+                "userid"   => $item['uid']
+            ], $items))
+        ], self::METHOD_POST);
     }
 
     /**

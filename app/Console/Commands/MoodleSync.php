@@ -35,9 +35,6 @@ class MoodleSync extends Command
      *           HTTP_TIMEOUT_SECONDS bound on dense chunks. Flush in smaller sub-batches. */
     private const FLUSH_BATCH_SIZE = 200;
 
-    /** @var int Attempts per sub-batch before giving up on it and moving on */
-    private const MAX_ATTEMPTS = 2;
-
     /** @var int Microseconds to sleep between successive bulk sub-batch calls. Moodle's
      *           cohort/role writes trigger its own course cache-invalidation (mdl_course.cacherev),
      *           which was observed serializing against itself under back-to-back calls and
@@ -71,31 +68,47 @@ class MoodleSync extends Command
                 return 0;
             }
 
-            $items = $this->computeSyncItems($user, $this->resolveMoodleId($user));
-            $this->flushItems($items);
+            $id = $this->resolveMoodleId($user);
+            $items = $this->computeSyncItems($user, $id);
+            $this->flushItems($id, $items);
 
             return 0;
         }
 
         //Syncronize Users
         $moodleIds = $this->moodle->getAllUserIdMap();
+        $cohortIdMap = $this->moodle->getCohortIdMap();
         logger()->info("moodle:sync starting bulk pass: {$moodleIds->count()} Moodle-linked users");
 
         $chunkNum = 0;
-        $totals = ['users' => 0, 'updates' => 0, 'cohorts' => 0, 'roles' => 0, 'enrolments' => 0, 'failedBatches' => 0];
+        $totals = ['users' => 0, 'cohortAdds' => 0, 'cohortRemoves' => 0, 'roles' => 0,
+                   'enrolments' => 0, 'failedBatches' => 0];
 
         User::with('visits', 'academyCompetencies.course', 'roles')->chunk(1000,
-            function ($users) use ($moodleIds, &$chunkNum, &$totals) {
+            function ($users) use ($moodleIds, $cohortIdMap, &$chunkNum, &$totals) {
                 $chunkNum++;
-                $updates = $cohorts = $roles = $enrolments = [];
 
+                // Resolve this chunk's users to their Moodle ids up front, then read all
+                // their current cohort memberships in one query so we can diff desired vs.
+                // current and only write actual changes (see diffCohorts()).
+                $chunkUsers = [];
                 foreach ($users as $user) {
-                    if (!$moodleIds->has($user->cid)) {
-                        continue;
+                    if ($moodleIds->has($user->cid)) {
+                        $chunkUsers[(int) $moodleIds[$user->cid]] = $user;
                     }
-                    $items = $this->computeSyncItems($user, (int) $moodleIds[$user->cid]);
+                }
+                $currentCohorts = $this->moodle->getCohortMembershipsForUsers(array_keys($chunkUsers));
+
+                $updates = $cohortAdds = $cohortRemoves = $roles = $enrolments = [];
+                foreach ($chunkUsers as $id => $user) {
+                    $items = $this->computeSyncItems($user, $id);
                     $updates[] = $items['update'];
-                    $cohorts = array_merge($cohorts, $items['cohorts']);
+
+                    $diff = $this->diffCohorts($id, $items['cohortIdnumbers'],
+                        $currentCohorts[$id] ?? [], $cohortIdMap);
+                    $cohortAdds = array_merge($cohortAdds, $diff['adds']);
+                    $cohortRemoves = array_merge($cohortRemoves, $diff['removes']);
+
                     $roles = array_merge($roles, $items['roles']);
                     $enrolments = array_merge($enrolments, $items['enrolments']);
                 }
@@ -104,7 +117,10 @@ class MoodleSync extends Command
                 $failed += $this->flushBulk($chunkNum, 'update', $updates,
                     fn ($items) => $this->moodle->updateUsersBulk($items));
                 usleep(self::FLUSH_PACING_USEC);
-                $failed += $this->flushBulk($chunkNum, 'cohorts', $cohorts,
+                $failed += $this->flushBulk($chunkNum, 'cohort-removes', $cohortRemoves,
+                    fn ($items) => $this->moodle->removeCohortsBulk($items));
+                usleep(self::FLUSH_PACING_USEC);
+                $failed += $this->flushBulk($chunkNum, 'cohort-adds', $cohortAdds,
                     fn ($items) => $this->moodle->assignCohortsBulk($items));
                 usleep(self::FLUSH_PACING_USEC);
                 $failed += $this->flushBulk($chunkNum, 'roles', $roles,
@@ -113,21 +129,21 @@ class MoodleSync extends Command
                 $failed += $this->flushBulk($chunkNum, 'enrolments', $enrolments,
                     fn ($items) => $this->moodle->enrolUsersBulk($items));
 
-                $totals['users'] += count($users);
-                $totals['updates'] += count($updates);
-                $totals['cohorts'] += count($cohorts);
+                $totals['users'] += count($chunkUsers);
+                $totals['cohortAdds'] += count($cohortAdds);
+                $totals['cohortRemoves'] += count($cohortRemoves);
                 $totals['roles'] += count($roles);
                 $totals['enrolments'] += count($enrolments);
                 $totals['failedBatches'] += $failed;
 
-                logger()->info("moodle:sync chunk {$chunkNum}: " . count($users) . " users, "
-                    . count($updates) . " updates, " . count($cohorts) . " cohorts, "
+                logger()->info("moodle:sync chunk {$chunkNum}: " . count($chunkUsers) . " users, "
+                    . count($cohortAdds) . " cohort adds, " . count($cohortRemoves) . " cohort removes, "
                     . count($roles) . " roles, " . count($enrolments) . " enrolments"
                     . ($failed > 0 ? ", {$failed} sub-batches failed" : ""));
             });
 
         logger()->info("moodle:sync finished bulk pass: {$totals['users']} users seen, "
-            . "{$totals['updates']} updates, {$totals['cohorts']} cohorts, "
+            . "{$totals['cohortAdds']} cohort adds, {$totals['cohortRemoves']} cohort removes, "
             . "{$totals['roles']} roles, {$totals['enrolments']} enrolments across {$chunkNum} chunks, "
             . "{$totals['failedBatches']} sub-batches permanently failed");
 
@@ -154,17 +170,20 @@ class MoodleSync extends Command
     /**
      * Flush a bulk call for a chunk, split into FLUSH_BATCH_SIZE-sized sub-batches (a
      * 1000-user chunk can accumulate several thousand cohort/role entries, too large for
-     * Moodle to process within the 30s HTTP timeout in one call). Each sub-batch gets
-     * MAX_ATTEMPTS tries; a sub-batch that still fails is logged and skipped rather than
-     * aborting the rest of the chunk or the run — the next scheduled run will pick up
-     * anything missed, since moodle:sync recomputes full state every time.
+     * Moodle to process within the 30s HTTP timeout in one call).
+     *
+     * A failed sub-batch is logged and skipped — deliberately NOT retried. A write that
+     * timed out on our side usually keeps running server-side, holding row locks (e.g. the
+     * mdl_course.cacherev bump every cohort/role write triggers); firing a retry just piles
+     * a second writer onto the same contended rows and makes the pileup worse. moodle:sync
+     * recomputes full desired state every run, so anything skipped self-heals next run.
      *
      * @param int      $chunkNum
      * @param string   $kind
      * @param array    $items
      * @param callable $call
      *
-     * @return int Number of sub-batches that failed after all attempts
+     * @return int Number of sub-batches that failed
      */
     private function flushBulk(int $chunkNum, string $kind, array $items, callable $call): int
     {
@@ -175,21 +194,12 @@ class MoodleSync extends Command
                 usleep(self::FLUSH_PACING_USEC);
             }
 
-            for ($attempt = 1; $attempt <= self::MAX_ATTEMPTS; $attempt++) {
-                try {
-                    $call($batch);
-                    continue 2;
-                } catch (\Exception $e) {
-                    if ($attempt < self::MAX_ATTEMPTS) {
-                        logger()->warning("moodle:sync chunk {$chunkNum} {$kind} batch {$batchNum}: "
-                            . "attempt {$attempt} failed ({$e->getMessage()}), retrying");
-                        usleep(self::FLUSH_PACING_USEC);
-                        continue;
-                    }
-                    logger()->error("moodle:sync chunk {$chunkNum} {$kind} batch {$batchNum}: "
-                        . "failed after {$attempt} attempts, skipping: {$e->getMessage()}");
-                    $failures++;
-                }
+            try {
+                $call($batch);
+            } catch (\Exception $e) {
+                logger()->error("moodle:sync chunk {$chunkNum} {$kind} batch {$batchNum}: "
+                    . "failed, skipping (will retry next run): {$e->getMessage()}");
+                $failures++;
             }
         }
 
@@ -197,40 +207,90 @@ class MoodleSync extends Command
     }
 
     /**
-     * Flush a single user's computed items immediately (single-user CLI path). Still routed
-     * through flushBulk() for consistent retry behavior, though a single user's item counts
-     * never approach FLUSH_BATCH_SIZE.
+     * Diff a user's desired cohort set (idnumbers) against their current memberships
+     * (cohort ids), so we only add memberships that are missing and remove ones that no
+     * longer apply — instead of clearing and re-inserting every cohort every run. The old
+     * clear-then-reassign produced the same end state but rewrote ~all memberships every
+     * pass, and each write triggers a mdl_course.cacherev bump that serializes on a tiny
+     * hot table; diffing collapses steady-state writes to near zero.
      *
+     * End state is identical to the previous clear-then-reassign: the user ends up in
+     * exactly the desired cohorts and no others.
+     *
+     * @param int                 $id               Moodle user id
+     * @param string[]            $desiredIdnumbers Desired cohort idnumbers (may repeat)
+     * @param int[]               $currentCohortIds Cohort ids the user currently belongs to
+     * @param array<string,int>   $cohortIdMap      idnumber => cohort id
+     *
+     * @return array{adds: array, removes: array}
+     */
+    private function diffCohorts(int $id, array $desiredIdnumbers, array $currentCohortIds, array $cohortIdMap): array
+    {
+        // Resolve desired idnumbers to cohort ids, skipping any that don't exist in Moodle
+        // (the sync never creates cohorts, so an unknown idnumber was a no-op add before too).
+        $desiredIds = [];
+        foreach (array_unique($desiredIdnumbers) as $idnumber) {
+            if (isset($cohortIdMap[$idnumber])) {
+                $desiredIds[$cohortIdMap[$idnumber]] = $idnumber;
+            }
+        }
+
+        $adds = $removes = [];
+        foreach ($desiredIds as $cohortId => $idnumber) {
+            if (!in_array($cohortId, $currentCohortIds, true)) {
+                $adds[] = ['uid' => $id, 'cnumber' => $idnumber];
+            }
+        }
+        foreach ($currentCohortIds as $cohortId) {
+            if (!isset($desiredIds[$cohortId])) {
+                $removes[] = ['uid' => $id, 'cohortid' => $cohortId];
+            }
+        }
+
+        return ['adds' => $adds, 'removes' => $removes];
+    }
+
+    /**
+     * Flush a single user's computed items immediately (single-user CLI path). Reads the
+     * one user's current cohort memberships to run the same diff the bulk path uses; item
+     * counts never approach FLUSH_BATCH_SIZE here.
+     *
+     * @param int   $id    Moodle user id
      * @param array $items
      */
-    private function flushItems(array $items)
+    private function flushItems(int $id, array $items)
     {
+        $current = $this->moodle->getCohortMembershipsForUsers([$id])[$id] ?? [];
+        $diff = $this->diffCohorts($id, $items['cohortIdnumbers'], $current, $this->moodle->getCohortIdMap());
+
         $this->flushBulk(0, 'update', [$items['update']], fn ($items) => $this->moodle->updateUsersBulk($items));
-        $this->flushBulk(0, 'cohorts', $items['cohorts'], fn ($items) => $this->moodle->assignCohortsBulk($items));
+        $this->flushBulk(0, 'cohort-removes', $diff['removes'],
+            fn ($items) => $this->moodle->removeCohortsBulk($items));
+        $this->flushBulk(0, 'cohort-adds', $diff['adds'], fn ($items) => $this->moodle->assignCohortsBulk($items));
         $this->flushBulk(0, 'roles', $items['roles'], fn ($items) => $this->moodle->assignRolesBulk($items));
         $this->flushBulk(0, 'enrolments', $items['enrolments'],
             fn ($items) => $this->moodle->enrolUsersBulk($items));
     }
 
     /**
-     * Compute what needs to happen in Moodle for a user — cohorts, roles, and enrolments —
-     * without making any HTTP calls itself. Callers accumulate these across many users and
-     * flush them as bulk calls (whole-table sync), or flush a single user's items
-     * immediately (single-user CLI path). Cohort/role clearing stays per-user since it's a
-     * direct DB delete (cheap, not the HTTP bottleneck this split targets).
+     * Compute what needs to happen in Moodle for a user — desired cohorts, roles, and
+     * enrolments — without making any HTTP calls itself. Callers accumulate these across
+     * many users and flush them as bulk calls (whole-table sync), or flush a single user's
+     * items immediately (single-user CLI path). Cohorts are returned as desired idnumbers
+     * and diffed against current membership by the caller (see diffCohorts()); roles are
+     * still cleared per-user here via a direct DB delete and fully reassigned.
      *
      * @param \App\User $user
      * @param int       $id Moodle user id
      *
-     * @return array{update: array, cohorts: array, roles: array, enrolments: array}
+     * @return array{update: array, cohortIdnumbers: string[], roles: array, enrolments: array}
      * @throws \Exception
      */
     private function computeSyncItems(User $user, int $id): array
     {
         $facilities = $user->visits->pluck('facility')->merge(collect($user->facility))->unique();
 
-        //Assign Cohorts
-        $this->moodle->clearUserCohorts($id);
+        //Desired Cohorts (diffed against current membership by the caller — no unconditional clear)
         $cohorts = [];
         $cohorts[] = Helper::ratingShortFromInt($user->rating); //VATUSA level rating
         if ($user->flag_homecontroller) {
@@ -330,10 +390,10 @@ class MoodleSync extends Command
         }*/
 
         return [
-            'update'     => ['id' => $id, 'fname' => $user->fname, 'lname' => $user->lname, 'email' => $user->email],
-            'cohorts'    => array_map(fn ($cnumber) => ['uid' => $id, 'cnumber' => $cnumber], $cohorts),
-            'roles'      => $roles,
-            'enrolments' => $enrolments,
+            'update'          => ['id' => $id, 'fname' => $user->fname, 'lname' => $user->lname, 'email' => $user->email],
+            'cohortIdnumbers' => $cohorts,
+            'roles'           => $roles,
+            'enrolments'      => $enrolments,
         ];
     }
 }
