@@ -791,7 +791,7 @@ class VATUSAMoodle extends MoodleRest
         $map = [];
         DB::connection('moodle')->table('role_assignments')
             ->selectRaw($prefix . 'role_assignments.roleid, ' . $prefix . 'role_assignments.userid, '
-                . $prefix . 'role_assignments.contextid, context.contextlevel')
+                . $prefix . 'role_assignments.contextid, ' . $prefix . 'context.contextlevel')
             ->leftJoin('context', 'role_assignments.contextid', '=', 'context.id')
             ->whereIn('role_assignments.userid', $uids)
             ->where(function ($query) {
