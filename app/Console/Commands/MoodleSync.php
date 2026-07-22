@@ -81,16 +81,17 @@ class MoodleSync extends Command
         logger()->info("moodle:sync starting bulk pass: {$moodleIds->count()} Moodle-linked users");
 
         $chunkNum = 0;
-        $totals = ['users' => 0, 'cohortAdds' => 0, 'cohortRemoves' => 0, 'roles' => 0,
-                   'enrolments' => 0, 'failedBatches' => 0];
+        $totals = ['users' => 0, 'cohortAdds' => 0, 'cohortRemoves' => 0,
+                   'roleAdds' => 0, 'roleRemoves' => 0, 'enrolments' => 0, 'failedBatches' => 0];
 
         User::with('visits', 'academyCompetencies.course', 'roles')->chunk(1000,
             function ($users) use ($moodleIds, $cohortIdMap, &$chunkNum, &$totals) {
                 $chunkNum++;
 
                 // Resolve this chunk's users to their Moodle ids up front, then read all
-                // their current cohort memberships in one query so we can diff desired vs.
-                // current and only write actual changes (see diffCohorts()).
+                // their current cohort memberships and managed role assignments in one query
+                // each, so we can diff desired vs. current and only write actual changes
+                // (see diffCohorts()/diffRoles()).
                 $chunkUsers = [];
                 foreach ($users as $user) {
                     if ($moodleIds->has($user->cid)) {
@@ -98,18 +99,22 @@ class MoodleSync extends Command
                     }
                 }
                 $currentCohorts = $this->moodle->getCohortMembershipsForUsers(array_keys($chunkUsers));
+                $currentRoles = $this->moodle->getManagedRoleAssignmentsForUsers(array_keys($chunkUsers));
 
-                $updates = $cohortAdds = $cohortRemoves = $roles = $enrolments = [];
+                $updates = $cohortAdds = $cohortRemoves = $roleAdds = $roleRemoves = $enrolments = [];
                 foreach ($chunkUsers as $id => $user) {
                     $items = $this->computeSyncItems($user, $id);
                     $updates[] = $items['update'];
 
-                    $diff = $this->diffCohorts($id, $items['cohortIdnumbers'],
+                    $cohortDiff = $this->diffCohorts($id, $items['cohortIdnumbers'],
                         $currentCohorts[$id] ?? [], $cohortIdMap);
-                    $cohortAdds = array_merge($cohortAdds, $diff['adds']);
-                    $cohortRemoves = array_merge($cohortRemoves, $diff['removes']);
+                    $cohortAdds = array_merge($cohortAdds, $cohortDiff['adds']);
+                    $cohortRemoves = array_merge($cohortRemoves, $cohortDiff['removes']);
 
-                    $roles = array_merge($roles, $items['roles']);
+                    $roleDiff = $this->diffRoles($id, $items['roles'], $currentRoles[$id] ?? []);
+                    $roleAdds = array_merge($roleAdds, $roleDiff['adds']);
+                    $roleRemoves = array_merge($roleRemoves, $roleDiff['removes']);
+
                     $enrolments = array_merge($enrolments, $items['enrolments']);
                 }
 
@@ -123,7 +128,10 @@ class MoodleSync extends Command
                 $failed += $this->flushBulk($chunkNum, 'cohort-adds', $cohortAdds,
                     fn ($items) => $this->moodle->assignCohortsBulk($items));
                 usleep(self::FLUSH_PACING_USEC);
-                $failed += $this->flushBulk($chunkNum, 'roles', $roles,
+                $failed += $this->flushBulk($chunkNum, 'role-removes', $roleRemoves,
+                    fn ($items) => $this->moodle->unassignRolesBulk($items));
+                usleep(self::FLUSH_PACING_USEC);
+                $failed += $this->flushBulk($chunkNum, 'role-adds', $roleAdds,
                     fn ($items) => $this->moodle->assignRolesBulk($items));
                 usleep(self::FLUSH_PACING_USEC);
                 $failed += $this->flushBulk($chunkNum, 'enrolments', $enrolments,
@@ -132,19 +140,22 @@ class MoodleSync extends Command
                 $totals['users'] += count($chunkUsers);
                 $totals['cohortAdds'] += count($cohortAdds);
                 $totals['cohortRemoves'] += count($cohortRemoves);
-                $totals['roles'] += count($roles);
+                $totals['roleAdds'] += count($roleAdds);
+                $totals['roleRemoves'] += count($roleRemoves);
                 $totals['enrolments'] += count($enrolments);
                 $totals['failedBatches'] += $failed;
 
                 logger()->info("moodle:sync chunk {$chunkNum}: " . count($chunkUsers) . " users, "
                     . count($cohortAdds) . " cohort adds, " . count($cohortRemoves) . " cohort removes, "
-                    . count($roles) . " roles, " . count($enrolments) . " enrolments"
+                    . count($roleAdds) . " role adds, " . count($roleRemoves) . " role removes, "
+                    . count($enrolments) . " enrolments"
                     . ($failed > 0 ? ", {$failed} sub-batches failed" : ""));
             });
 
         logger()->info("moodle:sync finished bulk pass: {$totals['users']} users seen, "
             . "{$totals['cohortAdds']} cohort adds, {$totals['cohortRemoves']} cohort removes, "
-            . "{$totals['roles']} roles, {$totals['enrolments']} enrolments across {$chunkNum} chunks, "
+            . "{$totals['roleAdds']} role adds, {$totals['roleRemoves']} role removes, "
+            . "{$totals['enrolments']} enrolments across {$chunkNum} chunks, "
             . "{$totals['failedBatches']} sub-batches permanently failed");
 
         return 0;
@@ -251,6 +262,63 @@ class MoodleSync extends Command
     }
 
     /**
+     * Diff a user's desired role assignments against their current sync-managed assignments,
+     * so we only assign roles that are missing and unassign ones that no longer apply —
+     * instead of clearing and reassigning every role every run (~1000 per dense chunk, the
+     * dominant recurring write load once cohorts were diffed). A role assignment's identity
+     * is (roleid, contextid); the desired side expresses roles as short names, mapped to
+     * role ids via the Moodle role map.
+     *
+     * End state is identical to the previous clear-then-reassign: the user ends up with
+     * exactly the desired managed roles and no others. The current set passed in must come
+     * from getManagedRoleAssignmentsForUsers(), whose filter mirrors clearUserRoles() — so
+     * only assignments the sync owns are ever removed.
+     *
+     * @param int   $id            Moodle user id
+     * @param array $desiredRoles  Each: ['uid' => int, 'cid' => int|null, 'role' => string, 'context' => string]
+     * @param array $currentManaged Each: ['roleid' => int, 'contextid' => int, 'contextlevel' => int]
+     *
+     * @return array{adds: array, removes: array}
+     */
+    private function diffRoles(int $id, array $desiredRoles, array $currentManaged): array
+    {
+        // Key desired roles by "roleid:contextid". Skip any with an unresolved role or
+        // context id — the old code would have sent those as no-op/erroring assignments.
+        $desiredByKey = [];
+        foreach ($desiredRoles as $role) {
+            $roleId = $this->moodle->roleIdFor($role['role']);
+            if ($roleId === null || $role['cid'] === null) {
+                continue;
+            }
+            $desiredByKey[$roleId . ':' . $role['cid']] = $role;
+        }
+
+        $currentByKey = [];
+        foreach ($currentManaged as $assignment) {
+            $currentByKey[$assignment['roleid'] . ':' . $assignment['contextid']] = $assignment;
+        }
+
+        $adds = $removes = [];
+        foreach ($desiredByKey as $key => $role) {
+            if (!isset($currentByKey[$key])) {
+                $adds[] = $role;
+            }
+        }
+        foreach ($currentByKey as $key => $assignment) {
+            if (!isset($desiredByKey[$key])) {
+                $removes[] = [
+                    'uid'          => $id,
+                    'roleid'       => $assignment['roleid'],
+                    'contextid'    => $assignment['contextid'],
+                    'contextlevel' => $assignment['contextlevel']
+                ];
+            }
+        }
+
+        return ['adds' => $adds, 'removes' => $removes];
+    }
+
+    /**
      * Flush a single user's computed items immediately (single-user CLI path). Reads the
      * one user's current cohort memberships to run the same diff the bulk path uses; item
      * counts never approach FLUSH_BATCH_SIZE here.
@@ -260,14 +328,21 @@ class MoodleSync extends Command
      */
     private function flushItems(int $id, array $items)
     {
-        $current = $this->moodle->getCohortMembershipsForUsers([$id])[$id] ?? [];
-        $diff = $this->diffCohorts($id, $items['cohortIdnumbers'], $current, $this->moodle->getCohortIdMap());
+        $currentCohorts = $this->moodle->getCohortMembershipsForUsers([$id])[$id] ?? [];
+        $cohortDiff = $this->diffCohorts($id, $items['cohortIdnumbers'], $currentCohorts,
+            $this->moodle->getCohortIdMap());
+
+        $currentRoles = $this->moodle->getManagedRoleAssignmentsForUsers([$id])[$id] ?? [];
+        $roleDiff = $this->diffRoles($id, $items['roles'], $currentRoles);
 
         $this->flushBulk(0, 'update', [$items['update']], fn ($items) => $this->moodle->updateUsersBulk($items));
-        $this->flushBulk(0, 'cohort-removes', $diff['removes'],
+        $this->flushBulk(0, 'cohort-removes', $cohortDiff['removes'],
             fn ($items) => $this->moodle->removeCohortsBulk($items));
-        $this->flushBulk(0, 'cohort-adds', $diff['adds'], fn ($items) => $this->moodle->assignCohortsBulk($items));
-        $this->flushBulk(0, 'roles', $items['roles'], fn ($items) => $this->moodle->assignRolesBulk($items));
+        $this->flushBulk(0, 'cohort-adds', $cohortDiff['adds'],
+            fn ($items) => $this->moodle->assignCohortsBulk($items));
+        $this->flushBulk(0, 'role-removes', $roleDiff['removes'],
+            fn ($items) => $this->moodle->unassignRolesBulk($items));
+        $this->flushBulk(0, 'role-adds', $roleDiff['adds'], fn ($items) => $this->moodle->assignRolesBulk($items));
         $this->flushBulk(0, 'enrolments', $items['enrolments'],
             fn ($items) => $this->moodle->enrolUsersBulk($items));
     }
@@ -277,8 +352,8 @@ class MoodleSync extends Command
      * enrolments — without making any HTTP calls itself. Callers accumulate these across
      * many users and flush them as bulk calls (whole-table sync), or flush a single user's
      * items immediately (single-user CLI path). Cohorts are returned as desired idnumbers
-     * and diffed against current membership by the caller (see diffCohorts()); roles are
-     * still cleared per-user here via a direct DB delete and fully reassigned.
+     * and roles as desired assignments; both are diffed against current Moodle state by the
+     * caller (see diffCohorts()/diffRoles()) so only actual changes are written.
      *
      * @param \App\User $user
      * @param int       $id Moodle user id
@@ -310,9 +385,7 @@ class MoodleSync extends Command
             $cohorts[] = "$facility-" . Helper::ratingShortFromInt($user->rating); //Facility level rating
         }
 
-        //Clear Roles
-        $this->moodle->clearUserRoles($id);
-
+        //Desired Roles (diffed against current managed assignments by the caller — no clear)
         $roles = [];
         //Assign Student Role
         foreach ($facilities as $facility) {
