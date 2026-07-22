@@ -643,6 +643,40 @@ class VATUSAMoodle extends MoodleRest
     }
 
     /**
+     * Map a role short name (STU/INS/TA/...) to its Moodle role id, so the sync can diff
+     * desired roles (expressed as short names) against current assignments (stored as role
+     * ids) without exposing the internal $roleIds map.
+     *
+     * @param string $role
+     *
+     * @return int|null
+     */
+    public function roleIdFor(string $role): ?int
+    {
+        return $this->roleIds[$role] ?? null;
+    }
+
+    /**
+     * Unassign many role assignments in a single request.
+     *
+     * @param array $items Each: ['uid' => int, 'roleid' => int, 'contextid' => int, 'contextlevel' => int]
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    public function unassignRolesBulk(array $items)
+    {
+        return $this->request("core_role_unassign_roles", [
+            "unassignments" => array_values(array_map(fn ($item) => [
+                "roleid"       => $item['roleid'],
+                "userid"       => $item['uid'],
+                "contextid"    => $item['contextid'],
+                "contextlevel" => $item['contextlevel']
+            ], $items))
+        ], self::METHOD_POST);
+    }
+
+    /**
      *
      * Remove Role from User in Context
      *
@@ -732,6 +766,55 @@ class VATUSAMoodle extends MoodleRest
                 DB::connection('moodle')->table('role_assignments')->where('id', $id)->delete();
             }
         }
+    }
+
+    /**
+     * Read the "sync-managed" role assignments for a set of users in a single query, so a
+     * bulk sync can diff desired vs. current and only write actual changes. The filter here
+     * MUST mirror clearUserRoles()'s default branch exactly — it defines the set of
+     * assignments the sync owns (coursecat roles, plus non-STU roles on exam courses under
+     * the VATUSA/exams context path, excluding enrolment-derived components). Anything
+     * outside this set is left untouched, exactly as clear-then-reassign did.
+     *
+     * @param int[] $uids Moodle user ids
+     *
+     * @return array<int,array<int,array{roleid:int,contextid:int,contextlevel:int}>>
+     *         userid => list of managed role assignments
+     */
+    public function getManagedRoleAssignmentsForUsers(array $uids): array
+    {
+        if (empty($uids)) {
+            return [];
+        }
+
+        $prefix = config('database.connections.moodle.prefix');
+        $map = [];
+        DB::connection('moodle')->table('role_assignments')
+            ->selectRaw($prefix . 'role_assignments.roleid, ' . $prefix . 'role_assignments.userid, '
+                . $prefix . 'role_assignments.contextid, context.contextlevel')
+            ->leftJoin('context', 'role_assignments.contextid', '=', 'context.id')
+            ->whereIn('role_assignments.userid', $uids)
+            ->where(function ($query) {
+                $query->where('context.contextlevel', self::CONTEXT_COURSECAT);
+                $query->orWhere(function ($query) {
+                    $query->where('context.contextlevel', self::CONTEXT_COURSE);
+                    $query->where('context.path', 'LIKE',
+                        '%' . self::CATEGORY_CONTEXT_VATUSA . '/' . self::CATEGORY_CONTEXT_VATUSA_EXAMS . '/%');
+                    $query->where('role_assignments.roleid', '!=', $this->roleIds['STU']);
+                });
+            })
+            ->where('role_assignments.component', '!=', 'enrol_cohort')
+            ->where('role_assignments.component', '!=', 'enrol_coursecompleted')
+            ->get()
+            ->each(function ($row) use (&$map) {
+                $map[(int) $row->userid][] = [
+                    'roleid'       => (int) $row->roleid,
+                    'contextid'    => (int) $row->contextid,
+                    'contextlevel' => (int) $row->contextlevel
+                ];
+            });
+
+        return $map;
     }
 
     /**
