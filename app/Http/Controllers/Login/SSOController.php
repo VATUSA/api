@@ -87,6 +87,9 @@ class SSOController extends Controller
             $request->session()->put('return', env('SSO_RETURN_FORUMS'));
         }
 
+        $request->session()->put('destination', $destination);
+        $request->session()->put('isTest', $request->has('moodle-test'));
+
         /* If already logged in, don't send to SSO */
         if (Auth::check()) {
             $return = $request->session()->get("return");
@@ -107,6 +110,10 @@ class SSOController extends Controller
 
         $return = session("return", env("SSO_RETURN_FORUMS"));
         session()->forget("return");
+        $destination = session("destination", "home");
+        session()->forget("destination");
+        $isTest = session("isTest", false);
+        session()->forget("isTest");
 
         //Before proceeding, check if user is suspended.
         if ($user->vatsim->rating->id == 0) {
@@ -300,6 +307,6 @@ class SSOController extends Controller
             }
         }
 
-        return ULSHelper::doHandleLogin($user->cid, $return);
+        return ULSHelper::doHandleLogin($user->cid, $return, $destination, $isTest);
     }
 }
