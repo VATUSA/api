@@ -14,7 +14,7 @@
     "bonroyage/oauth": "1.*",
     "darkaonline/l5-swagger": "^8.5",
     "doctrine/dbal": "^2.5",
-    "guzzlehttp/psr7": "^1.5",
+    "guzzlehttp/psr7": "^2.12",
     "hidehalo/nanoid-php": "^1.1",
     "laravel/framework": "^10.13.2",
     "laravel/helpers": "^1.6",
