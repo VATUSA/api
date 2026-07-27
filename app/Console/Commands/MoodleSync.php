@@ -42,6 +42,16 @@ class MoodleSync extends Command
      *           low enough for Moodle's DB to keep up. */
     private const FLUSH_PACING_USEC = 300000;
 
+    /** @var int The bulk pass only needs to maintain cohorts/roles for users who could
+     *           plausibly still need a change (facility/rating/staff-role updates) —
+     *           there's no reason to re-diff someone who hasn't logged into the site in
+     *           months. Restricting to recently-active users keeps the per-run row count
+     *           (and therefore Moodle write volume / cacherev contention) bounded as the
+     *           full user table keeps growing, on top of the diff-based writes from
+     *           computeSyncItems(). New-controller onboarding doesn't depend on this
+     *           filter: that's handled at login time (see cobalt's syncMoodleCohort). */
+    private const ACTIVE_WITHIN_DAYS = 90;
+
     /**
      * Create a new command instance.
      *
@@ -78,13 +88,17 @@ class MoodleSync extends Command
         //Syncronize Users
         $moodleIds = $this->moodle->getAllUserIdMap();
         $cohortIdMap = $this->moodle->getCohortIdMap();
-        logger()->info("moodle:sync starting bulk pass: {$moodleIds->count()} Moodle-linked users");
+        $activeSince = now()->subDays(self::ACTIVE_WITHIN_DAYS);
+        logger()->info("moodle:sync starting bulk pass: {$moodleIds->count()} Moodle-linked users, " .
+            "restricted to lastactivity >= {$activeSince->toDateString()}");
 
         $chunkNum = 0;
         $totals = ['users' => 0, 'cohortAdds' => 0, 'cohortRemoves' => 0,
                    'roleAdds' => 0, 'roleRemoves' => 0, 'enrolments' => 0, 'failedBatches' => 0];
 
-        User::with('visits', 'academyCompetencies.course', 'roles')->chunk(1000,
+        User::with('visits', 'academyCompetencies.course', 'roles')
+            ->where('lastactivity', '>=', $activeSince)
+            ->chunk(1000,
             function ($users) use ($moodleIds, $cohortIdMap, &$chunkNum, &$totals) {
                 $chunkNum++;
 
