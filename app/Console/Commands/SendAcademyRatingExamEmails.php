@@ -144,12 +144,11 @@ class SendAcademyRatingExamEmails extends Command
                 $passingGrade = config('exams.BASIC.passingPercent');
                 $testName = "Basic ATC/S1 Exam";
 
-                $review = $this->moodle->request("mod_quiz_get_attempt_review",
-                        ["attemptid" => $attemptId]) ?? [];
-                if (empty($review)) {
+                $quiz = $this->moodle->getQuizMeta(config('exams.BASIC.id'));
+                if (!$quiz || !$quiz->sumgrades || !isset($attempt->sumgrades)) {
                     continue;
                 }
-                $grade = round(floatval($review['grade']));
+                $grade = round($attempt->sumgrades / $quiz->sumgrades * $quiz->grade);
                 $passed = $grade >= $passingGrade;
 
                 $result = compact('testName', 'studentName', 'attemptNum', 'grade',

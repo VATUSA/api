@@ -36,6 +36,15 @@ Two paths (see `README.md` for full detail):
 `.env.example` is the authoritative, sectioned list of env vars (DB connections, JWT,
 VATSIM SSO/OAuth, AWS, Moodle, Swagger).
 
+**`compose.dev.yml`'s Redis does not work out of the box.** `config/database.php`'s
+`redis.default` connection hardcodes `'scheme' => 'tls'` (for the real, TLS-only managed
+Redis used in staging/prod), but the compose file's `redis:7-alpine` service is plain,
+non-TLS Redis — so anything that touches the default cache store (e.g.
+`CloudflareServiceProvider::boot()`, which runs on every request/artisan invocation) fails
+with a Predis TLS handshake error. Workaround for local runs: override
+`CACHE_DRIVER=array` (and `SESSION_DRIVER=array` if needed) rather than editing
+`config/database.php`.
+
 ### Testing & CI
 
 - Tests are **smoke tests only** right now (in-memory SQLite, no external services). Real
