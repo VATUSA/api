@@ -115,7 +115,8 @@ class CacheControllerEligibility extends Command
             if ($controllerEligibility->competency_rating < $target_competency_rating) {
                 $controllerEligibility->has_consolidation_hours = false;
             }
-            if ($in_vatusa_facility || $visits_vatusa_facility) {
+            if (($in_vatusa_facility || $visits_vatusa_facility)
+                && $controllerEligibility->competency_rating < $target_competency_rating) {
                 $controllerEligibility->competency_rating = $target_competency_rating;
                 $carbonDate = Carbon::now();
                 $controllerEligibility->competency_date = $carbonDate->toDateString();

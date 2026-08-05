@@ -52,7 +52,7 @@ class MoodleCompetency extends Command
             $c->rating = $rating;
         }
         $finishTimestamp = $competency_date->format('Y-m-d H:i');
-        $expireCarbon = $competency_date->addDays(180);
+        $expireCarbon = $competency_date->copy()->addDays(180);
         $expireTimestamp = $expireCarbon->format('Y-m-d H:i');
         $c->academy_course_id = $course_id;
         $c->completion_timestamp = $finishTimestamp;
@@ -64,7 +64,7 @@ class MoodleCompetency extends Command
             $ecCompetencyCarbon = Carbon::parse($ec->competency_date);
             if ($ecCompetencyCarbon->isBefore($competency_date)) {
                 $ec->competency_rating = $rating;
-                $ec->competency_date = $competency_date->format('Y-m-d H:i');
+                $ec->competency_date = $competency_date->format('Y-m-d');
                 $ec->save();
             }
         }
