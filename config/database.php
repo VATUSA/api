@@ -51,18 +51,6 @@ return [
             'prefix'    => '',
             'strict'    => false,
         ],
-        'forum'  => [
-            'driver'    => env('DB_FORUM_CONNECTION', 'mysql'),
-            'host'      => env('DB_FORUM_HOST', '127.0.0.1'),
-            'port'      => env('DB_FORUM_PORT', 3306),
-            'database'  => env('DB_FORUM_DATABASE', 'forum'),
-            'username'  => env('DB_FORUM_USERNAME', 'forum'),
-            'password'  => env('DB_FORUM_PASSWORD', ''),
-            'charset'   => 'utf8',
-            'collation' => 'utf8_unicode_ci',
-            'prefix'    => '',
-            'strict'    => false
-        ],
         'email'  => [
             'driver'    => env('DB_EMAIL_CONNECTION', 'mysql'),
             'host'      => env('DB_EMAIL_HOST', '127.0.0.1'),

@@ -6,7 +6,6 @@ use App\Helpers\Helper;
 use App\Helpers\EmailHelper;
 use App\Helpers\RatingHelper;
 use App\Helpers\RoleHelper;
-use App\Helpers\SMFHelper;
 use App\Helpers\VATSIMApi2Helper;
 use App\Models\ControllerEligibilityCache;
 use Illuminate\Auth\Authenticatable;
@@ -174,16 +173,6 @@ class User extends Model implements AuthenticatableContract, JWTSubject
     public function lastActivityWebsite()
     {
         return $this->lastactivity->diffInDays(null);
-    }
-
-    /**
-     * @return string
-     */
-    public function lastActivityForum()
-    {
-        $f = \DB::connection('forum')->table("smf_members")->where("member_name", $this->cid)->first();
-
-        return ($f) ? Carbon::createFromTimestamp($f->last_login)->diffInDays(null) : "Unknown";
     }
 
     public function hasEmailAccess($email)
@@ -366,11 +355,6 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         Cache::forget("roster-$old_facility-home");
         Cache::forget("roster-$old_facility-both");
 
-        if ($this->rating >= RatingHelper::shortToInt("I1")) {
-            SMFHelper::createPost(7262, 82,
-                "User Removal: " . $this->fullname() . " (" . RatingHelper::intToShort($this->rating) . ") from " . $old_facility,
-                "User " . $this->fullname() . " (" . $this->cid . "/" . RatingHelper::intToShort($this->rating) . ") was removed from $old_facility and holds a higher rating.  Please check for demotion requirements.  [url=https://www.vatusa.net/mgt/controller/" . $this->cid . "]Member Management[/url]");
-        }
     }
 
     public function addToFacility($facility)
@@ -383,35 +367,18 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         $this->facility_join = Carbon::now();
         $this->save();
 
-        if ($this->rating >= RatingHelper::shortToInt("I1") && $this->rating < RatingHelper::shortToInt("SUP")) {
-            SMFHelper::createPost(7262, 82,
-                "User Addition: " . $this->fullname() . " (" . RatingHelper::intToShort($this->rating) . ") to " . $this->facility,
-                "User " . $this->fullname() . " (" . $this->cid . "/" . RatingHelper::intToShort($this->rating) . ") was added to " . $this->facility . " and holds a higher rating.\n\nPlease check for demotion requirements.\n\n[url=https://www.vatusa.net/mgt/controller/" . $this->cid . "]Member Management[/url]");
-        }
-
-        $fc = 0;
-
         if ($oldfac->id != "ZZN" && $oldfac->id != "ZAE") {
             if (RoleHelper::has($this, $oldfac->id, "ATM") || RoleHelper::has($this, $oldfac->id, "DATM")) {
                 EmailHelper::sendEmail(["vatusa2@vatusa.net"], "ATM or DATM discrepancy",
                     "emails.transfers.atm", ["user" => $this, "oldfac" => $oldfac]);
-                $fc = 1;
             } elseif (RoleHelper::has($this, $oldfac->id, "TA")) {
                 EmailHelper::sendEmail(["vatusa3@vatusa.net"], "TA discrepancy", "emails.transfers.ta",
                     ["user" => $this, "oldfac" => $oldfac]);
-                $fc = 1;
             } elseif (RoleHelper::has($this, $oldfac->id, "EC") || RoleHelper::has($this, $oldfac->id,
                     "FE") || RoleHelper::has($this, $oldfac->id, "WM")) {
                 EmailHelper::sendEmail([$oldfac->id . "-atm@vatusa.net", $oldfac->id . "-datm@vatusa.net"],
                     "Staff discrepancy", "emails.transfers.otherstaff", ["user" => $this, "oldfac" => $oldfac]);
-                $fc = 1;
             }
-        }
-
-        if ($fc) {
-            SMFHelper::createPost(7262, 82,
-                "Staff discrepancy on transfer: " . $this->fullname() . " (" . RatingHelper::intToShort($this->rating),
-                "User " . $this->fullname() . " (" . $this->cid . "/" . RatingHelper::intToShort($this->rating) . ") was added to facility " . $this->facility . " but holds a staff position at " . $oldfac->id . ".\n\nPlease check for accuracy.\n\n[url=https://www.vatusa.net/mgt/controller/" . $this->cid . "]Member Management[/url] [url=https://www.vatusa.net/mgt/facility/" . $oldfac->id . "]Facility Management for Old Facility[/url] [url=https://www.vatusa.net/mgt/facility/" . $this->facility . "]Facility Management for New Facility[/url]");
         }
 
         if ($facility->active) {
