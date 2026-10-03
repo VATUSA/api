@@ -44,6 +44,7 @@ class CacheControllerEligibility extends Command
     {
         $record = new ControllerEligibilityCache();
         $record->cid = $cid;
+        $record->has_consolidation_hours = false;
         $record->save();
         return $record;
     }
@@ -266,7 +267,10 @@ class CacheControllerEligibility extends Command
         }
 
         // Hours checks
-        $records = ControllerEligibilityCache::where('has_consolidation_hours', false)
+        $records = ControllerEligibilityCache::where(function ($q) {
+                $q->where('has_consolidation_hours', false)
+                    ->orWhereNull('has_consolidation_hours');
+            })
             ->where('is_initial_selection', false)
             ->where('competency_rating', '>', 1)
             ->get();
