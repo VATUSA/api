@@ -893,7 +893,7 @@ class TrainingController extends Controller
             return response()->forbidden();
         }
 
-        if (in_array($record->ots_status, [1, 2]) && !RoleHelper::isVATUSAStaff()) {
+        if (in_array($record->ots_status, [1, 2]) && !(Auth::user() && RoleHelper::isVATUSAStaff(Auth::user()))) {
             return response()->api(generate_error("Unable to edit record because it is a Rating exam. Please contact VATUSA3 or 13 for assistance."),
                 500);
         }
@@ -1054,7 +1054,7 @@ class TrainingController extends Controller
         //DELETE /training/record/8
 
         if ($this->canModify($request, $record)) {
-            if (in_array($record->ots_status, [1, 2]) && !RoleHelper::isVATUSAStaff()) {
+            if (in_array($record->ots_status, [1, 2]) && !(Auth::user() && RoleHelper::isVATUSAStaff(Auth::user()))) {
                 return response()->api(generate_error("Unable to delete record because it is a Rating exam. Please contact VATUSA3 or 13 for assistance."),
                     500);
             }
