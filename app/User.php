@@ -11,6 +11,7 @@ use App\Models\ControllerEligibilityCache;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Carbon\Carbon;
 use League\OAuth2\Client\Token\AccessToken;
@@ -342,6 +343,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         }
 
         $this->save();
+        $this->syncVatsimSubdivision($newfac);
 
         $t = new Transfer();
         $t->cid = $this->cid;
@@ -357,6 +359,23 @@ class User extends Model implements AuthenticatableContract, JWTSubject
 
     }
 
+    /**
+     * Push the home facility to VATSIM as the member's subdivision. Failures are logged and
+     * never block the local facility change. ZAE is reflected in VATSIM; ZZN/ZZI are
+     * VATUSA-internal and clear the subdivision.
+     */
+    public function syncVatsimSubdivision(string $facility): void
+    {
+        $subdivision = in_array($facility, ["ZZN", "ZZI"]) ? null : $facility;
+        try {
+            if (!VATSIMApi2Helper::updateSubdivision($this->cid, $subdivision)) {
+                Log::warning("VATSIM subdivision update to " . ($subdivision ?? "null") . " failed for {$this->cid}");
+            }
+        } catch (\Throwable $e) {
+            Log::warning("VATSIM subdivision update to " . ($subdivision ?? "null") . " errored for {$this->cid}: " . $e->getMessage());
+        }
+    }
+
     public function addToFacility($facility)
     {
         $oldfac = $this->facility;
@@ -366,6 +385,7 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         $this->facility = $facility->id;
         $this->facility_join = Carbon::now();
         $this->save();
+        $this->syncVatsimSubdivision($facility->id);
 
         if ($oldfac->id != "ZZN" && $oldfac->id != "ZAE") {
             if (RoleHelper::has($this, $oldfac->id, "ATM") || RoleHelper::has($this, $oldfac->id, "DATM")) {

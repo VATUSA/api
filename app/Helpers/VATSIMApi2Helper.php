@@ -60,4 +60,29 @@ class VATSIMApi2Helper {
         $response = $client->patch($fullURL, ['body' => $json]);
         return $response->getStatusCode() == 200;
     }
+
+    /**
+     * PATCH a member's subdivision on VATSIM. Pass null to clear it.
+     * https://vatsim.dev/api/core-api/members-api-update-member-details/
+     */
+    static function updateSubdivision(int $cid, ?string $subdivisionId): bool {
+        $key = VATSIMApi2Helper::_key();
+        if ($key === null) {
+            return false;
+        }
+        $client = new Client([
+            'base_uri' => self::_url() . '/',
+            'headers' => [
+                'X-API-Key' => $key,
+                'Accept' => 'application/json',
+                'User-Agent' => 'VATUSA/api +https://vatusa.net',
+                'x-identifier' => VATSIMApi2Helper::_identifier(),
+            ],
+        ]);
+        $response = $client->patch("members/{$cid}", ['json' => [
+            "id" => $cid,
+            "subdivision_id" => $subdivisionId,
+        ]]);
+        return $response->getStatusCode() == 200;
+    }
 }

@@ -166,6 +166,7 @@ class SSOController extends Controller
             $member->save();
 
             if ($member->flag_homecontroller) {
+                $member->syncVatsimSubdivision($member->facility);
                 EmailHelper::sendEmail($member->email, "Welcome to VATUSA", "emails.user.join", []);
 
                 $log = new Action();
@@ -174,6 +175,7 @@ class SSOController extends Controller
                 $log->save();
             }
         } else {
+            $facilityChanged = false;
             $passedBasic = ExamHelper::academyPassedExam($member->cid, "basic", 0,6);
             //Update data
             if ($updateName) {
@@ -226,6 +228,7 @@ class SSOController extends Controller
                     //Within last 6 months but more than 72 hours
                     $member->facility = "ZAE";
                     $member->facility_join = Carbon::now();
+                    $facilityChanged = true;
                     //$member->flag_needbasic = 0;
 
                     $trans = new Transfer();
@@ -245,6 +248,7 @@ class SSOController extends Controller
                     //More than 6 months ago (or xfr doesn't exist for some reason)
                     $member->facility = "ZAE";
                     $member->facility_join = Carbon::now();
+                    $facilityChanged = true;
                     $member->flag_needbasic = 1;
 
                     $trans = new Transfer();
@@ -273,6 +277,9 @@ class SSOController extends Controller
             }
 
             $member->save();
+            if ($facilityChanged) {
+                $member->syncVatsimSubdivision($member->facility);
+            }
         }
         return ULSHelper::doHandleLogin($user->cid, $return, $destination, $isTest);
     }
