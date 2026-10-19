@@ -49,6 +49,16 @@ class CacheControllerEligibility extends Command
         return $record;
     }
 
+    /**
+     * Parse a cached DATE column at midnight. A plain createFromFormat('Y-m-d') fills in
+     * the current time of day, which made same-day comparisons depend on when the
+     * hourly run happened.
+     */
+    private static function parseDate(string $date): Carbon
+    {
+        return Carbon::createFromFormat('!Y-m-d', $date);
+    }
+
     public function updateControllerEligibility(ControllerEligibilityCache $controllerEligibility, User $user, $userTransfers, $userPromotions, $userVisits, $userAcademyCompetencies)
     {
         $in_vatusa_facility = !in_array($user->facility, ["ZAE", "ZZN", "ZZI"]);
@@ -85,15 +95,17 @@ class CacheControllerEligibility extends Command
                 return in_array($transfer->to, ['ZAE', 'ZZN', 'ZZI']) && !in_array($transfer->from, ['ZAE', 'ZZN', 'ZZI']) && $transfer->status === 1;
             })->sortByDesc('created_at')->first();
             if ($lastFacilityExit && $user->facility == 'ZAE') {
-                $carbonDate = Carbon::createFromFormat('Y-m-d H:i:s', $lastFacilityExit->created_at);
+                // Leaving a facility for ZAE counts as a competency at the controller's
+                // current rating, dated the day they left. Compared by day: the cache
+                // only stores a date, so a same-day exit is not newer than it.
+                $carbonDate = Carbon::createFromFormat('Y-m-d H:i:s', $lastFacilityExit->created_at)->startOfDay();
                 if ($controllerEligibility->competency_date === null
-                    || Carbon::createFromFormat('Y-m-d', $controllerEligibility->competency_date)->isBefore($carbonDate)) {
+                    || self::parseDate($controllerEligibility->competency_date)->isBefore($carbonDate)) {
                     $controllerEligibility->competency_date = $carbonDate->toDateString();
-                    if ($last_promotion) {
-                        $controllerEligibility->competency_rating = $last_promotion->to;
-                    } else if ($user->rating == 1) {
-                        $controllerEligibility->competency_rating = 2;
-                    }
+                    // The current rating, not the last VATUSA promotion: ratings earned
+                    // elsewhere (or never recorded in promotions) left controllers
+                    // credited below their rating and flagged as needing an RCE.
+                    $controllerEligibility->competency_rating = ($user->rating > 5) ? 5 : (($user->rating == 1) ? 2 : $user->rating);
                 }
             }
         } else if ($controllerEligibility->is_initial_selection === null) {
@@ -102,32 +114,44 @@ class CacheControllerEligibility extends Command
         if ($user->rating >= 4 || $user->flag_homecontroller) {
             $last_visit = $userVisits->sortByDesc('created_at')->first();
             if ($last_visit) {
-                $carbonDate = Carbon::createFromFormat('Y-m-d H:i:s', $last_visit->created_at);
+                $carbonDate = Carbon::createFromFormat('Y-m-d H:i:s', $last_visit->created_at)->startOfDay();
                 if ($controllerEligibility->last_visit_date === null) {
                     $controllerEligibility->last_visit_date = $carbonDate->toDateString();
                 } else {
-                    $carbonCateCurrent = Carbon::createFromFormat('Y-m-d', $controllerEligibility->last_visit_date);
+                    $carbonCateCurrent = self::parseDate($controllerEligibility->last_visit_date);
                     if ($carbonDate->isAfter($carbonCateCurrent)) {
                         $controllerEligibility->last_visit_date = $carbonDate->toDateString();
                     }
                 }
             }
+            // A competency can't be dated in the future (some rows hold an expiration
+            // date instead). A future date blocks every newer pass from replacing it and
+            // looks recent to the 180-day check below, so drop it and rebuild.
+            if ($controllerEligibility->competency_date !== null
+                && self::parseDate($controllerEligibility->competency_date)->isFuture()) {
+                $controllerEligibility->competency_rating = null;
+                $controllerEligibility->competency_date = null;
+            }
             $target_competency_rating = ($user->rating > 5) ? 5 : (($user->rating == 1) ? 2 : $user->rating);
             if ($controllerEligibility->competency_rating < $target_competency_rating) {
                 $controllerEligibility->has_consolidation_hours = false;
             }
+            // Being on a facility roster counts as competency at the current rating, so
+            // keep the date current. Only refreshing when the rating was below target let
+            // members who stayed at one rating lapse after 180 days and be flagged as
+            // needing an RCE.
             if (($in_vatusa_facility || $visits_vatusa_facility)
-                && $controllerEligibility->competency_rating < $target_competency_rating) {
+                && $controllerEligibility->competency_rating <= $target_competency_rating) {
                 $controllerEligibility->competency_rating = $target_competency_rating;
                 $carbonDate = Carbon::now();
                 $controllerEligibility->competency_date = $carbonDate->toDateString();
             }
             if ($controllerEligibility->competency_date === null
-                || Carbon::createFromFormat('Y-m-d', $controllerEligibility->competency_date)->diffInDays(Carbon::now()) > 180) {
+                || self::parseDate($controllerEligibility->competency_date)->diffInDays(Carbon::now()) > 180) {
                 $competencies = $userAcademyCompetencies->sortByDesc('completion_timestamp');
                 foreach ($competencies as $competency) {
-                    $carbonDate = Carbon::createFromFormat('Y-m-d H:i:s', $competency->completion_timestamp);
-                    if ($controllerEligibility->competency_date === null || $carbonDate->isAfter(Carbon::createFromFormat('Y-m-d', $controllerEligibility->competency_date))) {
+                    $carbonDate = Carbon::createFromFormat('Y-m-d H:i:s', $competency->completion_timestamp)->startOfDay();
+                    if ($controllerEligibility->competency_date === null || $carbonDate->isAfter(self::parseDate($controllerEligibility->competency_date))) {
                         $controllerEligibility->competency_rating = $competency->course->rating;
                         $controllerEligibility->competency_date = $carbonDate->toDateString();
                         $controllerEligibility->has_consolidation_hours = false;

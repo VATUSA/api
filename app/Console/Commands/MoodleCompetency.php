@@ -61,8 +61,11 @@ class MoodleCompetency extends Command
 
         $ec = ControllerEligibilityCache::where('cid', $cid)->first();
         if ($ec) {
-            $ecCompetencyCarbon = Carbon::parse($ec->competency_date);
-            if ($ecCompetencyCarbon->isBefore($competency_date)) {
+            // Carbon::parse(null) is "now", which would never be before the pass. A
+            // future-dated cache row is bad data and must not block a real pass.
+            if ($ec->competency_date === null
+                || Carbon::parse($ec->competency_date)->isBefore($competency_date)
+                || Carbon::parse($ec->competency_date)->isFuture()) {
                 $ec->competency_rating = $rating;
                 $ec->competency_date = $competency_date->format('Y-m-d');
                 $ec->save();
@@ -109,7 +112,10 @@ class MoodleCompetency extends Command
                 }
             }
         }
-        if ($passedCourseId != null) {
+        // Only unexpired competencies are skipped above, so a controller whose last
+        // pass expired long ago is queried every run. Don't rewrite that same expired
+        // pass each time; it grants nothing.
+        if ($passedCourseId != null && $passedCarbon->copy()->addDays(180)->isFuture()) {
             $this->storeControllerCompetency($cid, $rating, $passedCourseId, $passedCarbon);
         }
 
