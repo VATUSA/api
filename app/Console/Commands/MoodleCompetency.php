@@ -61,8 +61,11 @@ class MoodleCompetency extends Command
 
         $ec = ControllerEligibilityCache::where('cid', $cid)->first();
         if ($ec) {
-            // Carbon::parse(null) is "now", which would never be before the pass.
-            if ($ec->competency_date === null || Carbon::parse($ec->competency_date)->isBefore($competency_date)) {
+            // Carbon::parse(null) is "now", which would never be before the pass. A
+            // future-dated cache row is bad data and must not block a real pass.
+            if ($ec->competency_date === null
+                || Carbon::parse($ec->competency_date)->isBefore($competency_date)
+                || Carbon::parse($ec->competency_date)->isFuture()) {
                 $ec->competency_rating = $rating;
                 $ec->competency_date = $competency_date->format('Y-m-d');
                 $ec->save();

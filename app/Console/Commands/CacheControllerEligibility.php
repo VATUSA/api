@@ -124,12 +124,24 @@ class CacheControllerEligibility extends Command
                     }
                 }
             }
+            // A competency can't be dated in the future (some rows hold an expiration
+            // date instead). A future date blocks every newer pass from replacing it and
+            // looks recent to the 180-day check below, so drop it and rebuild.
+            if ($controllerEligibility->competency_date !== null
+                && self::parseDate($controllerEligibility->competency_date)->isFuture()) {
+                $controllerEligibility->competency_rating = null;
+                $controllerEligibility->competency_date = null;
+            }
             $target_competency_rating = ($user->rating > 5) ? 5 : (($user->rating == 1) ? 2 : $user->rating);
             if ($controllerEligibility->competency_rating < $target_competency_rating) {
                 $controllerEligibility->has_consolidation_hours = false;
             }
+            // Being on a facility roster counts as competency at the current rating, so
+            // keep the date current. Only refreshing when the rating was below target let
+            // members who stayed at one rating lapse after 180 days and be flagged as
+            // needing an RCE.
             if (($in_vatusa_facility || $visits_vatusa_facility)
-                && $controllerEligibility->competency_rating < $target_competency_rating) {
+                && $controllerEligibility->competency_rating <= $target_competency_rating) {
                 $controllerEligibility->competency_rating = $target_competency_rating;
                 $carbonDate = Carbon::now();
                 $controllerEligibility->competency_date = $carbonDate->toDateString();
