@@ -12,6 +12,7 @@ use App\Helpers\VATSIMApi2Helper;
 use App\Promotion;
 use App\Role;
 use App\Transfer;
+use App\TransfersBlocked;
 use App\User;
 use Auth;
 use Carbon\Carbon;
@@ -384,10 +385,13 @@ class UserController extends APIController
         if (!$user->transferEligible()) {
             return response()->api(generate_error("Conflict"), 409);
         }
+        if (TransfersBlocked::isBlocked($cid)) {
+            return response()->api(generate_error("Blocked from transferring to a facility"), 400);
+        }
 
         $facility = request()->get("facility", null);
         $reason = request()->get("reason", null);
-        if (!$facility || !Facility::find()) {
+        if (!$facility || !Facility::find($facility)) {
             return response()->api(generate_error("Not found"), 404);
         }
         if (strlen($reason) < 3) {
