@@ -1,4 +1,4 @@
-FROM php:8.1-fpm-alpine AS app
+FROM php:8.2.35-fpm-alpine AS app
 
 ENV TIMEZONE            America/Chicago
 ENV PHP_MEMORY_LIMIT    128M
