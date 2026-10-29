@@ -127,6 +127,14 @@ class VATUSAMoodle extends MoodleRest
         $previous = ini_set('default_socket_timeout', self::HTTP_TIMEOUT_SECONDS);
         try {
             return parent::request($function, $parameters, $method);
+        } catch (Exception $e) {
+            // file_get_contents() failures embed the full request URL, wstoken included.
+            // Strip it so the token can't reach API responses or logs.
+            $token = $this->getToken();
+            if (empty($token) || !str_contains($e->getMessage(), $token)) {
+                throw $e;
+            }
+            throw new Exception(str_replace($token, '[REDACTED]', $e->getMessage()), (int)$e->getCode());
         } finally {
             ini_set('default_socket_timeout', $previous);
         }
