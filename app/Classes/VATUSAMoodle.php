@@ -141,6 +141,27 @@ class VATUSAMoodle extends MoodleRest
     }
 
     /**
+     * Throw if Moodle answered with an error. Moodle's REST server reports failures (bad
+     * parameters, missing capability) as a normal response body with an "exception" key
+     * rather than an HTTP error, so without this check a rejected bulk write looks like a
+     * success to MoodleSync::flushBulk().
+     *
+     * @param mixed $response
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function requireSuccess($response)
+    {
+        if (is_array($response) && array_key_exists('exception', $response)) {
+            throw new Exception("Moodle {$response['errorcode']}: {$response['message']}"
+                . (isset($response['debuginfo']) ? " ({$response['debuginfo']})" : ''));
+        }
+
+        return $response;
+    }
+
+    /**
      * Get all Cohorts
      * @return mixed
      * @throws \Exception
@@ -427,14 +448,14 @@ class VATUSAMoodle extends MoodleRest
      */
     public function updateUsersBulk(array $items)
     {
-        return $this->request("core_user_update_users", [
+        return $this->requireSuccess($this->request("core_user_update_users", [
             'users' => array_values(array_map(fn ($item) => [
                 'id'        => $item['id'],
                 'firstname' => $item['fname'],
                 'lastname'  => $item['lname'],
                 'email'     => $item['email']
             ], $items))
-        ], self::METHOD_POST);
+        ], self::METHOD_POST));
     }
 
     /**
@@ -551,12 +572,12 @@ class VATUSAMoodle extends MoodleRest
      */
     public function removeCohortsBulk(array $items)
     {
-        return $this->request("core_cohort_delete_cohort_members", [
+        return $this->requireSuccess($this->request("core_cohort_delete_cohort_members", [
             "members" => array_values(array_map(fn ($item) => [
                 "cohortid" => $item['cohortid'],
                 "userid"   => $item['uid']
             ], $items))
-        ], self::METHOD_POST);
+        ], self::METHOD_POST));
     }
 
     /**
@@ -569,7 +590,7 @@ class VATUSAMoodle extends MoodleRest
      */
     public function assignCohortsBulk(array $items)
     {
-        return $this->request("core_cohort_add_cohort_members", [
+        return $this->requireSuccess($this->request("core_cohort_add_cohort_members", [
             "members" => array_values(array_map(fn ($item) => [
                 "cohorttype" => [
                     'type'  => 'idnumber',
@@ -580,7 +601,7 @@ class VATUSAMoodle extends MoodleRest
                     'value' => $item['uid']
                 ]
             ], $items))
-        ], self::METHOD_POST);
+        ], self::METHOD_POST));
     }
 
     /**
@@ -643,14 +664,14 @@ class VATUSAMoodle extends MoodleRest
      */
     public function assignRolesBulk(array $items)
     {
-        return $this->request("core_role_assign_roles", [
+        return $this->requireSuccess($this->request("core_role_assign_roles", [
             "assignments" => array_values(array_map(fn ($item) => [
                 "roleid"       => $this->roleIds[$item['role']],
                 "userid"       => $item['uid'],
                 "contextid"    => $item['cid'],
                 "contextlevel" => $item['context']
             ], $items))
-        ], self::METHOD_POST);
+        ], self::METHOD_POST));
     }
 
     /**
@@ -677,14 +698,16 @@ class VATUSAMoodle extends MoodleRest
      */
     public function unassignRolesBulk(array $items)
     {
-        return $this->request("core_role_unassign_roles", [
+        // Identify the context by id only. Moodle declares contextlevel as PARAM_ALPHA
+        // ("coursecat", "course"), so the integer level stored on the row was rejected as
+        // invalidparameter and every removal silently failed.
+        return $this->requireSuccess($this->request("core_role_unassign_roles", [
             "unassignments" => array_values(array_map(fn ($item) => [
-                "roleid"       => $item['roleid'],
-                "userid"       => $item['uid'],
-                "contextid"    => $item['contextid'],
-                "contextlevel" => $item['contextlevel']
+                "roleid"    => $item['roleid'],
+                "userid"    => $item['uid'],
+                "contextid" => $item['contextid'],
             ], $items))
-        ], self::METHOD_POST);
+        ], self::METHOD_POST));
     }
 
     /**
@@ -939,13 +962,13 @@ class VATUSAMoodle extends MoodleRest
     function enrolUsersBulk(
         array $items
     ) {
-        return $this->request("enrol_manual_enrol_users", [
+        return $this->requireSuccess($this->request("enrol_manual_enrol_users", [
             "enrolments" => array_values(array_map(fn ($item) => [
                 "roleid"   => $item['rid'] ?? $this->roleIds['STU'],
                 "userid"   => $item['uid'],
                 "courseid" => $item['cid']
             ], $items))
-        ], self::METHOD_POST);
+        ], self::METHOD_POST));
     }
 
     /**
