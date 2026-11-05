@@ -143,7 +143,7 @@ class SoloController extends APIController
                 400);
         }
 
-        if ($cExp->diffInDays() > 45) {
+        if ($cExp->diffInDays() > 45 && !(Auth::check() && RoleHelper::isVATUSAStaff(Auth::user(), true))) {
             return response()->api(generate_error("Invalid expiration date, must be in at most 45 days."), 400);
         }
 
